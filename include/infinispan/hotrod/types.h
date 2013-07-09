@@ -1,0 +1,132 @@
+#ifndef ISPN_HOTROD_TYPES_H
+#define ISPN_HOTROD_TYPES_H
+
+/*
+ * JBoss, Home of Professional Open Source
+ * Copyright 2010 Red Hat Inc. and/or its affiliates and other
+ * contributors as indicated by the @author tags. All rights reserved.
+ * See the copyright.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
+#include "infinispan/hotrod/ImportExport.h"
+
+// Platform dependent shared_ptr definition.  Todo: more platforms, more elegance.
+#if defined (__GNUC__) && __GNUC__ >= 4 
+    #include <tr1/memory>
+    #define  HR_SHARED_PTR std::tr1::shared_ptr
+#elif defined (_MSC_VER)
+    // TODO: handle multiple VS versions 
+    #include <memory>
+    #define  HR_SHARED_PTR std::tr1::shared_ptr
+#endif
+
+/*
+ * Handle special cases for stdint.h and the definition for ssize_t.
+ * Third party libraries (e.g. Boost) may provide competing solutions.
+ *
+ * The effects of this include file may be controlled by overrides:
+ *  PN_DEFINE_STDINT/PN_NODEFINE_STDINT   : turn on/off definition of int64_t etc.
+ *  PN_DEFINE_SSIZE_T/PN_NODEFINE_SSIZE_T : turn on/off definition of ssize_t
+ *  PN_INCLUDE_STDINT/PN_NOINCLUDE_STDINT : include (or not) stdint.h
+ */
+
+// Honor positive overrides
+#if defined(PN_DEFINE_STDINT)
+#define PNI_DEFINE_STDINT
+#endif
+#if defined(PN_INCLUDE_STDINT)
+#define PNI_INCLUDE_STDINT)
+#endif
+#if defined(PN_DEFINE_SSIZE_T)
+#define PNI_DEFINE_SSIZE_T
+#endif
+
+// Determinine default action
+#ifndef _MSC_VER
+// Not Windows and not using Visual Studio
+#ifndef PNI_INCLUDE_STDINT
+#define PNI_INCLUDE_STDINT
+#endif
+#else
+// all versions of Visual Studio
+#ifndef PNI_DEFINE_SSIZE_T
+// ssie_t def is needed, unless third party definition interferes, e.g. python/swig
+#ifndef Py_CONFIG_H
+#define PNI_DEFINE_SSIZE_T
+#endif
+#endif
+
+#if (_MSC_VER < 1600)
+// VS 2008 and earlier
+#ifndef PNI_DEFINE_STDINT
+#define PNI_DEFINE_STDINT
+#endif
+#else
+// VS 2010 and newer
+#ifndef PNI_INCLUDE_STDINT
+#define PNI_INCLUDE_STDINT
+#endif
+
+#endif // (_MSC_VER < 1600)
+#endif //_MSC_VER
+
+// Honor negative overrides
+#ifdef PN_NODEFINE_SSIZE_T
+#undef PNI_DEFINE_SSIZE_T
+#endif
+#ifdef PN_NODEFINE_STDINT
+#undef PNI_DEFINE_STDINT
+#endif
+#ifdef PN_NOINCLUDE_STDINT
+#undef PNI_INCLUDE_STDINT
+#endif
+
+#ifdef PNI_INCLUDE_STDINT
+#include <stdint.h>
+#endif
+
+#ifdef PNI_DEFINE_SSIZE_T
+#ifdef _MSC_VER
+#include <BaseTsd.h>
+typedef SSIZE_T ssize_t;
+#else
+#error ssize_t definition not kown
+#endif
+#endif // PNI_DEFINE_SSIZE_T
+
+#ifdef PNI_DEFINE_STDINT
+#ifdef _MSC_VER
+
+typedef signed __int8 int8_t;
+typedef signed __int16 int16_t;
+typedef signed __int32 int32_t;
+typedef signed __int64 int64_t;
+
+typedef unsigned __int8 uint8_t;
+typedef unsigned __int16 uint16_t;
+typedef unsigned __int32 uint32_t;
+typedef unsigned __int64 uint64_t;
+
+#else // _MSC_VER
+#error stdint.h definitions not kown
+#endif
+#endif // PNI_DEFINE_SSIZE_T
+
+
+#endif  /* ISPN_HOTROD_TYPES_H */
