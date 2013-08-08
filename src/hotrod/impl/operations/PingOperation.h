@@ -3,8 +3,6 @@
 
 #include "hotrod/impl/operations/HotRodOperation.h"
 
-#include <stdint.h>
-
 namespace infinispan {
 namespace hotrod {
 class hrbytes;

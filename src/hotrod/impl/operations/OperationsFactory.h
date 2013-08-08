@@ -5,7 +5,6 @@
 #include "infinispan/hotrod/Flag.h"
 
 #include <set>
-#include <stdint.h>
 
 namespace infinispan {
 namespace hotrod {

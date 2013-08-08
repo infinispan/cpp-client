@@ -35,23 +35,32 @@ int main(int, char**) {
     RemoteCacheManager cacheManager;
     RemoteCache<std::string, std::string> cache = cacheManager.getCache<std::string, std::string>();
 
-    std::string k("abcdef");
-    std::string v("The rain in Spain");
-    std::string v2("falls mainly on the plain");
+    std::string k1("key13");
+    std::string k2("key14");
+    std::string v1("boron");
+    std::string v2("chlorine");
 
-    cache.put(k, v);
-    std::auto_ptr<std::string> rv(cache.get(k));
-    std::cout << "put and get test: " << *rv << " ";
+    cache.put(k1, v1);
+    std::auto_ptr<std::string> rv(cache.get(k1));
+    if (rv->compare(v1)) {
+	std::cerr << "get/put fail for " << k1 << " got " << *rv << " expected " << v1 << std::endl;
+	return 1;
+    }
 
-    cache.put(k, v2);
-    std::auto_ptr<std::string> rv2(cache.get(k));
-    std::cout << *rv2 << std::endl;
+    cache.put(k2, v2);
+    std::auto_ptr<std::string> rv2(cache.get(k2));
+    if (rv2->compare(v2)) {
+	std::cerr << "get/put fail for " << k2 << " got " << *rv2 << " expected " << v2 << std::endl;
+	return 1;
+    }
 
     std::auto_ptr<std::string> badValue(cache.get(std::string("no such key in the cache")));
-    if (badValue.get())
-	std::cout << "non-existent key failure, got " << *badValue << "\n";
-    else
-        std::cout << "non-existent key test passed\n";
+    if (badValue.get()) {
+	std::cout << "non-existent key failure, got " << *badValue << std::endl;
+	return -1;
+    }
+
+    std::cout << "Simple tests pass" << std::endl;
 
     return 0;
 }

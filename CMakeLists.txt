@@ -41,7 +41,7 @@ include_directories ("${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_SOUR
 
 if (CMAKE_COMPILER_IS_GNUCXX)
    set (COMPILER_FLAGS "-fvisibility=hidden -fvisibility-inlines-hidden")
-# ZZZ fix swig call for -Werror 
+# TODO: ASAP!  fix swig call for -Werror 
    set (WARNING_FLAGS
         "-pedantic -Wall -Wextra -Wno-shadow -Wpointer-arith -Wcast-qual -Wcast-align -Wno-long-long -Wvolatile-register-var -Winvalid-pch -Wno-system-headers -Woverloaded-virtual -Wshadow -Wl,--no-undefined")
 endif (CMAKE_COMPILER_IS_GNUCXX)
@@ -96,8 +96,31 @@ add_library (
   )
 target_link_libraries (hotrod ${platform_libs})
 
+
+# TESTS
+
+# TODO: decide on cmake 2.6 or 2.8, which differ greatly in FindJava
+# and FindJNI needed for SWIG-ed Java bindings.  The following
+# suffices for running the Hot Rod server to support native C++
+# testing:
+
+find_package(Java)
+if (NOT JAVA_RUNTIME)
+    message(FATAL_ERROR "Java javac compiler not found")
+endif (NOT JAVA_RUNTIME)
+
+
+set(HOTROD_ISPN_HOME $ENV{ISPN_HOME} CACHE FILEPATH "Infinispan HOME dir")
+if (NOT IS_DIRECTORY ${HOTROD_ISPN_HOME})
+    message(FATAL_ERROR "you must set the ISPN_HOME environment variable or use -DHOTROD_ISPN_HOME=/the/path")
+endif (NOT IS_DIRECTORY ${HOTROD_ISPN_HOME})
+
 add_executable (simple test/Simple.cpp)
 target_link_libraries (simple hotrod)
-add_test (simple simple)
 
-add_subdirectory(test/swig)
+add_test (start_server python ${CMAKE_CURRENT_SOURCE_DIR}/test/server_ctl.py start ${JAVA_RUNTIME} ${HOTROD_ISPN_HOME} single)
+add_test (simple simple)
+add_test (stop_server python ${CMAKE_CURRENT_SOURCE_DIR}/test/server_ctl.py stop)
+
+# Coming soon...
+# add_subdirectory(test/swig)

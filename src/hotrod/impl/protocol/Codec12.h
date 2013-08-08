@@ -3,8 +3,6 @@
 
 #include "hotrod/impl/protocol/Codec.h"
 
-#include <stdint.h>
-
 namespace infinispan {
 namespace hotrod {
 
