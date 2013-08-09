@@ -41,6 +41,9 @@ Thumbs.db
 CMakeCache.txt
 Makefile
 simple
+.ant-targets-build.xml
+.cproject
+.project
 
 # Exclude Generated dirs #
 ##########################
@@ -48,3 +51,4 @@ jnitmp/
 Testing/
 CMakeFiles/
 test/swig/src
+test/src/
