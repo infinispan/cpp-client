@@ -1,6 +1,29 @@
 #ifndef ISPN_HOTROD_SYS_TYPES_H
 #define ISPN_HOTROD_SYS_TYPES_H
 
+/*
+ * JBoss, Home of Professional Open Source
+ * Copyright 2010 Red Hat Inc. and/or its affiliates and other
+ * contributors as indicated by the @author tags. All rights reserved.
+ * See the copyright.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
 #include "infinispan/hotrod/types.h"
 #include "infinispan/hotrod/ScopedBuffer.h"
 
@@ -77,7 +100,7 @@ class hrbytes {
     };
 
     unsigned int length() { return len; }
-    char* bytes() { return dumbBytes ? dumbBytes : smartBytes.get(); }
+    char* bytes() const { return dumbBytes ? dumbBytes : smartBytes.get(); }
 
     hrbytes() : dumbBytes(0), len(0) {}
     hrbytes(char *b, unsigned int l) :  dumbBytes(b), len(l) {}
@@ -115,7 +138,7 @@ class hrbytes {
     static void delayedDelete (ScopedBuffer *buf) {
         delete[] buf->getBytes();
     }
-    void releaseTo(ScopedBuffer& buf) {
+    void releaseTo(ScopedBuffer& buf) const {
         // TODO: assert smartBytes.unique()
 	if (smartBytes) {
             buf.set(smartBytes.get(), len, &delayedDelete);
@@ -124,12 +147,27 @@ class hrbytes {
 	else 
 	    buf.set(dumbBytes, len);
     }
+
   private:
     mutable char* dumbBytes;
     unsigned int len;
     HR_SHARED_PTR<char> smartBytes;
 };
-    
-}}
+
+}} // namespace infinispan::hotrod
+
+namespace std {
+
+template<> struct less<infinispan::hotrod::hrbytes>
+{
+    bool operator() (
+        const infinispan::hotrod::hrbytes& b1,
+        const infinispan::hotrod::hrbytes& b2)
+    {
+        return b1.bytes() < b2.bytes();
+    }
+};
+
+} // namespace std
 
 #endif  /* ISPN_HOTROD_SYS_TYPES_H */

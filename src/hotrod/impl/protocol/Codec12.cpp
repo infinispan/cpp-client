@@ -1,3 +1,26 @@
+/*
+ * JBoss, Home of Professional Open Source
+ * Copyright 2010 Red Hat Inc. and/or its affiliates and other
+ * contributors as indicated by the @author tags. All rights reserved.
+ * See the copyright.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
 #include "hotrod/impl/protocol/Codec12.h"
 #include "hotrod/impl/protocol/HotRodConstants.h"
 #include "hotrod/impl/protocol/HeaderParams.h"
@@ -26,17 +49,12 @@ HeaderParams& Codec12::writeHeader(
     Transport& transport, HeaderParams& params, uint8_t version) const
 {
     transport.writeByte(HotRodConstants::REQUEST_MAGIC);
+    // TODO : multithread management
     transport.writeVLong(params.setMessageId(++msgId).messageId);
     transport.writeByte(version);
     transport.writeByte(params.opCode);
     transport.writeArray(params.cacheName);
-    int32_t flagInt = 0;
-    for (std::set<Flag>::const_iterator iter=params.flags.begin();
-         iter!=params.flags.end(); ++iter)
-    {
-        flagInt |= *iter;
-    }
-    transport.writeVInt(flagInt);
+    transport.writeVInt(params.flags);
     transport.writeByte(params.clientIntel);
     transport.writeVInt(params.topologyId);
     transport.writeByte(params.txMarker);
@@ -80,8 +98,8 @@ uint8_t Codec12::readHeader(
     		checkForErrorsInResponseStatus(transport, params, status);
         }
         std::ostringstream message;
-        message << "Invalid response operation. Expected " <<
-            params.opRespCode << " and received " << receivedOpCode;
+        message << "Invalid response operation. Expected " << std::hex <<
+            (int) params.opRespCode << " and received " << std::hex << (int) receivedOpCode;
         throw InvalidResponseException(message.str());
     }
 
