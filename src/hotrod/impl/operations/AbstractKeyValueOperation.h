@@ -1,6 +1,8 @@
 #ifndef ISPN_HOTROD_OPERATIONS_ABSTRACTKEYVALUEOPERATION_H
 #define ISPN_HOTROD_OPERATIONS_ABSTRACTKEYVALUEOPERATION_H
 
+
+
 #include "hotrod/impl/operations/AbstractKeyOperation.h"
 
 #include <set>
@@ -13,12 +15,12 @@ template<class T> class AbstractKeyValueOperation : public AbstractKeyOperation<
 {
     protected:
 	    AbstractKeyValueOperation(
-            const infinispan::hotrod::protocol::Codec&       codec_,
-            infinispan::hotrod::transport::TransportFactory& transportFactory_,
+            const protocol::Codec&       codec_,
+            transport::TransportFactory* transportFactory_,
             const hrbytes&                                   key_,
             const hrbytes&                                   cacheName_,
             uint32_t                                         topologyId_,
-            const std::set<Flag>&                                   flags_,
+            uint32_t                                   flags_,
             const hrbytes&                                   value_,
             uint32_t                                         lifespan_,
             uint32_t                                         maxIdle_)
@@ -34,12 +36,12 @@ template<class T> class AbstractKeyValueOperation : public AbstractKeyOperation<
 
         //[header][key length][key][lifespan][max idle][value length][value]
         uint8_t sendPutOperation(
-            infinispan::hotrod::transport::Transport&     transport,
+            transport::Transport&     transport,
             uint8_t                                       opCode,
             uint8_t                                       /*opRespCode*/)
         {
             // 1) write header
-            hr_scoped_ptr<infinispan::hotrod::protocol::HeaderParams> params(&(AbstractKeyOperation<T>::writeHeader(transport, opCode)));
+            hr_scoped_ptr<protocol::HeaderParams> params(&(AbstractKeyOperation<T>::writeHeader(transport, opCode)));
 
             // 2) write key and value
             transport.writeArray(AbstractKeyOperation<T>::key);

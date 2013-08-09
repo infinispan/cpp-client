@@ -1,7 +1,9 @@
 #ifndef ISPN_HOTROD_PROTOCOL_HOTRODCONSTANTS_H
 #define ISPN_HOTROD_PROTOCOL_HOTRODCONSTANTS_H
 
-#include "infinispan/hotrod/types.h"
+
+
+#include <stdint.h>
 
 namespace infinispan {
 namespace hotrod {
@@ -69,8 +71,8 @@ class HotRodConstants
     static const uint8_t CLIENT_INTELLIGENCE_TOPOLOGY_AWARE          = 0x02;
     static const uint8_t CLIENT_INTELLIGENCE_HASH_DISTRIBUTION_AWARE = 0x03;
 
-  protected:
-    HotRodConstants() {}
+    static const uint8_t INFINITE_LIFESPAN = 0x01;
+    static const uint8_t INFINITE_MAXIDLE  = 0x02;
 };
 
 }}} // namespace infinispan::hotrod::protocol

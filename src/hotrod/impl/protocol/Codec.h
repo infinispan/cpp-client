@@ -1,7 +1,9 @@
 #ifndef ISPN_HOTROD_PROTOCOL_CODEC_H
 #define ISPN_HOTROD_PROTOCOL_CODEC_H
 
-#include "infinispan/hotrod/types.h"
+
+
+#include <stdint.h>
 
 namespace infinispan {
 namespace hotrod {
@@ -18,12 +20,10 @@ class Codec
 {
   public:
     virtual HeaderParams& writeHeader(
-      infinispan::hotrod::transport::Transport& transport,
-      HeaderParams& params) const = 0;
+      transport::Transport& transport, HeaderParams& params) const = 0;
 
     virtual uint8_t readHeader(
-      infinispan::hotrod::transport::Transport& transport,
-      const HeaderParams& params) const = 0;
+      transport::Transport& transport, const HeaderParams& params) const = 0;
 
     virtual ~Codec() {}
 };

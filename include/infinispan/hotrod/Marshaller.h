@@ -1,6 +1,8 @@
 #ifndef ISPN_HOTROD_MARSHALLER_H
 #define ISPN_HOTROD_MARSHALLER_H
 
+
+
 #include "infinispan/hotrod/ScopedBuffer.h"
 
 namespace infinispan {
@@ -15,6 +17,8 @@ template <class T> class Marshaller
   public:
     virtual void marshall(const T&, ScopedBuffer&) = 0;
     virtual T* unmarshall(const ScopedBuffer&) = 0;
+
+    virtual ~Marshaller() {}
 };
 
 }} // namespace

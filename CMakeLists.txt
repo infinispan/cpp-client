@@ -41,7 +41,7 @@ include_directories ("${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_SOUR
 
 if (CMAKE_COMPILER_IS_GNUCXX)
    set (COMPILER_FLAGS "-fvisibility=hidden -fvisibility-inlines-hidden")
-# TODO: ASAP!  fix swig call for -Werror 
+# ZZZ fix swig call for -Werror 
    set (WARNING_FLAGS
         "-pedantic -Wall -Wextra -Wno-shadow -Wpointer-arith -Wcast-qual -Wcast-align -Wno-long-long -Wvolatile-register-var -Winvalid-pch -Wno-system-headers -Woverloaded-virtual -Wshadow -Wl,--no-undefined")
 endif (CMAKE_COMPILER_IS_GNUCXX)
@@ -76,51 +76,44 @@ add_library (
   src/hotrod/api/RemoteCacheManager.cpp
   src/hotrod/api/RemoteCacheBase.cpp
   src/hotrod/api/exceptions.cpp
-  src/hotrod/api/Configuration.cpp
-  src/hotrod/configuration/ConfigurationBuilder.cpp
+  src/hotrod/impl/configuration/Configuration.cpp
+  src/hotrod/impl/configuration/ServerConfiguration.cpp
+  src/hotrod/impl/configuration/ConnectionPoolConfiguration.cpp
+  src/hotrod/impl/configuration/ServerConfigurationBuilder.cpp
+  src/hotrod/impl/configuration/ConfigurationBuilder.cpp
   src/hotrod/impl/RemoteCacheManagerImpl.cpp
   src/hotrod/impl/RemoteCacheImpl.cpp
   src/hotrod/impl/operations/OperationsFactory.cpp
   src/hotrod/impl/operations/PingOperation.cpp
   src/hotrod/impl/operations/GetOperation.cpp
   src/hotrod/impl/operations/PutOperation.cpp
+  src/hotrod/impl/operations/PutIfAbsentOperation.cpp
+  src/hotrod/impl/operations/ReplaceOperation.cpp
+  src/hotrod/impl/operations/RemoveOperation.cpp
+  src/hotrod/impl/operations/ContainsKeyOperation.cpp
+  src/hotrod/impl/operations/ReplaceIfUnmodifiedOperation.cpp
+  src/hotrod/impl/operations/RemoveIfUnmodifiedOperation.cpp
+  src/hotrod/impl/operations/GetWithMetadataOperation.cpp
+  src/hotrod/impl/operations/BulkGetOperation.cpp
+  src/hotrod/impl/operations/BulkGetKeysOperation.cpp
+  src/hotrod/impl/operations/StatsOperation.cpp
+  src/hotrod/impl/operations/ClearOperation.cpp
+  src/hotrod/impl/operations/FaultTolerantPingOperation.cpp
   src/hotrod/impl/protocol/HeaderParams.cpp
   src/hotrod/impl/protocol/Codec12.cpp
   src/hotrod/impl/protocol/CodecFactory.cpp
   src/hotrod/impl/transport/AbstractTransport.cpp
-  src/hotrod/impl/transport/TransportFactory.cpp
+  src/hotrod/impl/transport/tcp/Socket.cpp
   src/hotrod/impl/transport/tcp/TcpTransport.cpp
   src/hotrod/impl/transport/tcp/TcpTransportFactory.cpp
-  src/hotrod/impl/transport/tcp/InputStream.cpp
+  src/hotrod/impl/transport/tcp/TransportObjectFactory.cpp
+  src/hotrod/impl/transport/tcp/RoundRobinBalancingStrategy.cpp
   ${platform_sources}
   )
 target_link_libraries (hotrod ${platform_libs})
 
-
-# TESTS
-
-# TODO: decide on cmake 2.6 or 2.8, which differ greatly in FindJava
-# and FindJNI needed for SWIG-ed Java bindings.  The following
-# suffices for running the Hot Rod server to support native C++
-# testing:
-
-find_package(Java)
-if (NOT JAVA_RUNTIME)
-    message(FATAL_ERROR "Java javac compiler not found")
-endif (NOT JAVA_RUNTIME)
-
-
-set(HOTROD_ISPN_HOME $ENV{ISPN_HOME} CACHE FILEPATH "Infinispan HOME dir")
-if (NOT IS_DIRECTORY ${HOTROD_ISPN_HOME})
-    message(FATAL_ERROR "you must set the ISPN_HOME environment variable or use -DHOTROD_ISPN_HOME=/the/path")
-endif (NOT IS_DIRECTORY ${HOTROD_ISPN_HOME})
-
 add_executable (simple test/Simple.cpp)
 target_link_libraries (simple hotrod)
-
-add_test (start_server python ${CMAKE_CURRENT_SOURCE_DIR}/test/server_ctl.py start ${JAVA_RUNTIME} ${HOTROD_ISPN_HOME} single)
 add_test (simple simple)
-add_test (stop_server python ${CMAKE_CURRENT_SOURCE_DIR}/test/server_ctl.py stop)
 
-# Coming soon...
-# add_subdirectory(test/swig)
+add_subdirectory(test/swig)

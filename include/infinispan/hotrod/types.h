@@ -1,6 +1,8 @@
 #ifndef ISPN_HOTROD_TYPES_H
 #define ISPN_HOTROD_TYPES_H
 
+
+
 #include "infinispan/hotrod/ImportExport.h"
 
 // Platform dependent shared_ptr definition.  Todo: more platforms, more elegance.

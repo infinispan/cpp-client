@@ -1,6 +1,9 @@
+
+
 #include "hotrod/sys/types.h"
 #include "hotrod/impl/operations/PutOperation.h"
-#include <cstring>
+
+#include <sstream>
 
 namespace infinispan {
 namespace hotrod {
@@ -11,11 +14,11 @@ using namespace infinispan::hotrod::transport;
 
 PutOperation::PutOperation(
     const Codec&      codec_,
-    TransportFactory& transportFactory_,
+    TransportFactory* transportFactory_,
     const hrbytes&    key_,
     const hrbytes&    cacheName_,
     uint32_t          topologyId_,
-    const std::set<Flag>& flags_,
+    uint32_t flags_,
     const hrbytes&    value_,
     uint32_t          lifespan_,
     uint32_t          maxIdle_)
@@ -23,12 +26,14 @@ PutOperation::PutOperation(
         cacheName_, topologyId_, flags_, value_, lifespan_, maxIdle_)
 {}
 
-hrbytes PutOperation::executeOperation(Transport* transport) {
-    uint8_t status = sendPutOperation(*transport, PUT_REQUEST, PUT_RESPONSE);
-    if (status != NO_ERROR_STATUS) {
-        throw HotRodClientException("PUT ERROR");
+hrbytes PutOperation::executeOperation(Transport& transport) {
+    uint8_t status = sendPutOperation(transport, PUT_REQUEST, PUT_RESPONSE);
+   if (status != NO_ERROR_STATUS) {
+        std::ostringstream message;
+        message << "Unexpected response status: " << status;
+        throw InvalidResponseException(message.str());
     }
-    return AbstractKeyValueOperation<hrbytes>::returnPossiblePrevValue(*transport);
+    return AbstractKeyValueOperation<hrbytes>::returnPossiblePrevValue(transport);
 }
 
 

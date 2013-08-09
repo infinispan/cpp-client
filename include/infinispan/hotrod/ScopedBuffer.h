@@ -1,6 +1,8 @@
 #ifndef ISPN_HOTROD_SCOPEDBUFFER_H
 #define ISPN_HOTROD_SCOPEDBUFFER_H
 
+
+
 #include "infinispan/hotrod/exceptions.h"
 
 namespace infinispan {

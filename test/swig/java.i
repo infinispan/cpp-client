@@ -3,26 +3,67 @@
 %include "arrays_java.i"
 %include "typemaps.i"
 %include "various.i"
+%include "std_string.i"
+%include "std_map.i"
+
 
 %{
+#include <hotrod/impl/configuration/ConnectionPoolConfiguration.h>
+#include <hotrod/impl/configuration/ServerConfiguration.h>
+#include <hotrod/impl/configuration/SslConfiguration.h>
+#include <hotrod/impl/configuration/Configuration.h>
+#include <hotrod/impl/configuration/ServerConfigurationBuilder.h>
+#include <hotrod/impl/configuration/ConfigurationBuilder.h>
+#include <infinispan/hotrod/MetadataValue.h>
+#include <infinispan/hotrod/Flag.h>
 #include <infinispan/hotrod/RemoteCacheManager.h>
 #include <infinispan/hotrod/RemoteCache.h>
 #include <infinispan/hotrod/ScopedBuffer.h>
 #include <infinispan/hotrod/Marshaller.h>
+
 //ZZZ
 #include <iostream>
 %}
 
+//I want use java.util.Map, not obscure SWIG types
+%typemap(jstype) std::map<std::string, std::string> "java.util.Map<String,String>"
+%typemap(javain,pre="    MapType temp$javainput = $javaclassname.convertMap($javainput);",pgcppname="temp$javainput") std::map<std::string, std::string> "$javaclassname.getCPtr(temp$javainput)"
+%typemap(javacode) std::map<std::string, std::string> %{
+  static $javaclassname convertMap(java.util.Map<String,String> in) {
+    $javaclassname out = new $javaclassname();
+    for (java.util.Map.Entry<String, String> entry : in.entrySet()) {
+      out.set(entry.getKey(), entry.getValue());      
+    }
+    return out;
+  }    
+%}
+
+%template(MapType) std::map<std::string, std::string>;
 
 %include "infinispan/hotrod/ImportExport.h"
 %include "infinispan/hotrod/Handle.h"
 
 %template(HandleRemoteCacheManagerImpl) infinispan::hotrod::Handle<infinispan::hotrod::RemoteCacheManagerImpl>;
 
+%include "hotrod/impl/configuration/Builder.h"
+%include "hotrod/impl/configuration/ConnectionPoolConfiguration.h"
+%include "hotrod/impl/configuration/ServerConfiguration.h"
+%include "hotrod/impl/configuration/SslConfiguration.h"
+%include "hotrod/impl/configuration/Configuration.h"
 
+%template(Builder_conf) infinispan::hotrod::Builder<infinispan::hotrod::Configuration>;
+%template(Builder_serverconf) infinispan::hotrod::Builder<infinispan::hotrod::ServerConfiguration>;
+
+%include "hotrod/impl/configuration/ServerConfigurationBuilder.h"
+%include "hotrod/impl/configuration/ConnectionPoolConfigurationBuilder.h"
+%include "hotrod/impl/configuration/ConfigurationBuilder.h"
+%include "infinispan/hotrod/MetadataValue.h"
+%include "infinispan/hotrod/Flag.h"
 %include "infinispan/hotrod/RemoteCacheManager.h"
 %include "infinispan/hotrod/RemoteCache.h"
 %include "infinispan/hotrod/Marshaller.h"
+
+
 
 %template(RemoteCache_str_str) infinispan::hotrod::RemoteCache<std::string, std::string>;
 
@@ -51,8 +92,6 @@ class RelayBytes {
 };
 
 %}
-
-
 
 // our mechanism for RemoteCache<byte[], byte[]> from the java side
 %template(RemoteCache_jb_jb) infinispan::hotrod::RemoteCache<RelayBytes, RelayBytes>;
@@ -194,3 +233,4 @@ SWIGEXPORT void JNICALL Java_org_infinispan_client_hotrod_jni_HotrodJNI2_readNat
 }
 
 %}
+

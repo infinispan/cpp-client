@@ -17,12 +17,11 @@
 # under the License.
 #
 
-# FindJava and FindJNI are primitive in cmake 2.6, mimic or go 2.8?
-# already done: find_package(Java)
+# FindJava and FindJNI are primitive in cmake 2.6
+find_package(Java)
 if (NOT JAVA_COMPILE)
     message(FATAL_ERROR "Java javac compiler not found")
 endif (NOT JAVA_COMPILE)
-message(STATUS "got runtime ${JAVA_RUNTIME}")
 
 find_package(JNI)
 if (NOT JNI_LIBRARIES)
@@ -41,6 +40,10 @@ SET(CMAKE_SWIG_OUTDIR ${CMAKE_CURRENT_BINARY_DIR}/src/org/infinispan/client/hotr
 message(STATUS "Using JNI libraries: ${JNI_LIBRARIES}" )
 
 SET_SOURCE_FILES_PROPERTIES(java.i PROPERTIES CPLUSPLUS ON)
+
+#add_library (
+#  /src/hotrod/api/Configuration.cpp
+#)
 
 swig_add_module(hotrod-swig java java.i)
 include_directories(${JNI_INCLUDE_DIRS})

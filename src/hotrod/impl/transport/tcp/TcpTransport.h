@@ -1,21 +1,27 @@
 #ifndef ISPN_HOTROD_TCPTRANSPORT_H
 #define ISPN_HOTROD_TCPTRANSPORT_H
 
+
+
 #include <sstream>
 
 #include "hotrod/impl/transport/AbstractTransport.h"
 
 #include "hotrod/sys/types.h"
-#include "hotrod/sys/Socket.h"
-#include "hotrod/impl/transport/tcp/InputStream.h"
+#include "hotrod/impl/transport/tcp/Socket.h"
+#include "hotrod/impl/transport/tcp/InetSocketAddress.h"
 
 namespace infinispan {
 namespace hotrod {
 namespace transport {
 
+class TransportFactory;
+
 class TcpTransport : public AbstractTransport
 {
   public:
+    TcpTransport(const InetSocketAddress& address, TransportFactory& factory);
+
     void flush();
     void writeByte(uint8_t uchar);
     void writeVInt(uint32_t uint);
@@ -27,13 +33,19 @@ class TcpTransport : public AbstractTransport
     uint64_t readVLong();
     void readBytes(hrbytes& bytes, uint32_t size);
 
+    void release();
+    void invalidate();
+    void destroy();
+
+    const InetSocketAddress& getServerAddress();
+
   private:
     TcpTransport();
-    HR_SHARED_PTR<sys::Socket> socket;
-    std::ostringstream out;
-    //HR_SHARED_PTR<char> in;
-    //char * in;
-    InputStream inStr;
+    Socket socket;
+    bool invalid;
+    const InetSocketAddress& serverAddress;
+
+    bool isValid();
 
   friend class TcpTransportFactory;
 };
