@@ -1,0 +1,54 @@
+# Compiled source #
+###################
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+*.cmake
+*.tcl
+*.cxx
+
+# Packages #
+############
+# it's better to unpack these files and commit the raw source
+# git has its own built in compression methods
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+# Logs and databases #
+######################
+*.log
+*.sql
+*.sqlite
+
+# OS generated files #
+######################
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+CMakeCache.txt
+Makefile
+simple
+.ant-targets-build.xml
+.cproject
+.project
+
+# Exclude Generated dirs #
+##########################
+jnitmp/
+Testing/
+CMakeFiles/
+test/swig/src
+test/src/

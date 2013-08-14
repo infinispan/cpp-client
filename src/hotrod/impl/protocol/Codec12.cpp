@@ -1,3 +1,5 @@
+
+
 #include "hotrod/impl/protocol/Codec12.h"
 #include "hotrod/impl/protocol/HotRodConstants.h"
 #include "hotrod/impl/protocol/HeaderParams.h"
@@ -26,17 +28,12 @@ HeaderParams& Codec12::writeHeader(
     Transport& transport, HeaderParams& params, uint8_t version) const
 {
     transport.writeByte(HotRodConstants::REQUEST_MAGIC);
+    // TODO : multithread management
     transport.writeVLong(params.setMessageId(++msgId).messageId);
     transport.writeByte(version);
     transport.writeByte(params.opCode);
     transport.writeArray(params.cacheName);
-    int32_t flagInt = 0;
-    for (std::set<Flag>::const_iterator iter=params.flags.begin();
-         iter!=params.flags.end(); ++iter)
-    {
-        flagInt |= *iter;
-    }
-    transport.writeVInt(flagInt);
+    transport.writeVInt(params.flags);
     transport.writeByte(params.clientIntel);
     transport.writeVInt(params.topologyId);
     transport.writeByte(params.txMarker);
@@ -80,8 +77,8 @@ uint8_t Codec12::readHeader(
     		checkForErrorsInResponseStatus(transport, params, status);
         }
         std::ostringstream message;
-        message << "Invalid response operation. Expected " <<
-            params.opRespCode << " and received " << receivedOpCode;
+        message << "Invalid response operation. Expected " << std::hex <<
+            (int) params.opRespCode << " and received " << std::hex << (int) receivedOpCode;
         throw InvalidResponseException(message.str());
     }
 

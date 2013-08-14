@@ -1,3 +1,5 @@
+
+
 #include "hotrod/sys/types.h"
 #include "hotrod/impl/operations/GetOperation.h"
 #include <cstring>
@@ -10,27 +12,17 @@ using infinispan::hotrod::protocol::Codec;
 using namespace infinispan::hotrod::transport;
 
 GetOperation::GetOperation(
-    const Codec&      codec_,
-    TransportFactory& transportFactory_,
-    const hrbytes&    key_,
-    const hrbytes&    cacheName_,
-    uint32_t          topologyId_,
-    const std::set<Flag>&    flags_)
+    const Codec& _codec, TransportFactory* _transportFactory, const hrbytes& _key,
+    const hrbytes& _cacheName, uint32_t _topologyId, uint32_t _flags)
     : AbstractKeyOperation<hrbytes>(
-        codec_, transportFactory_, key_, cacheName_, topologyId_, flags_)
+        _codec, _transportFactory, _key, _cacheName, _topologyId, _flags)
 {}
 
-hrbytes GetOperation::executeOperation(Transport* transport)
-{
+hrbytes GetOperation::executeOperation(Transport& transport) {
     hrbytes result;
-    uint8_t status = sendKeyOperation(key,
-        *transport, GET_REQUEST, GET_RESPONSE);
-    if (status == KEY_DOES_NOT_EXIST_STATUS) {
-        result.setSmart(0,0);
-    } else {
-        if (status == NO_ERROR_STATUS) {
-            result = transport->readArray();
-        }
+    uint8_t status = sendKeyOperation(key, transport, GET_REQUEST, GET_RESPONSE);
+    if (status == NO_ERROR_STATUS) {
+        result = transport.readArray();
     }
     return result;
 }

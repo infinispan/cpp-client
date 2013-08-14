@@ -1,25 +1,27 @@
+
+
 #include "hotrod/impl/protocol/HeaderParams.h"
 #include "hotrod/impl/protocol/HotRodConstants.h"
+
+#include <sstream>
 
 namespace infinispan {
 namespace hotrod {
 namespace protocol {
 
 
-HeaderParams& HeaderParams::setOpCode(uint8_t code)
-{
+HeaderParams& HeaderParams::setOpCode(uint8_t code) {
 	opCode = code;
     opRespCode = toOpRespCode(code);
     return *this;
 }
 
-HeaderParams& HeaderParams::setCacheName(const hrbytes& c)
-{
+HeaderParams& HeaderParams::setCacheName(const hrbytes& c) {
     cacheName = c;
     return *this;
 }
 
-HeaderParams& HeaderParams::setFlags(std::set<Flag> vec) {
+HeaderParams& HeaderParams::setFlags(uint32_t vec) {
     flags = vec;
     return *this;
 }
@@ -77,8 +79,9 @@ uint8_t HeaderParams::toOpRespCode(uint8_t code) {
     case HotRodConstants::BULK_GET_KEYS_REQUEST:
         return HotRodConstants::BULK_GET_KEYS_RESPONSE;
     default:
-    	// TODO
-        throw new HotRodClientException("Unknown operation code");
+    	std::ostringstream msg;
+    	msg << "Unknown operation code: " << opCode;
+        throw InternalException(msg.str());
     }
 }
 

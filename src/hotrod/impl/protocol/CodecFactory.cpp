@@ -1,6 +1,8 @@
+
+
 #include "hotrod/impl/protocol/CodecFactory.h"
 #include "hotrod/impl/protocol/Codec12.h"
-#include "infinispan/hotrod/Configuration.h"
+#include "hotrod/impl/configuration/Configuration.h"
 
 #include <iostream>
 
@@ -12,7 +14,7 @@ bool CodecFactory::initialized = false;
 std::map<std::string, Codec*> CodecFactory::codecMap;
 
 
-const Codec* CodecFactory::getCodec(const char* version) {
+Codec* CodecFactory::getCodec(const char* version) {
     if(!initialized) {
         codecMap[Configuration::PROTOCOL_VERSION_12] = new Codec12();
         initialized = true;

@@ -20,13 +20,16 @@ public class RemoteCacheImpl<K, V> implements RemoteCache<K, V> {
     private RemoteCache_str_str nativeStrCache;
 
     RemoteCacheImpl(RemoteCacheManager manager, String name) {
-	this.marshaller = manager.getMarshaller();
-	if (name.equals("native"))
-	    this.nativeStrCache = Hotrod.getStrStrCache(manager.getJniManager());
-	else
-	    this.jniRemoteCache = Hotrod.getJniRelayCache(manager.getJniManager());
+		this.marshaller = manager.getMarshaller();
+		if (name.equals("native")) {
+		    this.nativeStrCache = Hotrod.getStrStrCache(manager.getJniManager());
+		} else { 
+		    this.jniRemoteCache = Hotrod.getJniRelayCache(manager.getJniManager());
+		}
     }
-
+    
+    
+    
     public V put(K k, V v) {
 	if (nativeStrCache != null) {
 //	    nativeStrCache.put((String) k, (String) v);

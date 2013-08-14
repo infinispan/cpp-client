@@ -5,6 +5,7 @@
 #include <Ws2tcpip.h>
 
 #include <iostream>
+#include <sstream>
 
 namespace infinispan {
 namespace hotrod {
@@ -19,18 +20,20 @@ namespace windows {
 class Socket: public infinispan::hotrod::sys::Socket {
   public:
     Socket();
-    virtual void connect();
+    virtual void connect(const std::string& host, int port);
     virtual void close();
     virtual size_t read(char *p, size_t n);
     virtual void write(const char *p, size_t n);
   private:
     SOCKET fd;
+    std::string host;
+    int port;
     static bool started;
 };
 
 namespace {
 // TODO: centralized hotrod exceptions with file name and line number
-void throwIOErr (const char *msg, int errnum) {
+void throwIOErr (const std::string& host, int port, const char *msg, int errnum) {
     std::string m(msg);
     if (errno != 0) {
         char buf[200];
@@ -43,7 +46,7 @@ void throwIOErr (const char *msg, int errnum) {
             m += strerror(errnum);
         }
     }
-    throw TransportException(m);
+    throw TransportException(host, port, m);
 }
 
 } /* namespace */
@@ -57,25 +60,29 @@ Socket::Socket() : fd(INVALID_SOCKET) {
         WSADATA unused;
         int err = WSAStartup(wsa_ver, &unused);
         if (err)
-            throwIOErr("windows WSAStartup failed", err);
+            throwIOErr("", 0, "windows WSAStartup failed", err);
         started = true;
     }
 }
 
-void Socket::connect() {
-    if (fd != -1) throwIOErr("reconnect attempt", 0);
+void Socket::connect(const std::string& h, int p) {
+    host = h;
+    port = p;
+    if (fd != INVALID_SOCKET) throwIOErr(host, port, "reconnect attempt", 0);
     SOCKET sock = socket(AF_INET, SOCK_STREAM, getprotobyname("tcp")->p_proto);
-    if (sock == INVALID_SOCKET) throwIOErr("connect", errno);
+    if (sock == INVALID_SOCKET) throwIOErr(host, port,"connect", errno);
 
     struct addrinfo *addr;
-    int ec = getaddrinfo("127.0.0.1", "11222", NULL, &addr);
-    if (ec) throwIOErr("getaddrinfo", errno);
+    std::ostringstream ostr;
+    ostr << port;
+    int ec = getaddrinfo(host.c_str(), ostr.str().c_str(), NULL, &addr);
+    if (ec) throwIOErr(host, port, "getaddrinfo", WSAGetLastError());
 
     if (::connect(sock, addr->ai_addr, (int)addr->ai_addrlen) != 0) {
         int wsaerr =  WSAGetLastError();
         freeaddrinfo(addr);
         close();
-        throwIOErr("connect2", wsaerr);
+        throwIOErr(host, port,"connect2", wsaerr);
     }
 
     freeaddrinfo(addr);
@@ -91,7 +98,7 @@ size_t Socket::read(char *p, size_t length) {
     while(1) {
         ssize_t n =  recv(fd, p, (int) length, 0);
         if (n == SOCKET_ERROR)
-            throwIOErr("read", WSAGetLastError());
+            throwIOErr(host, port, "read", WSAGetLastError());
         else if (n == 0)
             return 0;
         else
@@ -101,11 +108,11 @@ size_t Socket::read(char *p, size_t length) {
 
 void Socket::write(const char *p, size_t length) {
     ssize_t n = send(fd, p, (int) length, 0);
-    if (n == SOCKET_ERROR) throwIOErr ("write", WSAGetLastError());
-    if ((size_t) n != length) throwIOErr ("write error incomplete", 0);
+    if (n == SOCKET_ERROR) throwIOErr (host, port, "write", WSAGetLastError());
+    if ((size_t) n != length) throwIOErr (host, port, "write error incomplete", 0);
 }
 
-} /* posix namespace */
+} /* windows namespace */
 
 
 Socket* Socket::create() {

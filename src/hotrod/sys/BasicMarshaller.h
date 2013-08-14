@@ -1,7 +1,9 @@
 #ifndef ISPN_HOTROD_BASICMARSHALLER_H
 #define ISPN_HOTROD_BASICMARSHALLER_H
 
+
 #include <string>
+#include <iostream>
 #include "infinispan/hotrod/Marshaller.h"
 
 namespace infinispan {
@@ -33,6 +35,27 @@ class BasicMarshaller<std::string> : public infinispan::hotrod::Marshaller<std::
     }
     std::string* unmarshall(const ScopedBuffer& b) {
         std::string* s = new std::string(b.getBytes(), b.getLength());
+        return s;
+    }
+};
+
+template <>
+class BasicMarshaller<int> : public infinispan::hotrod::Marshaller<int> {
+  public:
+    void marshall(const int& s, ScopedBuffer& b) {
+    	  char *buf = new char[4];
+    	  for (int i = 0 ; i < 4 ; i++) {
+    	    buf[3-i] = (char) ((s) >> (8*i));
+    	  }
+        b.set(buf, 4, &BasicMarshallerHelper::noRelease);
+    }
+    int* unmarshall(const ScopedBuffer& b) {
+    	int result = 0;
+    	  for (int i = 0; i < 4 ; i++) {
+    	    result <<= 4;
+    	    result ^= (int) *(b.getBytes()+i) & 0xFF;
+    	  }
+        int* s = new int(result);
         return s;
     }
 };

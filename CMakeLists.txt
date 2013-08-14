@@ -76,22 +76,38 @@ add_library (
   src/hotrod/api/RemoteCacheManager.cpp
   src/hotrod/api/RemoteCacheBase.cpp
   src/hotrod/api/exceptions.cpp
-  src/hotrod/api/Configuration.cpp
-  src/hotrod/configuration/ConfigurationBuilder.cpp
+  src/hotrod/impl/configuration/Configuration.cpp
+  src/hotrod/impl/configuration/ServerConfiguration.cpp
+  src/hotrod/impl/configuration/ConnectionPoolConfiguration.cpp
+  src/hotrod/impl/configuration/ServerConfigurationBuilder.cpp
+  src/hotrod/impl/configuration/ConfigurationBuilder.cpp
   src/hotrod/impl/RemoteCacheManagerImpl.cpp
   src/hotrod/impl/RemoteCacheImpl.cpp
   src/hotrod/impl/operations/OperationsFactory.cpp
   src/hotrod/impl/operations/PingOperation.cpp
   src/hotrod/impl/operations/GetOperation.cpp
   src/hotrod/impl/operations/PutOperation.cpp
+  src/hotrod/impl/operations/PutIfAbsentOperation.cpp
+  src/hotrod/impl/operations/ReplaceOperation.cpp
+  src/hotrod/impl/operations/RemoveOperation.cpp
+  src/hotrod/impl/operations/ContainsKeyOperation.cpp
+  src/hotrod/impl/operations/ReplaceIfUnmodifiedOperation.cpp
+  src/hotrod/impl/operations/RemoveIfUnmodifiedOperation.cpp
+  src/hotrod/impl/operations/GetWithMetadataOperation.cpp
+  src/hotrod/impl/operations/BulkGetOperation.cpp
+  src/hotrod/impl/operations/BulkGetKeysOperation.cpp
+  src/hotrod/impl/operations/StatsOperation.cpp
+  src/hotrod/impl/operations/ClearOperation.cpp
+  src/hotrod/impl/operations/FaultTolerantPingOperation.cpp
   src/hotrod/impl/protocol/HeaderParams.cpp
   src/hotrod/impl/protocol/Codec12.cpp
   src/hotrod/impl/protocol/CodecFactory.cpp
   src/hotrod/impl/transport/AbstractTransport.cpp
-  src/hotrod/impl/transport/TransportFactory.cpp
+  src/hotrod/impl/transport/tcp/Socket.cpp
   src/hotrod/impl/transport/tcp/TcpTransport.cpp
   src/hotrod/impl/transport/tcp/TcpTransportFactory.cpp
-  src/hotrod/impl/transport/tcp/InputStream.cpp
+  src/hotrod/impl/transport/tcp/TransportObjectFactory.cpp
+  src/hotrod/impl/transport/tcp/RoundRobinBalancingStrategy.cpp
   ${platform_sources}
   )
 target_link_libraries (hotrod ${platform_libs})

@@ -1,7 +1,10 @@
 #ifndef ISPN_HOTROD_EXCEPTIONS_H
 #define ISPN_HOTROD_EXCEPTIONS_H
 
+
+
 #include "infinispan/hotrod/ImportExport.h"
+#include "hotrod/impl/transport/tcp/InetSocketAddress.h"
 #include <exception>
 #include <string>
 
@@ -25,16 +28,32 @@ class HR_EXTERN Exception : public std::exception
 struct HR_EXTERN HotRodClientException : public Exception
 {
     HotRodClientException(const std::string&);
+    //virtual ~HotRodClientException() throw();
 };
 
-struct HR_EXTERN TransportException : public Exception
+struct HR_EXTERN TransportException : public HotRodClientException
 {
-    TransportException(const std::string&);
+    transport::InetSocketAddress serverAddress;
+    TransportException(const std::string& host, int port,
+    		const std::string&);
+    ~TransportException() throw();
+
+    const transport::InetSocketAddress& getServerAddress() const;
 };
 
-struct HR_EXTERN InvalidResponseException : public Exception
+struct HR_EXTERN InvalidResponseException : public HotRodClientException
 {
 	InvalidResponseException(const std::string&);
+};
+
+struct HR_EXTERN RemoteNodeSuspectException : public HotRodClientException
+{
+	RemoteNodeSuspectException(const std::string&);
+};
+
+struct HR_EXTERN InternalException : public HotRodClientException
+{
+	InternalException(const std::string&);
 };
 
 }} // namespace

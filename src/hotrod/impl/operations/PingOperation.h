@@ -1,6 +1,8 @@
 #ifndef ISPN_HOTROD_OPERATIONS_PINGOPERATION_H
 #define ISPN_HOTROD_OPERATIONS_PINGOPERATION_H
 
+
+
 #include "hotrod/impl/operations/HotRodOperation.h"
 
 namespace infinispan {
@@ -23,16 +25,22 @@ class PingOperation : public HotRodOperation<PingResult>
 {
   public:
     PingResult execute();
+    PingOperation(
+        const protocol::Codec& codec,
+        uint32_t topologyId,
+        transport::Transport& transport);
 
   private:
-    PingOperation(const infinispan::hotrod::protocol::Codec& codec,
-        	      uint32_t topologyId,
-                  infinispan::hotrod::transport::Transport& transport,
-                  hrbytes& cacheName);
+    PingOperation(
+        const protocol::Codec& codec,
+        uint32_t topologyId,
+        transport::Transport& transport,
+        const hrbytes& cacheName);
 
-    infinispan::hotrod::transport::Transport& transport;
+    transport::Transport& transport;
 
   friend class OperationsFactory;
+  friend class FaultTolerantPingOperation;
 };
 
 }}} // namespace infinispan::hotrod::operations

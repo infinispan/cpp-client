@@ -1,6 +1,8 @@
 #ifndef ISPN_HOTROD_SYS_TYPES_H
 #define ISPN_HOTROD_SYS_TYPES_H
 
+
+
 #include "infinispan/hotrod/types.h"
 #include "infinispan/hotrod/ScopedBuffer.h"
 
@@ -77,7 +79,7 @@ class hrbytes {
     };
 
     unsigned int length() { return len; }
-    char* bytes() { return dumbBytes ? dumbBytes : smartBytes.get(); }
+    char* bytes() const { return dumbBytes ? dumbBytes : smartBytes.get(); }
 
     hrbytes() : dumbBytes(0), len(0) {}
     hrbytes(char *b, unsigned int l) :  dumbBytes(b), len(l) {}
@@ -115,7 +117,7 @@ class hrbytes {
     static void delayedDelete (ScopedBuffer *buf) {
         delete[] buf->getBytes();
     }
-    void releaseTo(ScopedBuffer& buf) {
+    void releaseTo(ScopedBuffer& buf) const {
         // TODO: assert smartBytes.unique()
 	if (smartBytes) {
             buf.set(smartBytes.get(), len, &delayedDelete);
@@ -124,12 +126,30 @@ class hrbytes {
 	else 
 	    buf.set(dumbBytes, len);
     }
+
   private:
     mutable char* dumbBytes;
     unsigned int len;
     HR_SHARED_PTR<char> smartBytes;
 };
-    
-}}
+
+}} // namespace infinispan::hotrod
+
+
+namespace std {
+
+template<class T> struct less;
+
+template<> struct less<infinispan::hotrod::hrbytes>
+{
+    bool operator() (
+        const infinispan::hotrod::hrbytes& b1,
+        const infinispan::hotrod::hrbytes& b2) const
+    {
+        return b1.bytes() < b2.bytes();
+    }
+};
+
+} // namespace std
 
 #endif  /* ISPN_HOTROD_SYS_TYPES_H */

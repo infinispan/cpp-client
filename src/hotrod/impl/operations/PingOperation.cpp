@@ -1,3 +1,5 @@
+
+
 #include "hotrod/impl/operations/PingOperation.h"
 #include "hotrod/impl/protocol/HeaderParams.h"
 #include "hotrod/impl/transport/Transport.h"
@@ -11,8 +13,13 @@ using transport::Transport;
 namespace operations {
 
 PingOperation::PingOperation(const Codec& c, uint32_t id,
-		Transport& t, hrbytes& n)
-    : HotRodOperation<PingResult>(c, n, id), transport(t)
+		Transport& t, const hrbytes& n)
+    : HotRodOperation<PingResult>(c, 0, n, id), transport(t)
+{}
+
+PingOperation::PingOperation(const Codec& c, uint32_t id,
+		Transport& t)
+    : HotRodOperation<PingResult>(c, 0, hrbytes(), id), transport(t)
 {}
 
 PingResult PingOperation::execute() {

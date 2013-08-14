@@ -42,6 +42,10 @@ message(STATUS "Using JNI libraries: ${JNI_LIBRARIES}" )
 
 SET_SOURCE_FILES_PROPERTIES(java.i PROPERTIES CPLUSPLUS ON)
 
+#add_library (
+#  /src/hotrod/api/Configuration.cpp
+#)
+
 swig_add_module(hotrod-swig java java.i)
 include_directories(${JNI_INCLUDE_DIRS})
 swig_link_libraries(hotrod-swig hotrod)

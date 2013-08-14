@@ -1,3 +1,5 @@
+
+
 #include "infinispan/hotrod/exceptions.h"
 #include "hotrod/sys/Socket.h"
 
@@ -30,17 +32,19 @@ namespace posix {
 class Socket: public infinispan::hotrod::sys::Socket {
   public:
     Socket();
-    virtual void connect();
+    virtual void connect(const std::string& host, int port);
     virtual void close();
     virtual size_t read(char *p, size_t n);
     virtual void write(const char *p, size_t n);
   private:
     int fd;
+    std::string host;
+    int port;
 };
 
 namespace {
 // TODO: centralized hotrod exceptions file name + line number
-void throwIOErr (const char *msg, int errnum) {
+void throwIOErr (const std::string& host, int port, const char *msg, int errnum) {
     std::string m(msg);
     if (errno != 0) {
         char buf[200];
@@ -53,27 +57,31 @@ void throwIOErr (const char *msg, int errnum) {
             m += strerror(errnum);
         }
     }
-    throw TransportException(m);
+    throw TransportException(host, port, m);
 }
 
 } /* namespace */
 
 Socket::Socket() : fd(-1) {}
 
-void Socket::connect() {
-    if (fd != -1) throwIOErr("reconnect attempt", 0);
+void Socket::connect(const std::string& h, int p) {
+	host = h;
+	port = p;
+    if (fd != -1) throwIOErr(host, port, "reconnect attempt", 0);
     int sock = socket(AF_INET, SOCK_STREAM, getprotobyname("tcp")->p_proto);
-    if (sock == -1) throwIOErr("connect", errno);
+    if (sock == -1) throwIOErr(host, port,"connect", errno);
 
     struct addrinfo *addr;
-    int ec = getaddrinfo("127.0.0.1", "11222", NULL, &addr);
-    if (ec) throwIOErr("getaddrinfo", errno);
+    std::ostringstream ostr;
+    ostr << port;
+    int ec = getaddrinfo(host.c_str(), ostr.str().c_str(), NULL, &addr);
+    if (ec) throwIOErr(host, port,"getaddrinfo", errno);
 
     while (::connect(sock, addr->ai_addr, addr->ai_addrlen) == -1) {
         if (errno != EINPROGRESS) {
             freeaddrinfo(addr);
             close();
-            throwIOErr("connect2", errno);
+            throwIOErr(host, port,"connect2", errno);
         }
     }
 
@@ -90,7 +98,7 @@ size_t Socket::read(char *p, size_t length) {
     while(1) {
         ssize_t n =  recv(fd, p, length, 0);
         if (n < 0 && errno != EAGAIN)
-            throwIOErr("read", errno);
+            throwIOErr(host, port,"read", errno);
         else if (n == 0)
             return 0;
         else
@@ -100,8 +108,8 @@ size_t Socket::read(char *p, size_t length) {
 
 void Socket::write(const char *p, size_t length) {
     ssize_t n = send(fd, p, length, MSG_NOSIGNAL);
-    if (n == -1) throwIOErr ("write", errno);
-    if ((size_t) n != length) throwIOErr ("write error", 0);
+    if (n == -1) throwIOErr (host, port,"write", errno);
+    if ((size_t) n != length) throwIOErr (host, port,"write error", 0);
 }
 
 } /* posix namespace */

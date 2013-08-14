@@ -1,6 +1,8 @@
 #ifndef ISPN_HOTROD_PROTOCOL_CODEC12_H
 #define ISPN_HOTROD_PROTOCOL_CODEC12_H
 
+
+
 #include "hotrod/impl/protocol/Codec.h"
 
 namespace infinispan {
@@ -16,39 +18,39 @@ class HeaderParams;
 
 class Codec12 : public Codec
 {
-    public:
-        HeaderParams& writeHeader(
-            infinispan::hotrod::transport::Transport& transport,
-            HeaderParams& params) const;
+  public:
+    HeaderParams& writeHeader(
+        infinispan::hotrod::transport::Transport& transport,
+        HeaderParams& params) const;
 
-        uint8_t readHeader(
-            infinispan::hotrod::transport::Transport& transport,
-            const HeaderParams& params) const;
+    uint8_t readHeader(
+        infinispan::hotrod::transport::Transport& transport,
+        const HeaderParams& params) const;
 
-    protected:
-        HeaderParams& writeHeader(
-            infinispan::hotrod::transport::Transport& transport,
-            HeaderParams& params, uint8_t version) const;
+  protected:
+    HeaderParams& writeHeader(
+        infinispan::hotrod::transport::Transport& transport,
+        HeaderParams& params, uint8_t version) const;
 
-        void readNewTopologyIfPresent(
-            infinispan::hotrod::transport::Transport& transport,
-            const HeaderParams& params) const;
+    void readNewTopologyIfPresent(
+        infinispan::hotrod::transport::Transport& transport,
+        const HeaderParams& params) const;
 
-        void readNewTopologyAndHash(
-            infinispan::hotrod::transport::Transport& transport,
-            uint32_t topologyId) const;
+    void readNewTopologyAndHash(
+        infinispan::hotrod::transport::Transport& transport,
+        uint32_t topologyId) const;
 
-        void checkForErrorsInResponseStatus(
-            infinispan::hotrod::transport::Transport& transport,
-            const HeaderParams& params, uint8_t status) const;
+    void checkForErrorsInResponseStatus(
+        infinispan::hotrod::transport::Transport& transport,
+        const HeaderParams& params, uint8_t status) const;
 
-        // TODO : multithread management
-        static long msgId;
+    // TODO : multithread management
+    static long msgId;
 
-    private:
-        Codec12() {}
+  private:
+    Codec12() {}
 
-    friend class CodecFactory;
+  friend class CodecFactory;
 };
 
 }}} // namespace infinispan::hotrod::protocol

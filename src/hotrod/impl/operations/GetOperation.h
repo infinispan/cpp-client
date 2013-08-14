@@ -1,6 +1,8 @@
 #ifndef ISPN_HOTROD_OPERATIONS_GETOPERATION_H
 #define ISPN_HOTROD_OPERATIONS_GETOPERATION_H
 
+
+
 #include "infinispan/hotrod/types.h"
 #include "infinispan/hotrod/ScopedBuffer.h"
 #include "infinispan/hotrod/RemoteCacheBase.h"
@@ -12,18 +14,18 @@ namespace operations {
 
 class GetOperation : public AbstractKeyOperation<hrbytes>
 {
-    protected:
-        hrbytes executeOperation(
-            infinispan::hotrod::transport::Transport* transport);
+  protected:
+    hrbytes executeOperation(
+        infinispan::hotrod::transport::Transport& transport);
 
-    private:
-        GetOperation(
-            const infinispan::hotrod::protocol::Codec& codec,
-            infinispan::hotrod::transport::TransportFactory& transportFactory,
-            const hrbytes& key, const hrbytes& cacheName,
-            uint32_t topologyId, const std::set<Flag>& flags);
+  private:
+    GetOperation(
+        const infinispan::hotrod::protocol::Codec& codec,
+        infinispan::hotrod::transport::TransportFactory* transportFactory,
+        const hrbytes& key, const hrbytes& cacheName,
+        uint32_t topologyId, uint32_t flags);
 
-    friend class OperationsFactory;
+  friend class OperationsFactory;
 };
 
 }}} // namespace infinispan::hotrod::operations

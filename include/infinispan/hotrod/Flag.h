@@ -1,6 +1,8 @@
 #ifndef ISPN_HOTROD_FLAG_H
 #define ISPN_HOTROD_FLAG_H
 
+
+
 #include "infinispan/hotrod/types.h"
 
 namespace infinispan {
