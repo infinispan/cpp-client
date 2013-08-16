@@ -11,9 +11,22 @@ Build prerequisites:
   C++03 plus shared_ptr TR1 support.
   Infinispan server distribution (located via ISPN_HOME or cmake directive)
   Java (any version compatible with the Infinispan distribution)
-  python 2.6 or newer
+  Python 2.6 or newer
   
-optional: swig 
+optional: SWIG
+
+On Linux, use the package manager for your distribution to install the
+necessary packages.  You may have to point to a special repository,
+such as EPEL, to get CMake 2.8.
+
+On Windows, Visual Studio 2008 + SP1, or any newer version, is
+required.  You can obtain Windows installable distributions of other
+needed software from:
+
+  http://www.python.org/download/releases/
+  http://www.swig.org/download.html
+  http://www.cmake.org/cmake/resources/software.html
+  
 
 To build (where "srcdir" is the directory containg this README):
 
