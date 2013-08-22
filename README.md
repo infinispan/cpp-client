@@ -38,11 +38,12 @@ To build (where "srcdir" is the directory containg this README):
 
 ## Test with SWIG ##
 The Java swig module is experimental and tested on Linux only.
-Components needed to use swig tests: Apache Ant 1.8.x (http://ant.apache.org/), Apache Ivy 2.3.x (http://ant.apache.org/ivy/) and SWIG 2.0.x (http://www.swig.org/)
+Components needed to use swig tests: 
+Apache Ant 1.8.x (http://ant.apache.org/), Apache Ivy 2.3.x (http://ant.apache.org/ivy/) and SWIG 2.0.x (http://www.swig.org/)
 For building the JNI libraries and uncomment, in the top level CMakeLists.txt file, the line:
 
-  # add_subdirectory(test/swig)
-  build the project as described upward.
+  #add_subdirectory(test/swig)
+  build the project as described above.
   cd srcdir/test
   ant resolve
   cd srcdir
