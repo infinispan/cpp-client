@@ -9,27 +9,19 @@ const char* Configuration::PROTOCOL_VERSION_12 = "1.2";
 
 Configuration::Configuration(std::string protocolVersion,
         const ConnectionPoolConfiguration& cpc,
-        int connectionTimeout,
-        bool forceReturnValue,
-        int keySizeEstimate,
-        bool pingOnStartup,
+        int connTimeout,
+        bool forceReturnVal,
+        int kSizeEstimate,
+        bool pingOnStartupPar,
         std::vector<ServerConfiguration,std::allocator<ServerConfiguration> > serversConfiguration,
-        int socketTimeout,
-        SslConfiguration sslConfiguration,
-        bool tcpNoDelay,
-        int valueSizeEstimate) : connectionPoolConfiguration(cpc)
+        int socketTimeoutPar,
+        SslConfiguration sslConfig,
+        bool tcpNoDelayPar,
+        int vSizeEstimate) : protocolVersion(PROTOCOL_VERSION_12), connectionPoolConfiguration(cpc), connectionTimeout(connTimeout),
+            forceReturnValue(forceReturnVal), keySizeEstimate(kSizeEstimate), pingOnStartup(pingOnStartupPar), servers(serversConfiguration),
+            socketTimeout(socketTimeoutPar), sslConfiguration(sslConfig),tcpNoDelay(tcpNoDelayPar),valueSizeEstimate(vSizeEstimate)
 {
-  Configuration::protocolVersion = Configuration::PROTOCOL_VERSION_12;
-  //Configuration::connectionPoolConfiguration = connectionPoolConfiguration;
-  Configuration::connectionTimeout = connectionTimeout;
-  Configuration::forceReturnValue = forceReturnValue;
-  Configuration::keySizeEstimate = keySizeEstimate;
-  Configuration::pingOnStartup = pingOnStartup;
-  Configuration::servers = serversConfiguration;
-  Configuration::socketTimeout = socketTimeout;
-  Configuration::sslConfiguration = sslConfiguration;
-  Configuration::tcpNoDelay = tcpNoDelay;
-  Configuration::valueSizeEstimate = valueSizeEstimate;
+
 }
 
 const std::string& Configuration::getProtocolVersion() const
