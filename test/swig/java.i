@@ -5,6 +5,7 @@
 %include "various.i"
 %include "std_string.i"
 %include "std_map.i"
+%include "stdint.i"
 
 %{
 #include <hotrod/impl/configuration/ConnectionPoolConfiguration.h>
