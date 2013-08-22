@@ -1,0 +1,66 @@
+Hot Rod C++ client
+==================
+
+This client provides high performance access to an Infinispan cache
+via the Hot Rod wire protocol.
+
+See the README for supported platforms.
+
+The source is divided roughly as follows:
+
+  include, src/hotrod/api : the public interface
+  src/hotrod/impl: a close match (hopefully) of the Java 
+      client/hotrod/impl subdirectory
+  src/hotrod/sys: platform dependent code
+
+Another way of describing "sys" is to provide a means to write
+platform neutral code in the rest of the tree.  "Platform" can mean
+different operating systems, but can also refer to the evolutionary
+stage of the C++ compiler (depending on how much of C++11 is
+available).
+
+The "api" part should feel like a natural C++ use of Hot Rod, as
+opposed to Java shoehorned into a C++ syntax.
+
+
+Platform neutral code
+=====================
+
+By contrast, the "impl" subdirectory should relax C++ ideology to
+allow the code logic to resemble the naming and logic flow of the Java
+client as closely as possible without producing poorly performing or
+unmaintainable code. It would be nice if this code eschewed fancier
+C++ techniques so that it is approachable to programmers with limited
+C++ background, including Java Hot Rod developers, who may wish to
+review code, fix bugs, or roll up their sleeves and dive in.
+
+An important goal is to allow the logic to be shared between clients as
+bugs are fixed and new functionality is implemented.
+
+
+Platform specific code
+======================
+
+CMake is used to select which platform dependent code is to be used on each
+platform.  #ifdef statements are used sparingly, typically to allow
+the compiler to find include files or provide definitions.
+
+Code should be coded, in order of preference, as:
+
+  vanilla c++03
+  c++11 + c++03 workarounds
+  POSIX + Windows (+ other?) workarounds
+
+
+3rd party libraries
+===================
+
+3rd party libraries, such as Boost, are deliberately avoided even
+though they can offer useful functionality.  Because they are also
+popular with users, who may be relying on a different version of the
+software, it becomes very difficult to accommodate both the user and
+Hot Rod at the same time with a single version or concurrent versions
+that can run at the same time without interference.
+
+TBD: protocol buffers library, how to reconcile.
+
