@@ -29,12 +29,12 @@ javac -cp "jnitmp:$hr_xtra" -d jnitmp $sources || die javac failed for jni libra
 
 cp ./test/swig/libhotrod-jni.so jnitmp
 
-javac -cp "jnitmp/hotrod-jni.jar:$hr_xtra" -d jnitmp $hrsrc/test/Simple2.java || die javac failed for test program
+javac -cp "jnitmp/hotrod-jni.jar:$hr_xtra" -d jnitmp $hrsrc/test/JniTest.java || die javac failed for test program
 
 
 # These two identical except LD_LIBRARY_PATH and s/infinispan-client-hotrod.jar/hotrod-jni.jar/ 
 echo java -ea -cp "$hr_jar:$hr_xtra:." Simple2 >jnitmp/run_java.sh
-echo LD_LIBRARY_PATH=. java -ea -cp "hotrod-jni.jar:$hr_xtra:." Simple2 >jnitmp/run_jni.sh
+echo LD_LIBRARY_PATH=. java -ea -cp "hotrod-jni.jar:$hr_xtra:." JniTest >jnitmp/run_jni.sh
 
 chmod u+x ./jnitmp/run_j*
 
