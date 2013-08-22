@@ -36,10 +36,17 @@ To build (where "srcdir" is the directory containg this README):
   make (Posix) | Visual Studio Build (Windows)
   ctest [-V]
 
-
-The Java swig module is experimental.  See sandbox/mkjar.sh for
-building the JNI libraries and uncomment the line:
+## Test with SWIG ##
+The Java swig module is experimental and tested on Linux only.
+Components needed to use swig tests: Apache Ant 1.8.x (http://ant.apache.org/), Apache Ivy 2.3.x (http://ant.apache.org/ivy/) and SWIG 2.0.x (http://www.swig.org/)
+For building the JNI libraries and uncomment, in the top level CMakeLists.txt file, the line:
 
   # add_subdirectory(test/swig)
+  build the project as described upward.
+  cd srcdir/test
+  ant resolve
+  cd srcdir
+  ./sandbox/mkjar.sh
 
-in the top level CMakeLists.txt file.
+Use the run_jni.sh script in srcdir/jnitmp to run jni tests.
+

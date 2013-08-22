@@ -157,4 +157,4 @@ add_test (simple simple)
 add_test (stop_server python ${CMAKE_CURRENT_SOURCE_DIR}/test/server_ctl.py stop)
 
 # Coming soon...
-add_subdirectory(test/swig)
+#add_subdirectory(test/swig)
