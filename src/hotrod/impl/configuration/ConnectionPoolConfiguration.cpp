@@ -10,33 +10,23 @@
 namespace infinispan {
 namespace hotrod {
 
-ConnectionPoolConfiguration::ConnectionPoolConfiguration(ExhaustedAction exhaustedAction,
-        bool lifo,
-        int maxActive,
-        int maxTotal,
-        long maxWait,
-        int maxIdle,
-        int minIdle,
-        int numTestsPerEvictionRun,
-        int timeBetweenEvictionRuns,
-        int minEvictableIdleTime,
-        bool testOnBorrow,
-        bool testOnReturn,
-        bool testWhileIdle)
+ConnectionPoolConfiguration::ConnectionPoolConfiguration(ExhaustedAction exAction,
+        bool lifoPar,
+        int maxActivePar,
+        int maxTotalPar,
+        long maxWaitPar,
+        int maxIdlePar,
+        int minIdlePar,
+        int numTestsPerEvictionRunPar,
+        int timeBetweenEvictionRunsPar,
+        int minEvictableIdleTimePar,
+        bool testOnBorrowPar,
+        bool testOnReturnPar,
+        bool testWhileIdlePar) : exhaustedAction(exAction), lifo(lifoPar), maxActive(maxActivePar), maxTotal(maxTotalPar), maxWait(maxWaitPar),
+            maxIdle(maxIdlePar), minIdle(minIdlePar), numTestsPerEvictionRun(numTestsPerEvictionRunPar), timeBetweenEvictionRuns(timeBetweenEvictionRunsPar),
+            minEvictableIdleTime(minEvictableIdleTimePar), testOnBorrow(testOnBorrowPar), testOnReturn(testOnReturnPar), testWhileIdle(testWhileIdlePar)
 {
-  ConnectionPoolConfiguration::exhaustedAction = exhaustedAction;
-  ConnectionPoolConfiguration::lifo = lifo;
-  ConnectionPoolConfiguration::maxActive = maxActive;
-  ConnectionPoolConfiguration::maxTotal = maxTotal;
-  ConnectionPoolConfiguration::maxWait = maxWait;
-  ConnectionPoolConfiguration::maxIdle = maxIdle;
-  ConnectionPoolConfiguration::minIdle = minIdle;
-  ConnectionPoolConfiguration::numTestsPerEvictionRun = numTestsPerEvictionRun;
-  ConnectionPoolConfiguration::timeBetweenEvictionRuns = timeBetweenEvictionRuns;
-  ConnectionPoolConfiguration::minEvictableIdleTime = minEvictableIdleTime;
-  ConnectionPoolConfiguration::testOnBorrow = testOnBorrow;
-  ConnectionPoolConfiguration::testOnReturn = testOnReturn;
-  ConnectionPoolConfiguration::testWhileIdle = testWhileIdle;
+
 }
 
 const ExhaustedAction& ConnectionPoolConfiguration::getExhaustedAction() const

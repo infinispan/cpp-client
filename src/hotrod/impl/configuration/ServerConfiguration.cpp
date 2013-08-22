@@ -9,11 +9,10 @@
 namespace infinispan {
 namespace hotrod {
 
-ServerConfiguration::ServerConfiguration(std::string host,
-        int port)
+ServerConfiguration::ServerConfiguration(std::string hostPar,
+        int portPar) : host(hostPar), port(portPar)
 {
-  ServerConfiguration::host = host;
-  ServerConfiguration::port = port;
+
 }
 
 const std::string& ServerConfiguration::getHost() const
