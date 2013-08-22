@@ -6,7 +6,6 @@
 %include "std_string.i"
 %include "std_map.i"
 
-
 %{
 #include <hotrod/impl/configuration/ConnectionPoolConfiguration.h>
 #include <hotrod/impl/configuration/ServerConfiguration.h>
@@ -26,17 +25,18 @@
 %}
 
 //I want use java.util.Map, not obscure SWIG types
-%typemap(jstype) std::map<std::string, std::string> "java.util.Map<String,String>"
-%typemap(javain,pre="    MapType temp$javainput = $javaclassname.convertMap($javainput);",pgcppname="temp$javainput") std::map<std::string, std::string> "$javaclassname.getCPtr(temp$javainput)"
-%typemap(javacode) std::map<std::string, std::string> %{
-  static $javaclassname convertMap(java.util.Map<String,String> in) {
-    $javaclassname out = new $javaclassname();
-    for (java.util.Map.Entry<String, String> entry : in.entrySet()) {
-      out.set(entry.getKey(), entry.getValue());      
-    }
-    return out;
-  }    
-%}
+//%typemap(jstype) std::map<std::string, std::string> "java.util.Map<String,String>"
+//%typemap(javain,pre="    MapType temp$javainput = $javaclassname.convertMap($javainput);",pgcppname="temp$javainput") std::map<std::string, std::string> "$javaclassname.getCPtr(temp$javainput)"
+//%typemap(javaout,pre="   MapType temp$javainput = $javaclassname.convertMap($javainput);",pgcppname="temp$javainput") std::map<std::string, std::string> "$javaclassname.getCPtr(temp$javainput)"
+//%typemap(javacode) std::map<std::string, std::string> %{
+//  static $javaclassname convertMap(java.util.Map<String,String> in) {
+//    $javaclassname out = new $javaclassname();
+//    for (java.util.Map.Entry<String, String> entry : in.entrySet()) {
+//      out.set(entry.getKey(), entry.getValue());      
+//    }
+//    return out;
+//  }    
+//%}
 
 %template(MapType) std::map<std::string, std::string>;
 
@@ -126,9 +126,10 @@ class RelayMarshaller: public infinispan::hotrod::Marshaller<RelayBytes> {
 
 %}
 
-
 infinispan::hotrod::RemoteCache<RelayBytes, RelayBytes>* getJniRelayCache(infinispan::hotrod::RemoteCacheManager& mgr);
 infinispan::hotrod::RemoteCache<std::string, std::string>* getStrStrCache(infinispan::hotrod::RemoteCacheManager& mgr);
+infinispan::hotrod::RemoteCache<RelayBytes, RelayBytes>* getJniRelayNamedCache(infinispan::hotrod::RemoteCacheManager& mgr, std::string name);
+infinispan::hotrod::RemoteCache<std::string, std::string>* getStrStrNamedCache(infinispan::hotrod::RemoteCacheManager& mgr, std::string name);
 
 %{
 using infinispan::hotrod::Marshaller;
@@ -138,16 +139,24 @@ using infinispan::hotrod::RemoteCacheManager;
 // Allow a heap allocated instance of RemoteCache<RelayBytes,RelayBytes> 
 // for JNI purposes
 
+
 class RelayCacheBlob {
   public:
      RelayCacheBlob(RemoteCacheManager &m) : 
        keyMarshaller(new RelayMarshaller()),
        valueMarshaller(new RelayMarshaller()),
        cache(m.getCache<RelayBytes, RelayBytes>(keyMarshaller, valueMarshaller)) {}
+       
+     RelayCacheBlob(RemoteCacheManager &m, std::string &name) : 
+       keyMarshaller(new RelayMarshaller()),
+       valueMarshaller(new RelayMarshaller()),
+       cache(m.getCache<RelayBytes, RelayBytes>(keyMarshaller, valueMarshaller, name)) {}
 
      RemoteCache<RelayBytes, RelayBytes> *getCache() {
 	 return &cache;
      }
+     
+     
 
   private:
      HR_SHARED_PTR<Marshaller<RelayBytes> > keyMarshaller;
@@ -161,11 +170,19 @@ RemoteCache<RelayBytes, RelayBytes>* getJniRelayCache(RemoteCacheManager& mgr) {
     return p->getCache();
 }
 
+RemoteCache<RelayBytes, RelayBytes>* getJniRelayNamedCache(RemoteCacheManager& mgr, std::string name) {
+    RelayCacheBlob *p = new RelayCacheBlob(mgr, name); // leak (test only): TODO: blob cleanup
+    return p->getCache();
+}
+
 
 class StrCacheBlob {
   public:
      StrCacheBlob(RemoteCacheManager &m) : 
        cache(m.getCache<std::string, std::string>()) {}
+     
+     StrCacheBlob(RemoteCacheManager &m, std::string &name) : 
+       cache(m.getCache<std::string, std::string>(name)) {}
 
      RemoteCache<std::string, std::string> *getCache() {
 	 return &cache;
@@ -178,6 +195,11 @@ class StrCacheBlob {
 
 RemoteCache<std::string, std::string>* getStrStrCache(RemoteCacheManager& mgr) {
     StrCacheBlob *p = new StrCacheBlob(mgr); // leak (test only): TODO: blob cleanup
+    return p->getCache();
+}
+
+RemoteCache<std::string, std::string>* getStrStrNamedCache(RemoteCacheManager& mgr, std::string name) {
+    StrCacheBlob *p = new StrCacheBlob(mgr, name); // leak (test only): TODO: blob cleanup
     return p->getCache();
 }
 
@@ -233,4 +255,3 @@ SWIGEXPORT void JNICALL Java_org_infinispan_client_hotrod_jni_HotrodJNI2_readNat
 }
 
 %}
-

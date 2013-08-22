@@ -17,7 +17,7 @@ import static org.infinispan.server.hotrod.test.HotRodTestingUtil.hotRodCacheCon
 import static org.infinispan.test.TestingUtil.*;
 import static org.infinispan.client.hotrod.test.HotRodClientTestingUtil.*;
 
-public class Simple2 {
+public class JniTest {
 	
 	private static final String CACHE_NAME = "someName";
 	protected static EmbeddedCacheManager cacheManager = null;
@@ -32,21 +32,12 @@ public class Simple2 {
 
 	try {
 		System.out.println("Java + JNI Hot Rod Client");
-		//starting the server and creating the cache managers - not for now, we need configuration before
-	    //createCacheManager();
-		
-		
 		
 	    //first test, the cache container test
 		System.out.println("=== Cache container test ====");
 		CacheContainerTest cacheContainerTest = new CacheContainerTest();
 		//invoking cacheContainerTest.createCacheManager();
 	    Method createCacheManager = cacheContainerTest.getClass().getSuperclass().getDeclaredMethod("createCacheManager");
-	    if(createCacheManager == null) {
-	    	System.out.println("Method is null");
-	    } else {
-	    	System.out.println("Method is NOT null");
-	    }
 	    createCacheManager.setAccessible(true);
 	    createCacheManager.invoke(cacheContainerTest);
 	    
@@ -65,69 +56,42 @@ public class Simple2 {
 	    //invoking methods in the right order
 	    //hrIntcreateCacheManager.invoke(hotRodIntegrationTest);
 	    setup.invoke(hotRodIntegrationTest);
-	    //hotRodIntegrationTest.testContains();
+	    System.out.println("=== Hot Rod integration test - test contains ====");
+	    hotRodIntegrationTest.testContains();
+	    System.out.println("=== Hot Rod integration test - test contains PASSED ====");
+	    System.out.println("=== Hot Rod integration test - test Put ====");
 	    hotRodIntegrationTest.testPut();
+	    System.out.println("=== Hot Rod integration test - test Put PASSED ====");
+	    System.out.println("=== Hot Rod integration test - test Remove ====");
+	    hotRodIntegrationTest.testRemove();
+	    System.out.println("=== Hot Rod integration test - test Remove PASSED ====");
+	    System.out.println("=== Hot Rod integration test - test Replace ====");
+	    hotRodIntegrationTest.testReplace();
+	    System.out.println("=== Hot Rod integration test - test Replace PASSED ====");
+	    System.out.println("=== Hot Rod integration test - test PutIfAbsent ====");
+	    hotRodIntegrationTest.testPutIfAbsent();
+	    System.out.println("=== Hot Rod integration test - test PutIfAbsent PASSED ====");
+	    
+	    //TODO: testClear need investigations, it fails in the same manner than java
+	    //Exception in thread "main" java.lang.AssertionError
+		//at org.infinispan.client.hotrod.HotRodIntegrationTest.testClear(HotRodIntegrationTest.java:293)
+		//at Simple2.main(Simple2.java:80)
+	    ///////////
+	    /*System.out.println("=== Hot Rod integration test - test Clear ====");
+	    hotRodIntegrationTest.testClear();
+	    System.out.println("=== Hot Rod integration test - test Clear PASSED ====");*/
+	    
 	    hotRodIntegrationTest.testDestroyRemoteCacheFactory();
 	    
 	    System.out.println("=== Hot Rod integration test ==== PASSED");
 	    
-	    
-	    
-	    
-	    /* RemoteCache<String, String> ncache = remCacheManager.getNativeCache();
-	    // method only exists on JNI version
-	    usingJNI = true;
-	    
-	    System.out.println("C++ marshaller test (string only)");
-	    ncache.put("car", "ferrari");
-	    assert ncache.get("car").equals("ferrari");
-	    System.out.println("=== Marshaller test === PAASED");*/
-	    
 	} catch (java.lang.NoSuchMethodError e) {
 	    System.out.println("Test Error");
 	    e.printStackTrace();
-	    //killing the servers and the cache managers - - not for now, we need configuration before
-	    //release();
 	} catch (Exception e) {
 		System.out.println("Test Error");
 		e.printStackTrace();
-	    //killing the servers and the cache managers - not for now, we need configuration before
-	    //release();
-	} finally {
-		//release();
 	}
-	
-	/*System.out.println("Java marshaller test");
-        System.out.println("testing String/String");
-	RemoteCache<String, String> cache = remCacheManager.getCache();
-	cache.put("car", "ferrari");
-	assert cache.get("car").equals("ferrari");
-	System.out.println("pass");
-
-        System.out.println("testing String/Double");
-	RemoteCache<String, Double> cache2 = remCacheManager.getCache();
-	Double double0 = new Double(12.98);
-	cache2.put("dtest", double0);
-	assert double0.equals(cache2.get("dtest"));
-	System.out.println("pass");
-
-        System.out.println("done");
-      //killing the servers and the cache managers
-      //release(); */
-    }
     
-    /*protected static void createCacheManager() throws Exception {
-    	  cacheManager = TestCacheManagerFactory.createCacheManager(
-                hotRodCacheConfiguration());
-          cacheManager.defineConfiguration(CACHE_NAME, hotRodCacheConfiguration().build());
-          hotrodServer = TestHelper.startHotRodServer(cacheManager);
-          remCacheManager = new RemoteCacheManager("localhost:" + hotrodServer.getPort(), true);
-     }
-    
-    public static void release() {
-        killCacheManagers(cacheManager);
-        killRemoteCacheManager(remCacheManager);
-        killServers(hotrodServer);
-     }*/
-    
+}
 }
