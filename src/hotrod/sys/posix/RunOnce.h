@@ -17,7 +17,10 @@ class RunOnce {
     void (*init_routine)(void);
 
 public:
-    inline RunOnce(void(*fn)()) : init_routine(fn) { once_control = PTHREAD_ONCE_INIT; }
+    inline RunOnce(void(*fn)()) : init_routine(fn) {
+        static const pthread_once_t pthread_once_init = PTHREAD_ONCE_INIT;
+        once_control = pthread_once_init;
+    }
     inline void runOnce();
 
 private:
