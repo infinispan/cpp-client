@@ -61,7 +61,7 @@ if(WIN32 AND NOT CYGWIN)
   set (HOTROD_WINAPI TRUE)
   set (platform_libs ws2_32 Rpcrt4)
 else (WIN32 AND NOT CYGWIN)
-  set (platform_libs pthread)
+  set (platform_libs pthread rt)
 endif(WIN32 AND NOT CYGWIN)
 
 # Select driver
@@ -70,7 +70,7 @@ if(HOTROD_WINAPI)
            src/hotrod/sys/windows/platform.cpp)
 else(HOTROD_WINAPI)
   set (platform_sources src/hotrod/sys/posix/Socket.cpp src/hotrod/sys/posix/Thread.cpp
-           src/hotrod/sys/posix/platform.cpp)
+           src/hotrod/sys/posix/platform.cpp src/hotrod/sys/posix/Mutex.cpp)
 endif(HOTROD_WINAPI)
 
 
