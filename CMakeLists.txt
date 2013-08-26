@@ -46,6 +46,12 @@ if (CMAKE_COMPILER_IS_GNUCXX)
         "-pedantic -Wall -Wextra -Wno-shadow -Wpointer-arith -Wcast-qual -Wcast-align -Wno-long-long -Wvolatile-register-var -Winvalid-pch -Wno-system-headers -Woverloaded-virtual -Wshadow -Wl,--no-undefined")
 endif (CMAKE_COMPILER_IS_GNUCXX)
 
+if (APPLE)
+	set (COMPILER_FLAGS "-fvisibility=hidden -fvisibility-inlines-hidden")
+	# -Wl,--no-undefined switches not tolerated well on OSX
+	set (WARNING_FLAGS "-pedantic -Wall -Wextra -Wno-shadow -Wpointer-arith -Wcast-qual -Wcast-align -Wno-long-long -Wvolatile-register-var -Winvalid-pch -Wno-system-headers -Woverloaded-virtual -Wshadow")
+endif(APPLE)
+
 if (MSVC)
    set (COMPILER_FLAGS "")
    set (WARNING_FLAGS "")
@@ -60,6 +66,9 @@ if(WIN32 AND NOT CYGWIN)
   # linking against Windows native libraries, including mingw
   set (HOTROD_WINAPI TRUE)
   set (platform_libs ws2_32 Rpcrt4)
+elseif (APPLE)
+  # OSX does not need rt
+  set (platform_libs pthread)
 else (WIN32 AND NOT CYGWIN)
   set (platform_libs pthread rt)
 endif(WIN32 AND NOT CYGWIN)
