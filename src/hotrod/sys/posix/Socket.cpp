@@ -19,6 +19,9 @@
 #include <istream>
 #include <sstream>
 
+//For OSX portability
+int sendFlag = 0;
+
 namespace infinispan {
 namespace hotrod {
 namespace sys {
@@ -71,6 +74,18 @@ void Socket::connect(const std::string& h, int p) {
     int sock = socket(AF_INET, SOCK_STREAM, getprotobyname("tcp")->p_proto);
     if (sock == -1) throwIOErr(host, port,"connect", errno);
 
+    //OSX portability as MSG_NOSIGNAL is not defined on OSX
+    #ifdef MSG_NOSIGNAL
+        sendFlag = MSG_NOSIGNAL;
+    #else
+        sendFlag = 0;
+        int optval = 1;
+        if (setsockopt(sock, SOL_SOCKET, SO_NOSIGPIPE, &optval, sizeof(optval)) == -1) {
+        	    close();
+        	    throwIOErr(host, port, "setsockopt", errno);
+        }
+    #endif
+
     struct addrinfo *addr;
     std::ostringstream ostr;
     ostr << port;
@@ -107,7 +122,7 @@ size_t Socket::read(char *p, size_t length) {
 }
 
 void Socket::write(const char *p, size_t length) {
-    ssize_t n = send(fd, p, length, MSG_NOSIGNAL);
+    ssize_t n = send(fd, p, length, sendFlag);
     if (n == -1) throwIOErr (host, port,"write", errno);
     if ((size_t) n != length) throwIOErr (host, port,"write error", 0);
 }
