@@ -2,6 +2,7 @@
 #include <hotrod/sys/Thread.h>
 #include <hotrod/sys/Mutex.h>
 #include <hotrod/sys/Condition.h>
+#include <hotrod/sys/RunOnce.h>
 
 #include <iostream>
 #include <string>
@@ -142,8 +143,64 @@ void syncTest() {
     return;
 }
 
+
+int testInitStatus = 0;
+int testInitRunning = 0;
+Mutex testInitMutex;
+
+void testInitFunc() {
+    {
+        ScopedLock<Mutex> l(testInitMutex);
+        if (testInitStatus || testInitRunning)
+            passFail = 1;
+        testInitRunning = 1;
+    }
+    Thread::sleep(1000);
+    {
+        ScopedLock<Mutex> l(testInitMutex);
+        testInitStatus++;
+        testInitRunning = 0;
+    }
+    
+}
+
+RunOnce testInitializer(&testInitFunc);
+
+class UseTestInit : public Runnable {
+  public:
+    UseTestInit(std::string name) : me(name) {}
+    void run() {
+        std::cout << me << " starting" << std::endl;
+        testInitializer.runOnce();
+        // no thread should see 0 or >1
+        if (testInitStatus != 1) passFail = 1;
+        std::cout << me << " done" << std::endl;
+    }
+  private:
+    std::string me;
+};
+
+void runOnceTest() {
+    std::cout << "starting once test" << std::endl;
+    UseTestInit r1("run once worker 1");
+    UseTestInit r2("run once worker 2");
+    Thread t1((Runnable &) r1);
+    Thread t2((Runnable &) r2);
+    t1.join();
+    t2.join();
+    if (testInitStatus != 1) passFail = 1;
+    if (passFail == 1)
+        std::cerr << "RunOnce test failed " << testInitStatus << std::endl;
+    else
+        std::cout << "RunOnce test passed" << std::endl;
+    return;
+}
+
+
+
 int main(int, char**) {
     threadTest();
     syncTest();
+    runOnceTest();
     return passFail;
 }
