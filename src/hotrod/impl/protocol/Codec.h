@@ -23,7 +23,7 @@ class Codec
       transport::Transport& transport, HeaderParams& params) const = 0;
 
     virtual uint8_t readHeader(
-      transport::Transport& transport, const HeaderParams& params) const = 0;
+      transport::Transport& transport, HeaderParams& params) const = 0;
 
     virtual ~Codec() {}
 };

@@ -11,6 +11,10 @@ AbstractTransport::AbstractTransport(TransportFactory& tf) :
     transportFactory(tf)
 {}
 
+TransportFactory& AbstractTransport::getTransportFactory(){
+    return transportFactory;
+}
+
 void AbstractTransport::writeArray(const hrbytes& bytes)
 {
   hrbytes& not_const_bytes = const_cast<hrbytes&>(bytes);

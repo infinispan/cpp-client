@@ -4,6 +4,9 @@
 
 
 #include "hotrod/impl/transport/Transport.h"
+#include <vector>
+#include <set>
+#include <map>
 
 namespace infinispan {
 namespace hotrod {
@@ -38,6 +41,7 @@ class TransportFactory
     virtual int getSoTimeout() = 0;
     virtual int getConnectTimeout() = 0;
 
+    virtual void updateServers(std::vector<InetSocketAddress>& ) = 0;
     virtual ~TransportFactory() {}
 
     // TODO: consistent hash

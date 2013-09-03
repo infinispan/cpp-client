@@ -8,12 +8,14 @@
 #include "hotrod/impl/transport/tcp/RequestBalancingStrategy.h"
 #include "hotrod/impl/protocol/Codec.h"
 #include "hotrod/impl/configuration/Configuration.h"
-
+#include <algorithm>
 
 namespace infinispan {
 namespace hotrod {
 
 using protocol::Codec;
+using infinispan::hotrod::sys::ScopedLock;
+using infinispan::hotrod::sys::Mutex;
 
 namespace transport {
 
@@ -155,6 +157,49 @@ Transport& TcpTransportFactory::borrowTransportFromPool(
 {
     // TODO
     return connectionPool->borrowObject(server);
+}
+
+void TcpTransportFactory::updateServers(std::vector<InetSocketAddress>& newServers) {
+
+    ScopedLock<Mutex> l(lock);
+    std::vector<InetSocketAddress> addedServers;
+    std::sort(newServers.begin(), newServers.end());
+    std::sort(servers.begin(), servers.end());
+
+    std::set_difference(newServers.begin(), newServers.end(), servers.begin(),
+            servers.end(), std::inserter(addedServers, addedServers.end()));
+
+    std::vector<InetSocketAddress> failedServers;
+    std::sort(newServers.begin(), newServers.end());
+    std::sort(servers.begin(), servers.end());
+
+    std::set_difference(servers.begin(), servers.end(), newServers.begin(),
+            newServers.end(), std::inserter(failedServers, failedServers.end()));
+
+    if (failedServers.empty() && newServers.empty()) {
+        return;
+    }
+
+    //1. first add new servers. For servers that went down, the returned transport will fail for now
+    for (std::vector<InetSocketAddress>::const_iterator it =
+            addedServers.begin(); it != addedServers.end(); ++it) {
+        connectionPool->addObject(*it);
+    }
+
+    //2. now set the server list to the active list of servers. All the active servers (potentially together with some
+    // failed servers) are in the pool now. But after this, the pool won't be asked for connections to failed servers,
+    // as the balancer will only know about the active servers
+    balancer->setServers(newServers);
+
+    //3. Now just remove failed servers
+    for (std::vector<InetSocketAddress>::const_iterator it =
+            failedServers.begin(); it != failedServers.end(); ++it) {
+        connectionPool->clear(*it);
+    }
+
+    servers.clear();
+    servers = newServers;
+    updateTransportCount();
 }
 
 }}} // namespace infinispan::hotrod::transport
