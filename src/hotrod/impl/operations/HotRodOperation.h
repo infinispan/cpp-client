@@ -41,7 +41,7 @@ template<class T> class HotRodOperation : public protocol::HotRodConstants
 
     uint8_t readHeaderAndValidate(
         transport::Transport& transport,
-        const protocol::HeaderParams& params)
+        protocol::HeaderParams& params)
     {
         return codec.readHeader(transport, params);
     }

@@ -10,6 +10,8 @@ namespace infinispan {
 namespace hotrod {
 namespace transport {
 
+class TransportFactory;
+
 class Transport
 {
   public:
@@ -33,6 +35,8 @@ class Transport
 
     virtual void release() = 0;
     virtual void invalidate() = 0;
+
+    virtual TransportFactory& getTransportFactory() = 0;
 
     virtual ~Transport() {}
 };

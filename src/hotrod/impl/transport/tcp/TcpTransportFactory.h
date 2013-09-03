@@ -6,6 +6,7 @@
 #include "hotrod/impl/transport/Transport.h"
 #include "hotrod/impl/transport/TransportFactory.h"
 #include "hotrod/impl/transport/tcp/TcpTransport.h"
+#include "hotrod/sys/Mutex.h"
 
 #include <vector>
 
@@ -36,7 +37,14 @@ class TcpTransportFactory : public TransportFactory
     int getSoTimeout();
     int getConnectTimeout();
 
+    void updateServers(std::vector<InetSocketAddress>& );
+
   private:
+
+    /**
+     * We need mutex lock to atomically update fields of this class
+     */
+    infinispan::hotrod::sys::Mutex lock;
     std::vector<InetSocketAddress> servers;
     bool tcpNoDelay;
     int soTimeout;

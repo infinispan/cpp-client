@@ -4,14 +4,21 @@
 #include "hotrod/impl/protocol/HotRodConstants.h"
 #include "hotrod/impl/protocol/HeaderParams.h"
 #include "hotrod/impl/transport/Transport.h"
+#include "hotrod/impl/transport/TransportFactory.h"
+#include "hotrod/impl/transport/tcp/InetSocketAddress.h"
 
 #include <iostream>
 #include <sstream>
+#include <set>
+#include <map>
+#include <vector>
 
 namespace infinispan {
 namespace hotrod {
 
 using transport::Transport;
+using transport::InetSocketAddress;
+using transport::TransportFactory;
 
 namespace protocol {
 
@@ -41,7 +48,7 @@ HeaderParams& Codec12::writeHeader(
 }
 
 uint8_t Codec12::readHeader(
-    Transport& transport, const HeaderParams& params) const
+    Transport& transport, HeaderParams& params) const
 {
     uint8_t magic = transport.readByte();
     if (magic != HotRodConstants::RESPONSE_MAGIC) {
@@ -73,8 +80,8 @@ uint8_t Codec12::readHeader(
     // This avoids situations where an exceptional return ends up with
     // the socket containing data from previous request responses.
     if (receivedOpCode != params.opRespCode) {
-    	if (receivedOpCode == HotRodConstants::ERROR_RESPONSE) {
-    		checkForErrorsInResponseStatus(transport, params, status);
+      if (receivedOpCode == HotRodConstants::ERROR_RESPONSE) {
+        checkForErrorsInResponseStatus(transport, params, status);
         }
         std::ostringstream message;
         message << "Invalid response operation. Expected " << std::hex <<
@@ -86,22 +93,67 @@ uint8_t Codec12::readHeader(
 }
 
 void Codec12::readNewTopologyIfPresent(
-    Transport& transport, const HeaderParams& params) const
+    Transport& transport, HeaderParams& params) const
 {
     uint8_t topologyChangeByte = transport.readByte();
     if (topologyChangeByte == 1)
         readNewTopologyAndHash(transport, params.topologyId);
 }
 
-void Codec12::readNewTopologyAndHash(
-    Transport& /*transport*/, uint32_t /*topologyId*/) const
-{
-    // TODO
-    return;
+void Codec12::readNewTopologyAndHash(Transport& transport, uint32_t& topologyId) const {
+    uint32_t newTopologyId = transport.readVInt();
+    topologyId = newTopologyId; //update topologyId reference
+    int16_t numKeyOwners = transport.readUnsignedShort();
+    uint8_t hashFunctionVersion = transport.readByte();
+    uint32_t hashSpace = transport.readVInt();
+    uint32_t clusterSize = transport.readVInt();
+    std::map<InetSocketAddress, std::set<int32_t> > m = computeNewHashes(
+            transport, newTopologyId, numKeyOwners, hashFunctionVersion, hashSpace,
+            clusterSize);
+
+    std::vector<InetSocketAddress> socketAddresses;
+    for (std::map<InetSocketAddress, std::set<int32_t> >::iterator it =
+            m.begin(); it != m.end(); ++it) {
+        socketAddresses.push_back(it->first);
+    }
+    transport.getTransportFactory().updateServers(socketAddresses);
+
+    if (hashFunctionVersion == 0) {
+        //TODO log there was no hash function present
+    } else {
+        //transport.getTransportFactory().updateHashFunction(m,
+        //        numKeyOwners, hashFunctionVersion, hashSpace);
+    }
+}
+
+std::map<InetSocketAddress, std::set<int32_t> > Codec12::computeNewHashes(
+        Transport& transport, uint32_t newTopologyId, int16_t numKeyOwners,
+        uint8_t hashFunctionVersion, uint32_t hashSpace, uint32_t clusterSize) const {
+
+    std::map<InetSocketAddress, std::set<int32_t> > map;
+    for (uint32_t i = 0; i < clusterSize; i++) {
+        std::string host = transport.readString();
+        int16_t port = transport.readUnsignedShort();
+        int32_t hashCode = transport.read4ByteInt();
+        InetSocketAddress address(host, port);
+
+        std::map<InetSocketAddress, std::set<int32_t> >::iterator it =
+                map.find(address);
+        if (it == map.end()) {
+            std::set<int32_t> hashes;
+            hashes.insert(hashCode);
+            map.insert(
+                    std::pair<InetSocketAddress, std::set<int32_t> >(address,
+                            hashes));
+        } else {
+            it->second.insert(hashCode);
+        }
+    }
+    return map;
 }
 
 void Codec12::checkForErrorsInResponseStatus(
-    Transport& /*transport*/, const HeaderParams& /*params*/, uint8_t /*status*/) const
+    Transport& /*transport*/, HeaderParams& /*params*/, uint8_t /*status*/) const
 {
     // TODO
     return;

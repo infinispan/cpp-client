@@ -28,6 +28,7 @@ class AbstractTransport : public Transport
     int16_t readUnsignedShort();
     int32_t read4ByteInt();
     std::string readString();
+    TransportFactory& getTransportFactory();
 
   protected:
     virtual void writeBytes(const hrbytes& bytes) = 0;
