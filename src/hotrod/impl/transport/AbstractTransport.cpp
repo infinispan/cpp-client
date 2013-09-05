@@ -48,18 +48,40 @@ int64_t AbstractTransport::readLong()
   hrbytes longBytes;
   readBytes(longBytes, 8);
   long result = 0;
-  /*
-  for (char* ptr = longBytes.bytes(); ptr < longBytes.bytes() + 8; ++ptr) {
-    result <<= 8;
-    result ^= (int64_t) (*ptr && 0xFF);
-  }
-  */
+
   for (int i = 0; i < 8 ; i++) {
     result <<= 8;
     result ^= (int64_t) *(longBytes.bytes()+i) & 0xFF;
   }
   return result;
 }
+
+int16_t AbstractTransport::readUnsignedShort()
+{
+  hrbytes shortBytes;
+  readBytes(shortBytes, 2);
+  short result = 0;
+
+  for (int i = 0; i < 2 ; i++) {
+    result <<= 8;
+    result ^= (int16_t) *(shortBytes.bytes()+i) & 0xFF;
+  }
+  return result;
+}
+
+int32_t AbstractTransport::read4ByteInt()
+{
+  hrbytes intBytes;
+  readBytes(intBytes, 4);
+  int result = 0;
+
+  for (int i = 0; i < 4 ; i++) {
+      int shift = (4 - 1 - i) * 8;
+      result += (*(intBytes.bytes()+i) & 0x000000FF) << shift;
+  }
+  return result;
+}
+
 
 // TODO
 std::string AbstractTransport::readString() {
