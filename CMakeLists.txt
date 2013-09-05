@@ -46,6 +46,12 @@ if (CMAKE_COMPILER_IS_GNUCXX)
         "-pedantic -Wall -Wextra -Wno-shadow -Wpointer-arith -Wcast-qual -Wcast-align -Wno-long-long -Wvolatile-register-var -Winvalid-pch -Wno-system-headers -Woverloaded-virtual -Wshadow -Wl,--no-undefined")
 endif (CMAKE_COMPILER_IS_GNUCXX)
 
+if (APPLE)
+	set (COMPILER_FLAGS "-fvisibility=hidden -fvisibility-inlines-hidden")
+	# -Wl,--no-undefined switches not tolerated well on OSX
+	set (WARNING_FLAGS "-pedantic -Wall -Wextra -Wno-shadow -Wpointer-arith -Wcast-qual -Wcast-align -Wno-long-long -Wvolatile-register-var -Winvalid-pch -Wno-system-headers -Woverloaded-virtual -Wshadow")
+endif(APPLE)
+
 if (MSVC)
    set (COMPILER_FLAGS "")
    set (WARNING_FLAGS "")
@@ -60,13 +66,20 @@ if(WIN32 AND NOT CYGWIN)
   # linking against Windows native libraries, including mingw
   set (HOTROD_WINAPI TRUE)
   set (platform_libs ws2_32 Rpcrt4)
+elseif (APPLE)
+  # OSX does not need rt
+  set (platform_libs pthread)
+else (WIN32 AND NOT CYGWIN)
+  set (platform_libs pthread rt)
 endif(WIN32 AND NOT CYGWIN)
 
 # Select driver
 if(HOTROD_WINAPI)
-  set (platform_sources src/hotrod/sys/windows/Socket.cpp)
+  set (platform_sources src/hotrod/sys/windows/Socket.cpp src/hotrod/sys/windows/Thread.cpp
+           src/hotrod/sys/windows/platform.cpp)
 else(HOTROD_WINAPI)
-  set (platform_sources src/hotrod/sys/posix/Socket.cpp)
+  set (platform_sources src/hotrod/sys/posix/Socket.cpp src/hotrod/sys/posix/Thread.cpp
+           src/hotrod/sys/posix/platform.cpp src/hotrod/sys/posix/Mutex.cpp)
 endif(HOTROD_WINAPI)
 
 
@@ -108,6 +121,7 @@ add_library (
   src/hotrod/impl/transport/tcp/TcpTransportFactory.cpp
   src/hotrod/impl/transport/tcp/TransportObjectFactory.cpp
   src/hotrod/impl/transport/tcp/RoundRobinBalancingStrategy.cpp
+  src/hotrod/sys/Runnable.cpp
   ${platform_sources}
   )
 target_link_libraries (hotrod ${platform_libs})
@@ -134,6 +148,10 @@ endif (NOT IS_DIRECTORY ${HOTROD_ISPN_HOME})
 add_executable (simple test/Simple.cpp)
 target_link_libraries (simple hotrod)
 
+add_executable (unit_test test/Unit.cpp)
+target_link_libraries (unit_test hotrod)
+
+add_test (unit_test unit_test)
 add_test (start_server python ${CMAKE_CURRENT_SOURCE_DIR}/test/server_ctl.py start ${JAVA_RUNTIME} ${HOTROD_ISPN_HOME} single)
 add_test (simple simple)
 add_test (stop_server python ${CMAKE_CURRENT_SOURCE_DIR}/test/server_ctl.py stop)
