@@ -6,6 +6,8 @@
 %include "std_string.i"
 %include "std_map.i"
 %include "stdint.i"
+#define SWIG_SHARED_PTR_SUBNAMESPACE tr1
+%include "std_shared_ptr.i"
 
 %{
 #include <hotrod/impl/configuration/ConnectionPoolConfiguration.h>
@@ -40,6 +42,9 @@
 //%}
 
 %template(MapType) std::map<std::string, std::string>;
+
+//shared pointers
+%shared_ptr(RelayBytes)
 
 %include "infinispan/hotrod/ImportExport.h"
 %include "infinispan/hotrod/Handle.h"
