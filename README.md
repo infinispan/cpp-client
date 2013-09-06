@@ -49,6 +49,8 @@ For building the JNI libraries and uncomment, in the top level CMakeLists.txt fi
   build the project as described above.
   
   cd srcdir/test
+
+  ant init-ivy
   
   ant resolve
   
