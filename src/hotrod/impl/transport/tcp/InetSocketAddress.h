@@ -17,9 +17,9 @@ class InetSocketAddress
 
     const std::string& getAddress() const { return address; }
     int getPort() const { return port; }
-    bool operator ==(InetSocketAddress o1, InetSocketAddress o2) {
-      if(!o1.address.compare(o2.address))
-          return (o1.port == o2.port);
+    bool operator ==(InetSocketAddress &o1) {
+      if(!o1.address.compare(address))
+          return (o1.port == port);
       return 0;
     };
   private:
@@ -28,8 +28,6 @@ class InetSocketAddress
 };
 
 }}} // namespace infinispan::hotrod::transport
-
-#endif  /* ISPN_HOTROD_TRANSPORT_INETSOCKETADDRESS_H */
 
 namespace std {
 
@@ -46,3 +44,5 @@ template<> struct less<infinispan::hotrod::transport::InetSocketAddress>
 };
 
 } // namespace std
+
+#endif  /* ISPN_HOTROD_TRANSPORT_INETSOCKETADDRESS_H */
