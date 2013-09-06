@@ -17,12 +17,32 @@ class InetSocketAddress
 
     const std::string& getAddress() const { return address; }
     int getPort() const { return port; }
-
+    bool operator ==(InetSocketAddress &o1) {
+      if(!o1.address.compare(address))
+          return (o1.port == port);
+      return 0;
+    };
   private:
     std::string address;
     int port;
 };
 
 }}} // namespace infinispan::hotrod::transport
+
+namespace std {
+
+template<class T> struct less;
+
+template<> struct less<infinispan::hotrod::transport::InetSocketAddress>
+{
+    bool operator() (
+        const infinispan::hotrod::transport::InetSocketAddress& o1,
+        const infinispan::hotrod::transport::InetSocketAddress& o2) const
+    {
+        return &o1 < &o2;
+    }
+};
+
+} // namespace std
 
 #endif  /* ISPN_HOTROD_TRANSPORT_INETSOCKETADDRESS_H */

@@ -41,6 +41,7 @@ Thumbs.db
 CMakeCache.txt
 Makefile
 simple
+unit_test
 .ant-targets-build.xml
 .cproject
 .project
