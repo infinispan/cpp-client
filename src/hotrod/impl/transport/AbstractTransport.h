@@ -25,6 +25,8 @@ class AbstractTransport : public Transport
     void writeLong(int64_t longValue);
     hrbytes readArray();
     int64_t readLong();
+    int16_t AbstractTransport::readUnsignedShort();
+    int32_t AbstractTransport::read4ByteInt();
     std::string readString();
 
   protected:
