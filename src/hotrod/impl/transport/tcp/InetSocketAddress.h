@@ -25,4 +25,20 @@ class InetSocketAddress
 
 }}} // namespace infinispan::hotrod::transport
 
+namespace std {
+
+template<class T> struct less;
+
+template<> struct less<infinispan::hotrod::transport::InetSocketAddress>
+{
+    bool operator() (
+        const infinispan::hotrod::transport::InetSocketAddress& o1,
+        const infinispan::hotrod::transport::InetSocketAddress& o2) const
+    {
+        return &o1 < &o2;
+    }
+};
+
+} // namespace std
+
 #endif  /* ISPN_HOTROD_TRANSPORT_INETSOCKETADDRESS_H */
