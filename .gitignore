@@ -52,3 +52,4 @@ Testing/
 CMakeFiles/
 test/swig/src
 test/src/
+unit_tests
