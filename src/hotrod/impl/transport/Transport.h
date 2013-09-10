@@ -27,6 +27,8 @@ class Transport
     virtual hrbytes readArray() = 0;
 
     virtual int64_t readLong() = 0;
+    virtual int16_t readUnsignedShort() = 0;
+    virtual int32_t read4ByteInt() = 0;
     virtual std::string readString() = 0;
 
     virtual void release() = 0;
