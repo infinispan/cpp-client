@@ -1,7 +1,8 @@
 #ifndef ISPN_HOTROD_TRANSPORT_GENERICKEYEDOBJECTPOOL_H
 #define ISPN_HOTROD_TRANSPORT_GENERICKEYEDOBJECTPOOL_H
 
-
+#include <map>
+#include <iterator>
 
 namespace infinispan {
 namespace hotrod {
@@ -48,19 +49,60 @@ template <class K, class V> class GenericKeyedObjectPool
     int getNumIdle() { return 0; }
     int getNumIdle(const K& key) { return 0; }
 
-    void returnObject(const K& key, V& val) { factory.destroyObject(key, val); }
-    V& borrowObject(const K& key) { return factory.makeObject(key); }
-    void invalidateObject(const K& /*key*/, V* /*val*/) { }
-    void clear() { }
-    void clear(const K& key) { }
-
     int getMaxActive() { return maxActive; }
-    void preparePool(const InetSocketAddress& /*key*/) { }
-    void close() { }
+
+    //////////
+
+    void returnObject(const K& key, V& val) {
+        //factory.passivateObject(key, val);
+    }
+
+    V& borrowObject(const K& key) {
+        V* val = poolMap[key];
+        if (!val) {
+            val = &factory.makeObject(key);
+            poolMap[key] = val;
+        }
+        factory.activateObject(key, *val);
+        return *val;
+    }
+
+    void invalidateObject(const K& key, V* val) {
+        poolMap[key] = NULL;
+        factory.destroyObject(key, *val);
+    }
+
+    void clear() {
+        for(typename std::map<K,V*>::iterator iter = poolMap.begin() ; iter != poolMap.end() ; ++iter) {
+            clear(iter->first);
+        }
+    }
+
+    void clear(const K& key) {
+        V* val = poolMap[key];
+        if (val) {
+            factory.destroyObject(key, *val);
+        }
+        poolMap.erase(key);
+    }
+
+    void preparePool(const K& key) {
+        poolMap[key] = NULL;
+    }
+
+    void close() {
+        clear();
+    }
+
+    void addObject(const K& key) {
+        V& val = factory.makeObject(key);
+        poolMap[key] = &val;
+    }
 
   private:
     KeyedPoolableObjectFactory<K,V>& factory;
 
+    std::map<K,V*> poolMap;
     int maxIdle;
     int maxActive;
     int maxTotal;

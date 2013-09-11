@@ -115,7 +115,8 @@ size_t Socket::read(char *p, size_t length) {
         if (n < 0 && errno != EAGAIN)
             throwIOErr(host, port,"read", errno);
         else if (n == 0)
-            return 0;
+            throwIOErr(host, port,"no read", 0);
+            //return 0;
         else
             return n;
     }

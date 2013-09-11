@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <memory>
+#include <unistd.h>
 
 // For CTest: return 0 if all tests pass, non-zero otherwise.
 
@@ -19,6 +20,7 @@ int main(int, char**) {
     std::string v1("boron");
     std::string v2("chlorine");
 
+    // put
     cache.put(k1, v1);
     std::auto_ptr<std::string> rv(cache.get(k1));
     if (rv->compare(v1)) {
@@ -41,91 +43,144 @@ int main(int, char**) {
 
     std::cout << "PASS: simple get/put" << std::endl;
 
+    std::string k3("rolling");
+    std::string v3("stones");
+    std::string v4("beatles");
 
-    std::string lor_k("lorenzo");
-    std::string lor_v("fili");
-    std::string lor_v2("verona");
-
-    cache.put(lor_k, lor_v, 100, 100);
-    std::auto_ptr<std::string> lor_r(cache.get(lor_k));
-    std::cout << "put if absent test: " << *lor_r << std::endl;
-
-
-    cache.putIfAbsent(lor_k, lor_v2);
-    std::auto_ptr<std::string> lor_r2(cache.get(lor_k));
-    std::cout << "put if absent test 2: " << *lor_r2 << std::endl;
-
-
-    // GetWithMetadata Test
-    std::pair<HR_SHARED_PTR<std::string>,MetadataValue> gwm = cache.getWithMetadata(lor_k);
-    if (gwm.first.get()) {
-        std::cout << "get with metadata: " << std::endl;
-        std::cout << "  value: " << *gwm.first.get() << std::endl;
-        std::cout << "  version: " << gwm.second.version << std::endl;
-        std::cout << "  created: " << gwm.second.created << std::endl;
-        std::cout << "  lifespan: " << gwm.second.lifespan << std::endl;
-        std::cout << "  lastUsed: " << gwm.second.lastUsed << std::endl;
-        std::cout << "  maxIdle: " << gwm.second.maxIdle << std::endl;
+    // putIfAbsent
+    cache.putIfAbsent(k3, v3);
+    std::auto_ptr<std::string> rv3(cache.get(k3));
+    if (rv3->compare(v3)) {
+        std::cerr << "putIfAbsent fail for " << k3 << " got " << *rv3 << " expected " << v3 << std::endl;
+        return 1;
     }
-    else
-        std::cout << "get with metadata key not found" << std::endl;
 
-    // replace if unmodified
-    cache.replaceWithVersion(lor_k,lor_v2,gwm.second.version);
-    cache.replaceWithVersion(lor_k,lor_v2,gwm.second.version);
-
-    std::pair<HR_SHARED_PTR<std::string>,MetadataValue> gwm2 = cache.getWithMetadata(lor_k);
-    if (gwm2.first.get()) {
-        std::cout << "get with metadata: " << std::endl;
-        std::cout << "  value: " << *gwm2.first.get() << std::endl;
-        std::cout << "  version: " << gwm2.second.version << std::endl;
-        std::cout << "  created: " << gwm2.second.created << std::endl;
-        std::cout << "  lifespan: " << gwm2.second.lifespan << std::endl;
-        std::cout << "  lastUsed: " << gwm2.second.lastUsed << std::endl;
-        std::cout << "  maxIdle: " << gwm2.second.maxIdle << std::endl;
+    cache.putIfAbsent(k3, v4);
+    std::auto_ptr<std::string> rv4(cache.get(k3));
+    if (rv4->compare(v3)) {
+        std::cerr << "putIfAbsent fail for " << k3 << " got " << *rv4 << " expected " << v3 << std::endl;
+        return 1;
     }
-    else
-        std::cout << "get with metadata key not found" << std::endl;
 
+    std::cout << "PASS: simple putIfAbsent"  << std::endl;
+
+    // getWithMetadata
+    std::pair<HR_SHARED_PTR<std::string>,MetadataValue> rv5 = cache.getWithMetadata(k3);
+    if (!rv5.first.get()) {
+        std::cerr << "getWithMetadata fail for " << k3 << " not found" << std::endl;
+        return 1;
+    }
+
+    std::cout << "PASS: simple getWithMetadata"  << std::endl;
+
+    // replaceWithVersion
+    cache.replaceWithVersion(k3, v4, rv5.second.version);
+    std::auto_ptr<std::string> rv6(cache.get(k3));
+    if (rv6->compare(v4)) {
+        std::cerr << "putIfAbsent fail for " << k3 << " got " << *rv6 << " expected " << v4 << std::endl;
+        return 1;
+    }
+
+    cache.replaceWithVersion(k3, v3, rv5.second.version);
+    std::auto_ptr<std::string> rv7(cache.get(k3));
+    if (rv7->compare(v4)) {
+        std::cerr << "putIfAbsent fail for " << k3 << " got " << *rv7 << " expected " << v4 << std::endl;
+        return 1;
+    }
+
+    std::cout << "PASS: simple replaceWithVersion" << std::endl;
+
+    // size
     int32_t size = cache.size();
-    std::cout << "Size:" << size << std::endl;
+    if (size != 3) {
+        std::cerr << "size fail got " << size << " expected 3 " << std::endl;
+        return 1;
+    }
 
+    std::cout << "PASS: simple size" << std::endl;
+
+    // stats
     const std::map<std::string,std::string>& stats = cache.stats();
-    for(std::map<std::string,std::string>::const_iterator i=stats.begin();
-        i!=stats.end();i++) {
-        std::cout << "key: " << i->first << ", value: " << i->second << std::endl;
+    if (stats.empty()) {
+        std::cerr << "stats fail with empty map" << std::endl;
+        return 1;
     }
 
+    std::cout << "  stats result is:" << std::endl;
+    for(std::map<std::string,std::string>::const_iterator i=stats.begin(); i!=stats.end(); i++) {
+        std::cout << "    key: " << i->first << ", value: " << i->second << std::endl;
+    }
+
+    std::cout << "PASS: simple stats" << std::endl;
+
+    // clear
     cache.clear();
-
-    const std::map<std::string,std::string>& stats2 = cache.stats();
-    for(std::map<std::string,std::string>::const_iterator i2=stats2.begin();
-        i2!=stats2.end();i2++) {
-        std::cout << "key: " << i2->first << ", value: " << i2->second << std::endl;
+    int32_t size2 = cache.size();
+    if (size2 != 0) {
+        std::cerr << "clear fail cache has size " << size2 << " expected 0 " << std::endl;
+        return 1;
     }
 
-    std::string* v5 = cache.withFlags(FORCE_RETURN_VALUE).put("k1","v1");
-    if (v5==0)
-        std::cout << "put with flags and not existing return value OK" << std::endl;
-    else
-        std::cout << "put with flags and not existing return value KO" << std::endl;
+    std::cout << "PASS: simple clear" << std::endl;
 
+    std::string k4("real");
+    std::string v5("madrid");
+    std::string v6("barcelona");
+
+    // put with FORCE_RETURN_VALUE flag
+    std::auto_ptr<std::string> rv8(cache.withFlags(FORCE_RETURN_VALUE).put(k4,v5));
+    if (rv8.get()) {
+        std::cerr << "put with FORCE_RETURN_FLAG fail for " << k4 << " got " << *rv8 << " expected null pointer" << std::endl;
+        return 1;
+    }
+
+    std::auto_ptr<std::string> rv9(cache.withFlags(FORCE_RETURN_VALUE).put(k4,v6));
+    if (rv9->compare(v5)) {
+        std::cerr << "put with FORCE_RETURN_FLAG fail for " << k4 << " got " << *rv9 << " expected " << v5 << std::endl;
+        return 1;
+    }
+
+    std::cout << "PASS: simple put with FORCE_RETURN_FLAG" << std::endl;
+
+    // keySet
     std::set<HR_SHARED_PTR<std::string> > keySet = cache.keySet();
+    if (keySet.size()!=1) {
+        std::cerr << "keySet fail got " << keySet.size() << " entries expected 1" << std::endl;
+        return 1;
+    }
+
+    std::cout << "  keySet result is:" << std::endl;
     for(std::set<HR_SHARED_PTR<std::string> >::const_iterator i=keySet.begin(); i!=keySet.end(); i++) {
-        std::cout << "key: " << *i->get() << std::endl;
+        std::cout << "    key: " << *i->get() << std::endl;
     }
 
+    std::cout << "PASS: simple keySet" << std::endl;
+
+    // getBulk
     std::map<HR_SHARED_PTR<std::string>,HR_SHARED_PTR<std::string> > map = cache.getBulk(0);
+    if (map.size()!=1) {
+        std::cerr << "getBulk fail got" << map.size() << " entries expected 1" << std::endl;
+        return 1;
+    }
+
+    std::cout << "  getBulk result is:" << std::endl;
     for(std::map<HR_SHARED_PTR<std::string>,HR_SHARED_PTR<std::string> >::const_iterator i=map.begin(); i!=map.end(); i++) {
-        std::cout << "key: " << *i->first.get() << ", value: " << *i->second.get() << std::endl;
+        std::cout << "    key: " << *i->first.get() << ", value: " << *i->second.get() << std::endl;
     }
 
-    cache.replace("k1","v2");
+    std::cout << "PASS: simple getBulk" << std::endl;
 
-    std::map<HR_SHARED_PTR<std::string>,HR_SHARED_PTR<std::string> > map2 = cache.getBulk(0);
-    for(std::map<HR_SHARED_PTR<std::string>,HR_SHARED_PTR<std::string> >::const_iterator i=map2.begin(); i!=map2.end(); i++) {
-        std::cout << "key: " << *i->first.get() << ", value: " << *i->second.get() << std::endl;
+    // replace
+    cache.replace(k4,v5);
+    std::auto_ptr<std::string> rv10(cache.get(k4));
+    if (rv10->compare(v5)) {
+        std::cerr << "replace fail for " << k4 << " got " << *rv10 << " expected " << v5 << std::endl;
+        return 1;
     }
+
+    std::cout << "PASS: simple replace" << std::endl;
+
+    cacheManager.stop();
 
     return 0;
 }

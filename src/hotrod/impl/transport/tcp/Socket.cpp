@@ -21,6 +21,7 @@ Socket::Socket() :
 {}
 
 void Socket::connect(const std::string& host, int port) {
+	std::cout << "host " << host << " port " << port << std::endl;
     socket.connect(host, port);
 }
 
@@ -44,8 +45,8 @@ void InputStream::read(char* buf, size_t size) {
 	      tmp_buffer += capacity;
 	      size -= capacity;
 	    }
-	    if (!hasMore)
-	      throw HotRodClientException("stream not complete");
+	    //if (!hasMore)
+	      //throw HotRodClientException("stream not complete");
 	    capacity = socket.read(&buffer[0],BufferSize);
 	    ptr = &buffer[0];
 	    hasMore = capacity < BufferSize ? false : true;

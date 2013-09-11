@@ -169,3 +169,4 @@ add_test (stop_server python ${CMAKE_CURRENT_SOURCE_DIR}/test/server_ctl.py stop
 if (ENABLE_SWIG_TESTING)
     include(test/swig/swig.cmake)
 endif (ENABLE_SWIG_TESTING)
+

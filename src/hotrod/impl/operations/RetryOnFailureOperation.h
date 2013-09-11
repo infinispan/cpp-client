@@ -27,7 +27,8 @@ template<class T> class RetryOnFailureOperation : public HotRodOperation<T>
                 // Invalidate transport since this exception means that this
                 // instance is no longer usable and should be destroyed
                 transportFactory->invalidateTransport(te.getServerAddress(), transport);
-                releaseTransport(transport);
+                // TODO: error management
+                //releaseTransport(transport);
                 logErrorAndThrowExceptionIfNeeded(retryCount, te);
             } catch(const RemoteNodeSuspectException& rnse) {
                 // Do not invalidate transport because this exception is caused

@@ -50,7 +50,10 @@ void RemoteCacheManagerImpl::start() {
 
 void RemoteCacheManagerImpl::stop() {
     if (isStarted()) {
-        // TODO
+        transportFactory->destroy();
+        delete transportFactory;
+        transportFactory = NULL;
+
         started = false;
     }
 }
