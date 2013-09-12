@@ -18,6 +18,9 @@ namespace hotrod {
 template <class K, class V> class RemoteCache : private RemoteCacheBase
 {
   public:
+	 RemoteCache(const RemoteCache &other): RemoteCacheBase(this, other),
+	 	 keyMarshaller(other.keyMarshaller), valueMarshaller(other.valueMarshaller) {}
+
     V* get(const K& key) {
         ScopedBuffer vbuf;
         base_get(&key, &vbuf);
