@@ -1,6 +1,6 @@
 # called from CMake/CTest
-# usage: python server_ctl start java_exe_path ISPN_HOME sigle|multi
-#       python server_ctl stop
+# usage: python server_ctl start java_exe_path JBOSS_HOME
+#        python server_ctl stop
 
 import os
 import sys
@@ -9,62 +9,38 @@ import subprocess
 import time
 import pickle
 
-def expandcp(jars, ispn_home, module_file):
-    if os.name == 'nt' :
-        sep = ';' # windows
-    else:
-        sep = ':'
-    jarlist = open(ispn_home + module_file, 'r').read()
-    newjars = string.split(jarlist, ':')
-    cp = ''
-    for j in newjars:
-        jar = string.replace(j, '$ISPN_HOME', ispn_home)
-        if jar not in jars :
-            jars[jar] = 1
-            if cp:
-                cp += sep
-            cp += jar
-    return cp
+
+def static_java_args(java, jboss_home) :
+    # No luck calling standalone.bat without hanging.
+    # This is what the batch file does in the default case for 6.0.0.
+    return [java, '-XX:+TieredCompilation', '-XX:+UseCompressedOops',
+            '-Xms64M', '-Xmx512M', '-XX:MaxPermSize=256M', '-Djava.net.preferIPv4Stack=true',
+            '-Djboss.modules.system.pkgs=org.jboss.byteman',
+            '-Dorg.jboss.boot.log.file=' + jboss_home + '/standalone/log/server.log',
+            '-Dlogging.configuration=file:' + jboss_home + '/standalone/configuration/logging.properties',
+            '-jar', jboss_home + '/jboss-modules.jar', '-mp', jboss_home + '/modules',
+            '-jaxpmodule', 'javax.xml.jaxp-provider', 'org.jboss.as.standalone', 
+            '-Djboss.home.dir=' + jboss_home]
 
 def start(args):
     stop(verbose=False)
     java_exe = args[2]
-    ispn_home = args[3]
-    type = args[4]
-    if not os.path.isdir(ispn_home + '/modules') :
-        raise RuntimeError('bad infinipsan root directory ' + ispn_home)
-    classpath=''
-    jars=dict()
-    if os.name == 'nt' :
-        sep = ';' # windows
-    else:
-        sep = ':'
+    ispn_server_home = args[3]
 
-    for dir in ['memcached', 'hotrod', 'websocket', 'cli-server'] :
-        cp = expandcp(jars, ispn_home, '/modules/' + dir + '/runtime-classpath.txt')
-        if cp :
-            classpath += sep + cp
-        
-    classpath = ispn_home + '/modules/cli-server/infinispan-cli-server.jar' + sep + \
-                ispn_home + '/modules/websocket/infinispan-server-websocket.jar' + sep + \
-                ispn_home + '/modules/hotrod/infinispan-server-hotrod.jar' + sep + \
-                ispn_home + '/modules/memcached/infinispan-server-memcached.jar' + \
-                classpath
-    log4j_config='-Dlog4j.configuration=file:///' + ispn_home + '/etc/log4j.xml'
-
-    jargs = [java_exe, '-classpath', classpath, '-Dcom.sun.management.jmxremote.ssl=false', 
-             '-Dcom.sun.management.jmxremote.authenticate=false', '-Dcom.sun.management.jmxremote.port=2488',
-             '-Djgroups.bind_addr=127.0.0.1', '-Djava.net.preferIPv4Stack=true', log4j_config,
-             '-Dsun.nio.ch.bugLevel=""', 'org.infinispan.server.core.Main', '-r', 'hotrod']
-
-    # ctest likes to hang on these daemon hotrod servers.  Different
-    # tricks on Windows or Linux prevent that
+    # ctest likes to hang waiting for the subprocesses.  Different
+    # tricks on Windows or Linux disassociate the daemon server from
+    # ctest.
 
     if os.name == 'nt' :
-        jproc = subprocess.Popen(jargs,close_fds=True, creationflags=subprocess.CREATE_NEW_CONSOLE);
+        # Hangs on standalone.bat script.  Call Java directly.
+        jproc = subprocess.Popen(static_java_args(java_exe, ispn_server_home), close_fds=True, creationflags=subprocess.CREATE_NEW_CONSOLE);
     else:
+        startup_script = ispn_server_home + '/bin/' + 'standalone.sh';
+        new_env = os.environ.copy()
+        # Tell standalone.sh that you want termination signals to get through to the java process
+        new_env['LAUNCH_JBOSS_IN_BACKGROUND'] = 'yes'
         server_out = open('server.out', 'w')
-        jproc = subprocess.Popen(jargs,stdout=server_out, stderr=server_out, close_fds=True);
+        jproc = subprocess.Popen([startup_script], stdout=server_out, stderr=server_out, close_fds=True, env=new_env);
         server_out.close()
 
     output = open('servers.pkl', 'wb')

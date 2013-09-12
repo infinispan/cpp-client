@@ -9,7 +9,7 @@ Build prerequisites:
 
   CMake 2.8 (2.6 may work except for swig subset)
   C++03 plus shared_ptr TR1 support.
-  Infinispan server distribution (located via ISPN_HOME or cmake directive)
+  Infinispan server distribution (located via JBOSS_HOME or cmake directive)
   Java (any version compatible with the Infinispan distribution)
   Python 2.6 or newer
   
@@ -32,7 +32,7 @@ To build (where "srcdir" is the directory containg this README):
 
   os_make_directory my_build  [arbitrary location]
   cd my_build
-  cmake [-DHOTROD_ISPN_HOME=/path/to/ispn/dist] path/to/srcdir
+  cmake [-DHOTROD_JBOSS_HOME=/path/to/ispn/dist] path/to/srcdir
   make (Posix) | Visual Studio Build (Windows)
   ctest [-V]
 

@@ -6,12 +6,12 @@
 %include "std_string.i"
 %include "std_map.i"
 %include "stdint.i"
-#define SWIG_SHARED_PTR_SUBNAMESPACE tr1
-%include "std_shared_ptr.i"
-%include "std_pair.i"
+//#define SWIG_SHARED_PTR_SUBNAMESPACE tr1
+//%include "std_shared_ptr.i"
+//%include "std_pair.i"
 
 
-#define HR_SHARED_PTR std::tr1::shared_ptr
+//#define HR_SHARED_PTR std::tr1::shared_ptr
 
 %{
 #include <infinispan/hotrod/types.h>
@@ -103,8 +103,8 @@ class RelayBytes {
 %}
 
 
-%shared_ptr(RelayBytes);
-%template(MetadataReturn) std::pair<HR_SHARED_PTR<RelayBytes>, infinispan::hotrod::MetadataValue>;
+//%shared_ptr(RelayBytes);
+//%template(MetadataReturn) std::pair<HR_SHARED_PTR<RelayBytes>, infinispan::hotrod::MetadataValue>;
 
 // our mechanism for RemoteCache<byte[], byte[]> from the java side
 %template(RemoteCache_jb_jb) infinispan::hotrod::RemoteCache<RelayBytes, RelayBytes>;

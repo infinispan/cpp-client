@@ -140,10 +140,14 @@ if (NOT JAVA_RUNTIME)
 endif (NOT JAVA_RUNTIME)
 
 
-set(HOTROD_ISPN_HOME $ENV{ISPN_HOME} CACHE FILEPATH "Infinispan HOME dir")
-if (NOT IS_DIRECTORY ${HOTROD_ISPN_HOME})
-    message(FATAL_ERROR "you must set the ISPN_HOME environment variable or use -DHOTROD_ISPN_HOME=/the/path")
-endif (NOT IS_DIRECTORY ${HOTROD_ISPN_HOME})
+set(HOTROD_JBOSS_HOME $ENV{JBOSS_HOME} CACHE FILEPATH "Infinispan HOME dir")
+if (NOT IS_DIRECTORY ${HOTROD_JBOSS_HOME})
+    message(FATAL_ERROR "you must set the JBOSS_HOME environment variable or use -DHOTROD_JBOSS_HOME=/the/path")
+endif (NOT IS_DIRECTORY ${HOTROD_JBOSS_HOME})
+
+if (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.sh") AND (EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.bat")))
+    message(FATAL_ERROR "JBOSS_HOME ${HOTROD_JBOSS_HOME} does not have needed startup scripts")
+endif (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.sh") AND (EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.bat")))
 
 add_executable (simple test/Simple.cpp)
 target_link_libraries (simple hotrod)
@@ -152,9 +156,8 @@ add_executable (unit_test test/Unit.cpp)
 target_link_libraries (unit_test hotrod)
 
 add_test (unit_test unit_test)
-add_test (start_server python ${CMAKE_CURRENT_SOURCE_DIR}/test/server_ctl.py start ${JAVA_RUNTIME} ${HOTROD_ISPN_HOME} single)
+add_test (start_server python ${CMAKE_CURRENT_SOURCE_DIR}/test/server_ctl.py start ${JAVA_RUNTIME} ${HOTROD_JBOSS_HOME} single)
 add_test (simple simple)
 add_test (stop_server python ${CMAKE_CURRENT_SOURCE_DIR}/test/server_ctl.py stop)
 
-# Coming soon...
-add_subdirectory(test/swig)
+include(test/swig/swig.cmake)
