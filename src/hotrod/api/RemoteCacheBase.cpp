@@ -11,6 +11,16 @@ namespace hotrod {
 
 RemoteCacheBase::RemoteCacheBase(const std::string& name) :
     Handle<RemoteCacheImpl>(new RemoteCacheImpl(*this, name)) {}
+
+RemoteCacheBase::RemoteCacheBase(void *newRemoteCachePtr, const RemoteCacheBase &other):
+    Handle<RemoteCacheImpl>(new RemoteCacheImpl(*this, other.impl->getName())),
+    remoteCachePtr(newRemoteCachePtr),
+    baseKeyMarshallFn(other.baseKeyMarshallFn),
+    baseValueMarshallFn(other.baseValueMarshallFn),
+    baseKeyUnmarshallFn(other.baseKeyUnmarshallFn),
+    baseValueUnmarshallFn(other.baseValueUnmarshallFn) {
+    impl->init(*other.impl);
+}
     
 void RemoteCacheBase::setMarshallers(void* rc, MarshallHelperFn kf, MarshallHelperFn vf, UnmarshallHelperFn ukf, UnmarshallHelperFn uvf) {
     remoteCachePtr = rc;
@@ -39,7 +49,6 @@ void* RemoteCacheBase::baseValueUnmarshall(const void* buf) {
 void RemoteCacheBase::init(const std::string& name, operations::OperationsFactory* operationFactory) {
     impl->init(name, operationFactory);
 }
-
 
 void RemoteCacheBase::base_get(const void *key, void *buf) {
     impl->get(key, buf);

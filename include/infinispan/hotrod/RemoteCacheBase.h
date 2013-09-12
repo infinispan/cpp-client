@@ -44,11 +44,14 @@ class HR_EXTERN RemoteCacheBase
 
     void init(const std::string& name, operations::OperationsFactory* operationFactory);
 
- protected:
+  protected:
     RemoteCacheBase(const std::string& name);
+    RemoteCacheBase(void *newRemoteCachePtr, const RemoteCacheBase &);
     void setMarshallers(void* rc, MarshallHelperFn kf, MarshallHelperFn vf, UnmarshallHelperFn ukf, UnmarshallHelperFn uvf);
 
   private:
+    RemoteCacheBase(const RemoteCacheBase &);
+
     void *remoteCachePtr;
     MarshallHelperFn baseKeyMarshallFn;
     MarshallHelperFn baseValueMarshallFn;

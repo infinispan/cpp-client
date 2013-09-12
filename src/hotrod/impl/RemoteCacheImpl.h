@@ -36,6 +36,7 @@ class RemoteCacheImpl
     void ping();
 
     void init(const std::string& name, operations::OperationsFactory* operationsFactory);
+    void init(const RemoteCacheImpl &other);
 
     void withFlags(Flag flag);
 
@@ -44,7 +45,7 @@ class RemoteCacheImpl
   private:
     RemoteCacheBase& remoteCacheBase;
 
-    infinispan::hotrod::operations::OperationsFactory* operationsFactory;
+    HR_SHARED_PTR<operations::OperationsFactory> operationsFactory;
     std::string name;
 
     void applyDefaultExpirationFlags(uint64_t lifespan, uint64_t maxIdle);

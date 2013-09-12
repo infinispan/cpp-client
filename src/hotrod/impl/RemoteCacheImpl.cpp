@@ -31,7 +31,7 @@ using namespace transport;
 using namespace protocol;
 
 RemoteCacheImpl::RemoteCacheImpl(RemoteCacheBase& base, const std::string& n)
-    :remoteCacheBase(base), operationsFactory(0), name(n)
+    :remoteCacheBase(base), name(n)
 {}
 
 void RemoteCacheImpl::get(const void *k, void* b) {
@@ -193,7 +193,12 @@ const std::string& RemoteCacheImpl::getName() const {
 void RemoteCacheImpl::init(const std::string& n, OperationsFactory* of)
 {
 	name = n;
-	operationsFactory = of;
+	operationsFactory = HR_SHARED_PTR<OperationsFactory>(of);
+}
+
+void RemoteCacheImpl::init(const RemoteCacheImpl &other) {
+	name = other.name;
+	operationsFactory = other.operationsFactory;
 }
 
 void RemoteCacheImpl::withFlags(Flag flags)
