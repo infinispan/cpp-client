@@ -1,26 +1,3 @@
-#
-# JBoss, Home of Professional Open Source
-# Copyright 2010 Red Hat Inc. and/or its affiliates and other
-# contributors as indicated by the @author tags. All rights reserved.
-# See the copyright.txt in the distribution for a full listing of
-# individual contributors.
-#
-# This is free software; you can redistribute it and/or modify it
-# under the terms of the GNU Lesser General Public License as
-# published by the Free Software Foundation; either version 2.1 of
-# the License, or (at your option) any later version.
-#
-# This software is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-# Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public
-# License along with this software; if not, write to the Free
-# Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
-# 02110-1301 USA, or see the FSF site: http://www.fsf.org.
-#
-
 cmake_minimum_required (VERSION 2.6)
 
 project (HotRod C CXX)
@@ -39,18 +16,43 @@ include (CTest)
 
 include_directories ("${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
-if (CMAKE_COMPILER_IS_GNUCXX)
-   set (COMPILER_FLAGS "-fvisibility=hidden -fvisibility-inlines-hidden")
-# TODO: ASAP!  fix swig call for -Werror 
-   set (WARNING_FLAGS
-        "-pedantic -Wall -Wextra -Wno-shadow -Wpointer-arith -Wcast-qual -Wcast-align -Wno-long-long -Wvolatile-register-var -Winvalid-pch -Wno-system-headers -Woverloaded-virtual -Wshadow -Wl,--no-undefined")
-endif (CMAKE_COMPILER_IS_GNUCXX)
-
+# MacOS has a bunch of differences in build tools and process and so we have to turn some things
+# off there by default (for GCC; LLVM will need flags re-evaluated)
 if (APPLE)
-	set (COMPILER_FLAGS "-fvisibility=hidden -fvisibility-inlines-hidden")
-	# -Wl,--no-undefined switches not tolerated well on OSX
-	set (WARNING_FLAGS "-pedantic -Wall -Wextra -Wno-shadow -Wpointer-arith -Wcast-qual -Wcast-align -Wno-long-long -Wvolatile-register-var -Winvalid-pch -Wno-system-headers -Woverloaded-virtual -Wshadow")
-endif(APPLE)
+  set (NOENABLE_WARNING_ERROR ON)
+  set (NOENABLE_UNDEFINED_ERROR ON)
+  set (NOENABLE_SWIG_TESTING ON)
+endif (APPLE)
+
+# Add options here called <whatever> they will turn into "ENABLE_<whatever" and can be
+# overridden on a platform specific basis above by NOENABLE_<whatever>
+set (OPTIONS WARNING_ERROR UNDEFINED_ERROR SWIG_TESTING)
+
+foreach (OPTION ${OPTIONS})
+  if (NOT "NOENABLE_${OPTION}")
+    set ("DEFAULT_${OPTION}" ON)
+  endif (NOT "NOENABLE_${OPTION}")
+endforeach (OPTION)
+
+# And add the option here too with help text
+option(ENABLE_WARNING_ERROR "Consider compiler warnings to be errors" ${DEFAULT_WARNING_ERROR})
+option(ENABLE_UNDEFINED_ERROR "Check for unresolved library symbols" ${DEFAULT_UNDEFINED_ERROR})
+option(ENABLE_SWIG_TESTING "Create SWIG Java binding and test structure" ${DEFAULT_SWIG_TESTING})
+
+
+if (CMAKE_COMPILER_IS_GNUCXX)
+  if (ENABLE_WARNING_ERROR)
+    set (WERROR "-Werror")
+  endif (ENABLE_WARNING_ERROR)
+
+  set (COMPILER_FLAGS "-fvisibility=hidden -fvisibility-inlines-hidden")
+  set (WARNING_FLAGS
+        "${WERROR} -pedantic -Wall -Wextra -Wno-shadow -Wpointer-arith -Wcast-qual -Wcast-align -Wno-long-long -Wvolatile-register-var -Winvalid-pch -Wno-system-headers -Woverloaded-virtual -Wshadow")
+  if (ENABLE_UNDEFINED_ERROR)
+    set (CATCH_UNDEFINED "-Wl,--no-undefined")
+  endif (ENABLE_UNDEFINED_ERROR)
+
+endif (CMAKE_COMPILER_IS_GNUCXX)
 
 if (MSVC)
    set (COMPILER_FLAGS "")
@@ -125,6 +127,10 @@ add_library (
   ${platform_sources}
   )
 target_link_libraries (hotrod ${platform_libs})
+set_target_properties (
+  hotrod
+  PROPERTIES
+  LINK_FLAGS "${CATCH_UNDEFINED}")
 
 
 # TESTS
@@ -160,4 +166,6 @@ add_test (start_server python ${CMAKE_CURRENT_SOURCE_DIR}/test/server_ctl.py sta
 add_test (simple simple)
 add_test (stop_server python ${CMAKE_CURRENT_SOURCE_DIR}/test/server_ctl.py stop)
 
-include(test/swig/swig.cmake)
+if (ENABLE_SWIG_TESTING)
+    include(test/swig/swig.cmake)
+endif (ENABLE_SWIG_TESTING)
