@@ -30,7 +30,7 @@
     <!-- ================================= 
           target: resolve              
          ================================= -->
-    <target name="resolve" description="--> retrieve dependencies with ivy">
+    <target name="resolve" depends="init-ivy" description="--> retrieve dependencies with ivy">
         <ivy:retrieve />
     </target>
     <target name="clean" description="--> clean the last build">
