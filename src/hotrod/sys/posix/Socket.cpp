@@ -93,10 +93,11 @@ void Socket::connect(const std::string& h, int p) {
     if (ec) throwIOErr(host, port,"getaddrinfo", errno);
 
     while (::connect(sock, addr->ai_addr, addr->ai_addrlen) == -1) {
-        if (errno != EINPROGRESS) {
+        int connect_errno = errno;
+        if (connect_errno != EINPROGRESS) {
             freeaddrinfo(addr);
             close();
-            throwIOErr(host, port,"connect2", errno);
+            throwIOErr(host, port,"connect2", connect_errno);
         }
     }
 
