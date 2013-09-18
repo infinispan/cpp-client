@@ -1,0 +1,35 @@
+= C++ Hot Rod Client
+The Infinispan Community
+:toc2:
+:icons: font
+:toclevels: 3
+:numbered:
+
+== Introduction
+_TODO_
+
+== Installation
+=== Pre-requisites
+_TODO_
+
+=== Download
+_TODO_
+
+== Usage
+=== Configuration
+_TODO_
+
+=== API
+_TODO_
+
+== Contributing back
+Contributions, as always, are welcome be it in the form of code, tests
+or documentation.
+
+=== Source code
+This client, along with tests and documentation, are in GitHub, located under
+link:https://github.com/infinispan/cpp-client[].
+Feel free to fork and issue pull requests on changes.
+For more information on working with this repository and GitHub, refer to the
+link:http://infinispan.org/docs/6.0.x/contributing/contributing.html#_source_control[Contributing Guide]
+for Infinispan.
