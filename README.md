@@ -1,10 +1,12 @@
-# cpp-client #
+# C++ Hot Rod Client #
 
 C++ client for Infinispan, over the [Hot Rod] (https://docs.jboss.org/author/display/ISPN/Hot+Rod+Protocol) wire protocol.
 Released under Apache License, Version 2.0.
 
-## Build ##
+## Documentation
+For more information, please refer to [the documentation of this client library](documentation/index.adoc).
 
+## Build ##
 Build prerequisites: 
 
   CMake 2.8 (2.6 may work except for swig subset)
