@@ -5,6 +5,7 @@
 
 #include "hotrod/impl/operations/HotRodOperation.h"
 #include "hotrod/impl/transport/TransportFactory.h"
+#include "hotrod/impl/transport/tcp/InetSocketAddress.h"
 
 namespace infinispan {
 namespace hotrod {
@@ -26,7 +27,8 @@ template<class T> class RetryOnFailureOperation : public HotRodOperation<T>
             } catch(const TransportException& te) {
                 // Invalidate transport since this exception means that this
                 // instance is no longer usable and should be destroyed
-                transportFactory->invalidateTransport(te.getServerAddress(), transport);
+            	transport::InetSocketAddress isa(te.getHost(),te.getPort());
+                transportFactory->invalidateTransport(isa, transport);
                 // TODO: error management
                 //releaseTransport(transport);
                 logErrorAndThrowExceptionIfNeeded(retryCount, te);

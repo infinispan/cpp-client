@@ -132,7 +132,6 @@ void TcpTransportFactory::updateTransportCount() {
     if (maxActive > 0) {
         transportCount = (maxActive * size > maxActive) ?
             maxActive * size : maxActive;
-        //to avoid int overflow when maxActive is very high!
     } else {
         transportCount = 10 * size;
     }

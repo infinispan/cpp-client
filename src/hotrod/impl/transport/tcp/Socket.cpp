@@ -23,7 +23,6 @@ Socket::~Socket() {
 }
 
 void Socket::connect(const std::string& host, int port) {
-    std::cout << "host " << host << " port " << port << std::endl;
     socket->connect(host, port);
 }
 

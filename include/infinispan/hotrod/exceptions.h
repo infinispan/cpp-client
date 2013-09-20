@@ -4,7 +4,6 @@
 
 
 #include "infinispan/hotrod/ImportExport.h"
-#include "hotrod/impl/transport/tcp/InetSocketAddress.h"
 #include <exception>
 #include <string>
 
@@ -33,12 +32,14 @@ struct HR_EXTERN HotRodClientException : public Exception
 
 struct HR_EXTERN TransportException : public HotRodClientException
 {
-    transport::InetSocketAddress serverAddress;
+    std::string host;
+    int port;
     TransportException(const std::string& host, int port,
     		const std::string&);
     ~TransportException() throw();
 
-    const transport::InetSocketAddress& getServerAddress() const;
+    const std::string& getHost() const;
+    int getPort() const;
 };
 
 struct HR_EXTERN InvalidResponseException : public HotRodClientException
