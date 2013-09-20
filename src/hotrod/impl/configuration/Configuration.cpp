@@ -7,7 +7,7 @@ namespace hotrod {
 
 const char* Configuration::PROTOCOL_VERSION_12 = "1.2";
 
-Configuration::Configuration(std::string protocolVersion_,
+Configuration::Configuration(std::string /*protocolVersion*/,
         const ConnectionPoolConfiguration& cpc,
         int connTimeout,
         bool forceReturnVal,

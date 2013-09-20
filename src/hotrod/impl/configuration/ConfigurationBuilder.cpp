@@ -147,7 +147,7 @@ Configuration ConfigurationBuilder::create()
       internalKeySizeEstimate);
 }
 
-ConfigurationBuilder& ConfigurationBuilder::read(Configuration& bean)
+ConfigurationBuilder& ConfigurationBuilder::read(Configuration& /*bean*/)
 {
   // FIXME: read pool, ssl and server configs
   internalProtocolVersion = bean.getProtocolVersion();

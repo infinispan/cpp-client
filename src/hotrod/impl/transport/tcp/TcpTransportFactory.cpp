@@ -125,9 +125,8 @@ void TcpTransportFactory::pingServers() {
 void TcpTransportFactory::updateTransportCount() {
     unsigned int maxActive = connectionPool->getMaxActive();
     if (maxActive > 0) {
-        transportCount = (maxActive * servers.size() > maxActive) ?
-            maxActive * servers.size() : maxActive;
-        //to avoid int overflow when maxActive is very high!
+        transportCount = maxActive * servers.size();
+        // TODO: in java code avoid int overflow when maxActive is very high!
     } else {
         transportCount = 10 * servers.size();
     }
