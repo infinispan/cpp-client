@@ -43,6 +43,7 @@ simple
 .ant-targets-build.xml
 .cproject
 .project
+.settings
 
 # Exclude Generated dirs #
 ##########################
@@ -51,4 +52,6 @@ Testing/
 CMakeFiles/
 test/swig/src
 test/src/
-unit_tests
+unit_test
+CTestTestfile.cmake
+cmake_install.cmake
