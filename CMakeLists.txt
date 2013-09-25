@@ -122,6 +122,9 @@ add_library (
   src/hotrod/impl/RemoteCacheImpl.cpp
   src/hotrod/impl/hash/MurmurHash2.cpp
   src/hotrod/impl/hash/MurmurHash3.cpp
+  src/hotrod/impl/consistenthash/ConsistentHashFactory.cpp
+  src/hotrod/impl/consistenthash/ConsistentHashV1.cpp
+  src/hotrod/impl/consistenthash/ConsistentHashV2.cpp
   src/hotrod/impl/operations/OperationsFactory.cpp
   src/hotrod/impl/operations/PingOperation.cpp
   src/hotrod/impl/operations/GetOperation.cpp
@@ -140,6 +143,8 @@ add_library (
   src/hotrod/impl/operations/ClearOperation.cpp
   src/hotrod/impl/operations/FaultTolerantPingOperation.cpp
   src/hotrod/impl/protocol/HeaderParams.cpp
+  src/hotrod/impl/protocol/Codec10.cpp
+  src/hotrod/impl/protocol/Codec11.cpp
   src/hotrod/impl/protocol/Codec12.cpp
   src/hotrod/impl/protocol/CodecFactory.cpp
   src/hotrod/impl/transport/AbstractTransport.cpp
@@ -192,6 +197,9 @@ target_link_libraries (unit_test hotrod)
 
 add_executable (hash_test test/HashTest.cpp)
 target_link_libraries (hash_test hotrod)
+
+add_executable (l3_test test/L3Test.cpp)
+target_link_libraries (l3_test hotrod)
 
 # the CTest include must be after the MEMORYCHECK settings are processed
 include (CTest)

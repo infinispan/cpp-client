@@ -17,6 +17,9 @@ class Configuration;
 namespace protocol {
 class Codec;
 }
+namespace consistenthash{
+class ConsistentHashFactory;
+}
 
 namespace transport {
 
@@ -43,10 +46,13 @@ class TransportFactory
     virtual void updateServers(std::vector<InetSocketAddress>& ) = 0;
     virtual ~TransportFactory() {}
 
-    // TODO: consistent hash
-    // void updateServers(const std::vector<InetSocketAddress>& )
-    // updateHashFunction
-    // getConsistentHashFactory
+    virtual void updateHashFunction(
+            std::map<InetSocketAddress, std::set<int32_t> >& servers2Hash,
+            int32_t numKeyOwners, uint8_t hashFunctionVersion,
+            int32_t hashSpace) = 0;
+    virtual infinispan::hotrod::consistenthash::ConsistentHashFactory
+    & getConsistentHashFactory() = 0;
+
     // TODO: ssl
     // getSSLContext
 

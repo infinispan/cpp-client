@@ -33,6 +33,8 @@ class HeaderParams
     uint32_t topologyId;
     uint64_t messageId;
 
+    friend class Codec10;
+    friend class Codec11;
     friend class Codec12;
 };
 
