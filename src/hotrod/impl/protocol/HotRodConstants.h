@@ -21,6 +21,10 @@ class HotRodConstants
     static const uint8_t VERSION_11 = 11;
     static const uint8_t VERSION_12 = 12;
 
+    //hotrod consistenthash version
+    static const uint8_t CONSISTENT_HASH_V1 = 1;
+    static const uint8_t CONSISTENT_HASH_V2 = 2;
+
     // request operation code
     static const uint8_t PUT_REQUEST                    = 0x01;
     static const uint8_t GET_REQUEST                    = 0x03;

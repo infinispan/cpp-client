@@ -5,6 +5,7 @@
 #include "hotrod/impl/transport/tcp/RequestBalancingStrategy.h"
 #include "hotrod/impl/protocol/Codec.h"
 #include "infinispan/hotrod/Configuration.h"
+#include "hotrod/impl/consistenthash/ConsistentHash.h"
 #include <algorithm>
 
 namespace infinispan {
@@ -12,6 +13,7 @@ namespace hotrod {
 
 using protocol::Codec;
 using namespace sys;
+using namespace consistenthash;
 
 namespace transport {
 
@@ -45,7 +47,7 @@ void TcpTransportFactory::start(
  }
 
 Transport& TcpTransportFactory::getTransport() {
-	const InetSocketAddress* server = NULL;
+    const InetSocketAddress* server = NULL;
     {
         ScopedLock<Mutex> l(lock);
         server = &balancer->nextServer();
@@ -53,16 +55,27 @@ Transport& TcpTransportFactory::getTransport() {
     return borrowTransportFromPool(*server);
 }
 
-Transport& TcpTransportFactory::getTransport(const hrbytes& /*key*/) {
+Transport& TcpTransportFactory::getTransport(const hrbytes& key) {
     // TODO: consistent hash
-    return getTransport();
+    ScopedLock<Mutex> l(lock);
+    if (consistentHash != NULL) {
+        return borrowTransportFromPool(consistentHash->getServer(key));
+        /*if (log.isTraceEnabled()) {
+         log.tracef("Using consistent hash for determining the server: " + server);
+         }*/
+    } else {
+        return borrowTransportFromPool(balancer->nextServer());
+        /*if (log.isTraceEnabled()) {
+         log.tracef("Using the balancer for determining the server: %s", server);
+         }*/
+    }
 }
 
 void TcpTransportFactory::releaseTransport(Transport& transport) {
     ConnectionPool* pool = getConnectionPool();
     TcpTransport& tcpTransport = dynamic_cast<TcpTransport&>(transport);
     if (!tcpTransport.isValid()) {
-    	pool->invalidateObject(tcpTransport.getServerAddress(), &tcpTransport);
+        pool->invalidateObject(tcpTransport.getServerAddress(), &tcpTransport);
     } else {
         pool->returnObject(tcpTransport.getServerAddress(), tcpTransport);
     }
@@ -189,6 +202,24 @@ void TcpTransportFactory::updateServers(std::vector<InetSocketAddress>& newServe
     servers.clear();
     servers = newServers;
     updateTransportCount();
+}
+
+void TcpTransportFactory::updateHashFunction(
+        std::map<InetSocketAddress, std::set<int32_t> >& servers2Hash,
+        int32_t numKeyOwners, uint8_t hashFunctionVersion, int32_t hashSpace) {
+    ScopedLock<Mutex> l(lock);
+    ConsistentHash* hash = hashFactory->newConsistentHash(hashFunctionVersion);
+    if (hash == NULL) {
+        //TODO log noHasHFunctionConfigured(hashFunctionVersion);
+    } else {
+        hash->init(servers2Hash, numKeyOwners, hashSpace);
+    }
+    consistentHash.reset(hash);
+}
+
+ConsistentHashFactory& TcpTransportFactory::getConsistentHashFactory(){
+    ScopedLock<Mutex> l(lock);
+    return *hashFactory;
 }
 
 }}} // namespace infinispan::hotrod::transport

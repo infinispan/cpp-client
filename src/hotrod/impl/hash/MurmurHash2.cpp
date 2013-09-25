@@ -60,5 +60,20 @@ uint32_t MurmurHash2::hash(const hrbytes& key) const {
     return MurmurHashNeutral2(k.bytes(), k.length());
 }
 
+uint32_t MurmurHash2::hash(int32_t key) const {
+    unsigned char buffer[4] = { 0 };
+    read_int(buffer, key);
+    return MurmurHashNeutral2(buffer, 4);
+}
+
+void MurmurHash2::read_int(unsigned char *results, int32_t num) const {
+    int32_t count = 0;
+    int32_t len = sizeof(int32_t);
+    char *num_bytes = (char*) &num;
+    for (count = 0; count <len; count++) {
+        results[count] = num_bytes[count];
+    }
+}
+
 }} // namespace
 

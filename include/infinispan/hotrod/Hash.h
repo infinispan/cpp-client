@@ -12,6 +12,7 @@ public:
     virtual ~Hash() {};
 
     virtual uint32_t hash(const hrbytes& key) const = 0;
+    virtual uint32_t hash(int32_t key) const = 0;
 };
 
 }} // namespace
