@@ -19,8 +19,8 @@ class CodecFactory
 
   private:
     CodecFactory();
+    static void init();
     static std::map<std::string, Codec*> codecMap;
-    static bool initialized;
 };
 
 }}} // namespace infinispan::hotrod::protocol

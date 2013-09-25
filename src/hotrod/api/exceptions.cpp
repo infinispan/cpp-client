@@ -29,4 +29,8 @@ RemoteNodeSuspectException::RemoteNodeSuspectException(const std::string& msg) :
 
 InternalException::InternalException(const std::string& msg) : HotRodClientException(msg) {}
 
+RemoteCacheManagerNotStartedException::RemoteCacheManagerNotStartedException(const std::string& msg) : HotRodClientException(msg) {}
+
+RemoteCacheNotExistException::RemoteCacheNotExistException(const std::string& msg) : HotRodClientException(msg) {}
+
 }} /* namespace */

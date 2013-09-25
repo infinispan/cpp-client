@@ -17,7 +17,7 @@ Configuration::Configuration(std::string /*protocolVersion*/,
         int socketTimeoutPar,
         SslConfiguration sslConfig,
         bool tcpNoDelayPar,
-        int vSizeEstimate) : protocolVersion(protocolVersion_), connectionPoolConfiguration(cpc), connectionTimeout(connTimeout),
+        int vSizeEstimate) : protocolVersion(PROTOCOL_VERSION_12), connectionPoolConfiguration(cpc), connectionTimeout(connTimeout),
             forceReturnValue(forceReturnVal), keySizeEstimate(kSizeEstimate), pingOnStartup(pingOnStartupPar), servers(serversConfiguration),
             socketTimeout(socketTimeoutPar), sslConfiguration(sslConfig),tcpNoDelay(tcpNoDelayPar),valueSizeEstimate(vSizeEstimate)
 {

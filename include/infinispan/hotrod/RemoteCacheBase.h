@@ -19,6 +19,8 @@ class OperationsFactory;
 }
 
 class RemoteCacheImpl;
+class RemoteCacheManagerImpl;
+
 typedef void (*MarshallHelperFn) (void*, const void*, void*);
 typedef void* (*UnmarshallHelperFn) (void*, const void*);
 
@@ -42,16 +44,13 @@ class HR_EXTERN RemoteCacheBase
     void base_clear();
     void base_withFlags(Flag flag);
 
-    void init(const std::string& name, operations::OperationsFactory* operationFactory);
+    void init(operations::OperationsFactory* operationFactory);
 
-  protected:
-    RemoteCacheBase(const std::string& name);
-    RemoteCacheBase(void *newRemoteCachePtr, const RemoteCacheBase &);
+ protected:
+    RemoteCacheBase();
     void setMarshallers(void* rc, MarshallHelperFn kf, MarshallHelperFn vf, UnmarshallHelperFn ukf, UnmarshallHelperFn uvf);
 
   private:
-    RemoteCacheBase(const RemoteCacheBase &);
-
     void *remoteCachePtr;
     MarshallHelperFn baseKeyMarshallFn;
     MarshallHelperFn baseValueMarshallFn;

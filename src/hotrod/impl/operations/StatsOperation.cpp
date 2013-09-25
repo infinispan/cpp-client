@@ -14,7 +14,7 @@ using namespace infinispan::hotrod::transport;
 
 StatsOperation::StatsOperation(
     const Codec&      codec_,
-    infinispan::hotrod::transport::TransportFactory* transportFactory_,
+    HR_SHARED_PTR<transport::TransportFactory> transportFactory_,
     const hrbytes&    cacheName_,
     uint32_t          topologyId_,
     uint32_t    flags_)

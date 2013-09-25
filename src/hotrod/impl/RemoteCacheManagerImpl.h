@@ -1,14 +1,12 @@
 #ifndef ISPN_HOTROD_REMOTECACHEMANAGERIMPL_H
 #define ISPN_HOTROD_REMOTECACHEMANAGERIMPL_H
 
-
-
-#include "infinispan/hotrod/ImportExport.h"
-#include "infinispan/hotrod/Handle.h"
-#include "infinispan/hotrod/RemoteCache.h"
+#include "hotrod/impl/RemoteCacheImpl.h"
 #include "hotrod/impl/configuration/Configuration.h"
 #include "hotrod/impl/protocol/Codec.h"
 #include "hotrod/impl/transport/TransportFactory.h"
+#include "hotrod/impl/operations/PingOperation.h"
+#include "hotrod/sys/Mutex.h"
 
 #include <map>
 
@@ -19,23 +17,30 @@ class RemoteCacheManagerImpl
 {
   public:
     RemoteCacheManagerImpl(bool start = true);
-    //RemoteCacheManagerImpl(const Configuration& configuration, bool start = true);
 	RemoteCacheManagerImpl(const std::map<std::string,std::string>& properties, bool start = true);
 
-    void start();
+	HR_SHARED_PTR<RemoteCacheImpl> createRemoteCache(bool forceReturnValue);
+	HR_SHARED_PTR<RemoteCacheImpl> createRemoteCache(const std::string& name, bool forceReturnValue);
+
+	void start();
     void stop();
     bool isStarted();
     const Configuration& getConfiguration();
-    void initCache(RemoteCacheImpl& cache, bool forceReturnValue);
 
   private:
-    transport::TransportFactory* transportFactory;
-    // TODO: volatile
+    sys::Mutex lock;
     bool started;
+    int64_t topologyId;
     Configuration configuration;
     protocol::Codec* codec;
-    // TODO: atomic, initialized to 1
-    int64_t topologyId;
+
+    typedef std::pair<HR_SHARED_PTR<RemoteCacheImpl>, bool> RemoteCacheHolder;
+    std::map<std::string, RemoteCacheHolder> cacheName2RemoteCache;
+
+    operations::PingResult ping(RemoteCacheImpl& remoteCache);
+    HR_SHARED_PTR<transport::TransportFactory> transportFactory;
+
+    void startRemoteCache(RemoteCacheImpl& remoteCache, bool forceReturnValue);
 };
 
 }} // namespace infinispan::hotrod

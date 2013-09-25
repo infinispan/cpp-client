@@ -7,6 +7,7 @@
 #include "infinispan/hotrod/ScopedBuffer.h"
 #include "infinispan/hotrod/RemoteCacheBase.h"
 #include "hotrod/impl/MetadataValueImpl.h"
+#include "hotrod/impl/operations/PingOperation.h"
 
 namespace infinispan {
 namespace hotrod {
@@ -15,41 +16,42 @@ namespace operations {
 class OperationsFactory;
 }
 
+class RemoteCacheManagerImpl;
+
 class RemoteCacheImpl
 {
   public:
-    RemoteCacheImpl(RemoteCacheBase& base, const std::string& name);
-    void get(const void* key, void *buf);
-    void put(const void *key, const void* val, uint64_t life, uint64_t idle, void* b);
-    void putIfAbsent(const void *key, const void* val, uint64_t life, uint64_t idle, void* b);
-    void replace(const void *key, const void* val, uint64_t life, uint64_t idle, void* b);
-    void remove(const void* key, void* buf);
-    void containsKey(const void* key, bool* res);
-    void replaceWithVersion(const void* k, const void* v, uint64_t version, uint64_t life, uint64_t idle, bool* res);
-    void removeWithVersion(const void* k, uint64_t version, bool* res);
-    void getWithMetadata(const void *key, void* vbuf, MetadataValue* metadata);
-    void getBulk(int size, std::map<void*, void*>* mbuf);
-    void keySet(int scope, std::set<void*>* result);
+    RemoteCacheImpl(RemoteCacheManagerImpl& rcm, const std::string& name);
+    void get(RemoteCacheBase& rcb, const void* key, void *buf);
+    void put(RemoteCacheBase& rcb, const void *key, const void* val, uint64_t life, uint64_t idle, void* b);
+    void putIfAbsent(RemoteCacheBase& rcb, const void *key, const void* val, uint64_t life, uint64_t idle, void* b);
+    void replace(RemoteCacheBase& rcb, const void *key, const void* val, uint64_t life, uint64_t idle, void* b);
+    void remove(RemoteCacheBase& rcb, const void* key, void* buf);
+    void containsKey(RemoteCacheBase& rcb, const void* key, bool* res);
+    void replaceWithVersion(RemoteCacheBase& rcb, const void* k, const void* v, uint64_t version, uint64_t life, uint64_t idle, bool* res);
+    void removeWithVersion(RemoteCacheBase& rcb, const void* k, uint64_t version, bool* res);
+    void getWithMetadata(RemoteCacheBase& rcb, const void *key, void* vbuf, MetadataValue* metadata);
+    void getBulk(RemoteCacheBase& rcb, int size, std::map<void*, void*>* mbuf);
+    void keySet(RemoteCacheBase& rcb, int scope, std::set<void*>* result);
     void stats(std::map<std::string,std::string>* stats);
     void clear();
 
-    void ping();
+    operations::PingResult ping();
 
-    void init(const std::string& name, operations::OperationsFactory* operationsFactory);
-    void init(const RemoteCacheImpl &other);
+    void init(operations::OperationsFactory* operationsFactory);
 
     void withFlags(Flag flag);
 
     const std::string& getName() const;
 
   private:
-    RemoteCacheBase& remoteCacheBase;
+    RemoteCacheManagerImpl& remoteCacheManager;
 
     HR_SHARED_PTR<operations::OperationsFactory> operationsFactory;
     std::string name;
 
     void applyDefaultExpirationFlags(uint64_t lifespan, uint64_t maxIdle);
-
+    void assertRemoteCacheManagerIsStarted();
 };
 
 }} // namespace infinispan::hotrod

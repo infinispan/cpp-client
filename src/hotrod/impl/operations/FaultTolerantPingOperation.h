@@ -18,7 +18,7 @@ class FaultTolerantPingOperation : public RetryOnFailureOperation<PingResult>
     protected:
         FaultTolerantPingOperation(
             const protocol::Codec&       codec_,
-            transport::TransportFactory* transportFactory_,
+            HR_SHARED_PTR<transport::TransportFactory> transportFactory_,
             const hrbytes&                                   cacheName_,
             uint32_t                                         topologyId_,
             uint32_t                                   flags_);
