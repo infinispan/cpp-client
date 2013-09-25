@@ -14,7 +14,7 @@ using namespace infinispan::hotrod::transport;
 
 PutOperation::PutOperation(
     const Codec&      codec_,
-    TransportFactory* transportFactory_,
+    HR_SHARED_PTR<transport::TransportFactory> transportFactory_,
     const hrbytes&    key_,
     const hrbytes&    cacheName_,
     uint32_t          topologyId_,

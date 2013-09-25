@@ -29,24 +29,25 @@ class HR_EXTERN RemoteCacheManager : public Handle<RemoteCacheManagerImpl>
     void start();
     void stop();
     bool isStarted();
+
     // TODO: change to std::map?
     const Configuration& getConfiguration();
 
     template <class K, class V> RemoteCache<K, V> getCache(
         bool forceReturnValue = false)
     {
-        RemoteCache<K, V> rcache("");
+        RemoteCache<K, V> rcache;
         initCache(rcache, forceReturnValue);
         rcache.keyMarshaller.reset(new sys::BasicMarshaller<K>());
         rcache.valueMarshaller.reset(new sys::BasicMarshaller<V>());
         return rcache;
-     }
+    }
 
     template <class K, class V> RemoteCache<K, V> getCache(
         const std::string& name, bool forceReturnValue = false)
     {
-        RemoteCache<K, V> rcache(name);
-        initCache(rcache, forceReturnValue);
+        RemoteCache<K, V> rcache;
+        initCache(rcache, name, forceReturnValue);
         rcache.keyMarshaller.reset(new sys::BasicMarshaller<K>());
         rcache.valueMarshaller.reset(new sys::BasicMarshaller<V>());
         return rcache;
@@ -56,18 +57,19 @@ class HR_EXTERN RemoteCacheManager : public Handle<RemoteCacheManagerImpl>
         HR_SHARED_PTR<Marshaller<K> > km, HR_SHARED_PTR<Marshaller<V> > vm,
         bool forceReturnValue = false)
     {
-        RemoteCache<K, V> rcache("");
+        RemoteCache<K, V> rcache;
         initCache(rcache, forceReturnValue);
         rcache.keyMarshaller = km;
         rcache.valueMarshaller = vm;
-        return rcache;    }
+        return rcache;
+    }
 
     template <class K, class V> RemoteCache<K, V> getCache(
         HR_SHARED_PTR<Marshaller<K> > km, HR_SHARED_PTR<Marshaller<V> > vm,
         const std::string& name, bool forceReturnValue = false)
     {
-        RemoteCache<K, V> rcache(name);
-        initCache(rcache, forceReturnValue);
+        RemoteCache<K, V> rcache;
+        initCache(rcache, name, forceReturnValue);
         rcache.keyMarshaller = km;
         rcache.valueMarshaller = vm;
         return rcache;
@@ -75,6 +77,7 @@ class HR_EXTERN RemoteCacheManager : public Handle<RemoteCacheManagerImpl>
 
   private:
     void initCache(RemoteCacheBase& cache, bool forceReturnValue);
+    void initCache(RemoteCacheBase& cache, const std::string& name, bool forceReturnValue);
 
     // not implemented
     RemoteCacheManager(const RemoteCacheManager&);

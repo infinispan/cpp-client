@@ -20,7 +20,7 @@ template <class K, class V> class GenericKeyedObjectPool
 {
   public:
     GenericKeyedObjectPool(
-      KeyedPoolableObjectFactory<K,V>& factory_,
+      HR_SHARED_PTR<KeyedPoolableObjectFactory<K,V> > factory_,
       int maxActive_,
       WhenExhaustedAction whenExhaustedAction_,
       long maxWait_,
@@ -40,7 +40,8 @@ template <class K, class V> class GenericKeyedObjectPool
         testOnReturn(testOnReturn_), testWhileIdle(testWhileIdle_),
         timeBetweenEvictionRunsMillis(timeBetweenEvictionRuns_),
         numTestsPerEvictionRun(numTestsPerEvictionRun_),
-        minEvictableIdleTimeMillis(minEvictableIdleTime_), lifo(lifo_) { }
+        minEvictableIdleTimeMillis(minEvictableIdleTime_), lifo(lifo_), closed(false)
+    { }
 
     // TODO: ALL IMPLEMENTATION
 
@@ -59,49 +60,60 @@ template <class K, class V> class GenericKeyedObjectPool
     }
 
     V& borrowObject(const K& key) {
+        sys::ScopedLock<sys::Mutex> l(lock);
+        if(closed) throw HotRodClientException("POOL CLOSED");
         V* val = poolMap[key];
         if (!val) {
-            val = &factory.makeObject(key);
+            val = &factory->makeObject(key);
             poolMap[key] = val;
         }
-        factory.activateObject(key, *val);
+        factory->activateObject(key, *val);
         return *val;
     }
 
     void invalidateObject(const K& key, V* val) {
+        sys::ScopedLock<sys::Mutex> l(lock);
         poolMap[key] = NULL;
-        factory.destroyObject(key, *val);
+        if(val!=NULL)
+        factory->destroyObject(key, *val);
     }
 
     void clear() {
+        sys::ScopedLock<sys::Mutex> l(lock);
         for(typename std::map<K,V*>::iterator iter = poolMap.begin() ; iter != poolMap.end() ; ++iter) {
             clear(iter->first);
         }
     }
 
     void clear(const K& key) {
+        sys::ScopedLock<sys::Mutex> l(lock);
         V* val = poolMap[key];
         if (val) {
-            factory.destroyObject(key, *val);
+            factory->destroyObject(key, *val);
         }
         poolMap[key] = 0;
     }
 
     void preparePool(const K& key) {
+        sys::ScopedLock<sys::Mutex> l(lock);
         poolMap[key] = NULL;
     }
 
     void close() {
+        sys::ScopedLock<sys::Mutex> l(lock);
         clear();
+        closed = true;
     }
 
     void addObject(const K& key) {
-        V& val = factory.makeObject(key);
+        sys::ScopedLock<sys::Mutex> l(lock);
+        V& val = factory->makeObject(key);
         poolMap[key] = &val;
     }
 
   private:
-    KeyedPoolableObjectFactory<K,V>& factory;
+    HR_SHARED_PTR<KeyedPoolableObjectFactory<K,V> > factory;
+    sys::Mutex lock;
 
     std::map<K,V*> poolMap;
     int maxIdle;
@@ -117,6 +129,8 @@ template <class K, class V> class GenericKeyedObjectPool
     int numTestsPerEvictionRun;
     long minEvictableIdleTimeMillis;
     bool lifo;
+
+    bool closed;
 
 };
 

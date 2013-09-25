@@ -3,6 +3,7 @@
 #include "hotrod/impl/protocol/CodecFactory.h"
 #include "hotrod/impl/protocol/Codec12.h"
 #include "hotrod/impl/configuration/Configuration.h"
+#include "hotrod/sys/RunOnce.h"
 
 #include <iostream>
 
@@ -29,6 +30,5 @@ CodecFactory& CodecFactory::getInstance() {
 Codec* CodecFactory::getCodec(const char* version) {
     return CodecFactory::getInstance().codecMap[version];
 }
-
 
 }}} // namespace

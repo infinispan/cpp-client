@@ -48,7 +48,7 @@ template<class T> class RetryOnFailureOperation : public HotRodOperation<T>
   protected:
     RetryOnFailureOperation(
         const protocol::Codec& _codec,
-        transport::TransportFactory* _transportFactory,
+        HR_SHARED_PTR<transport::TransportFactory> _transportFactory,
         const hrbytes& _cacheName, uint32_t _topologyId, uint32_t _flags) :
             HotRodOperation<T>(_codec, _flags, _cacheName, _topologyId),
             transportFactory(_transportFactory) {}
@@ -79,7 +79,7 @@ template<class T> class RetryOnFailureOperation : public HotRodOperation<T>
 
     virtual ~RetryOnFailureOperation() {}
 
-    transport::TransportFactory* transportFactory;
+    HR_SHARED_PTR<infinispan::hotrod::transport::TransportFactory> transportFactory;
 };
 
 }}} // namespace infinispan::hotrod::operations

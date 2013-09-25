@@ -18,9 +18,6 @@ namespace hotrod {
 template <class K, class V> class RemoteCache : private RemoteCacheBase
 {
   public:
-   RemoteCache(const RemoteCache &other): RemoteCacheBase(this, other),
-      keyMarshaller(other.keyMarshaller), valueMarshaller(other.valueMarshaller) {}
-
     V* get(const K& key) {
         ScopedBuffer vbuf;
         base_get(&key, &vbuf);
@@ -140,10 +137,25 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
         return *this;
     }
 
-  private:
-    RemoteCache(const std::string& name) : RemoteCacheBase(name) {
+    RemoteCache(const RemoteCache &other) :
+      RemoteCacheBase(other), keyMarshaller(other.keyMarshaller), valueMarshaller(other.valueMarshaller)
+    {
         setMarshallers(this, &keyMarshall, &valueMarshall, &keyUnmarshall, &valueUnmarshall);
     }
+
+    RemoteCache<K,V>& operator=(const RemoteCache& other) {
+        RemoteCacheBase::operator=(other);
+        keyMarshaller = other.keyMarshaller;
+        valueMarshaller = other.valueMarshaller;
+        setMarshallers(this, &keyMarshall, &valueMarshall, &keyUnmarshall, &valueUnmarshall);
+        return *this;
+    }
+
+  private:
+    RemoteCache() : RemoteCacheBase() {
+        setMarshallers(this, &keyMarshall, &valueMarshall, &keyUnmarshall, &valueUnmarshall);
+    }
+
     // type-hiding and resurrecting support
     static void keyMarshall(void *thisp, const void* key, void* buf) {
         ((RemoteCache<K, V> *) thisp)->keyMarshaller->marshall(*(const K *) key, *(ScopedBuffer *) buf);

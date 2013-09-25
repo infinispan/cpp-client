@@ -21,7 +21,7 @@ class RemoveOperation : public AbstractKeyOperation<hrbytes>
     private:
         RemoveOperation(
             const infinispan::hotrod::protocol::Codec& codec,
-            infinispan::hotrod::transport::TransportFactory* transportFactory,
+            HR_SHARED_PTR<transport::TransportFactory> transportFactory,
             const hrbytes& key, const hrbytes& cacheName,
             uint32_t topologyId, uint32_t flags);
 

@@ -41,25 +41,21 @@ class TcpTransportFactory : public TransportFactory
     void updateServers(std::vector<InetSocketAddress>& );
 
   private:
-
-    /**
-     * We need mutex lock to atomically update fields of this class
-     */
-    infinispan::hotrod::sys::Mutex lock;
+    sys::Mutex lock;
     std::vector<InetSocketAddress> servers;
     bool tcpNoDelay;
     int soTimeout;
     int connectTimeout;
     int transportCount;
-    TransportObjectFactory *transportFactory;
-    GenericKeyedObjectPool<InetSocketAddress, TcpTransport>* connectionPool;
-    RequestBalancingStrategy* balancer;
+    HR_SHARED_PTR<TransportObjectFactory> transportFactory;
+    HR_SHARED_PTR<GenericKeyedObjectPool<InetSocketAddress, TcpTransport> > connectionPool;
+    HR_SHARED_PTR<RequestBalancingStrategy> balancer;
 
-    void createAndPreparePool(
-        PropsKeyedObjectPoolFactory<InetSocketAddress, TcpTransport>& poolFactory);
+    void createAndPreparePool(PropsKeyedObjectPoolFactory<InetSocketAddress, TcpTransport>* poolFactory);
     void updateTransportCount();
     void pingServers();
     Transport& borrowTransportFromPool(const InetSocketAddress& server);
+    GenericKeyedObjectPool<InetSocketAddress, TcpTransport>* getConnectionPool();
 };
 
 }}} // namespace infinispan::hotrod::transport

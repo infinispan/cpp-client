@@ -57,6 +57,17 @@ struct HR_EXTERN InternalException : public HotRodClientException
 	InternalException(const std::string&);
 };
 
+struct HR_EXTERN RemoteCacheManagerNotStartedException : public HotRodClientException
+{
+	RemoteCacheManagerNotStartedException(const std::string&);
+};
+
+// not existent in java code
+struct HR_EXTERN RemoteCacheNotExistException : public HotRodClientException
+{
+	RemoteCacheNotExistException(const std::string&);
+};
+
 }} // namespace
 
 #endif  /* ISPN_HOTROD_EXCEPTIONS_H */
