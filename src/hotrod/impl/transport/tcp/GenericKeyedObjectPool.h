@@ -54,7 +54,8 @@ template <class K, class V> class GenericKeyedObjectPool
     //////////
 
     void returnObject(const K& key, V& val) {
-        //factory.passivateObject(key, val);
+      (void)key;
+      (void)val;
     }
 
     V& borrowObject(const K& key) {

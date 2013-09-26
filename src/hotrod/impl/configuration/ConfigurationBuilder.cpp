@@ -40,7 +40,7 @@ ConfigurationBuilder& ConfigurationBuilder::addServers(std::string servers)
       std::getline(singleServerStream,portHelper,':');
       std::istringstream portStream(portHelper);
       portStream >> portInt;
-      this->addServer().host(hostHelper).port(portInt);
+      addServer().host(hostHelper).port(portInt);
   }
 
   return *this;
@@ -112,44 +112,53 @@ Configuration ConfigurationBuilder::build()
 Configuration ConfigurationBuilder::create()
 {
   std::vector<ServerConfiguration> servers;
-  if(this->internalServers.size() > 0) {
-      for(int i = 0; i < this->internalServers.size(); i++) {
-          servers.push_back(internalServers[i]->create());
+  if(internalServers.size() > 0) {
+      for(std::vector<ServerConfigurationBuilder *>::iterator it = internalServers.begin(); it < internalServers.end(); it++) {
+          servers.push_back((*it)->create());
       }
   } else {
       servers.push_back(ServerConfiguration("127.0.0.1",11222));
   }
 
   //TODO: subsitute connectionpoolconfiguration and sslconfiguration with the builders
-  return Configuration(this->internalProtocolVersion,
-	      ConnectionPoolConfiguration(
-	    		  WAIT,
-	    		  true,
-	    		  -1,
-	    		  -1,
-	    		  -1,
-	    		  -1,
-	    		  -1,
-	    		  120000,
-	    		  1800000,
-	    		  3,
-	    		  false,
-	    		  false,
-	    		  true),
-      this->internalSocketTimeout,
-      this->internalForceReturnValue,
-      this->internalKeySizeEstimate,
-      this->internalPingOnStartup,
+  return Configuration(internalProtocolVersion,
+        ConnectionPoolConfiguration(
+            WAIT,
+            true,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            120000,
+            1800000,
+            3,
+            false,
+            false,
+            true),
+      internalConnectionTimeout,
+      internalForceReturnValue,
+      internalKeySizeEstimate,
+      internalPingOnStartup,
       servers,
-      this->internalSocketTimeout,
+      internalSocketTimeout,
       SslConfiguration(),
-      this->internalTcpNoDelay,
-      this->internalKeySizeEstimate);
+      internalTcpNoDelay,
+      internalKeySizeEstimate);
 }
 
 ConfigurationBuilder& ConfigurationBuilder::read(Configuration& bean)
 {
-  //TODO: implements the method
+  // FIXME: read pool, ssl and server configs
+  internalProtocolVersion = bean.getProtocolVersion();
+  internalConnectionTimeout = bean.getConnectionTimeout();
+  internalForceReturnValue = bean.isForceReturnValue();
+  internalPingOnStartup = bean.isPingOnStartup();
+  internalSocketTimeout = bean.getSocketTimeout();
+  internalTcpNoDelay = bean.isTcpNoDelay();
+  internalKeySizeEstimate = bean.getKeySizeEstimate();
+  internalValueSizeEstimate = bean.getValueSizeEstimate();
+
   return *this;
 }
 

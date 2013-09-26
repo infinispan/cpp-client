@@ -66,7 +66,7 @@ Transport& TcpTransportFactory::getTransport(const hrbytes& /*key*/) {
 void TcpTransportFactory::releaseTransport(Transport& transport) {
     TcpTransport& tcpTransport = dynamic_cast<TcpTransport&>(transport);
     if (!tcpTransport.isValid()) {
-    	connectionPool->invalidateObject(tcpTransport.getServerAddress(), &tcpTransport);
+      connectionPool->invalidateObject(tcpTransport.getServerAddress(), &tcpTransport);
     } else {
         connectionPool->returnObject(tcpTransport.getServerAddress(), tcpTransport);
     }
@@ -108,8 +108,8 @@ void TcpTransportFactory::createAndPreparePool(
 
 void TcpTransportFactory::pingServers() {
     for (std::vector<InetSocketAddress>::const_iterator iter = servers.begin();
-    		iter != servers.end(); iter++) {
-    	InetSocketAddress addr = *iter;
+        iter != servers.end(); iter++) {
+      InetSocketAddress addr = *iter;
        try {
           // Go through all statically configured nodes and force a
           // connection to be established and a ping message to be sent.
@@ -123,7 +123,7 @@ void TcpTransportFactory::pingServers() {
 }
 
 void TcpTransportFactory::updateTransportCount() {
-    int64_t maxActive = connectionPool->getMaxActive();
+    unsigned int maxActive = connectionPool->getMaxActive();
     if (maxActive > 0) {
         transportCount = (maxActive * servers.size() > maxActive) ?
             maxActive * servers.size() : maxActive;
@@ -134,20 +134,20 @@ void TcpTransportFactory::updateTransportCount() {
 }
 
 void TcpTransportFactory::destroy() {
-	connectionPool->clear();
+  connectionPool->clear();
     connectionPool->close();
   // TODO: clean connection pool
-	/*
+  /*
     try {
        connectionPool->close();
     } catch (Exception e) {
        log.warn("Exception while shutting down the connection pool.", e);
     }
     */
-	delete connectionPool;
-	connectionPool = NULL;
-    delete balancer;
-    balancer = NULL;
+  delete connectionPool;
+  connectionPool = NULL;
+  delete balancer;
+  balancer = NULL;
 }
 
 Transport& TcpTransportFactory::borrowTransportFromPool(
