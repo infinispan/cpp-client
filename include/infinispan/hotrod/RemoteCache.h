@@ -18,8 +18,8 @@ namespace hotrod {
 template <class K, class V> class RemoteCache : private RemoteCacheBase
 {
   public:
-	 RemoteCache(const RemoteCache &other): RemoteCacheBase(this, other),
-	 	 keyMarshaller(other.keyMarshaller), valueMarshaller(other.valueMarshaller) {}
+   RemoteCache(const RemoteCache &other): RemoteCacheBase(this, other),
+      keyMarshaller(other.keyMarshaller), valueMarshaller(other.valueMarshaller) {}
 
     V* get(const K& key) {
         ScopedBuffer vbuf;
@@ -88,10 +88,10 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
     }
 
     std::map<HR_SHARED_PTR<K>, HR_SHARED_PTR<V> > getBulk(int nrOfEntries) {
-    	std::map<void*, void*> mbuf;
-    	base_getBulk(nrOfEntries, &mbuf);
+      std::map<void*, void*> mbuf;
+      base_getBulk(nrOfEntries, &mbuf);
 
-    	std::map<HR_SHARED_PTR<K>, HR_SHARED_PTR<V> > result;
+      std::map<HR_SHARED_PTR<K>, HR_SHARED_PTR<V> > result;
         for(std::map<void*, void*>::const_iterator i = mbuf.begin(); i != mbuf.end(); i++) {
             result.insert(std::make_pair(
                 HR_SHARED_PTR<K>((K*)i->first), HR_SHARED_PTR<V>((V*)i->second)));
@@ -100,14 +100,14 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
     }
 
     std::set<HR_SHARED_PTR<K> > keySet() {
-	    std::set<void*> p;
-	    base_keySet(0,&p);
+      std::set<void*> p;
+      base_keySet(0,&p);
 
         std::set<HR_SHARED_PTR<K> > result;
         for(std::set<void*>::const_iterator i = p.begin(); i != p.end(); i++) {
-		    result.insert(HR_SHARED_PTR<K>((K*)*i));
-	    }
-	    return result;
+        result.insert(HR_SHARED_PTR<K>((K*)*i));
+      }
+      return result;
     }
 
     uint64_t size() {
@@ -146,16 +146,16 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
     }
     // type-hiding and resurrecting support
     static void keyMarshall(void *thisp, const void* key, void* buf) {
-        ((RemoteCache<K, V> *) thisp)->keyMarshaller->marshall(*(K *) key, *(ScopedBuffer *) buf);
+        ((RemoteCache<K, V> *) thisp)->keyMarshaller->marshall(*(const K *) key, *(ScopedBuffer *) buf);
     }
     static void valueMarshall(void* thisp, const void* val, void* buf) {
-        ((RemoteCache<K, V> *)thisp)->valueMarshaller->marshall(*(V *) val, *(ScopedBuffer *) buf);
+        ((RemoteCache<K, V> *)thisp)->valueMarshaller->marshall(*(const V *) val, *(ScopedBuffer *) buf);
     }
     static void* keyUnmarshall(void *thisp, const void* buf) {
-        return ((RemoteCache<K, V> *) thisp)->keyMarshaller->unmarshall(*(ScopedBuffer *) buf);
+        return ((RemoteCache<K, V> *) thisp)->keyMarshaller->unmarshall(*(const ScopedBuffer *) buf);
     }
     static void* valueUnmarshall(void* thisp, const void* buf) {
-        return ((RemoteCache<K, V> *)thisp)->valueMarshaller->unmarshall(*(ScopedBuffer *) buf);
+        return ((RemoteCache<K, V> *)thisp)->valueMarshaller->unmarshall(*(const ScopedBuffer *) buf);
     }
 
     HR_SHARED_PTR<Marshaller<K> > keyMarshaller;
