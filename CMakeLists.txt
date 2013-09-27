@@ -26,7 +26,7 @@ endif (APPLE)
 
 # Add options here called <whatever> they will turn into "ENABLE_<whatever" and can be
 # overridden on a platform specific basis above by NOENABLE_<whatever>
-set (OPTIONS WARNING_ERROR UNDEFINED_ERROR SWIG_TESTING)
+set (OPTIONS WARNING_ERROR UNDEFINED_ERROR SWIG_TESTING VALGRIND)
 
 foreach (OPTION ${OPTIONS})
   if (NOT "NOENABLE_${OPTION}")
@@ -38,7 +38,7 @@ endforeach (OPTION)
 option(ENABLE_WARNING_ERROR "Consider compiler warnings to be errors" ${DEFAULT_WARNING_ERROR})
 option(ENABLE_UNDEFINED_ERROR "Check for unresolved library symbols" ${DEFAULT_UNDEFINED_ERROR})
 option(ENABLE_SWIG_TESTING "Create SWIG Java binding and test structure" ${DEFAULT_SWIG_TESTING})
-
+option(ENABLE_VALGRIND "Enable running the tests using Valgrind" ${DEFAULT_VALGRIND})
 
 if (CMAKE_COMPILER_IS_GNUCXX)
   if (ENABLE_WARNING_ERROR)
@@ -154,6 +154,13 @@ endif (NOT IS_DIRECTORY ${HOTROD_JBOSS_HOME})
 if (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.sh") AND (EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.bat")))
     message(FATAL_ERROR "JBOSS_HOME ${HOTROD_JBOSS_HOME} does not have needed startup scripts")
 endif (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.sh") AND (EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.bat")))
+
+if (ENABLE_VALGRIND)
+    find_program(MEMORYCHECK_COMMAND NAMES valgrind)
+    set(CTEST_MEMORYCHECK_COMMAND_OPTIONS "--tool=memcheck --leak-check=yes --show-reachable=yes --num-callers=100 --verbose --demangle=yes")
+endif (ENABLE_VALGRIND)
+
+configure_file ("${PROJECT_SOURCE_DIR}/CTestCustom.cmake" "${PROJECT_BINARY_DIR}/CTestCustom.cmake" COPYONLY) 
 
 add_executable (simple test/Simple.cpp)
 target_link_libraries (simple hotrod)
