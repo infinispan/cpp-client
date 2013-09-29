@@ -11,9 +11,6 @@ project (HotRod C CXX)
 #set (HR_VERSION "${HR_VERSION_MAJOR}.${HR_VERSION_MINOR}")
 #message(STATUS "HR_VERSION: ${HR_VERSION}")
 
-enable_testing()
-include (CTest)
-
 include_directories ("${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
 # MacOS has a bunch of differences in build tools and process and so we have to turn some things
@@ -24,9 +21,14 @@ if (APPLE)
   set (NOENABLE_SWIG_TESTING ON)
 endif (APPLE)
 
+if(WIN32 AND NOT CYGWIN)
+  # Encourage use of valgrind unless unavailable on the platform
+  set (NOENABLE_VALGRIND ON)
+endif(WIN32 AND NOT CYGWIN)
+
 # Add options here called <whatever> they will turn into "ENABLE_<whatever" and can be
 # overridden on a platform specific basis above by NOENABLE_<whatever>
-set (OPTIONS WARNING_ERROR UNDEFINED_ERROR SWIG_TESTING)
+set (OPTIONS WARNING_ERROR UNDEFINED_ERROR SWIG_TESTING VALGRIND)
 
 foreach (OPTION ${OPTIONS})
   if (NOT "NOENABLE_${OPTION}")
@@ -38,7 +40,7 @@ endforeach (OPTION)
 option(ENABLE_WARNING_ERROR "Consider compiler warnings to be errors" ${DEFAULT_WARNING_ERROR})
 option(ENABLE_UNDEFINED_ERROR "Check for unresolved library symbols" ${DEFAULT_UNDEFINED_ERROR})
 option(ENABLE_SWIG_TESTING "Create SWIG Java binding and test structure" ${DEFAULT_SWIG_TESTING})
-
+option(ENABLE_VALGRIND "Enable running the tests using Valgrind" ${DEFAULT_VALGRIND})
 
 if (CMAKE_COMPILER_IS_GNUCXX)
   if (ENABLE_WARNING_ERROR)
@@ -74,6 +76,20 @@ elseif (APPLE)
 else (WIN32 AND NOT CYGWIN)
   set (platform_libs pthread rt)
 endif(WIN32 AND NOT CYGWIN)
+
+if (ENABLE_VALGRIND)
+  find_program(VALGRIND valgrind)
+  if (VALGRIND MATCHES .*-NOTFOUND)
+    message(FATAL_ERROR "Cannot find valgrind in your environment.  Please install valgrind or use NOENABLE_VALGRIND")
+  endif(VALGRIND MATCHES .*-NOTFOUND)
+  set(MEMORYCHECK_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/valgrind CACHE FILEPATH
+      "Hot Rod Valgrind preprocessor" FORCE)
+  set(MEMORYCHECK_COMMAND_OPTIONS
+      "${VALGRIND} --leak-check=full --num-callers=25 --workaround-gcc296-bugs=yes --demangle=yes"
+      CACHE STRING "Valgrind options" FORCE)
+  configure_file ("${PROJECT_SOURCE_DIR}/CTestCustom.cmake" "${PROJECT_BINARY_DIR}/CTestCustom.cmake" COPYONLY)
+endif (ENABLE_VALGRIND)
+
 
 # Select driver
 if(HOTROD_WINAPI)
@@ -161,6 +177,9 @@ target_link_libraries (simple hotrod)
 add_executable (unit_test test/Unit.cpp)
 target_link_libraries (unit_test hotrod)
 
+# the CTest include must be after the MEMORYCHECK settings are processed
+include (CTest)
+
 add_test (unit_test unit_test)
 add_test (start_server python ${CMAKE_CURRENT_SOURCE_DIR}/test/server_ctl.py start ${JAVA_RUNTIME} ${HOTROD_JBOSS_HOME} single)
 add_test (simple simple)
@@ -170,3 +189,10 @@ if (ENABLE_SWIG_TESTING)
     include(test/swig/swig.cmake)
 endif (ENABLE_SWIG_TESTING)
 
+if (ENABLE_VALGRIND)
+    add_custom_target(memtest ${CMAKE_CTEST_COMMAND} -D ExperimentalMemCheck
+        COMMENT "Running CTest with Valgrind options")
+
+    add_custom_target(memtestv ${CMAKE_CTEST_COMMAND} -V -D ExperimentalMemCheck
+        COMMENT "Running CTest in verbose mode with Valgrind options")
+endif (ENABLE_VALGRIND)

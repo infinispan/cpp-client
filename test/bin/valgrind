@@ -1,0 +1,61 @@
+#!/usr/bin/python
+
+# called from CMake/CTest
+
+# Help CTest selectively exclude valgrind from commands that must be
+# run but should not produce false positives that obscure important
+# errors.  Also, monitor the valgrind output and force CTest to see
+# failure for memory errors.
+#
+# usage: valgrind /path2/real/valgrind valgrind_args command command_args
+
+
+import os
+import sys
+import string
+import re
+import subprocess
+
+def trim_valgrind(args):
+    # remove valgrind and related args which are at the front
+    del args[0]
+    while args[0].startswith('--') :
+        del args[0]
+    return args
+
+def main():
+    args = sys.argv[1:]
+    disable = False
+    # list here tests to remove from valgrind scrutiny, i.e. 'cmd1|cmd2'
+    no_memcheck = re.compile('server_ctl')
+    for arg in args:
+        if no_memcheck.search(arg) :
+            disable = True
+            break
+    if disable:
+        args = trim_valgrind(args)
+        p = subprocess.Popen(args)
+        return p.wait()
+    else:
+        # monitor stdout to observe valgrind summary
+        p = subprocess.Popen(args, stderr=subprocess.PIPE)
+        no_err = re.compile('ERROR SUMMARY: 0 errors')
+        vgerror = True
+        while True:
+            line = p.stderr.readline()
+            if line :
+                sys.stderr.write(line)
+                if no_err.search(line) :
+                    vgerror = False
+            else:
+                break
+        sys.stderr.flush()
+        status = p.wait()
+        if vgerror:
+            return 1
+        return status
+
+
+if __name__ == "__main__":
+    sys.exit(main())
+

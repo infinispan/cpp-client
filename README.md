@@ -38,6 +38,12 @@ To build (where "srcdir" is the directory containg this README):
   make (Posix) | Visual Studio Build (Windows)
   ctest [-V]
 
+Platforms with makefiles and Valgrind may have additional targets:
+
+  make test
+  make memtest
+  make memtestv
+
 ## Test with SWIG ##
 The Java swig module is experimental and tested on Linux only.
 
