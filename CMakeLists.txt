@@ -114,6 +114,8 @@ add_library (
   src/hotrod/impl/configuration/ConfigurationBuilder.cpp
   src/hotrod/impl/RemoteCacheManagerImpl.cpp
   src/hotrod/impl/RemoteCacheImpl.cpp
+  src/hotrod/impl/hash/MurmurHash2.cpp
+  src/hotrod/impl/hash/MurmurHash3.cpp
   src/hotrod/impl/operations/OperationsFactory.cpp
   src/hotrod/impl/operations/PingOperation.cpp
   src/hotrod/impl/operations/GetOperation.cpp
@@ -177,10 +179,14 @@ target_link_libraries (simple hotrod)
 add_executable (unit_test test/Unit.cpp)
 target_link_libraries (unit_test hotrod)
 
+add_executable (hash_test test/HashTest.cpp)
+target_link_libraries (hash_test hotrod)
+
 # the CTest include must be after the MEMORYCHECK settings are processed
 include (CTest)
 
 add_test (unit_test unit_test)
+add_test (hash_test hash_test)
 add_test (start_server python ${CMAKE_CURRENT_SOURCE_DIR}/test/server_ctl.py start ${JAVA_RUNTIME} ${HOTROD_JBOSS_HOME} single)
 add_test (simple simple)
 add_test (stop_server python ${CMAKE_CURRENT_SOURCE_DIR}/test/server_ctl.py stop)
