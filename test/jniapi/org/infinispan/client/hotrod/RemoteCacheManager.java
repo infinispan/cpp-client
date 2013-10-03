@@ -8,7 +8,7 @@ import java.util.Properties;
 
 // jni wrappers
 import org.infinispan.client.hotrod.RemoteCache;
-import org.infinispan.client.hotrod.RemoteCacheImpl;
+import org.infinispan.client.hotrod.impl.RemoteCacheImpl;
 import org.infinispan.client.hotrod.jni.HotrodConstants;
 import org.infinispan.client.hotrod.jni.MapType;
 
@@ -44,23 +44,23 @@ public class RemoteCacheManager /* implements BasicCacheContainer */ {
     
 
     public <K, V> org.infinispan.client.hotrod.RemoteCache <K, V> getCache() {
-        return new org.infinispan.client.hotrod.RemoteCacheImpl<K, V>(this, "");
+        return new org.infinispan.client.hotrod.impl.RemoteCacheImpl<K, V>(this, "");
     }
 
     public <K, V> org.infinispan.client.hotrod.RemoteCache <K, V> getNativeCache() {
-        return new org.infinispan.client.hotrod.RemoteCacheImpl<K, V>(this, "native");
+        return new org.infinispan.client.hotrod.impl.RemoteCacheImpl<K, V>(this, "native");
     }
     
     public <K, V> org.infinispan.client.hotrod.RemoteCache <K, V> getCache(String cacheName) {
-    	return new org.infinispan.client.hotrod.RemoteCacheImpl<K, V>(this, cacheName);
+    	return new org.infinispan.client.hotrod.impl.RemoteCacheImpl<K, V>(this, cacheName);
     }
 
     public Marshaller getMarshaller() {
-	return marshaller;
+    	return marshaller;
     }
 
-    protected org.infinispan.client.hotrod.jni.RemoteCacheManager getJniManager() {
-	return jniRemoteCacheManager;
+    public org.infinispan.client.hotrod.jni.RemoteCacheManager getJniManager() {
+    	return jniRemoteCacheManager;
     }
 
     static {

@@ -6,6 +6,7 @@
     <property name="ivy.home" value="${user.home}/.ant" />
     <property name="ivy.jar.dir" value="${ivy.home}/lib" />
     <property name="ivy.jar.file" value="${ivy.jar.dir}/ivy.jar" />
+    <property name="jni.test.dir" value="../jni/lib" />
 
     <target name="download-ivy" unless="offline">
 
@@ -32,6 +33,7 @@
          ================================= -->
     <target name="resolve" depends="init-ivy" description="--> retrieve dependencies with ivy">
         <ivy:retrieve />
+        <move file="lib" tofile="${jni.test.dir}"/>
     </target>
     <target name="clean" description="--> clean the last build">
         <delete dir="lib"/>

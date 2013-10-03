@@ -8,6 +8,7 @@
 *.so
 *.tcl
 *.cxx
+*.out
 
 # Packages #
 ############
@@ -44,10 +45,13 @@ simple
 .cproject
 .project
 .settings
+CTestTestfile.cmake
+cmake_install.cmake
 
 # Exclude Generated dirs #
 ##########################
 jnitmp/
+jni/
 Testing/
 CMakeFiles/
 test/swig/src

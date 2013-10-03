@@ -6,9 +6,14 @@
 %include "std_string.i"
 %include "std_map.i"
 %include "stdint.i"
+
+//#define SWIG_SHARED_PTR_NAMESPACE std
 //#define SWIG_SHARED_PTR_SUBNAMESPACE tr1
 //%include "std_shared_ptr.i"
+
+
 //%include "std_pair.i"
+
 
 
 //#define HR_SHARED_PTR std::tr1::shared_ptr
@@ -75,14 +80,17 @@
 
 
 %template(RemoteCache_str_str) infinispan::hotrod::RemoteCache<std::string, std::string>;
-
 // One class to pass bytes between the JVM and the native classes
 // For the exclusive use of Relay marshalling
+
+
 
 %ignore RelayBytes::setNative;
 %ignore RelayBytes::setJvm;
 %ignore RelayBytes::getBytes;
 %ignore RelayBytes::getJarray;
+
+//%shared_ptr(RelayShrPointer)
 
 %inline %{
 
@@ -102,9 +110,10 @@ class RelayBytes {
 
 %}
 
+//%template(RelayShrPointer) HR_SHARED_PTR<RelayBytes>;
+//%template(MetadataPairReturn) std::pair<HR_SHARED_PTR<RelayBytes>, infinispan::hotrod::MetadataValue>;
+//%template(MetadataMapReturn) std::map<HR_SHARED_PTR<RelayBytes>, HR_SHARED_PTR<RelayBytes> >;
 
-//%shared_ptr(RelayBytes);
-//%template(MetadataReturn) std::pair<HR_SHARED_PTR<RelayBytes>, infinispan::hotrod::MetadataValue>;
 
 // our mechanism for RemoteCache<byte[], byte[]> from the java side
 %template(RemoteCache_jb_jb) infinispan::hotrod::RemoteCache<RelayBytes, RelayBytes>;
