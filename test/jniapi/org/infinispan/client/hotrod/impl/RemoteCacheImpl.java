@@ -1,12 +1,13 @@
 /* test jni api version */
 
-package org.infinispan.client.hotrod;
+package org.infinispan.client.hotrod.impl;
 
 import java.io.IOException;
 import java.util.HashMap;
 import org.infinispan.marshall.Marshaller;
 
 import org.infinispan.client.hotrod.RemoteCacheManager;
+import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.jni.Hotrod;
 import org.infinispan.client.hotrod.jni.RemoteCache_jb_jb;
 import org.infinispan.client.hotrod.jni.RemoteCache_str_str;
@@ -19,7 +20,7 @@ public class RemoteCacheImpl<K, V> implements RemoteCache<K, V> {
     private RemoteCache_jb_jb jniRemoteCache;
     private RemoteCache_str_str nativeStrCache;
 
-    RemoteCacheImpl(RemoteCacheManager manager, String name) {
+    public RemoteCacheImpl(RemoteCacheManager manager, String name) {
 		this.marshaller = manager.getMarshaller();
 		if (name.equals("native")) {
 		    this.nativeStrCache = Hotrod.getStrStrCache(manager.getJniManager());
