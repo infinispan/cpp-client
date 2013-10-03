@@ -20,11 +20,22 @@ RemoteCacheManager::RemoteCacheManager(bool start_)
 
 
 RemoteCacheManager::RemoteCacheManager(const std::map<std::string,std::string>& properties, bool start_)
-  : Handle<RemoteCacheManagerImpl>(new RemoteCacheManagerImpl(properties,start_)) { }
+  : Handle<RemoteCacheManagerImpl>(new RemoteCacheManagerImpl(properties, start_)) { }
 
 void RemoteCacheManager::initCache(
-  RemoteCacheBase& cache, bool forceReturnValue) {
-    impl->initCache(*cache.impl, forceReturnValue);
+    RemoteCacheBase& cache, bool forceReturnValue)
+{
+    cache.impl = impl->createRemoteCache(forceReturnValue);
+    if(!impl)
+    	throw RemoteCacheNotExistException("cache doesn't exist");
+}
+
+void RemoteCacheManager::initCache(
+    RemoteCacheBase& cache, const std::string& name, bool forceReturnValue)
+{
+    cache.impl = impl->createRemoteCache(name, forceReturnValue);
+    if(!impl)
+    	throw RemoteCacheNotExistException("cache doesn't exist");
 }
 
 void RemoteCacheManager::start() {

@@ -14,7 +14,7 @@ template <class K, class V> class GenericKeyedObjectPoolFactory
 {
   public:
 	GenericKeyedObjectPoolFactory(
-      KeyedPoolableObjectFactory<K,V>& factory_,
+      KeyedPoolableObjectFactory<K,V>* factory_,
       int maxActive_,
       WhenExhaustedAction whenExhaustedAction_,
       long maxWait_,
@@ -28,13 +28,16 @@ template <class K, class V> class GenericKeyedObjectPoolFactory
       long minEvictableIdleTimeMillis_,
       bool testWhileIdle_,
       bool lifo_)
-      : factory(factory_), maxIdle(maxIdle_), maxActive(maxActive_),
+      : maxIdle(maxIdle_), maxActive(maxActive_),
         maxTotal(maxTotal_), minIdle(minIdle_), maxWait(maxWait_),
         whenExhaustedAction(whenExhaustedAction_), testOnBorrow(testOnBorrow_),
         testOnReturn(testOnReturn_), testWhileIdle(testWhileIdle_),
         timeBetweenEvictionRunsMillis(timeBetweenEvictionRunsMillis_),
         numTestsPerEvictionRun(numTestsPerEvictionRun_),
-        minEvictableIdleTimeMillis(minEvictableIdleTimeMillis_), lifo(lifo_) { }
+        minEvictableIdleTimeMillis(minEvictableIdleTimeMillis_), lifo(lifo_)
+    {
+	    factory.reset(factory_);
+    }
 
     int getMaxIdle() { return maxIdle; }
     int getMaxActive() { return maxActive; }
@@ -74,7 +77,7 @@ template <class K, class V> class GenericKeyedObjectPoolFactory
     ~GenericKeyedObjectPoolFactory() {/*delete &factory;*/} // SEGMENTATION FAULT
 
   private:
-    KeyedPoolableObjectFactory<K,V>& factory;
+    HR_SHARED_PTR<KeyedPoolableObjectFactory<K,V> > factory;
 
     int maxIdle;
     int maxActive;

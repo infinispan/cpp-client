@@ -16,7 +16,7 @@ template<class T> class AbstractKeyValueOperation : public AbstractKeyOperation<
     protected:
 	    AbstractKeyValueOperation(
             const protocol::Codec&       codec_,
-            transport::TransportFactory* transportFactory_,
+            HR_SHARED_PTR<transport::TransportFactory> transportFactory_,
             const hrbytes&                                   key_,
             const hrbytes&                                   cacheName_,
             uint32_t                                         topologyId_,

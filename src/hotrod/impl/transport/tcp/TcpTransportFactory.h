@@ -6,6 +6,7 @@
 #include "hotrod/impl/transport/Transport.h"
 #include "hotrod/impl/transport/TransportFactory.h"
 #include "hotrod/impl/transport/tcp/TcpTransport.h"
+#include "hotrod/sys/Mutex.h"
 
 #include <vector>
 
@@ -37,19 +38,22 @@ class TcpTransportFactory : public TransportFactory
     int getConnectTimeout();
 
   private:
+    sys::Mutex lock;
     std::vector<InetSocketAddress> servers;
     bool tcpNoDelay;
     int soTimeout;
     int connectTimeout;
     int transportCount;
-    GenericKeyedObjectPool<InetSocketAddress, TcpTransport>* connectionPool;
-    RequestBalancingStrategy* balancer;
+
+    HR_SHARED_PTR<GenericKeyedObjectPool<InetSocketAddress, TcpTransport> > connectionPool;
+    HR_SHARED_PTR<RequestBalancingStrategy> balancer;
 
     void createAndPreparePool(
-        PropsKeyedObjectPoolFactory<InetSocketAddress, TcpTransport>& poolFactory);
+        PropsKeyedObjectPoolFactory<InetSocketAddress, TcpTransport>* poolFactory);
     void updateTransportCount();
     void pingServers();
     Transport& borrowTransportFromPool(const InetSocketAddress& server);
+    GenericKeyedObjectPool<InetSocketAddress, TcpTransport>* getConnectionPool();
 };
 
 }}} // namespace infinispan::hotrod::transport

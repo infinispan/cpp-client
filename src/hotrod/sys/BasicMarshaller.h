@@ -47,7 +47,7 @@ class BasicMarshaller<int> : public infinispan::hotrod::Marshaller<int> {
     	  for (int i = 0 ; i < 4 ; i++) {
     	    buf[3-i] = (char) ((s) >> (8*i));
     	  }
-        b.set(buf, 4, &BasicMarshallerHelper::noRelease);
+        b.set(buf, 4);
     }
     int* unmarshall(const ScopedBuffer& b) {
     	int result = 0;

@@ -16,7 +16,7 @@ template <class K, class V> class PropsKeyedObjectPoolFactory :
 {
   public:
 	PropsKeyedObjectPoolFactory(
-      KeyedPoolableObjectFactory<K,V>& factory_,
+      KeyedPoolableObjectFactory<K,V>* factory_,
       const ConnectionPoolConfiguration& configuration)
       : GenericKeyedObjectPoolFactory<K,V>(
         factory_,
