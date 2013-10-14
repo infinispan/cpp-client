@@ -10,19 +10,25 @@ namespace infinispan {
 namespace hotrod {
 namespace protocol {
 
-bool CodecFactory::initialized = false;
-std::map<std::string, Codec*> CodecFactory::codecMap;
+CodecFactory::CodecFactory() {
+    codecMap[Configuration::PROTOCOL_VERSION_12] = new Codec12();
+}
 
+CodecFactory::~CodecFactory() {
+    for (std::map<std::string, Codec*>::iterator it=codecMap.begin(); it!=codecMap.end(); ++it) {
+        delete it->second;
+    }
+}
+
+CodecFactory& CodecFactory::getInstance() {
+    static CodecFactory instance;
+
+    return instance;
+}
 
 Codec* CodecFactory::getCodec(const char* version) {
-    if(!initialized) {
-        codecMap[Configuration::PROTOCOL_VERSION_12] = new Codec12();
-        initialized = true;
-    }
-
-    Codec* result = CodecFactory::codecMap[version];
-
-    return result;
+    return CodecFactory::getInstance().codecMap[version];
 }
+
 
 }}} // namespace

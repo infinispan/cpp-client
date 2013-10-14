@@ -47,13 +47,14 @@ class Socket
 {
   public:
     Socket();
+    ~Socket();
     void connect(const std::string& host, int port);
     void close();
     InputStream& getInputStream();
     OutputStream& getOutputStream();
 
   private:
-    sys::Socket& socket;
+    sys::Socket *socket;
     InputStream inputStream;
     OutputStream outputStream;
 

@@ -84,7 +84,7 @@ template <class K, class V> class GenericKeyedObjectPool
         if (val) {
             factory.destroyObject(key, *val);
         }
-        poolMap.erase(key);
+        poolMap[key] = 0;
     }
 
     void preparePool(const K& key) {

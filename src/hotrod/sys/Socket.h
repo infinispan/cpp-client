@@ -14,6 +14,7 @@ class Socket
   public:
     static Socket* create();
 
+    virtual ~Socket() {};
     virtual void connect(const std::string& host, int port) = 0;
     virtual void close() = 0;
     virtual size_t read(char *p, size_t n) = 0;

@@ -16,11 +16,12 @@ class CodecFactory
 {
   public:
     static Codec* getCodec(const char* version);
+    static CodecFactory& getInstance();
 
   private:
     CodecFactory();
-    static std::map<std::string, Codec*> codecMap;
-    static bool initialized;
+    ~CodecFactory();
+    std::map<std::string, Codec*> codecMap;
 };
 
 }}} // namespace infinispan::hotrod::protocol

@@ -6,6 +6,7 @@
 #include "hotrod/impl/transport/Transport.h"
 #include "hotrod/impl/transport/TransportFactory.h"
 #include "hotrod/impl/transport/tcp/TcpTransport.h"
+#include "hotrod/impl/transport/tcp/TransportObjectFactory.h"
 #include "hotrod/sys/Mutex.h"
 
 #include <vector>
@@ -50,6 +51,7 @@ class TcpTransportFactory : public TransportFactory
     int soTimeout;
     int connectTimeout;
     int transportCount;
+    TransportObjectFactory *transportFactory;
     GenericKeyedObjectPool<InetSocketAddress, TcpTransport>* connectionPool;
     RequestBalancingStrategy* balancer;
 
