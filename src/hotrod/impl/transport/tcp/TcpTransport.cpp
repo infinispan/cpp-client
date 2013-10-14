@@ -115,7 +115,6 @@ void TcpTransport::readBytes(hrbytes& bytes, uint32_t size) {
 
 void TcpTransport::release() {
     try {
-        //socket->close();
         socket.close();
     } catch(Exception& e) {
         invalid = true;
@@ -128,8 +127,6 @@ void TcpTransport::invalidate() {
 }
 
 void TcpTransport::destroy() {
-    // TODO
-    //socket->close();
     socket.close();
 }
 

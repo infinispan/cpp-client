@@ -11,7 +11,7 @@ namespace hotrod {
 const char* ConfigurationBuilder::PROTOCOL_VERSION_12 = "1.2";
 
 ConfigurationBuilder::ConfigurationBuilder()
-: internalPingOnStartup(true), internalTcpNoDelay(true)
+: internalPingOnStartup(true), internalProtocolVersion(PROTOCOL_VERSION_12), internalTcpNoDelay(true)
 {
   ConfigurationBuilder::connectionPoolConfigurationBuilder = ConnectionPoolConfigurationBuilder();
   ConfigurationBuilder::sslConfigurationBuilder = SslConfigurationBuilder();

@@ -35,6 +35,8 @@ namespace posix {
 class Socket: public infinispan::hotrod::sys::Socket {
   public:
     Socket();
+
+    virtual ~Socket();
     virtual void connect(const std::string& host, int port);
     virtual void close();
     virtual size_t read(char *p, size_t n);
@@ -65,7 +67,9 @@ void throwIOErr (const std::string& host, int port, const char *msg, int errnum)
 
 } /* namespace */
 
-Socket::Socket() : fd(-1) {}
+Socket::Socket() : fd(-1), port(-1) {}
+
+Socket::~Socket() { close(); }
 
 void Socket::connect(const std::string& h, int p) {
 	host = h;

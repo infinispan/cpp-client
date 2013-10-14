@@ -42,8 +42,10 @@ void TcpTransportFactory::start(
 
     // TODO: SSL configuration
 
+    transportFactory = new TransportObjectFactory(codec, *this, topologyId, pingOnStartup);
+
     PropsKeyedObjectPoolFactory<InetSocketAddress, TcpTransport> poolFactory(
-        *new TransportObjectFactory(codec, *this, topologyId, pingOnStartup),
+        *transportFactory,
         configuration.getConnectionPoolConfiguration());
 
     createAndPreparePool(poolFactory);
@@ -125,19 +127,19 @@ void TcpTransportFactory::pingServers() {
 }
 
 void TcpTransportFactory::updateTransportCount() {
-    unsigned int maxActive = connectionPool->getMaxActive();
+    int maxActive = connectionPool->getMaxActive();
+    int size = servers.size();
     if (maxActive > 0) {
-        transportCount = (maxActive * servers.size() > maxActive) ?
-            maxActive * servers.size() : maxActive;
+        transportCount = (maxActive * size > maxActive) ?
+            maxActive * size : maxActive;
         //to avoid int overflow when maxActive is very high!
     } else {
-        transportCount = 10 * servers.size();
+        transportCount = 10 * size;
     }
 }
 
 void TcpTransportFactory::destroy() {
-  connectionPool->clear();
-    connectionPool->close();
+  connectionPool->close();
   // TODO: clean connection pool
   /*
     try {
@@ -150,6 +152,8 @@ void TcpTransportFactory::destroy() {
   connectionPool = NULL;
   delete balancer;
   balancer = NULL;
+  delete transportFactory;
+  transportFactory = NULL;
 }
 
 Transport& TcpTransportFactory::borrowTransportFromPool(

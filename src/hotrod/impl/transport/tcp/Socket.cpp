@@ -14,19 +14,21 @@ namespace hotrod {
 
 namespace transport {
 
-// TODO
-
 Socket::Socket() :
-    socket(*sys::Socket::create()), inputStream(socket), outputStream(socket)
+    socket(sys::Socket::create()), inputStream(*socket), outputStream(*socket)
 {}
 
+Socket::~Socket() {
+    delete socket;
+}
+
 void Socket::connect(const std::string& host, int port) {
-	std::cout << "host " << host << " port " << port << std::endl;
-    socket.connect(host, port);
+    std::cout << "host " << host << " port " << port << std::endl;
+    socket->connect(host, port);
 }
 
 void Socket::close() {
-    socket.close();
+    socket->close();
 }
 
 InputStream& Socket::getInputStream() {
