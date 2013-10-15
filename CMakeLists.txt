@@ -145,11 +145,13 @@ if (NOT JAVA_RUNTIME)
     message(FATAL_ERROR "Java javac compiler not found")
 endif (NOT JAVA_RUNTIME)
 
-
-set(HOTROD_JBOSS_HOME $ENV{JBOSS_HOME} CACHE FILEPATH "Infinispan HOME dir")
-if (NOT IS_DIRECTORY ${HOTROD_JBOSS_HOME})
-    message(FATAL_ERROR "you must set the JBOSS_HOME environment variable or use -DHOTROD_JBOSS_HOME=/the/path")
-endif (NOT IS_DIRECTORY ${HOTROD_JBOSS_HOME})
+if (NOT DEFINED HOTROD_JBOSS_HOME)
+   if (NOT DEFINED ENV{JBOSS_HOME})
+      message(FATAL_ERROR "you must set the JBOSS_HOME environment variable or use -DHOTROD_JBOSS_HOME=/the/path")
+   else (NOT DEFINED ENV{JBOSS_HOME})
+      set(HOTROD_JBOSS_HOME $ENV{JBOSS_HOME} CACHE FILEPATH "Infinispan HOME dir")
+   endif (NOT DEFINED ENV{JBOSS_HOME})
+endif (NOT DEFINED HOTROD_JBOSS_HOME)
 
 if (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.sh") AND (EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.bat")))
     message(FATAL_ERROR "JBOSS_HOME ${HOTROD_JBOSS_HOME} does not have needed startup scripts")
