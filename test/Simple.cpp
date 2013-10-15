@@ -4,7 +4,6 @@
 
 #include <iostream>
 #include <memory>
-#include <unistd.h>
 
 // For CTest: return 0 if all tests pass, non-zero otherwise.
 
