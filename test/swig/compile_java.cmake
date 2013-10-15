@@ -12,9 +12,15 @@ foreach(pathname ${swig_wrappers})
     file(APPEND "${JNI_DIR}/source2" "${pathname}\n")
 endforeach(pathname)
 
-execute_process(COMMAND ${JAVA_COMPILE} -cp ".:lib/*" -d . "@source1" "@source2" WORKING_DIRECTORY ${JNI_DIR})
+if(WIN32 AND NOT CYGWIN)
+  set (CLASSPATH_SEPARATOR ";")
+else (WIN32 AND NOT CYGWIN)
+  set (CLASSPATH_SEPARATOR ":")
+endif(WIN32 AND NOT CYGWIN)
+
+execute_process(COMMAND ${JAVA_COMPILE} -cp ".${CLASSPATH_SEPARATOR}lib/*" -d . "@source1" "@source2" WORKING_DIRECTORY ${JNI_DIR})
 execute_process(COMMAND ${JAVA_ARCHIVE} cf hotrod-jni.jar org WORKING_DIRECTORY ${JNI_DIR})
-execute_process(COMMAND ${JAVA_COMPILE} -cp "hotrod-jni.jar:lib/*" -d . ${HOTROD_SOURCE_DIR}/test/JniTest.java WORKING_DIRECTORY ${JNI_DIR})
+execute_process(COMMAND ${JAVA_COMPILE} -cp "hotrod-jni.jar${CLASSPATH_SEPARATOR}lib/*" -d . ${HOTROD_SOURCE_DIR}/test/JniTest.java WORKING_DIRECTORY ${JNI_DIR})
 
 if(NOT EXISTS ${JNI_DIR}/JniTest.class)
     message(FATAL_ERROR "JniTest compile failed")
