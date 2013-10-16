@@ -1,9 +1,6 @@
-
-
 #include "hotrod/impl/transport/tcp/TcpTransportFactory.h"
 #include "hotrod/impl/transport/tcp/TcpTransport.h"
 #include "hotrod/impl/transport/tcp/InetSocketAddress.h"
-#include "hotrod/impl/transport/tcp/PropsKeyedObjectPoolFactory.h"
 #include "hotrod/impl/transport/tcp/TransportObjectFactory.h"
 #include "hotrod/impl/transport/tcp/RequestBalancingStrategy.h"
 #include "hotrod/impl/protocol/Codec.h"
@@ -42,12 +39,7 @@ void TcpTransportFactory::start(
 
     transportFactory.reset(new TransportObjectFactory(codec, *this, topologyId, pingOnStartup));
 
-    PropsKeyedObjectPoolFactory<InetSocketAddress, TcpTransport>* poolFactory =
-        new PropsKeyedObjectPoolFactory<InetSocketAddress, TcpTransport>(
-            transportFactory.get(),
-            configuration.getConnectionPoolConfiguration());
-
-    createAndPreparePool(poolFactory);
+    createAndPreparePool(configuration.getConnectionPoolConfiguration());
     balancer->setServers(servers);
     updateTransportCount();
 
@@ -71,7 +63,7 @@ Transport& TcpTransportFactory::getTransport(const hrbytes& /*key*/) {
 }
 
 void TcpTransportFactory::releaseTransport(Transport& transport) {
-	GenericKeyedObjectPool<InetSocketAddress, TcpTransport>* pool = getConnectionPool();
+    ConnectionPool* pool = getConnectionPool();
     TcpTransport& tcpTransport = dynamic_cast<TcpTransport&>(transport);
     if (!tcpTransport.isValid()) {
     	pool->invalidateObject(tcpTransport.getServerAddress(), &tcpTransport);
@@ -83,9 +75,8 @@ void TcpTransportFactory::releaseTransport(Transport& transport) {
 void TcpTransportFactory::invalidateTransport(
     const InetSocketAddress& serverAddress, Transport* transport)
 {
-	GenericKeyedObjectPool<InetSocketAddress, TcpTransport>* pool = getConnectionPool();
-    pool->invalidateObject(
-        serverAddress, dynamic_cast<TcpTransport*>(transport));
+    ConnectionPool* pool = getConnectionPool();
+    pool->invalidateObject(serverAddress, dynamic_cast<TcpTransport*>(transport));
 }
 
 bool TcpTransportFactory::isTcpNoDelay() {
@@ -108,9 +99,9 @@ int TcpTransportFactory::getConnectTimeout() {
     return connectTimeout;
 }
 
-void TcpTransportFactory::createAndPreparePool(PropsKeyedObjectPoolFactory<InetSocketAddress, TcpTransport>* poolFactory)
+void TcpTransportFactory::createAndPreparePool(const ConnectionPoolConfiguration& configuration)
 {
-    connectionPool.reset(poolFactory->createPool());
+    connectionPool.reset(new ConnectionPool(transportFactory, configuration));
     for (std::vector<InetSocketAddress>::const_iterator i = servers.begin();
         i != servers.end() ; ++i)
     {
@@ -136,7 +127,7 @@ void TcpTransportFactory::pingServers() {
 
 void TcpTransportFactory::updateTransportCount() {
     ScopedLock<Mutex> l(lock);
-    int maxActive = connectionPool->getMaxActive();
+    int maxActive = connectionPool->getConfiguration().getMaxActive();
     int size = servers.size();
     if (maxActive > 0) {
         transportCount = (maxActive * size > maxActive) ?
@@ -155,11 +146,11 @@ void TcpTransportFactory::destroy() {
 Transport& TcpTransportFactory::borrowTransportFromPool(
     const InetSocketAddress& server)
 {
-	GenericKeyedObjectPool<InetSocketAddress, TcpTransport>* pool = getConnectionPool();
+    ConnectionPool* pool = getConnectionPool();
     return pool->borrowObject(server);
 }
 
-GenericKeyedObjectPool<InetSocketAddress, TcpTransport>* TcpTransportFactory::getConnectionPool()
+ConnectionPool* TcpTransportFactory::getConnectionPool()
 {
     ScopedLock<Mutex> l(lock);
     return connectionPool.get();
