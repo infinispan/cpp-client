@@ -127,8 +127,8 @@ void Codec12::readNewTopologyAndHash(Transport& transport, uint32_t& topologyId)
 }
 
 std::map<InetSocketAddress, std::set<int32_t> > Codec12::computeNewHashes(
-        Transport& transport, uint32_t newTopologyId, int16_t numKeyOwners,
-        uint8_t hashFunctionVersion, uint32_t hashSpace, uint32_t clusterSize) const {
+        Transport& transport, uint32_t /*newTopologyId*/, int16_t /*numKeyOwners*/,
+        uint8_t /*hashFunctionVersion*/, uint32_t /*hashSpace*/, uint32_t clusterSize) const {
 
     std::map<InetSocketAddress, std::set<int32_t> > map;
     for (uint32_t i = 0; i < clusterSize; i++) {
