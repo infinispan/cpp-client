@@ -2,9 +2,10 @@
 #define ISPN_HOTROD_TRANSPORT_TCPTRANSPORTFACTORY_H
 
 
-
+#include "hotrod/impl/configuration/Configuration.h"
 #include "hotrod/impl/transport/Transport.h"
 #include "hotrod/impl/transport/TransportFactory.h"
+#include "hotrod/impl/transport/tcp/ConnectionPool.h"
 #include "hotrod/impl/transport/tcp/TcpTransport.h"
 #include "hotrod/impl/transport/tcp/TransportObjectFactory.h"
 #include "hotrod/sys/Mutex.h"
@@ -15,8 +16,6 @@ namespace infinispan {
 namespace hotrod {
 namespace transport {
 
-template <class K, class V> class PropsKeyedObjectPoolFactory;
-template <class K, class V> class GenericKeyedObjectPool;
 class RequestBalancingStrategy;
 class InetSocketAddress;
 
@@ -48,14 +47,14 @@ class TcpTransportFactory : public TransportFactory
     int connectTimeout;
     int transportCount;
     HR_SHARED_PTR<TransportObjectFactory> transportFactory;
-    HR_SHARED_PTR<GenericKeyedObjectPool<InetSocketAddress, TcpTransport> > connectionPool;
+    HR_SHARED_PTR<ConnectionPool> connectionPool;
     HR_SHARED_PTR<RequestBalancingStrategy> balancer;
 
-    void createAndPreparePool(PropsKeyedObjectPoolFactory<InetSocketAddress, TcpTransport>* poolFactory);
+    void createAndPreparePool(const ConnectionPoolConfiguration& configuration);
     void updateTransportCount();
     void pingServers();
     Transport& borrowTransportFromPool(const InetSocketAddress& server);
-    GenericKeyedObjectPool<InetSocketAddress, TcpTransport>* getConnectionPool();
+    ConnectionPool* getConnectionPool();
 };
 
 }}} // namespace infinispan::hotrod::transport
