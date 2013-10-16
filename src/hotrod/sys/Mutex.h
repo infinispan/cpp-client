@@ -42,4 +42,6 @@ class ScopedUnlock
 #include "posix/Mutex.h"
 #endif
 
+#define synchronized(M) bool M##_locked = true; for(ScopedLock<Mutex> M##_sl(M); M##_locked; M##_locked = false)
+
 #endif  /* ISPN_HOTROD_MUTEX_H */

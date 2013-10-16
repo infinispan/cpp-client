@@ -117,7 +117,7 @@ Configuration ConfigurationBuilder::create()
           servers.push_back((*it)->create());
       }
   } else {
-      servers.push_back(ServerConfiguration("127.0.0.1",11222));
+      servers.push_back(ServerConfiguration("127.0.0.1", 11222));
   }
 
   //TODO: subsitute connectionpoolconfiguration and sslconfiguration with the builders
@@ -125,11 +125,11 @@ Configuration ConfigurationBuilder::create()
         ConnectionPoolConfiguration(
             WAIT,
             true,
-            -1,
-            -1,
-            -1,
-            -1,
-            -1,
+            20, // maxActive
+            20, // maxTotal
+            -1, // maxWait
+            10, // maxIdle
+            5, // minIdle
             120000,
             1800000,
             3,

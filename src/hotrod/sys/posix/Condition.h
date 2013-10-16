@@ -15,7 +15,7 @@
 #endif
 
 
-void current_utc_time(struct timespec *ts) {
+static void current_utc_time(struct timespec *ts) {
 //http://stackoverflow.com/questions/5167269/clock-gettime-alternative-in-mac-os-x
 #ifdef __APPLE__ // OS X does not have clock_gettime, use clock_get_time
     clock_serv_t cclock;
