@@ -6,7 +6,17 @@
 namespace infinispan {
 namespace hotrod {
 
+#ifdef CREATE_NEW
+#define WINDOWS_WORKAROUND_CREATE_NEW CREATE_NEW
+#undef CREATE_NEW
+#endif
+
 enum ExhaustedAction { EXCEPTION, WAIT, CREATE_NEW };
+
+#ifdef WINDOWS_WORKAROUND_CREATE_NEW
+#define CREATE_NEW WINDOWS_WORKAROUND_CREATE_NEW
+#undef WINDOWS_WORKAROUND_CREATE_NEW
+#endif
 
 class HR_EXTERN ConnectionPoolConfiguration
 {
