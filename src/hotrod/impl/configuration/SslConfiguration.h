@@ -1,10 +1,3 @@
-/*
- * SslConfiguration.h
- *
- *  Created on: Jul 10, 2013
- *      Author: samuele
- */
-
 #ifndef SSLCONFIGURATION_H_
 #define SSLCONFIGURATION_H_
 
@@ -18,9 +11,8 @@ class HR_EXTERN SslConfiguration
 {
   public:
     SslConfiguration() {};
-  //TODO: Add SSL support
 };
 
-}
-}
+}}
+
 #endif /* SSLCONFIGURATION_H_ */

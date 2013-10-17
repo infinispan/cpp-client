@@ -1,26 +1,18 @@
-
-
-#include "hotrod/impl/configuration/ConfigurationBuilder.h"
 #include <sstream>
 #include <fstream>
 #include <iostream>
+
+#include "ConfigurationBuilder.h"
 
 namespace infinispan {
 namespace hotrod {
 
 const char* ConfigurationBuilder::PROTOCOL_VERSION_12 = "1.2";
 
-ConfigurationBuilder::ConfigurationBuilder()
-: internalPingOnStartup(true), internalProtocolVersion(PROTOCOL_VERSION_12), internalTcpNoDelay(true)
-{
-  ConfigurationBuilder::connectionPoolConfigurationBuilder = ConnectionPoolConfigurationBuilder();
-  ConfigurationBuilder::sslConfigurationBuilder = SslConfigurationBuilder();
-}
-
 ServerConfigurationBuilder& ConfigurationBuilder::addServer()
 {
-  ServerConfigurationBuilder* builder = new ServerConfigurationBuilder();
-  ConfigurationBuilder::internalServers.push_back(builder);
+  ServerConfigurationBuilder* builder = new ServerConfigurationBuilder(*this);
+  m_servers.push_back(builder);
   return *builder;
 }
 
@@ -51,39 +43,39 @@ ConnectionPoolConfigurationBuilder& ConfigurationBuilder::connectionPool()
   return ConfigurationBuilder::connectionPoolConfigurationBuilder;
 }
 
-ConfigurationBuilder& ConfigurationBuilder::connectionTiemout(int connectionTimeoutParam)
+ConfigurationBuilder& ConfigurationBuilder::connectionTimeout(int connectionTimeout_)
 {
-  ConfigurationBuilder::internalConnectionTimeout = connectionTimeoutParam;
+  ConfigurationBuilder::m_connectionTimeout = connectionTimeout_;
   return *this;
 }
 
-ConfigurationBuilder& ConfigurationBuilder::forceReturnValues(bool forceReturnValuesParam)
+ConfigurationBuilder& ConfigurationBuilder::forceReturnValues(bool forceReturnValues_)
 {
-  ConfigurationBuilder::internalForceReturnValue = forceReturnValuesParam;
+  ConfigurationBuilder::m_forceReturnValue = forceReturnValues_;
   return *this;
 }
 
-ConfigurationBuilder& ConfigurationBuilder::keySizeEstimate(int keySizeEstimateParam)
+ConfigurationBuilder& ConfigurationBuilder::keySizeEstimate(int keySizeEstimate_)
 {
-  ConfigurationBuilder::internalKeySizeEstimate = keySizeEstimateParam;
+  ConfigurationBuilder::m_keySizeEstimate = keySizeEstimate_;
   return *this;
 }
 
-ConfigurationBuilder& ConfigurationBuilder::pingOnStartup(bool pingOnStartupParam)
+ConfigurationBuilder& ConfigurationBuilder::pingOnStartup(bool pingOnStartup_)
 {
-  ConfigurationBuilder::internalPingOnStartup = pingOnStartupParam;
+  ConfigurationBuilder::m_pingOnStartup = pingOnStartup_;
   return *this;
 }
 
-ConfigurationBuilder& ConfigurationBuilder::protocolVersion(std::string protocolVersionParam)
+ConfigurationBuilder& ConfigurationBuilder::protocolVersion(std::string protocolVersion_)
 {
-  ConfigurationBuilder::internalProtocolVersion = protocolVersionParam;
+  ConfigurationBuilder::m_protocolVersion = protocolVersion_;
   return *this;
 }
 
-ConfigurationBuilder& ConfigurationBuilder::socketTimeout(int socketTimeoutParam)
+ConfigurationBuilder& ConfigurationBuilder::socketTimeout(int socketTimeout_)
 {
-  ConfigurationBuilder::internalSocketTimeout = socketTimeoutParam;
+  ConfigurationBuilder::m_socketTimeout = socketTimeout_;
   return *this;
 }
 
@@ -92,15 +84,15 @@ SslConfigurationBuilder& ConfigurationBuilder::ssl()
   return ConfigurationBuilder::sslConfigurationBuilder;
 }
 
-ConfigurationBuilder& ConfigurationBuilder::tcpNoDelay(bool tcpNoDelayParam)
+ConfigurationBuilder& ConfigurationBuilder::tcpNoDelay(bool tcpNoDelay_)
 {
-  ConfigurationBuilder::internalTcpNoDelay = tcpNoDelayParam;
+  ConfigurationBuilder::m_tcpNoDelay = tcpNoDelay_;
   return *this;
 }
 
-ConfigurationBuilder& ConfigurationBuilder::valueSizeEstimate(int valueSizeEstimateParam)
+ConfigurationBuilder& ConfigurationBuilder::valueSizeEstimate(int valueSizeEstimate_)
 {
-  ConfigurationBuilder::internalValueSizeEstimate = valueSizeEstimateParam;
+  ConfigurationBuilder::m_valueSizeEstimate = valueSizeEstimate_;
   return *this;
 }
 
@@ -112,52 +104,38 @@ Configuration ConfigurationBuilder::build()
 Configuration ConfigurationBuilder::create()
 {
   std::vector<ServerConfiguration> servers;
-  if(internalServers.size() > 0) {
-      for(std::vector<ServerConfigurationBuilder *>::iterator it = internalServers.begin(); it < internalServers.end(); it++) {
+  if(m_servers.size() > 0) {
+      for(std::vector<ServerConfigurationBuilder *>::iterator it = m_servers.begin(); it < m_servers.end(); it++) {
           servers.push_back((*it)->create());
       }
   } else {
       servers.push_back(ServerConfiguration("127.0.0.1", 11222));
   }
 
-  //TODO: subsitute connectionpoolconfiguration and sslconfiguration with the builders
-  return Configuration(internalProtocolVersion,
-        ConnectionPoolConfiguration(
-            WAIT,
-            true,
-            20, // maxActive
-            20, // maxTotal
-            -1, // maxWait
-            10, // maxIdle
-            5, // minIdle
-            120000,
-            1800000,
-            3,
-            false,
-            false,
-            true),
-      internalConnectionTimeout,
-      internalForceReturnValue,
-      internalKeySizeEstimate,
-      internalPingOnStartup,
+  return Configuration(m_protocolVersion,
+      connectionPoolConfigurationBuilder.create(),
+      m_connectionTimeout,
+      m_forceReturnValue,
+      m_keySizeEstimate,
+      m_pingOnStartup,
       servers,
-      internalSocketTimeout,
-      SslConfiguration(),
-      internalTcpNoDelay,
-      internalKeySizeEstimate);
+      m_socketTimeout,
+      sslConfigurationBuilder.create(),
+      m_tcpNoDelay,
+      m_keySizeEstimate);
 }
 
 ConfigurationBuilder& ConfigurationBuilder::read(Configuration& bean)
 {
   // FIXME: read pool, ssl and server configs
-  internalProtocolVersion = bean.getProtocolVersion();
-  internalConnectionTimeout = bean.getConnectionTimeout();
-  internalForceReturnValue = bean.isForceReturnValue();
-  internalPingOnStartup = bean.isPingOnStartup();
-  internalSocketTimeout = bean.getSocketTimeout();
-  internalTcpNoDelay = bean.isTcpNoDelay();
-  internalKeySizeEstimate = bean.getKeySizeEstimate();
-  internalValueSizeEstimate = bean.getValueSizeEstimate();
+  m_protocolVersion = bean.getProtocolVersion();
+  m_connectionTimeout = bean.getConnectionTimeout();
+  m_forceReturnValue = bean.isForceReturnValue();
+  m_pingOnStartup = bean.isPingOnStartup();
+  m_socketTimeout = bean.getSocketTimeout();
+  m_tcpNoDelay = bean.isTcpNoDelay();
+  m_keySizeEstimate = bean.getKeySizeEstimate();
+  m_valueSizeEstimate = bean.getValueSizeEstimate();
 
   return *this;
 }

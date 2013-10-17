@@ -1,4 +1,4 @@
-
+#include <iostream>
 
 #include "hotrod/impl/transport/tcp/RoundRobinBalancingStrategy.h"
 
@@ -31,7 +31,6 @@ const InetSocketAddress& RoundRobinBalancingStrategy::nextServer() {
 
 const InetSocketAddress& RoundRobinBalancingStrategy::getServerByIndex(size_t pos) {
     const InetSocketAddress& server = servers[pos];
-    // TODO: log?
     return server;
 }
 

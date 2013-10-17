@@ -16,7 +16,6 @@ namespace hotrod {
 class HR_EXTERN Configuration
 {
   public:
-    // TODO: spostare (java ConfigurationProperties)
     static const char* PROTOCOL_VERSION_12;
 
     Configuration(std::string protocolVersion,
@@ -27,7 +26,7 @@ class HR_EXTERN Configuration
             bool pingOnStartup,
             std::vector<ServerConfiguration> serversConfiguration,
             int socketTimeout,
-            SslConfiguration sslConfiguration,
+            const SslConfiguration sslConfiguration,
             bool tcpNoDelay,
             int valueSizeEstimate);
 

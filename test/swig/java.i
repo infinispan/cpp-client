@@ -67,7 +67,11 @@
 
 %template(Builder_conf) infinispan::hotrod::Builder<infinispan::hotrod::Configuration>;
 %template(Builder_serverconf) infinispan::hotrod::Builder<infinispan::hotrod::ServerConfiguration>;
+%template(Builder_poolconf) infinispan::hotrod::Builder<infinispan::hotrod::ConnectionPoolConfiguration>;
+%template(Builder_sslconf) infinispan::hotrod::Builder<infinispan::hotrod::SslConfiguration>;
 
+%include "hotrod/impl/configuration/ConfigurationChildBuilder.h"
+%include "hotrod/impl/configuration/SslConfigurationBuilder.h"
 %include "hotrod/impl/configuration/ServerConfigurationBuilder.h"
 %include "hotrod/impl/configuration/ConnectionPoolConfigurationBuilder.h"
 %include "hotrod/impl/configuration/ConfigurationBuilder.h"

@@ -3,6 +3,7 @@
 
 
 #include <string>
+#include <iostream>
 
 namespace infinispan {
 namespace hotrod {
@@ -12,7 +13,7 @@ class InetSocketAddress
 {
   public:
     InetSocketAddress(const std::string& addr, int p) :
-      address(addr), port(p) {}
+      address(addr), port(p) { }
 
     const std::string& getAddress() const { return address; }
     int getPort() const { return port; }

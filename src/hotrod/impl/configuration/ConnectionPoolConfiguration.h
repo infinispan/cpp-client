@@ -1,10 +1,3 @@
-/*
- * ConnectionPoolConfigguration.h
- *
- *  Created on: Jul 10, 2013
- *      Author: samuele
- */
-
 #ifndef CONNECTIONPOOLCONFIGURATION_H_
 #define CONNECTIONPOOLCONFIGURATION_H_
 
@@ -13,12 +6,11 @@
 namespace infinispan {
 namespace hotrod {
 
-enum ExhaustedAction { EXCEPTION, WAIT, CREATE_NEW};
+enum ExhaustedAction { EXCEPTION, WAIT, CREATE_NEW };
 
 class HR_EXTERN ConnectionPoolConfiguration
 {
   public:
-    //TODO: remove the default constructor
     ConnectionPoolConfiguration(ExhaustedAction exhaustedAction,
         bool lifo,
         int maxActive,
@@ -48,6 +40,10 @@ class HR_EXTERN ConnectionPoolConfiguration
     const bool& isTestWhileIdle() const;
 
   private:
+    ConnectionPoolConfiguration() {
+        // private so that it cannot be invoked
+    }
+
     ExhaustedAction exhaustedAction;
     bool lifo;
     int maxActive;
