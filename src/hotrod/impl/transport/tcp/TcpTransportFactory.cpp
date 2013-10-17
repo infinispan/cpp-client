@@ -112,11 +112,10 @@ void TcpTransportFactory::createAndPreparePool(const ConnectionPoolConfiguration
 void TcpTransportFactory::pingServers() {
     for (std::vector<InetSocketAddress>::const_iterator iter = servers.begin();
         iter != servers.end(); iter++) {
-      InetSocketAddress addr = *iter;
        try {
           // Go through all statically configured nodes and force a
           // connection to be established and a ping message to be sent.
-          connectionPool->returnObject(addr, connectionPool->borrowObject(addr));
+          connectionPool->returnObject(*iter, connectionPool->borrowObject(*iter));
        } catch (Exception& e) {
           // Ping's objective is to retrieve a potentially newer
           // version of the Hot Rod cluster topology, so ignore
