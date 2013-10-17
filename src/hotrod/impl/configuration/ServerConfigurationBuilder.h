@@ -10,24 +10,26 @@
 
 #include <string>
 #include "infinispan/hotrod/ImportExport.h"
-#include "hotrod/impl/configuration/Builder.h"
-#include "hotrod/impl/configuration/ServerConfiguration.h"
+#include "Builder.h"
+#include "ServerConfiguration.h"
+#include "ConfigurationChildBuilder.h"
 
 namespace infinispan {
 namespace hotrod {
 
 class HR_EXTERN ServerConfigurationBuilder
-  : public Builder<ServerConfiguration>
+  : public Builder<ServerConfiguration>, public ConfigurationChildBuilder
 {
   public:
+    ServerConfigurationBuilder(ConfigurationBuilder& builder_);
     ServerConfigurationBuilder& host(std::string hostParam);
     ServerConfigurationBuilder& port(int portParam);
     virtual ServerConfiguration create();
     virtual ServerConfigurationBuilder& read(ServerConfiguration& bean);
 
   private:
-    std::string internalHost;
-    int internalPort;
+    std::string m_host;
+    int m_port;
 };
 
 
