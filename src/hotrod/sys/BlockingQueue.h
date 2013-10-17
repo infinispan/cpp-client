@@ -12,7 +12,7 @@ namespace sys {
 
 template<class T> class BlockingQueue {
 public:
-    BlockingQueue<T>(int capacity_) :
+    BlockingQueue<T>(size_t capacity_) :
             capacity(capacity_) {
     }
 
@@ -66,7 +66,7 @@ public:
     bool remove(T const& value) {
         ScopedLock<Mutex> l(lock);
 
-        int old_size = queue.size();
+        size_t old_size = queue.size();
         queue.remove(value);
         return old_size != queue.size();
     }
@@ -78,7 +78,7 @@ public:
     }
 
 private:
-    int capacity;
+    size_t capacity;
     std::list<T> queue;
     Mutex lock;
     Condition condition;
