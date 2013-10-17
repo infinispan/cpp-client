@@ -51,15 +51,15 @@ public:
         return element;
     }
 
-    T* poll() {
+    bool poll(T& value) {
         ScopedLock<Mutex> l(lock);
 
         if (queue.empty()) {
-            return 0;
+            return false;
         } else {
-            T* value = &queue.front();
+            value = queue.front();
             queue.pop_front();
-            return value;
+            return true;
         }
     }
 
@@ -85,8 +85,6 @@ private:
 
 };
 
-}
-}
-} // namespace infinispan::hotrod::sys
+}}} // namespace infinispan::hotrod::sys
 
 #endif  /* ISPN_HOTROD_BLOCKINGQUEUE_H */

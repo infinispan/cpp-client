@@ -23,18 +23,19 @@ TcpTransport& ConnectionPool::borrowObject(const InetSocketAddress& key) {
     BlockingQueue<TcpTransport *>* busyQ = busy[key];
 
     // See if an object is readily available
-    TcpTransport** obj_ptr = idleQ->poll();
-    TcpTransport* obj = obj_ptr ? *obj_ptr : 0;
+
+    TcpTransport* obj;
+    bool ok = idleQ->poll(obj);
 
     for (;;) {
-        if (obj) {
+        if (ok) {
             // Check if the object is still valid, if not destroy it
             if (configuration.isTestOnBorrow() && !factory->validateObject(key, *obj)) {
                 factory->destroyObject(key, *obj);
-                obj = 0;
+                ok = false;
             }
             // We have a valid object
-            if (obj) {
+            if (ok) {
                 busyQ->push(obj);
                 break;
             }
@@ -46,6 +47,7 @@ TcpTransport& ConnectionPool::borrowObject(const InetSocketAddress& key) {
             // Wait for an object to become idle
             obj = idleQ->pop();
         }
+        ok = true;
     }
     factory->activateObject(key, *obj);
     return *obj;
@@ -109,10 +111,12 @@ void ConnectionPool::clear(const InetSocketAddress& key, BlockingQueue<TcpTransp
 
 void ConnectionPool::checkIdle() {
     std::cout << "Ensuring idle connection limits" << std::endl;
+    // TODO
 }
 
 void ConnectionPool::testIdle() {
     std::cout << "Testing idle connections" << std::endl;
+    // TODO
 }
 
 void ConnectionPool::preparePool(const InetSocketAddress& key) {
