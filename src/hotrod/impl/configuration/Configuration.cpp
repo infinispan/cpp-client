@@ -1,6 +1,4 @@
-
-
-#include "hotrod/impl/configuration/Configuration.h"
+#include "infinispan/hotrod/Configuration.h"
 
 namespace infinispan {
 namespace hotrod {

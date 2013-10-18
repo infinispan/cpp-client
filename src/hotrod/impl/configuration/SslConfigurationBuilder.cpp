@@ -1,4 +1,4 @@
-#include "SslConfigurationBuilder.h"
+#include "infinispan/hotrod/SslConfigurationBuilder.h"
 
 namespace infinispan {
 namespace hotrod {

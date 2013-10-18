@@ -20,12 +20,12 @@
 
 %{
 #include <infinispan/hotrod/types.h>
-#include <hotrod/impl/configuration/ConnectionPoolConfiguration.h>
-#include <hotrod/impl/configuration/ServerConfiguration.h>
-#include <hotrod/impl/configuration/SslConfiguration.h>
-#include <hotrod/impl/configuration/Configuration.h>
-#include <hotrod/impl/configuration/ServerConfigurationBuilder.h>
-#include <hotrod/impl/configuration/ConfigurationBuilder.h>
+#include <infinispan/hotrod/ConnectionPoolConfiguration.h>
+#include <infinispan/hotrod/ServerConfiguration.h>
+#include <infinispan/hotrod/SslConfiguration.h>
+#include <infinispan/hotrod/Configuration.h>
+#include <infinispan/hotrod/ServerConfigurationBuilder.h>
+#include <infinispan/hotrod/ConfigurationBuilder.h>
 #include <infinispan/hotrod/MetadataValue.h>
 #include <infinispan/hotrod/Flag.h>
 #include <infinispan/hotrod/RemoteCacheManager.h>
@@ -59,22 +59,22 @@
 
 %template(HandleRemoteCacheManagerImpl) infinispan::hotrod::Handle<infinispan::hotrod::RemoteCacheManagerImpl>;
 
-%include "hotrod/impl/configuration/Builder.h"
-%include "hotrod/impl/configuration/ConnectionPoolConfiguration.h"
-%include "hotrod/impl/configuration/ServerConfiguration.h"
-%include "hotrod/impl/configuration/SslConfiguration.h"
-%include "hotrod/impl/configuration/Configuration.h"
+%include "infinispan/hotrod/Builder.h"
+%include "infinispan/hotrod/ConnectionPoolConfiguration.h"
+%include "infinispan/hotrod/ServerConfiguration.h"
+%include "infinispan/hotrod/SslConfiguration.h"
+%include "infinispan/hotrod/Configuration.h"
 
 %template(Builder_conf) infinispan::hotrod::Builder<infinispan::hotrod::Configuration>;
 %template(Builder_serverconf) infinispan::hotrod::Builder<infinispan::hotrod::ServerConfiguration>;
 %template(Builder_poolconf) infinispan::hotrod::Builder<infinispan::hotrod::ConnectionPoolConfiguration>;
 %template(Builder_sslconf) infinispan::hotrod::Builder<infinispan::hotrod::SslConfiguration>;
 
-%include "hotrod/impl/configuration/ConfigurationChildBuilder.h"
-%include "hotrod/impl/configuration/SslConfigurationBuilder.h"
-%include "hotrod/impl/configuration/ServerConfigurationBuilder.h"
-%include "hotrod/impl/configuration/ConnectionPoolConfigurationBuilder.h"
-%include "hotrod/impl/configuration/ConfigurationBuilder.h"
+%include "infinispan/hotrod/ConfigurationChildBuilder.h"
+%include "infinispan/hotrod/SslConfigurationBuilder.h"
+%include "infinispan/hotrod/ServerConfigurationBuilder.h"
+%include "infinispan/hotrod/ConnectionPoolConfigurationBuilder.h"
+%include "infinispan/hotrod/ConfigurationBuilder.h"
 %include "infinispan/hotrod/MetadataValue.h"
 %include "infinispan/hotrod/Flag.h"
 %include "infinispan/hotrod/RemoteCacheManager.h"

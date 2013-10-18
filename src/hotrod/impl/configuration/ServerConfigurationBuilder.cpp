@@ -1,4 +1,4 @@
-#include "hotrod/impl/configuration/ServerConfigurationBuilder.h"
+#include "infinispan/hotrod/ServerConfigurationBuilder.h"
 
 namespace infinispan {
 namespace hotrod {

@@ -6,6 +6,7 @@
 #include "infinispan/hotrod/ImportExport.h"
 #include "infinispan/hotrod/Handle.h"
 #include "infinispan/hotrod/RemoteCache.h"
+#include "infinispan/hotrod/Configuration.h"
 
 #include "hotrod/sys/BasicMarshaller.h"
 
@@ -16,21 +17,22 @@ namespace infinispan {
 namespace hotrod {
 
 class RemoteCacheManagerImpl;
-class Configuration;
 
 class HR_EXTERN RemoteCacheManager : public Handle<RemoteCacheManagerImpl>
 {
   public:
     explicit RemoteCacheManager(bool start = true);
     explicit RemoteCacheManager(
-        const std::map<std::string, std::string>& configuration,
+            const std::map<std::string, std::string>& configuration,
+            bool start = true); // Deprecated, will go away soon
+    explicit RemoteCacheManager(
+        const Configuration& configuration,
         bool start = true);
 
     void start();
     void stop();
     bool isStarted();
 
-    // TODO: change to std::map?
     const Configuration& getConfiguration();
 
     template <class K, class V> RemoteCache<K, V> getCache(

@@ -1,8 +1,6 @@
-
-
 #include "infinispan/hotrod/RemoteCacheManager.h"
+#include "infinispan/hotrod/ConfigurationBuilder.h"
 #include "hotrod/impl/RemoteCacheManagerImpl.h"
-#include "hotrod/impl/configuration/ConfigurationBuilder.h"
 #include "hotrod/impl/protocol/CodecFactory.h"
 #include "hotrod/impl/operations/OperationsFactory.h"
 
@@ -18,9 +16,11 @@ using namespace operations;
 RemoteCacheManager::RemoteCacheManager(bool start_)
   : Handle<RemoteCacheManagerImpl>(new RemoteCacheManagerImpl(start_)) { }
 
-
 RemoteCacheManager::RemoteCacheManager(const std::map<std::string,std::string>& properties, bool start_)
-  : Handle<RemoteCacheManagerImpl>(new RemoteCacheManagerImpl(properties, start_)) { }
+  : Handle<RemoteCacheManagerImpl>(new RemoteCacheManagerImpl(properties, start_)) { } // Deprecated
+
+RemoteCacheManager::RemoteCacheManager(const Configuration& configuration, bool start_)
+  : Handle<RemoteCacheManagerImpl>(new RemoteCacheManagerImpl(configuration, start_)) { }
 
 void RemoteCacheManager::initCache(
     RemoteCacheBase& cache, bool forceReturnValue)

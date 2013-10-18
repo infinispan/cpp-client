@@ -1,8 +1,6 @@
-
-
+#include "infinispan/hotrod/ConfigurationBuilder.h"
 #include "hotrod/impl/RemoteCacheManagerImpl.h"
 #include "hotrod/impl/RemoteCacheImpl.h"
-#include "hotrod/impl/configuration/ConfigurationBuilder.h"
 #include "hotrod/impl/protocol/CodecFactory.h"
 #include "hotrod/impl/operations/OperationsFactory.h"
 
@@ -37,6 +35,13 @@ RemoteCacheManagerImpl::RemoteCacheManagerImpl(const std::map<std::string,std::s
       configuration = ConfigurationBuilder().addServers(serverList).build();
   }
 
+  if (start_) start();
+}
+
+RemoteCacheManagerImpl::RemoteCacheManagerImpl(const Configuration& configuration_, bool start_)
+  : started(false), topologyId(0),
+    configuration(configuration_), codec(0)
+{
   if (start_) start();
 }
 

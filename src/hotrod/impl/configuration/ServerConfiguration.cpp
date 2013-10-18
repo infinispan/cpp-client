@@ -1,10 +1,4 @@
-/*
- * ServerConfiguration.cpp
- *
- *  Created on: Jul 11, 2013
- *      Author: samuele
- */
-#include "hotrod/impl/configuration/ServerConfiguration.h"
+#include "infinispan/hotrod/ServerConfiguration.h"
 
 namespace infinispan {
 namespace hotrod {

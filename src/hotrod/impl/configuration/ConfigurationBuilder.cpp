@@ -2,7 +2,7 @@
 #include <fstream>
 #include <iostream>
 
-#include "ConfigurationBuilder.h"
+#include "infinispan/hotrod/ConfigurationBuilder.h"
 
 namespace infinispan {
 namespace hotrod {

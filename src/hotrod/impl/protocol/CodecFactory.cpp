@@ -2,7 +2,7 @@
 
 #include "hotrod/impl/protocol/CodecFactory.h"
 #include "hotrod/impl/protocol/Codec12.h"
-#include "hotrod/impl/configuration/Configuration.h"
+#include "infinispan/hotrod/Configuration.h"
 #include "hotrod/sys/RunOnce.h"
 
 #include <iostream>
