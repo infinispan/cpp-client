@@ -1,6 +1,8 @@
 cmake_minimum_required (VERSION 2.6)
 
-project (HotRod C CXX)
+project (infinispan-hotrod-c++ C CXX)
+
+
 
 #file(READ version.txt HR_VERSION_FILE)
 #string(REGEX MATCHALL "[0-9]+" HR_VERSION_LIST "${HR_VERSION_FILE}")
@@ -209,3 +211,20 @@ if (ENABLE_VALGRIND)
     add_custom_target(memtestv ${CMAKE_CTEST_COMMAND} -V -D ExperimentalMemCheck
         COMMENT "Running CTest in verbose mode with Valgrind options")
 endif (ENABLE_VALGRIND)
+
+set (CPACK_GENERATOR "ZIP")
+set (CPACK_INCLUDE_TOPLEVEL_DIRECTORY "1")
+set (CPACK_PACKAGE_VERSION_MAJOR "6")
+set (CPACK_PACKAGE_VERSION_MINOR "0")
+set (CPACK_PACKAGE_VERSION_PATCH "0.Alpha1")
+set (CPACK_RPM_PACKAGE_ARCHITECTURE "x86-64")
+set (CPACK_SYSTEM_NAME "RHEL6-x86_64")
+set (CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
+set (CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/License.txt")
+
+file (GLOB includes "${CMAKE_CURRENT_SOURCE_DIR}/include/infinispan/hotrod/*.h")
+install (FILES ${includes} DESTINATION include/infinispan/hotrod)
+install (FILES "${CMAKE_CURRENT_SOURCE_DIR}/License.txt" "${CMAKE_CURRENT_SOURCE_DIR}/dist/README.md" DESTINATION .)
+install (TARGETS hotrod LIBRARY DESTINATION lib)
+
+include (CPack)

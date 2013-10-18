@@ -78,3 +78,6 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/jni/JniTest.class
 add_custom_target(JniTest ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/jni/JniTest.class hotrod-swig)
 
 add_test(swig ${JAVA_RUNTIME} -ea -Djava.library.path=. -cp "jni/hotrod-jni.jar:jni/lib/*:jni" JniTest)
+
+install (FILES "${CMAKE_CURRENT_BINARY_DIR}/jni/hotrod-jni.jar" DESTINATION jni)
+install (TARGETS hotrod-swig LIBRARY DESTINATION jni)
