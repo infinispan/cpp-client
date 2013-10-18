@@ -8,7 +8,7 @@
 #include "hotrod/sys/Mutex.h"
 #include "hotrod/sys/Runnable.h"
 #include "hotrod/sys/Thread.h"
-#include "hotrod/impl/configuration/Configuration.h"
+#include "infinispan/hotrod/Configuration.h"
 #include "hotrod/impl/transport/tcp/InetSocketAddress.h"
 #include "hotrod/impl/transport/tcp/TransportObjectFactory.h"
 

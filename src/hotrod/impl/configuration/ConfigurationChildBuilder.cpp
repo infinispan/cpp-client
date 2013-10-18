@@ -1,5 +1,5 @@
-#include "ConfigurationChildBuilder.h"
-#include "ConfigurationBuilder.h"
+#include "infinispan/hotrod/ConfigurationChildBuilder.h"
+#include "infinispan/hotrod/ConfigurationBuilder.h"
 
 namespace infinispan {
 namespace hotrod {

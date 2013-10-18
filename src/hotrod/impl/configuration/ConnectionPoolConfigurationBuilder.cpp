@@ -1,4 +1,4 @@
-#include "ConnectionPoolConfigurationBuilder.h"
+#include "infinispan/hotrod/ConnectionPoolConfigurationBuilder.h"
 
 namespace infinispan {
 namespace hotrod {

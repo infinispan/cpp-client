@@ -1,8 +1,8 @@
 #ifndef ISPN_HOTROD_REMOTECACHEMANAGERIMPL_H
 #define ISPN_HOTROD_REMOTECACHEMANAGERIMPL_H
 
+#include "infinispan/hotrod/Configuration.h"
 #include "hotrod/impl/RemoteCacheImpl.h"
-#include "hotrod/impl/configuration/Configuration.h"
 #include "hotrod/impl/protocol/Codec.h"
 #include "hotrod/impl/transport/TransportFactory.h"
 #include "hotrod/impl/operations/PingOperation.h"
@@ -17,7 +17,8 @@ class RemoteCacheManagerImpl
 {
   public:
     RemoteCacheManagerImpl(bool start = true);
-	RemoteCacheManagerImpl(const std::map<std::string,std::string>& properties, bool start = true);
+    RemoteCacheManagerImpl(const std::map<std::string,std::string>& properties, bool start_); // Deprecated
+	RemoteCacheManagerImpl(const Configuration& configuration, bool start = true);
 
 	HR_SHARED_PTR<RemoteCacheImpl> createRemoteCache(bool forceReturnValue);
 	HR_SHARED_PTR<RemoteCacheImpl> createRemoteCache(const std::string& name, bool forceReturnValue);

@@ -2,7 +2,7 @@
 #define ISPN_HOTROD_TRANSPORT_TCPTRANSPORTFACTORY_H
 
 
-#include "hotrod/impl/configuration/Configuration.h"
+#include "infinispan/hotrod/Configuration.h"
 #include "hotrod/impl/transport/Transport.h"
 #include "hotrod/impl/transport/TransportFactory.h"
 #include "hotrod/impl/transport/tcp/ConnectionPool.h"

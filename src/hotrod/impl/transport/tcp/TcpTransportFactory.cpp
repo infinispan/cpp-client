@@ -4,7 +4,7 @@
 #include "hotrod/impl/transport/tcp/TransportObjectFactory.h"
 #include "hotrod/impl/transport/tcp/RequestBalancingStrategy.h"
 #include "hotrod/impl/protocol/Codec.h"
-#include "hotrod/impl/configuration/Configuration.h"
+#include "infinispan/hotrod/Configuration.h"
 #include <algorithm>
 
 namespace infinispan {

@@ -1,11 +1,4 @@
-/*
- * ConnectionPoolconfiguration.cpp
- *
- *  Created on: Jul 11, 2013
- *      Author: samuele
- */
-
-#include "hotrod/impl/configuration/ConnectionPoolConfiguration.h"
+#include "infinispan/hotrod/ConnectionPoolConfiguration.h"
 
 namespace infinispan {
 namespace hotrod {
