@@ -3,7 +3,7 @@
 package org.infinispan.client.hotrod;
 
 // originals
-import org.infinispan.marshall.Marshaller;
+import org.infinispan.commons.marshall.Marshaller;
 import java.util.Properties;
 
 // jni wrappers
@@ -23,14 +23,14 @@ public class RemoteCacheManager /* implements BasicCacheContainer */{
 
    public RemoteCacheManager() {
       jniRemoteCacheManager = new org.infinispan.client.hotrod.jni.RemoteCacheManager();
-      marshaller = new org.infinispan.marshall.jboss.GenericJBossMarshaller();
+      marshaller = new org.infinispan.commons.marshall.jboss.GenericJBossMarshaller();
    }
 
    public RemoteCacheManager(String servers, boolean start) {
       MapType converter = new MapType();
       converter.set(ISPN_CLIENT_HOTROD_SERVER_LIST, servers);
       jniRemoteCacheManager = new org.infinispan.client.hotrod.jni.RemoteCacheManager(converter, true);
-      marshaller = new org.infinispan.marshall.jboss.GenericJBossMarshaller();
+      marshaller = new org.infinispan.commons.marshall.jboss.GenericJBossMarshaller();
    }
 
    public RemoteCacheManager(Properties props) {
@@ -38,7 +38,7 @@ public class RemoteCacheManager /* implements BasicCacheContainer */{
       MapType converter = new MapType();
       converter.set(ISPN_CLIENT_HOTROD_SERVER_LIST, (String) props.get(ISPN_CLIENT_HOTROD_SERVER_LIST));
       jniRemoteCacheManager = new org.infinispan.client.hotrod.jni.RemoteCacheManager(converter, true);
-      marshaller = new org.infinispan.marshall.jboss.GenericJBossMarshaller();
+      marshaller = new org.infinispan.commons.marshall.jboss.GenericJBossMarshaller();
    }
 
    public <K, V> org.infinispan.client.hotrod.RemoteCache<K, V> getCache() {
