@@ -4,7 +4,7 @@ package org.infinispan.client.hotrod.impl;
 
 import java.io.IOException;
 import java.util.HashMap;
-import org.infinispan.marshall.Marshaller;
+import org.infinispan.commons.marshall.Marshaller;
 
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.RemoteCache;
