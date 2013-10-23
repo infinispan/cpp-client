@@ -26,16 +26,12 @@ void RemoteCacheManager::initCache(
     RemoteCacheBase& cache, bool forceReturnValue)
 {
     cache.impl = impl->createRemoteCache(forceReturnValue);
-    if(!impl)
-    	throw RemoteCacheNotExistException("cache doesn't exist");
 }
 
 void RemoteCacheManager::initCache(
     RemoteCacheBase& cache, const std::string& name, bool forceReturnValue)
 {
     cache.impl = impl->createRemoteCache(name, forceReturnValue);
-    if(!impl)
-    	throw RemoteCacheNotExistException("cache doesn't exist");
 }
 
 void RemoteCacheManager::start() {

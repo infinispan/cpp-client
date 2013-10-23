@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <memory>
+#include <typeinfo>
 
 // For CTest: return 0 if all tests pass, non-zero otherwise.
 
@@ -18,6 +19,8 @@ int main(int, char**) {
     std::string k2("key14");
     std::string v1("boron");
     std::string v2("chlorine");
+
+    cache.clear();
 
     // put
     cache.put(k1, v1);
@@ -178,6 +181,19 @@ int main(int, char**) {
     }
 
     std::cout << "PASS: simple replace" << std::endl;
+
+    // get non-existing cache
+    try {
+        cacheManager.getCache<std::string, std::string>("non-existing", false);
+        std::cerr << "fail getCache for non-existing cache didn't throw exception" << std::endl;
+        return 1;
+    } catch(const HotRodClientException& e) {
+        std::cout << "PASS: get non-existing cache" << std::endl;
+    } catch (const Exception& e) {
+        std::cout << "is: " << typeid(e).name() << '\n';
+        std::cerr << "fail unexpected exception: " << e.what() << std::endl;
+        return 1;
+    }
 
     cacheManager.stop();
 

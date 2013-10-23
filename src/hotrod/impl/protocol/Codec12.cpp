@@ -152,11 +152,41 @@ std::map<InetSocketAddress, std::set<int32_t> > Codec12::computeNewHashes(
     return map;
 }
 
-void Codec12::checkForErrorsInResponseStatus(
-    Transport& /*transport*/, HeaderParams& /*params*/, uint8_t /*status*/) const
-{
-    // TODO
-    return;
+void Codec12::checkForErrorsInResponseStatus(Transport& transport, HeaderParams& params, uint8_t status) const {
+    try {
+        switch (status) {
+        case HotRodConstants::INVALID_MAGIC_OR_MESSAGE_ID_STATUS:
+        case HotRodConstants::REQUEST_PARSING_ERROR_STATUS:
+        case HotRodConstants::UNKNOWN_COMMAND_STATUS:
+        case HotRodConstants::SERVER_ERROR_STATUS:
+        case HotRodConstants::COMMAND_TIMEOUT_STATUS:
+        case HotRodConstants::UNKNOWN_VERSION_STATUS: {
+            // If error, the body of the message just contains a message
+            std::string msgFromServer = transport.readString();
+            if (msgFromServer.find("SuspectException") != std::string::npos || msgFromServer.find("SuspectedException") != std::string::npos) {
+                // Handle both Infinispan's and JGroups' suspicions
+                // TODO: This will be better handled with its own status id in version 2 of protocol
+                throw RemoteNodeSuspectException(msgFromServer, params.messageId, status);
+            } else {
+                throw HotRodClientException(msgFromServer); //, params.messageId, status);
+            }
+        }
+        default: {
+            throw InternalException("Unknown status: " + status);
+        }
+        }
+    } catch (Exception const& e) {
+        // Some operations require invalidating the transport
+        switch (status) {
+        case HotRodConstants::INVALID_MAGIC_OR_MESSAGE_ID_STATUS:
+        case HotRodConstants::REQUEST_PARSING_ERROR_STATUS:
+        case HotRodConstants::UNKNOWN_COMMAND_STATUS:
+        case HotRodConstants::UNKNOWN_VERSION_STATUS: {
+            transport.invalidate();
+        }
+        }
+        throw e; // rethrow
+    }
 }
 
 }}} // namespace infinispan::hotrod::protocol

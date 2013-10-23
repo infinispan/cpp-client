@@ -1,11 +1,10 @@
 #ifndef ISPN_HOTROD_EXCEPTIONS_H
 #define ISPN_HOTROD_EXCEPTIONS_H
 
-
-
 #include "infinispan/hotrod/ImportExport.h"
 #include <exception>
 #include <string>
+#include <stdint.h>
 
 namespace infinispan {
 namespace hotrod {
@@ -21,51 +20,57 @@ class HR_EXTERN Exception : public std::exception
     const std::string message;
 };
 
-// Matching the names of the Java exceptions where possible, adding if
-// necessary.
-
-struct HR_EXTERN HotRodClientException : public Exception
+/*
+ * FIXME: We should really extend Exception, but apparently g++ is losing specific typeinfo across the shared library boundary
+ */
+class HR_EXTERN HotRodClientException
 {
-    HotRodClientException(const std::string&);
-    //virtual ~HotRodClientException() throw();
+  public:
+    explicit HotRodClientException(const std::string&);
+    HotRodClientException(const std::string& message_, uint64_t message_id_, uint8_t status_);
+    virtual ~HotRodClientException() throw();
+    virtual const char* what() const throw();
+  private:
+    const std::string message;
+    uint64_t message_id;
+    uint8_t status;
 };
 
-struct HR_EXTERN TransportException : public HotRodClientException
+class HR_EXTERN TransportException : public HotRodClientException
 {
-    std::string host;
-    int port;
-    TransportException(const std::string& host, int port,
-    		const std::string&);
+  public:
+    TransportException(const std::string& host, int port, const std::string&);
     ~TransportException() throw();
 
     const std::string& getHost() const;
     int getPort() const;
+  private:
+    const std::string host;
+    int port;
 };
 
-struct HR_EXTERN InvalidResponseException : public HotRodClientException
+class HR_EXTERN InvalidResponseException : public HotRodClientException
 {
-	InvalidResponseException(const std::string&);
+  public:
+    InvalidResponseException(const std::string&);
 };
 
-struct HR_EXTERN RemoteNodeSuspectException : public HotRodClientException
+class HR_EXTERN RemoteNodeSuspectException : public HotRodClientException
 {
-	RemoteNodeSuspectException(const std::string&);
+  public:
+    RemoteNodeSuspectException(const std::string&, uint64_t message_id, uint8_t status);
 };
 
-struct HR_EXTERN InternalException : public HotRodClientException
+class HR_EXTERN InternalException : public HotRodClientException
 {
-	InternalException(const std::string&);
+  public:
+    InternalException(const std::string&);
 };
 
-struct HR_EXTERN RemoteCacheManagerNotStartedException : public HotRodClientException
+class HR_EXTERN RemoteCacheManagerNotStartedException : public HotRodClientException
 {
-	RemoteCacheManagerNotStartedException(const std::string&);
-};
-
-// not existent in java code
-struct HR_EXTERN RemoteCacheNotExistException : public HotRodClientException
-{
-	RemoteCacheNotExistException(const std::string&);
+  public:
+    RemoteCacheManagerNotStartedException(const std::string&);
 };
 
 }} // namespace

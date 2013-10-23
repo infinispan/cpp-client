@@ -52,11 +52,9 @@ void RemoteCacheManagerImpl::start() {
         transportFactory.reset(TransportFactory::newInstance());
         transportFactory->start(*codec, configuration, topologyId);
 
-       for(std::map<std::string, RemoteCacheHolder>::iterator iter = cacheName2RemoteCache.begin();
-        		iter != cacheName2RemoteCache.end(); ++iter )
-        {
-        	startRemoteCache(*iter->second.first, iter->second.second);
-        }
+       for(std::map<std::string, RemoteCacheHolder>::iterator iter = cacheName2RemoteCache.begin(); iter != cacheName2RemoteCache.end(); ++iter ) {
+           startRemoteCache(*iter->second.first, iter->second.second);
+       }
 
         started = true;
 	}
