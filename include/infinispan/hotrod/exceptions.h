@@ -73,6 +73,11 @@ class HR_EXTERN RemoteCacheManagerNotStartedException : public HotRodClientExcep
     RemoteCacheManagerNotStartedException(const std::string&);
 };
 
+struct HR_EXTERN UnsupportedOperationException : public HotRodClientException
+{
+	UnsupportedOperationException();
+};
+
 }} // namespace
 
 #endif  /* ISPN_HOTROD_EXCEPTIONS_H */

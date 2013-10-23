@@ -43,4 +43,5 @@ InternalException::InternalException(const std::string& msg) : HotRodClientExcep
 
 RemoteCacheManagerNotStartedException::RemoteCacheManagerNotStartedException(const std::string& msg) : HotRodClientException(msg) {}
 
+UnsupportedOperationException::UnsupportedOperationException() : HotRodClientException("Unsupported operation.") {}
 }} /* namespace */

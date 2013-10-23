@@ -27,7 +27,9 @@
 #include <infinispan/hotrod/ServerConfigurationBuilder.h>
 #include <infinispan/hotrod/ConfigurationBuilder.h>
 #include <infinispan/hotrod/MetadataValue.h>
+#include <infinispan/hotrod/VersionedValue.h>
 #include <infinispan/hotrod/Flag.h>
+#include <infinispan/hotrod/TimeUnit.h>
 #include <infinispan/hotrod/RemoteCacheManager.h>
 #include <infinispan/hotrod/RemoteCache.h>
 #include <infinispan/hotrod/ScopedBuffer.h>
@@ -76,7 +78,9 @@
 %include "infinispan/hotrod/ConnectionPoolConfigurationBuilder.h"
 %include "infinispan/hotrod/ConfigurationBuilder.h"
 %include "infinispan/hotrod/MetadataValue.h"
+%include "infinispan/hotrod/VersionedValue.h"
 %include "infinispan/hotrod/Flag.h"
+%include "infinispan/hotrod/TimeUnit.h"
 %include "infinispan/hotrod/RemoteCacheManager.h"
 %include "infinispan/hotrod/RemoteCache.h"
 %include "infinispan/hotrod/Marshaller.h"
