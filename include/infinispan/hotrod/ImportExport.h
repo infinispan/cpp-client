@@ -12,7 +12,7 @@
 //
 
 #if !defined(HOTROD_DECLARE_STATIC)
-  #if defined(WIN32)
+  #if defined(WIN32) || defined(_WIN32)
     #define HR_EXPORT __declspec(dllexport)
     #define HR_IMPORT __declspec(dllimport)
   #else
