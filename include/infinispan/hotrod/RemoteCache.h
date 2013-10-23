@@ -7,10 +7,15 @@
 #include "infinispan/hotrod/Marshaller.h"
 #include "infinispan/hotrod/Flag.h"
 #include "infinispan/hotrod/MetadataValue.h"
+#include "infinispan/hotrod/TimeUnit.h"
+#include "infinispan/hotrod/VersionedValue.h"
 
+#include <cmath>
 #include <set>
 #include <map>
 #include <sstream>
+#include <stdexcept>
+#include <vector>
 
 namespace infinispan {
 namespace hotrod {
@@ -18,6 +23,18 @@ namespace hotrod {
 template <class K, class V> class RemoteCache : private RemoteCacheBase
 {
   public:
+    std::string getName() {
+	throw UnsupportedOperationException();
+    }
+
+    std::string getVersion() {
+	throw UnsupportedOperationException();
+    }
+
+    std::string getProtocolVersion() {
+	throw UnsupportedOperationException();
+    }
+
     V* get(const K& key) {
         ScopedBuffer vbuf;
         base_get(&key, &vbuf);
@@ -27,26 +44,101 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
     V* put(
         const K& key, const V& val, uint64_t lifespan = 0, uint64_t maxIdle = 0)
     {
-        ScopedBuffer vbuf;
-        base_put(&key, &val, lifespan, maxIdle, &vbuf);
+	return put(key, val, lifespan, SECONDS, maxIdle, SECONDS);
+    }
+
+    V* put(
+        const K& key, const V& val, uint64_t lifespan, TimeUnit lifespanUnit)
+    {
+	return put(key, val, lifespan, lifespanUnit, 0, SECONDS);
+    }
+
+    V* put(
+	const K& key, const V& val, uint64_t lifespan, TimeUnit lifespanUnit, uint64_t maxIdle, TimeUnit maxIdleUnit)
+    {
+	ScopedBuffer vbuf;
+        base_put(&key, &val, toSeconds(lifespan, lifespanUnit), toSeconds(maxIdle, maxIdleUnit), &vbuf);
         return vbuf.getBytes() ? valueMarshaller->unmarshall(vbuf) : NULL;
     }
 
     V* putIfAbsent(
         const K& key, const V& val, uint64_t lifespan = 0, uint64_t maxIdle = 0)
     {
+	return putIfAbsent(key, val, lifespan, SECONDS, maxIdle, SECONDS);
+    }
+
+    V* putIfAbsent(
+		   const K& key, const V& val, uint64_t lifespan, TimeUnit lifespanUnit)
+    {
+	return putIfAbsent(key, val, lifespan, lifespanUnit, 0, SECONDS);
+    }
+
+    V* putIfAbsent(
+		   const K& key, const V& val, uint64_t lifespan, TimeUnit lifespanUnit, uint64_t maxIdle, TimeUnit maxIdleUnit)
+    {
+	ScopedBuffer vbuf;
+        base_putIfAbsent(&key, &val, toSeconds(lifespan, lifespanUnit), toSeconds(maxIdle, maxIdleUnit), &vbuf);
+        return vbuf.getBytes() ? valueMarshaller->unmarshall(vbuf) : NULL;
+    }
+
+    void putAll(const std::map<K, V>& map, uint64_t lifespan = 0, uint64_t maxIdle = 0)
+    {
+	return putAll(map, lifespan, SECONDS, maxIdle, SECONDS);
+    }
+
+    void putAll(const std::map<K, V>& map, uint64_t lifespan, TimeUnit lifespanUnit)
+    {
+	return putAll(map, lifespan, lifespanUnit, 0, SECONDS);
+    }
+
+    void putAll(const std::map<K, V>& map, uint64_t lifespan, TimeUnit lifespanUnit, uint64_t maxIdle, TimeUnit maxIdleUnit)
+    {
+	uint64_t lifespanMillis = toSeconds(lifespan, lifespanUnit);
+	uint64_t maxIdleMillis = toSeconds(maxIdle, maxIdleUnit);
+
+	for (typename std::map<K, V>::const_iterator it = map.begin(); it != map.end(); ++it) {
+	    put(it->first, it->second, lifespanMillis, maxIdleMillis);
+	}
+    }
+
+    V* replace(
+	       const K& key, const V& val, uint64_t lifespan = 0, uint64_t maxIdle = 0)
+    {
+	return replace(key, val, lifespan, SECONDS, maxIdle, SECONDS);
+    }
+
+    V* replace(
+	       const K& key, const V& val, uint64_t lifespan, TimeUnit lifespanUnit)
+    {
+	return replace(key, val, lifespan, lifespanUnit, 0, SECONDS);
+    }
+
+    V* replace(
+	       const K& key, const V& val, uint64_t lifespan, TimeUnit lifespanUnit, uint64_t maxIdle, TimeUnit maxIdleUnit)
+    {
         ScopedBuffer vbuf;
-        base_putIfAbsent(&key, &val, lifespan, maxIdle, &vbuf);
+        base_replace(&key, &val, toSeconds(lifespan, lifespanUnit), toSeconds(maxIdle, maxIdleUnit), &vbuf);
         return vbuf.getBytes() ? valueMarshaller->unmarshall(vbuf) : NULL;
     }
 
     V* replace(
-        const K& key, const V& val, uint64_t lifespan = 0, uint64_t maxIdle = 0)
+	       const K& key, const V& oldVal, const V& val, uint64_t lifespan = 0, uint64_t maxIdle = 0)
     {
-        ScopedBuffer vbuf;
-        base_replace(&key, &val, lifespan, maxIdle, &vbuf);
-        return vbuf.getBytes() ? valueMarshaller->unmarshall(vbuf) : NULL;
+	return replace(key, oldVal, val, lifespan, SECONDS, maxIdle, SECONDS);
     }
+
+    V* replace(
+	       const K& key, const V& oldVal, const V& val, uint64_t lifespan, TimeUnit lifespanUnit)
+    {
+	return replace(key, oldVal, val, lifespan, lifespanUnit, 0, SECONDS);
+    }
+
+    V* replace(
+	       const K& key, const V& oldVal, const V& val, uint64_t lifespan, TimeUnit lifespanUnit, uint64_t maxIdle, TimeUnit maxIdleUnit)
+    {
+	throw UnsupportedOperationException();
+    }
+
 
     V* remove(const K& key) {
         ScopedBuffer vbuf;
@@ -58,6 +150,10 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
         bool res;
         base_containsKey(&key, &res);
         return res;
+    }
+
+    bool containsValue(const V& val) {
+	throw UnsupportedOperationException();
     }
 
     bool replaceWithVersion(
@@ -75,6 +171,10 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
         return res;
     }
 
+    std::pair<HR_SHARED_PTR<V>, VersionedValue> getVersioned(const K& key) {
+	throw UnsupportedOperationException();
+    }
+
     std::pair<HR_SHARED_PTR<V>, MetadataValue> getWithMetadata(const K& key) {
         ScopedBuffer vbuf;
         MetadataValue metadata;
@@ -82,6 +182,10 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
         return vbuf.getBytes() ?
             std::make_pair(HR_SHARED_PTR<V>(valueMarshaller->unmarshall(vbuf)), metadata) :
             std::make_pair(HR_SHARED_PTR<V>(), metadata);
+    }
+
+    std::map<HR_SHARED_PTR<K>, HR_SHARED_PTR<V> > getBulk() {
+	throw UnsupportedOperationException();
     }
 
     std::map<HR_SHARED_PTR<K>, HR_SHARED_PTR<V> > getBulk(int nrOfEntries) {
@@ -94,6 +198,10 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
                 HR_SHARED_PTR<K>((K*)i->first), HR_SHARED_PTR<V>((V*)i->second)));
         }
         return result;
+    }
+
+    std::set<std::pair<K, V> > entrySet() {
+	throw UnsupportedOperationException();
     }
 
     std::set<HR_SHARED_PTR<K> > keySet() {
@@ -116,6 +224,14 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
         sizeAsStream >> result;
         // TODO: check errors
         return result;
+    }
+
+    bool isEmpty() {
+	return 0 == size();
+    }
+
+    std::vector<V> values() {
+	throw UnsupportedOperationException();
     }
 
     std::map<std::string, std::string> stats() {
@@ -154,6 +270,38 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
   private:
     RemoteCache() : RemoteCacheBase() {
         setMarshallers(this, &keyMarshall, &valueMarshall, &keyUnmarshall, &valueUnmarshall);
+    }
+
+    uint64_t toSeconds(uint64_t time, TimeUnit unit) {
+	uint64_t result;
+	switch (unit) {
+	case NANOSECONDS:
+	    result = ceil(time / 1000000000.0);
+	    break;
+	case MICROSECONDS:
+	    result = ceil(time / 1000000.0);
+	    break;
+	case MILLISECONDS:
+	    result = ceil(time / 1000.0);
+	    break;
+	case SECONDS:
+	    result = time;
+	    break;
+	case MINUTES:
+	    result = time * 60;
+	    break;
+	case HOURS:
+	    result = time * 3600;
+	    break;
+	case DAYS:
+	    result = time * 86400;
+	    break;
+	default:
+	    std::stringstream ss;
+	    ss << "Unhandled TimeUnit specified: " << unit << ".";
+	    throw std::invalid_argument(ss.str());
+	}
+	return result;
     }
 
     // type-hiding and resurrecting support
