@@ -73,31 +73,35 @@ void RemoteCacheBase::base_removeWithVersion(const void *key, int64_t version, b
     impl->removeWithVersion(*this, key, version, res);
 }
 
-void RemoteCacheBase::base_getWithMetadata(
-    const void *key, void* vbuf, MetadataValue* metadata)
+void RemoteCacheBase::base_getWithVersion(const void *key, void* vbuf, VersionedValue* version)
 {
-	impl->getWithMetadata(*this, key, vbuf, metadata);
+    impl->getWithVersion(*this, key, vbuf, version);
+}
+
+void RemoteCacheBase::base_getWithMetadata(const void *key, void* vbuf, MetadataValue* metadata)
+{
+    impl->getWithMetadata(*this, key, vbuf, metadata);
 }
 
 void RemoteCacheBase::base_getBulk(int size, std::map<void*, void*>* mbuf)
 {
-	impl->getBulk(*this, size, mbuf);
+    impl->getBulk(*this, size, mbuf);
 }
 
 
 void RemoteCacheBase::base_keySet(int scope, std::set<void*>* result)
 {
-	impl->keySet(*this, scope, result);
+    impl->keySet(*this, scope, result);
 }
 
 void RemoteCacheBase::base_stats(std::map<std::string,std::string>* stats)
 {
-	impl->stats(stats);
+    impl->stats(stats);
 }
 
 void RemoteCacheBase::base_clear()
 {
-	impl->clear();
+    impl->clear();
 }
 
 void RemoteCacheBase::base_ping() {

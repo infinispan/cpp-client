@@ -7,6 +7,7 @@
 #include "infinispan/hotrod/ScopedBuffer.h"
 #include "infinispan/hotrod/RemoteCacheBase.h"
 #include "hotrod/impl/MetadataValueImpl.h"
+#include "hotrod/impl/VersionedValueImpl.h"
 #include "hotrod/impl/operations/PingOperation.h"
 
 namespace infinispan {
@@ -31,6 +32,7 @@ class RemoteCacheImpl
     void replaceWithVersion(RemoteCacheBase& rcb, const void* k, const void* v, uint64_t version, uint64_t life, uint64_t idle, bool* res);
     void removeWithVersion(RemoteCacheBase& rcb, const void* k, uint64_t version, bool* res);
     void getWithMetadata(RemoteCacheBase& rcb, const void *key, void* vbuf, MetadataValue* metadata);
+    void getWithVersion(RemoteCacheBase& rcb, const void *key, void* vbuf, VersionedValue* version);
     void getBulk(RemoteCacheBase& rcb, int size, std::map<void*, void*>* mbuf);
     void keySet(RemoteCacheBase& rcb, int scope, std::set<void*>* result);
     void stats(std::map<std::string,std::string>* stats);

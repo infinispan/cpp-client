@@ -133,6 +133,7 @@ add_library (
   src/hotrod/impl/operations/ReplaceIfUnmodifiedOperation.cpp
   src/hotrod/impl/operations/RemoveIfUnmodifiedOperation.cpp
   src/hotrod/impl/operations/GetWithMetadataOperation.cpp
+  src/hotrod/impl/operations/GetWithVersionOperation.cpp
   src/hotrod/impl/operations/BulkGetOperation.cpp
   src/hotrod/impl/operations/BulkGetKeysOperation.cpp
   src/hotrod/impl/operations/StatsOperation.cpp

@@ -171,8 +171,13 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
         return res;
     }
 
-    std::pair<HR_SHARED_PTR<V>, VersionedValue> getVersioned(const K& key) {
-	throw UnsupportedOperationException();
+    std::pair<HR_SHARED_PTR<V>, VersionedValue> getWithVersion(const K& key) {
+        ScopedBuffer vbuf;
+        VersionedValue version;
+        base_getWithVersion(&key, &vbuf, &version);
+        return vbuf.getBytes() ?
+                    std::make_pair(HR_SHARED_PTR<V>(valueMarshaller->unmarshall(vbuf)), version) :
+                    std::make_pair(HR_SHARED_PTR<V>(), version);
     }
 
     std::pair<HR_SHARED_PTR<V>, MetadataValue> getWithMetadata(const K& key) {

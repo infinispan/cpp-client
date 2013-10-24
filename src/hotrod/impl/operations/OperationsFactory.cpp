@@ -1,5 +1,3 @@
-
-
 #include "hotrod/sys/types.h"
 #include "hotrod/impl/operations/OperationsFactory.h"
 #include "hotrod/impl/protocol/CodecFactory.h"
@@ -14,6 +12,7 @@
 #include "hotrod/impl/operations/ReplaceIfUnmodifiedOperation.h"
 #include "hotrod/impl/operations/RemoveIfUnmodifiedOperation.h"
 #include "hotrod/impl/operations/GetWithMetadataOperation.h"
+#include "hotrod/impl/operations/GetWithVersionOperation.h"
 #include "hotrod/impl/operations/BulkGetOperation.h"
 #include "hotrod/impl/operations/BulkGetKeysOperation.h"
 #include "hotrod/impl/operations/StatsOperation.h"
@@ -105,6 +104,11 @@ RemoveIfUnmodifiedOperation* OperationsFactory::newRemoveIfUnmodifiedOperation(
 
 GetWithMetadataOperation* OperationsFactory::newGetWithMetadataOperation(const hrbytes& key) {
     return new GetWithMetadataOperation(
+        codec, transportFactory, key, cacheNameBytes, topologyId, getFlags());
+}
+
+GetWithVersionOperation* OperationsFactory::newGetWithVersionOperation(const hrbytes& key) {
+    return new GetWithVersionOperation(
         codec, transportFactory, key, cacheNameBytes, topologyId, getFlags());
 }
 

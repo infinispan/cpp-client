@@ -37,6 +37,7 @@ class HR_EXTERN RemoteCacheBase
     void base_ping();
     void base_replaceWithVersion(const void *key, const void *value, int64_t version, int64_t life, int64_t idle, bool *res);
     void base_removeWithVersion(const void *key, int64_t version, bool *res);
+    void base_getWithVersion(const void* key, void* vbuf, VersionedValue* version);
     void base_getWithMetadata(const void* key, void* vbuf, MetadataValue* metadata);
     void base_getBulk(int size, std::map<void*, void*>* mbuf);
     void base_keySet(int scope, std::set<void*>* sbuf);

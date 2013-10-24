@@ -75,6 +75,15 @@ int main(int, char**) {
 
     std::cout << "PASS: simple getWithMetadata"  << std::endl;
 
+    // getWithVersion
+    std::pair<HR_SHARED_PTR<std::string>, VersionedValue> rv5a = cache.getWithVersion(k3);
+    if (!rv5a.first.get()) {
+        std::cerr << "getWithVersion fail for " << k3 << " not found" << std::endl;
+        return 1;
+    }
+
+    std::cout << "PASS: simple getWithVersion"  << std::endl;
+
     // replaceWithVersion
     cache.replaceWithVersion(k3, v4, rv5.second.version);
     std::auto_ptr<std::string> rv6(cache.get(k3));
