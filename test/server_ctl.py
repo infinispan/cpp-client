@@ -59,17 +59,23 @@ def start(args):
 def stop(verbose=False):
     if (os.path.exists('servers.pkl')):
         pkl_file = open('servers.pkl', 'rb')
-        if os.name == 'nt' :
+
+        jproc_pid = None
+        try:
             jproc_pid = pickle.load(pkl_file)
-            subprocess.call(["taskkill.exe", "/PID", str(jproc_pid), "/F"])
-            time.sleep(1)
-        else:
-            jproc = pickle.load(pkl_file)
-            try:
-                jproc.terminate()
+        except Exception:
+            pass
+
+        if jproc_pid is not None:
+            if os.name == 'nt' :
+                subprocess.call(["taskkill.exe", "/PID", str(jproc_pid), "/F"])
                 time.sleep(1)
-            except Exception:
-                pass
+            else:
+                try:
+                    jproc.terminate()
+                    time.sleep(1)
+                except Exception:
+                    pass
 
         pkl_file.close()
         os.unlink('servers.pkl')
