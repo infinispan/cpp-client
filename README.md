@@ -35,7 +35,7 @@ To build (where "srcdir" is the directory containg this README):
   os_make_directory my_build  [arbitrary location]
   cd my_build
   cmake [-DHOTROD_JBOSS_HOME=/path/to/ispn/dist] path/to/srcdir
-  make (Posix) | Visual Studio Build (Windows)
+  cmake --build .
   ctest [-V]
 
 Platforms with makefiles and Valgrind may have additional targets:
