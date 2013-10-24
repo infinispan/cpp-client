@@ -30,6 +30,12 @@ else (ANT_PROGRAM STREQUAL "ANT_PROGRAM-NOTFOUND")
     endif(WIN32 AND NOT CYGWIN)
 endif (ANT_PROGRAM STREQUAL "ANT_PROGRAM-NOTFOUND")
 
+if(WIN32 AND NOT CYGWIN)
+  set (CLASSPATH_SEPARATOR ";")
+else (WIN32 AND NOT CYGWIN)
+  set (CLASSPATH_SEPARATOR ":")
+endif(WIN32 AND NOT CYGWIN)
+
 SET(CMAKE_SWIG_OUTDIR ${CMAKE_CURRENT_BINARY_DIR}/jni/src/org/infinispan/client/hotrod/jni)
 
 set (CMAKE_CXX_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS}")
@@ -77,7 +83,13 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/jni/JniTest.class
 
 add_custom_target(JniTest ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/jni/JniTest.class hotrod-swig)
 
-add_test(swig ${JAVA_RUNTIME} -ea -Djava.library.path=. -cp "jni/hotrod-jni.jar:jni/lib/*:jni" JniTest)
+#For generators with multiple configurations make sure all of the possible target locations are in the java.library.path
+set(JAVA_LIBRARY_PATH ".")
+foreach(loop_var ${CMAKE_CONFIGURATION_TYPES})
+	set(JAVA_LIBRARY_PATH "${JAVA_LIBRARY_PATH}${CLASSPATH_SEPARATOR}${loop_var}")
+endforeach(loop_var)
+
+add_test(swig ${JAVA_RUNTIME} -ea "-Djava.library.path=${JAVA_LIBRARY_PATH}" -cp "jni/hotrod-jni.jar${CLASSPATH_SEPARATOR}jni/lib/*${CLASSPATH_SEPARATOR}jni" JniTest)
 
 install (FILES "${CMAKE_CURRENT_BINARY_DIR}/jni/hotrod-jni.jar" DESTINATION jni)
 install (TARGETS hotrod-swig LIBRARY DESTINATION jni)
