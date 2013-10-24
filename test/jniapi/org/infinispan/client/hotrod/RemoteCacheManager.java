@@ -62,6 +62,7 @@ public class RemoteCacheManager /* implements BasicCacheContainer */{
    }
 
    static {
+      System.loadLibrary("hotrod");
       System.loadLibrary("hotrod-jni");
    }
 }
