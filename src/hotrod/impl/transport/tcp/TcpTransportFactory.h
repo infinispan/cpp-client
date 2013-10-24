@@ -22,8 +22,8 @@ class InetSocketAddress;
 class TcpTransportFactory : public TransportFactory
 {
   public:
-    void start(protocol::Codec& codec,
-        const Configuration& configuration, int64_t topologyId);
+    TcpTransportFactory(const Configuration& config) : configuration(config) {};
+    void start(protocol::Codec& codec, int64_t topologyId);
     void destroy();
 
     Transport& getTransport();
@@ -42,15 +42,13 @@ class TcpTransportFactory : public TransportFactory
   private:
     sys::Mutex lock;
     std::vector<InetSocketAddress> servers;
-    bool tcpNoDelay;
-    int soTimeout;
-    int connectTimeout;
+    const Configuration& configuration;
     int transportCount;
     HR_SHARED_PTR<TransportObjectFactory> transportFactory;
     HR_SHARED_PTR<ConnectionPool> connectionPool;
     HR_SHARED_PTR<RequestBalancingStrategy> balancer;
 
-    void createAndPreparePool(const ConnectionPoolConfiguration& configuration);
+    void createAndPreparePool();
     void updateTransportCount();
     void pingServers();
     Transport& borrowTransportFromPool(const InetSocketAddress& server);

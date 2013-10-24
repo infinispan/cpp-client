@@ -48,8 +48,10 @@ class Socket
   public:
     Socket();
     ~Socket();
-    void connect(const std::string& host, int port);
+    void connect(const std::string& host, int port, int timeout);
     void close();
+    void setTcpNoDelay(bool tcpNoDelay);
+    void setTimeout(int timeout);
     InputStream& getInputStream();
     OutputStream& getOutputStream();
 

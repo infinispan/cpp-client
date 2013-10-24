@@ -22,12 +22,20 @@ Socket::~Socket() {
     delete socket;
 }
 
-void Socket::connect(const std::string& host, int port) {
-    socket->connect(host, port);
+void Socket::connect(const std::string& host, int port, int timeout) {
+    socket->connect(host, port, timeout);
 }
 
 void Socket::close() {
     socket->close();
+}
+
+void Socket::setTcpNoDelay(bool tcpNoDelay) {
+    socket->setTcpNoDelay(tcpNoDelay);
+}
+
+void Socket::setTimeout(int timeout) {
+    socket->setTimeout(timeout);
 }
 
 InputStream& Socket::getInputStream() {

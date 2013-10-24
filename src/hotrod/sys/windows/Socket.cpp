@@ -3,7 +3,7 @@
 
 #include <winsock2.h>
 #include <Ws2tcpip.h>
-
+#include <fcntl.h>
 #include <iostream>
 #include <sstream>
 
@@ -20,8 +20,10 @@ namespace windows {
 class Socket: public infinispan::hotrod::sys::Socket {
   public:
     Socket();
-    virtual void connect(const std::string& host, int port);
+    virtual void connect(const std::string& host, int port, int timeout);
     virtual void close();
+    virtual void setTcpNoDelay(bool tcpNoDelay);
+    virtual void setTimeout(int timeout);
     virtual size_t read(char *p, size_t n);
     virtual void write(const char *p, size_t n);
   private:
@@ -65,33 +67,91 @@ Socket::Socket() : fd(INVALID_SOCKET) {
     }
 }
 
-void Socket::connect(const std::string& h, int p) {
+void Socket::connect(const std::string& h, int p, int timeout) {
     host = h;
     port = p;
     if (fd != INVALID_SOCKET) throwIOErr(host, port, "reconnect attempt", 0);
-    SOCKET sock = socket(AF_INET, SOCK_STREAM, getprotobyname("tcp")->p_proto);
-    if (sock == INVALID_SOCKET) throwIOErr(host, port,"connect", errno);
 
+    struct addrinfo hints;
+    memset(&hints, 0, sizeof(struct addrinfo));
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_protocol = 0;
+    hints.ai_flags = 0;
     struct addrinfo *addr;
     std::ostringstream ostr;
     ostr << port;
     int ec = getaddrinfo(host.c_str(), ostr.str().c_str(), NULL, &addr);
-    if (ec) throwIOErr(host, port, "getaddrinfo", WSAGetLastError());
+    if (ec) throwIOErr(host, port,"Error while invoking getaddrinfo", WSAGetLastError());
 
-    if (::connect(sock, addr->ai_addr, (int)addr->ai_addrlen) != 0) {
-        int wsaerr =  WSAGetLastError();
-        freeaddrinfo(addr);
+    SOCKET sock = socket(addr->ai_family, SOCK_STREAM, getprotobyname("tcp")->p_proto);
+    if (sock == INVALID_SOCKET) throwIOErr(host, port,"connect", WSAGetLastError());
+
+    // Make the socket non-blocking for the connection
+    u_long non_blocking = 1;
+    ioctlsocket(sock, FIONBIO, &non_blocking);
+
+    // Connect
+    int s = ::connect(sock, addr->ai_addr, addr->ai_addrlen);
+    int error = WSAGetLastError();
+    freeaddrinfo(addr);
+
+    if (s < 0) {
+        if (error == EINPROGRESS) {
+            struct timeval tv;
+            tv.tv_sec = timeout / 1000;
+            tv.tv_usec = timeout % 1000;
+            fd_set sock_set;
+            FD_ZERO(&sock_set);
+            FD_SET(sock, &sock_set);
+            // Wait for the socket to become ready
+            s = select(sock + 1, NULL, &sock_set, NULL, &tv);
+            if (s > 0) {
+                int opt;
+                socklen_t optlen = sizeof(opt);
+                s = getsockopt(sock, SOL_SOCKET, SO_ERROR, (char *)(&opt), &optlen);
+            } else {
+                error = WSAGetLastError();
+            }
+        } else {
+            s = -1;
+        }
+    }
+    if (s < 0) {
         close();
-        throwIOErr(host, port,"connect2", wsaerr);
+        throwIOErr(host, port, "Error during connection", error);
     }
 
-    freeaddrinfo(addr);
+    // Set to blocking mode again
+    non_blocking = 0;
+    ioctlsocket(sock, FIONBIO, &non_blocking);
     fd = sock;
 }
 
 void Socket::close() {
     ::closesocket(fd);
     fd = INVALID_SOCKET;
+}
+
+void Socket::setTcpNoDelay(bool tcpNoDelay) {
+    int flag = tcpNoDelay;
+    if (setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, (const char *) &flag, sizeof(flag)) < 0) {
+        throwIOErr(host, port, "Failure setting TCP_NODELAY", WSAGetLastError());
+    }
+}
+
+void Socket::setTimeout(int timeout) {
+    struct timeval tv;
+    tv.tv_sec = timeout / 1000;
+    tv.tv_usec = timeout % 1000;
+
+    if (setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (const char *) &tv, sizeof(tv)) < 0) {
+        throwIOErr(host, port, "Failure setting receive socket timeout", WSAGetLastError());
+    }
+
+    if (setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, (const char *) &tv, sizeof(tv)) < 0) {
+        throwIOErr(host, port, "Failure setting send socket timeout", WSAGetLastError());
+    }
 }
 
 size_t Socket::read(char *p, size_t length) {

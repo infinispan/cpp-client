@@ -1,7 +1,9 @@
+#include "infinispan/hotrod/ConfigurationBuilder.h"
 #include "infinispan/hotrod/RemoteCacheManager.h"
 #include "infinispan/hotrod/RemoteCache.h"
 #include "infinispan/hotrod/ScopedBuffer.h"
 
+#include <stdlib.h>
 #include <iostream>
 #include <memory>
 #include <typeinfo>
@@ -10,8 +12,10 @@
 
 using namespace infinispan::hotrod;
 
-int main(int, char**) {
-    RemoteCacheManager cacheManager(false);
+int main(int argc, char** argv) {
+    ConfigurationBuilder builder;
+    builder.addServer().host(argc > 1 ? argv[1] : "127.0.0.1").port(argc > 2 ? atoi(argv[2]) : 11222);
+    RemoteCacheManager cacheManager(builder.build(), false);
     RemoteCache<std::string, std::string> cache = cacheManager.getCache<std::string, std::string>();
     cacheManager.start();
 

@@ -49,8 +49,8 @@ void RemoteCacheManagerImpl::start() {
     ScopedLock<Mutex> l(lock);
     codec = CodecFactory::getCodec(configuration.getProtocolVersion().c_str());
     if (!started) {
-        transportFactory.reset(TransportFactory::newInstance());
-        transportFactory->start(*codec, configuration, topologyId);
+        transportFactory.reset(TransportFactory::newInstance(configuration));
+        transportFactory->start(*codec, topologyId);
 
        for(std::map<std::string, RemoteCacheHolder>::iterator iter = cacheName2RemoteCache.begin(); iter != cacheName2RemoteCache.end(); ++iter ) {
            startRemoteCache(*iter->second.first, iter->second.second);

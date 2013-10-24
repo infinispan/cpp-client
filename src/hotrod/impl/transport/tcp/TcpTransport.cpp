@@ -2,6 +2,7 @@
 
 #include "infinispan/hotrod/exceptions.h"
 #include "hotrod/impl/transport/tcp/TcpTransport.h"
+#include "hotrod/impl/transport/tcp/TcpTransportFactory.h"
 
 #include <iostream>
 #include <cstring>
@@ -13,12 +14,12 @@ namespace infinispan {
 namespace hotrod {
 namespace transport {
 
-// TODO
-
 TcpTransport::TcpTransport(
     const InetSocketAddress& a, TransportFactory& factory)
 : AbstractTransport(factory), socket(), /*inStr(*socket),*/ invalid(false), serverAddress(a) {
-	socket.connect(a.getAddress(),a.getPort());
+    socket.connect(a.getAddress(),a.getPort(), factory.getConnectTimeout());
+    socket.setTimeout(factory.getSoTimeout());
+    socket.setTcpNoDelay(factory.isTcpNoDelay());
 }
 
 void TcpTransport::flush() {
