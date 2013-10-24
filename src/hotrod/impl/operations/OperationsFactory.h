@@ -1,8 +1,6 @@
 #ifndef ISPN_HOTROD_OPERATIONS_OPERATIONSFACTORY_H
 #define ISPN_HOTROD_OPERATIONS_OPERATIONSFACTORY_H
 
-
-
 #include "infinispan/hotrod/Flag.h"
 
 #include <set>
@@ -33,6 +31,7 @@ class ContainsKeyOperation;
 class ReplaceIfUnmodifiedOperation;
 class RemoveIfUnmodifiedOperation;
 class GetWithMetadataOperation;
+class GetWithVersionOperation;
 class BulkGetOperation;
 class BulkGetKeysOperation;
 class StatsOperation;
@@ -71,6 +70,8 @@ class OperationsFactory
     RemoveIfUnmodifiedOperation* newRemoveIfUnmodifiedOperation(const hrbytes& key, int64_t version);
 
     GetWithMetadataOperation* newGetWithMetadataOperation(const hrbytes& key);
+
+    GetWithVersionOperation* newGetWithVersionOperation(const hrbytes& key);
 
     BulkGetOperation* newBulkGetOperation(int size);
 

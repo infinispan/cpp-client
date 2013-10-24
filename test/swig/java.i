@@ -77,6 +77,7 @@
 %include "infinispan/hotrod/ServerConfigurationBuilder.h"
 %include "infinispan/hotrod/ConnectionPoolConfigurationBuilder.h"
 %include "infinispan/hotrod/ConfigurationBuilder.h"
+%include "infinispan/hotrod/VersionedValue.h"
 %include "infinispan/hotrod/MetadataValue.h"
 %include "infinispan/hotrod/VersionedValue.h"
 %include "infinispan/hotrod/Flag.h"

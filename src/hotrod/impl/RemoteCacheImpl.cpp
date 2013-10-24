@@ -13,6 +13,7 @@
 #include "hotrod/impl/operations/ReplaceIfUnmodifiedOperation.h"
 #include "hotrod/impl/operations/RemoveIfUnmodifiedOperation.h"
 #include "hotrod/impl/operations/GetWithMetadataOperation.h"
+#include "hotrod/impl/operations/GetWithVersionOperation.h"
 #include "hotrod/impl/operations/BulkGetOperation.h"
 #include "hotrod/impl/operations/BulkGetKeysOperation.h"
 #include "hotrod/impl/operations/StatsOperation.h"
@@ -144,8 +145,20 @@ void RemoteCacheImpl::removeWithVersion(RemoteCacheBase& remoteCacheBase, const 
     *res = response.isUpdated();
 }
 
-void RemoteCacheImpl::getWithMetadata(RemoteCacheBase& remoteCacheBase,
-		const void *k, void* b, MetadataValue* metadata)
+void RemoteCacheImpl::getWithVersion(RemoteCacheBase& remoteCacheBase, const void *k, void* b, VersionedValue* version)
+{
+    assertRemoteCacheManagerIsStarted();
+    ScopedBuffer kbuf;
+    ScopedBuffer& vbuf(*(ScopedBuffer *)b);
+    remoteCacheBase.baseKeyMarshall(k, &kbuf);
+    hrbytes keyBytes(kbuf.getBytes(), kbuf.getLength());
+    hr_scoped_ptr<GetWithVersionOperation> gco(operationsFactory->newGetWithVersionOperation(keyBytes));
+    VersionedValueImpl<hrbytes> m = gco->execute();
+    m.getValue().releaseTo(vbuf);
+    version->version = m.version;
+}
+
+void RemoteCacheImpl::getWithMetadata(RemoteCacheBase& remoteCacheBase, const void *k, void* b, MetadataValue* metadata)
 {
     assertRemoteCacheManagerIsStarted();
     ScopedBuffer kbuf;
