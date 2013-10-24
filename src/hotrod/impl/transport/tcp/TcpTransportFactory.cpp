@@ -15,15 +15,14 @@ using namespace sys;
 
 namespace transport {
 
-TransportFactory* TransportFactory::newInstance() {
-    return new TcpTransportFactory();
+TransportFactory* TransportFactory::newInstance(const Configuration& configuration) {
+    return new TcpTransportFactory(configuration);
 }
 
 void TcpTransportFactory::start(
-    Codec& codec, const Configuration& configuration, int64_t topologyId)
+    Codec& codec, int64_t topologyId)
 {
     ScopedLock<Mutex> l(lock);
-    bool pingOnStartup = configuration.isPingOnStartup();
     for (std::vector<ServerConfiguration>::const_iterator iter=configuration.getServersConfiguration().begin();
         iter!=configuration.getServersConfiguration().end(); iter++)
     {
@@ -31,15 +30,12 @@ void TcpTransportFactory::start(
     }
 
     balancer.reset(RequestBalancingStrategy::newInstance());
-    tcpNoDelay = configuration.isTcpNoDelay();
-    soTimeout = configuration.getSocketTimeout();
-    connectTimeout = configuration.getConnectionTimeout();
 
     // TODO: SSL configuration
 
-    transportFactory.reset(new TransportObjectFactory(codec, *this, topologyId, pingOnStartup));
+    transportFactory.reset(new TransportObjectFactory(codec, *this, topologyId, configuration.isPingOnStartup()));
 
-    createAndPreparePool(configuration.getConnectionPoolConfiguration());
+    createAndPreparePool();
     balancer->setServers(servers);
     updateTransportCount();
 
@@ -80,8 +76,7 @@ void TcpTransportFactory::invalidateTransport(
 }
 
 bool TcpTransportFactory::isTcpNoDelay() {
-    ScopedLock<Mutex> l(lock);
-    return tcpNoDelay;
+    return configuration.isTcpNoDelay();
 }
 
 int TcpTransportFactory::getTransportCount() {
@@ -90,18 +85,16 @@ int TcpTransportFactory::getTransportCount() {
 }
 
 int TcpTransportFactory::getSoTimeout() {
-    ScopedLock<Mutex> l(lock);
-    return soTimeout;
+    return configuration.getSocketTimeout();
 }
 
 int TcpTransportFactory::getConnectTimeout() {
-    ScopedLock<Mutex> l(lock);
-    return connectTimeout;
+    return configuration.getConnectionTimeout();
 }
 
-void TcpTransportFactory::createAndPreparePool(const ConnectionPoolConfiguration& configuration)
+void TcpTransportFactory::createAndPreparePool()
 {
-    connectionPool.reset(new ConnectionPool(transportFactory, configuration));
+    connectionPool.reset(new ConnectionPool(transportFactory, configuration.getConnectionPoolConfiguration()));
     for (std::vector<InetSocketAddress>::const_iterator i = servers.begin();
         i != servers.end() ; ++i)
     {

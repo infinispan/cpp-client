@@ -26,8 +26,7 @@ class InetSocketAddress;
 class TransportFactory
 {
   public:
-    virtual void start(protocol::Codec& codec,
-        const Configuration& configuration, int64_t topologyId) = 0;
+    virtual void start(protocol::Codec& codec, int64_t topologyId) = 0;
     virtual void destroy() = 0;
 
     virtual Transport& getTransport() = 0;
@@ -52,7 +51,7 @@ class TransportFactory
     // getSSLContext
 
   private:
-    static TransportFactory* newInstance();
+    static TransportFactory* newInstance(const Configuration& config);
 
   friend class infinispan::hotrod::RemoteCacheManagerImpl;
 };

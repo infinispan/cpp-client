@@ -6,6 +6,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <netinet/tcp.h>
 #include <netdb.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -37,8 +38,10 @@ class Socket: public infinispan::hotrod::sys::Socket {
     Socket();
 
     virtual ~Socket();
-    virtual void connect(const std::string& host, int port);
+    virtual void connect(const std::string& host, int port, int timeout);
     virtual void close();
+    virtual void setTcpNoDelay(bool tcpNoDelay);
+    virtual void setTimeout(int timeout);
     virtual size_t read(char *p, size_t n);
     virtual void write(const char *p, size_t n);
   private:
@@ -71,11 +74,24 @@ Socket::Socket() : fd(-1), port(-1) {}
 
 Socket::~Socket() { close(); }
 
-void Socket::connect(const std::string& h, int p) {
-	host = h;
-	port = p;
+void Socket::connect(const std::string& h, int p, int timeout) {
+    host = h;
+    port = p;
     if (fd != -1) throwIOErr(host, port, "reconnect attempt", 0);
-    int sock = socket(AF_INET, SOCK_STREAM, getprotobyname("tcp")->p_proto);
+
+    struct addrinfo hints;
+    memset(&hints, 0, sizeof(struct addrinfo));
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_protocol = 0;
+    hints.ai_flags = 0;
+    struct addrinfo *addr;
+    std::ostringstream ostr;
+    ostr << port;
+    int ec = getaddrinfo(host.c_str(), ostr.str().c_str(), NULL, &addr);
+    if (ec) throwIOErr(host, port,"Error while invoking getaddrinfo", errno);
+
+    int sock = socket(addr->ai_family, SOCK_STREAM, getprotobyname("tcp")->p_proto);
     if (sock == -1) throwIOErr(host, port,"connect", errno);
 
     //OSX portability as MSG_NOSIGNAL is not defined on OSX
@@ -85,27 +101,49 @@ void Socket::connect(const std::string& h, int p) {
         sendFlag = 0;
         int optval = 1;
         if (setsockopt(sock, SOL_SOCKET, SO_NOSIGPIPE, &optval, sizeof(optval)) == -1) {
-        	    close();
-        	    throwIOErr(host, port, "setsockopt", errno);
+            close();
+            throwIOErr(host, port, "Error while invoking setsockopt", errno);
         }
     #endif
 
-    struct addrinfo *addr;
-    std::ostringstream ostr;
-    ostr << port;
-    int ec = getaddrinfo(host.c_str(), ostr.str().c_str(), NULL, &addr);
-    if (ec) throwIOErr(host, port,"getaddrinfo", errno);
 
-    while (::connect(sock, addr->ai_addr, addr->ai_addrlen) == -1) {
-        int connect_errno = errno;
-        if (connect_errno != EINPROGRESS) {
-            freeaddrinfo(addr);
-            close();
-            throwIOErr(host, port,"connect2", connect_errno);
+    // Make the socket non-blocking for the connection
+    int flags = fcntl(sock,F_GETFL,0);
+    fcntl(sock, F_SETFL, flags | O_NONBLOCK);
+
+    // Connect
+    int s = ::connect(sock, addr->ai_addr, addr->ai_addrlen);
+    int error = errno;
+    freeaddrinfo(addr);
+
+    if (s < 0) {
+        if (error == EINPROGRESS) {
+            struct timeval tv;
+            tv.tv_sec = timeout / 1000;
+            tv.tv_usec = timeout % 1000;
+            fd_set sock_set;
+            FD_ZERO(&sock_set);
+            FD_SET(sock, &sock_set);
+            // Wait for the socket to become ready
+            s = select(sock + 1, NULL, &sock_set, NULL, &tv);
+            if (s > 0) {
+                int opt;
+                socklen_t optlen = sizeof(opt);
+                s = getsockopt(sock, SOL_SOCKET, SO_ERROR, (void*)(&opt), &optlen);
+            } else {
+                error = errno;
+            }
+        } else {
+            s = -1;
         }
     }
+    if (s < 0) {
+        close();
+        throwIOErr(host, port, "Error during connection", error);
+    }
 
-    freeaddrinfo(addr);
+    // Set to blocking mode again
+    fcntl(sock, F_SETFL, flags & ~O_NONBLOCK);
     fd = sock;
 }
 
@@ -114,13 +152,34 @@ void Socket::close() {
     fd = -1;
 }
 
+void Socket::setTcpNoDelay(bool tcpNoDelay) {
+    int flag = tcpNoDelay;
+    if (setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, (void *) &flag, sizeof(flag)) < 0) {
+        throwIOErr(host, port, "Failure setting TCP_NODELAY", errno);
+    }
+}
+
+void Socket::setTimeout(int timeout) {
+    struct timeval tv;
+    tv.tv_sec = timeout / 1000;
+    tv.tv_usec = timeout % 1000;
+
+    if (setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (void *) &tv, sizeof(tv)) < 0) {
+        throwIOErr(host, port, "Failure setting receive socket timeout", errno);
+    }
+
+    if (setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, (void *) &tv, sizeof(tv)) < 0) {
+        throwIOErr(host, port, "Failure setting send socket timeout", errno);
+    }
+}
+
 size_t Socket::read(char *p, size_t length) {
     while(1) {
         ssize_t n =  recv(fd, p, length, 0);
         if (n < 0 && errno != EAGAIN)
-            throwIOErr(host, port,"read", errno);
+            throwIOErr(host, port, "read", errno);
         else if (n == 0)
-            throwIOErr(host, port,"no read", 0);
+            throwIOErr(host, port, "no read", 0);
             //return 0;
         else
             return n;
