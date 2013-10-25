@@ -1,10 +1,10 @@
 #ifndef ISPN_HOTROD_EXCEPTIONS_H
 #define ISPN_HOTROD_EXCEPTIONS_H
 
-#include "infinispan/hotrod/ImportExport.h"
 #include <exception>
 #include <string>
 #include <stdint.h>
+#include "infinispan/hotrod/ImportExport.h"
 
 namespace infinispan {
 namespace hotrod {

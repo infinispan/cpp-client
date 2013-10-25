@@ -1,14 +1,11 @@
 #ifndef ISPN_HOTROD_REMOTECACHEMANAGER_H
 #define ISPN_HOTROD_REMOTECACHEMANAGER_H
 
-
-
+#include "infinispan/hotrod/BasicMarshaller.h"
 #include "infinispan/hotrod/ImportExport.h"
 #include "infinispan/hotrod/Handle.h"
 #include "infinispan/hotrod/RemoteCache.h"
 #include "infinispan/hotrod/Configuration.h"
-
-#include "hotrod/sys/BasicMarshaller.h"
 
 #include <string>
 #include <map>
@@ -40,8 +37,8 @@ class HR_EXTERN RemoteCacheManager : public Handle<RemoteCacheManagerImpl>
     {
         RemoteCache<K, V> rcache;
         initCache(rcache, forceReturnValue);
-        rcache.keyMarshaller.reset(new sys::BasicMarshaller<K>());
-        rcache.valueMarshaller.reset(new sys::BasicMarshaller<V>());
+        rcache.keyMarshaller.reset(new BasicMarshaller<K>());
+        rcache.valueMarshaller.reset(new BasicMarshaller<V>());
         return rcache;
     }
 
@@ -50,8 +47,8 @@ class HR_EXTERN RemoteCacheManager : public Handle<RemoteCacheManagerImpl>
     {
         RemoteCache<K, V> rcache;
         initCache(rcache, name, forceReturnValue);
-        rcache.keyMarshaller.reset(new sys::BasicMarshaller<K>());
-        rcache.valueMarshaller.reset(new sys::BasicMarshaller<V>());
+        rcache.keyMarshaller.reset(new BasicMarshaller<K>());
+        rcache.valueMarshaller.reset(new BasicMarshaller<V>());
         return rcache;
     }
 

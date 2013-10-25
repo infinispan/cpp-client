@@ -7,7 +7,7 @@
 
 #include "hotrod/impl/transport/AbstractTransport.h"
 
-#include "hotrod/sys/types.h"
+#include "infinispan/hotrod/types.h"
 #include "hotrod/impl/transport/tcp/Socket.h"
 #include "hotrod/impl/transport/tcp/InetSocketAddress.h"
 

@@ -1,4 +1,4 @@
-#include "hotrod/sys/types.h"
+#include "infinispan/hotrod/types.h"
 #include "hotrod/sys/Msg.h"
 #include "hotrod/impl/RemoteCacheImpl.h"
 #include "hotrod/impl/RemoteCacheManagerImpl.h"

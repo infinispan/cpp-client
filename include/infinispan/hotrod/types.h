@@ -1,111 +1,153 @@
 #ifndef ISPN_HOTROD_TYPES_H
 #define ISPN_HOTROD_TYPES_H
 
+#include "infinispan/hotrod/defs.h"
+#include "infinispan/hotrod/ScopedBuffer.h"
 
+#include <exception>
+#include <memory>
+#include <iostream>
 
-#include "infinispan/hotrod/ImportExport.h"
-
-// Platform dependent shared_ptr definition.  Todo: more platforms, more elegance.
-#if defined (__GNUC__) && __GNUC__ >= 4 
-    #include <tr1/memory>
-    #define  HR_SHARED_PTR std::tr1::shared_ptr
-#elif defined (_MSC_VER)
-    // TODO: handle multiple VS versions 
-    #include <memory>
-    #define  HR_SHARED_PTR std::tr1::shared_ptr
-#endif
+namespace infinispan {
+namespace hotrod {
 
 /*
- * Handle special cases for stdint.h and the definition for ssize_t.
- * Third party libraries (e.g. Boost) may provide competing solutions.
+ * A limited functionality scoped_ptr.  Defined here because auto_ptr
+ * deprecated, unique_ptr too new, shared_ptr too heavy, and boost not
+ * available.  Main use is to allow C++ code to resemble the original
+ * Java code in program flow for short lived objects.  Replace with
+ * another solution if it instead promotes contorted code.
  *
- * The effects of this include file may be controlled by overrides:
- *  PN_DEFINE_STDINT/PN_NODEFINE_STDINT   : turn on/off definition of int64_t etc.
- *  PN_DEFINE_SSIZE_T/PN_NODEFINE_SSIZE_T : turn on/off definition of ssize_t
- *  PN_INCLUDE_STDINT/PN_NOINCLUDE_STDINT : include (or not) stdint.h
+ * Single use, non-copyable.
  */
 
-// Honor positive overrides
-#if defined(PN_DEFINE_STDINT)
-#define PNI_DEFINE_STDINT
-#endif
-#if defined(PN_INCLUDE_STDINT)
-#define PNI_INCLUDE_STDINT)
-#endif
-#if defined(PN_DEFINE_SSIZE_T)
-#define PNI_DEFINE_SSIZE_T
-#endif
+template <class T> class hr_scoped_ptr {
+ public:
+    hr_scoped_ptr (T* p) : px(p) {
+        // TODO: replace with hotrod exception
+        if (!p) throw std::exception();
+    }
+    ~hr_scoped_ptr() { delete(px); }
 
-// Determinine default action
-#ifndef _MSC_VER
-// Not Windows and not using Visual Studio
-#ifndef PNI_INCLUDE_STDINT
-#define PNI_INCLUDE_STDINT
-#endif
-#else
-// all versions of Visual Studio
-#ifndef PNI_DEFINE_SSIZE_T
-// ssie_t def is needed, unless third party definition interferes, e.g. python/swig
-#ifndef Py_CONFIG_H
-#define PNI_DEFINE_SSIZE_T
-#endif
-#endif
+    T& operator*() {return *px ; }
+    T* operator->() { return px; }
 
-#if (_MSC_VER < 1600)
-// VS 2008 and earlier
-#ifndef PNI_DEFINE_STDINT
-#define PNI_DEFINE_STDINT
-#endif
-#else
-// VS 2010 and newer
-#ifndef PNI_INCLUDE_STDINT
-#define PNI_INCLUDE_STDINT
-#endif
+  private:
+    hr_scoped_ptr(hr_scoped_ptr const &);
+    hr_scoped_ptr& operator=(hr_scoped_ptr const &);
 
-#endif // (_MSC_VER < 1600)
-#endif //_MSC_VER
+    T* px;
+};
 
-// Honor negative overrides
-#ifdef PN_NODEFINE_SSIZE_T
-#undef PNI_DEFINE_SSIZE_T
-#endif
-#ifdef PN_NODEFINE_STDINT
-#undef PNI_DEFINE_STDINT
-#endif
-#ifdef PN_NOINCLUDE_STDINT
-#undef PNI_INCLUDE_STDINT
-#endif
 
-#ifdef PNI_INCLUDE_STDINT
-#include <stdint.h>
-#endif
+/*
+ * A Java byte[] substitute class.  Can be toggled smart or dumb.  Not
+ * to be exposed as a public interface.  More performant version
+ * surely possible.  Hopefully efficient with return value
+ * optimization based on observed frequent use of Java code:
+ *
+ *   byte[] result = foo();
+ *
+ * Basic use: 
+ *   hrbyes mybytes(addr, len); // no ownership
+ *
+ *   mybytes.setSmart(new char[len], len); // ownership
+ *   mybytes.reserve(len);      // same as line above
+ *
+ * TODO: move to auto_ptr/unique_ptr platform neutral implementation
+ * (good), add support to work with a buffer pool (better).
+ *
+ */
 
-#ifdef PNI_DEFINE_SSIZE_T
-#ifdef _MSC_VER
-#include <BaseTsd.h>
-typedef SSIZE_T ssize_t;
-#else
-#error ssize_t definition not kown
-#endif
-#endif // PNI_DEFINE_SSIZE_T
+class hrbytes {
+ public:
+    struct HrbDeleter {
+        void operator()(char* p) {
+            if (p == 0) {
+                // called via get_deleter from below
+                disabled = true;
+                return;
+            }
+                
+            if (!disabled) {
+                delete[] p;
+            }
+        }
+        bool disabled;
+    };
 
-#ifdef PNI_DEFINE_STDINT
-#ifdef _MSC_VER
+    unsigned int length() { return len; }
+    char* bytes() const { return dumbBytes ? dumbBytes : smartBytes.get(); }
 
-typedef signed __int8 int8_t;
-typedef signed __int16 int16_t;
-typedef signed __int32 int32_t;
-typedef signed __int64 int64_t;
+    hrbytes() : dumbBytes(0), len(0) {}
+    hrbytes(char *b, unsigned int l) :  dumbBytes(b), len(l) {}
 
-typedef unsigned __int8 uint8_t;
-typedef unsigned __int16 uint16_t;
-typedef unsigned __int32 uint32_t;
-typedef unsigned __int64 uint64_t;
+    void set(char *b, unsigned int l) {
+        smartBytes.reset();
+        len = l;
+        dumbBytes = b;
+    }
+    void setSmart(char *b, unsigned int l) {
+        smartBytes.reset(b, HrbDeleter());
+        len = l;
+        dumbBytes = 0;
+    }
+    void reserve(unsigned int l) {
+        dumbBytes = 0;
+        len = l;
+        smartBytes.reset(new char[len], HrbDeleter());
+    }
 
-#else // _MSC_VER
-#error stdint.h definitions not kown
-#endif
-#endif // PNI_DEFINE_SSIZE_T
+    hrbytes(hrbytes const &other) {
+        len = other.len;
+        dumbBytes = other.dumbBytes;
+        smartBytes = other.smartBytes;
+        if (!dumbBytes) other.dumbBytes = smartBytes.get();
+    }
+    hrbytes& operator=(hrbytes const &other) {
+        len = other.len;
+        dumbBytes = other.dumbBytes;
+        smartBytes = other.smartBytes;
+        if (!dumbBytes) other.dumbBytes = smartBytes.get();
+        return *this;
+    }
+        
+    static void delayedDelete (ScopedBuffer *buf) {
+        delete[] buf->getBytes();
+    }
+    void releaseTo(ScopedBuffer& buf) const {
+        // TODO: assert smartBytes.unique()
+	if (smartBytes) {
+            buf.set(smartBytes.get(), len, &delayedDelete);
+            (*std::tr1::get_deleter<HrbDeleter>(smartBytes))(0);
+	}
+	else 
+	    buf.set(dumbBytes, len);
+    }
 
+  private:
+    mutable char* dumbBytes;
+    unsigned int len;
+    HR_SHARED_PTR<char> smartBytes;
+};
+
+}} // namespace infinispan::hotrod
+
+
+namespace std {
+
+template<class T> struct less;
+
+template<> struct less<infinispan::hotrod::hrbytes>
+{
+    bool operator() (
+        const infinispan::hotrod::hrbytes& b1,
+        const infinispan::hotrod::hrbytes& b2) const
+    {
+        return b1.bytes() < b2.bytes();
+    }
+};
+
+} // namespace std
 
 #endif  /* ISPN_HOTROD_TYPES_H */

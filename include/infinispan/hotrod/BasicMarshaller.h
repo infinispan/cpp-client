@@ -8,7 +8,6 @@
 
 namespace infinispan {
 namespace hotrod {
-namespace sys {
 
 /*
  * A Marshaller for a few simple types.
@@ -60,6 +59,6 @@ class BasicMarshaller<int> : public infinispan::hotrod::Marshaller<int> {
     }
 };
 
-}}} // namespace
+}} // namespace
 
 #endif  /* ISPN_HOTROD_BASICMARSHALLER_H */

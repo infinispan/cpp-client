@@ -1,7 +1,7 @@
 
 
 #include "hotrod/impl/operations/PutIfAbsentOperation.h"
-#include "hotrod/sys/types.h"
+#include "infinispan/hotrod/types.h"
 
 namespace infinispan {
 namespace hotrod {
