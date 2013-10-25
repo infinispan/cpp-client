@@ -1,9 +1,7 @@
 #ifndef ISPN_HOTROD_PROTOCOL_HEADERPARAMS_H
 #define ISPN_HOTROD_PROTOCOL_HEADERPARAMS_H
 
-
-
-#include "hotrod/sys/types.h"
+#include "infinispan/hotrod/types.h"
 #include "infinispan/hotrod/Flag.h"
 
 #include <set>
@@ -11,7 +9,6 @@
 namespace infinispan {
 namespace hotrod {
 namespace protocol {
-
 
 class HeaderParams
 {

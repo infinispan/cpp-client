@@ -1,6 +1,6 @@
 
 
-#include "hotrod/sys/types.h"
+#include "infinispan/hotrod/types.h"
 #include "hotrod/impl/operations/GetWithMetadataOperation.h"
 #include "hotrod/impl/MetadataValueImpl.h"
 #include <cstring>

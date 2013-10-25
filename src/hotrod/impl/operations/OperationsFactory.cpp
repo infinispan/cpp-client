@@ -1,4 +1,4 @@
-#include "hotrod/sys/types.h"
+#include "infinispan/hotrod/types.h"
 #include "hotrod/impl/operations/OperationsFactory.h"
 #include "hotrod/impl/protocol/CodecFactory.h"
 #include "hotrod/impl/transport/Transport.h"
@@ -155,3 +155,4 @@ void OperationsFactory::setFlags(uint32_t f) {
 }
 
 }}} // namespace infinispan::hotrod::operations
+

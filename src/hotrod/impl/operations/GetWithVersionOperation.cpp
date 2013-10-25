@@ -1,4 +1,4 @@
-#include "hotrod/sys/types.h"
+#include "infinispan/hotrod/types.h"
 #include "hotrod/impl/operations/GetWithVersionOperation.h"
 #include "hotrod/impl/VersionedValueImpl.h"
 #include <cstring>

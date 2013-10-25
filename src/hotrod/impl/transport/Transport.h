@@ -1,10 +1,8 @@
 #ifndef ISPN_HOTROD_TRANSPORT_TRANSPORT_H
 #define ISPN_HOTROD_TRANSPORT_TRANSPORT_H
 
-
-
+#include "infinispan/hotrod/defs.h"
 #include "infinispan/hotrod/types.h"
-#include "hotrod/sys/types.h"
 
 namespace infinispan {
 namespace hotrod {
@@ -44,4 +42,3 @@ class Transport
 }}} // namespace infinispan::hotrod::transport
 
 #endif  // ISPN_HOTROD_TRANSPORT_TRANSPORT_H
-

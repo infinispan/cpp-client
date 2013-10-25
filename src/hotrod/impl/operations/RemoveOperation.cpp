@@ -1,6 +1,6 @@
 
 
-#include "hotrod/sys/types.h"
+#include "infinispan/hotrod/types.h"
 #include "hotrod/impl/operations/RemoveOperation.h"
 #include <cstring>
 
