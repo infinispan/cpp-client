@@ -225,6 +225,6 @@ set (CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/License.txt")
 file (GLOB includes "${CMAKE_CURRENT_SOURCE_DIR}/include/infinispan/hotrod/*.h")
 install (FILES ${includes} DESTINATION include/infinispan/hotrod)
 install (FILES "${CMAKE_CURRENT_SOURCE_DIR}/License.txt" "${CMAKE_CURRENT_SOURCE_DIR}/dist/README.md" DESTINATION .)
-install (TARGETS hotrod LIBRARY DESTINATION lib)
+install (TARGETS hotrod DESTINATION lib)
 
 include (CPack)
