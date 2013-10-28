@@ -20,6 +20,70 @@ ConnectionPoolConfigurationBuilder::ConnectionPoolConfigurationBuilder(Configura
         m_testWhileIdle(true)
       {}
 
+ConnectionPoolConfigurationBuilder& ConnectionPoolConfigurationBuilder::exhaustedAction(ExhaustedAction exhaustedAction_) {
+    m_exhaustedAction = exhaustedAction_;
+    return *this;
+}
+
+ConnectionPoolConfigurationBuilder& ConnectionPoolConfigurationBuilder::lifo(bool lifo_) {
+    m_lifo = lifo_;
+    return *this;
+}
+
+ConnectionPoolConfigurationBuilder& ConnectionPoolConfigurationBuilder::maxActive(int maxActive_) {
+    m_maxActive = maxActive_;
+    return *this;
+}
+
+ConnectionPoolConfigurationBuilder& ConnectionPoolConfigurationBuilder::maxTotal(int maxTotal_)  {
+    m_maxTotal = maxTotal_;
+    return *this;
+}
+
+ConnectionPoolConfigurationBuilder& ConnectionPoolConfigurationBuilder::maxWait(long maxWait_) {
+    m_maxWait = maxWait_;
+    return *this;
+}
+
+ConnectionPoolConfigurationBuilder& ConnectionPoolConfigurationBuilder::maxIdle(int maxIdle_) {
+    m_maxIdle = maxIdle_;
+    return *this;
+}
+
+ConnectionPoolConfigurationBuilder& ConnectionPoolConfigurationBuilder::minIdle(int minIdle_) {
+    m_minIdle = minIdle_;
+    return *this;
+}
+
+ConnectionPoolConfigurationBuilder& ConnectionPoolConfigurationBuilder::numTestsPerEvictionRun(int numTestsPerEvictionRun_) {
+    m_numTestsPerEvictionRun = numTestsPerEvictionRun_;
+    return *this;
+}
+
+ConnectionPoolConfigurationBuilder& ConnectionPoolConfigurationBuilder::timeBetweenEvictionRuns(int timeBetweenEvictionRuns_) {
+    m_timeBetweenEvictionRuns = timeBetweenEvictionRuns_;
+    return *this;
+}
+
+ConnectionPoolConfigurationBuilder& ConnectionPoolConfigurationBuilder::minEvictableIdleTime(int minEvictableIdleTime_) {
+    m_minEvictableIdleTime = minEvictableIdleTime_;
+    return *this;
+}
+
+ConnectionPoolConfigurationBuilder& ConnectionPoolConfigurationBuilder::testOnBorrow(bool testOnBorrow_) {
+    m_testOnBorrow = testOnBorrow_;
+    return *this;
+}
+
+ConnectionPoolConfigurationBuilder& ConnectionPoolConfigurationBuilder::testOnReturn(bool testOnReturn_) {
+    m_testOnReturn = testOnReturn_;
+    return *this;
+}
+
+ConnectionPoolConfigurationBuilder& ConnectionPoolConfigurationBuilder::testWhileIdle(bool testWhileIdle_) {
+    m_testWhileIdle = testWhileIdle_;
+    return *this;
+}
 
 ConnectionPoolConfiguration ConnectionPoolConfigurationBuilder::create()
 {
