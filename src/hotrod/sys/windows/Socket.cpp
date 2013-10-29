@@ -97,7 +97,7 @@ void Socket::connect(const std::string& h, int p, int timeout) {
     freeaddrinfo(addr);
 
     if (s < 0) {
-        if (error == EINPROGRESS) {
+        if (error == WSAEWOULDBLOCK) {
             struct timeval tv;
             tv.tv_sec = timeout / 1000;
             tv.tv_usec = timeout % 1000;
