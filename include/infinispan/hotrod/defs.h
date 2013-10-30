@@ -4,10 +4,10 @@
 #include "infinispan/hotrod/ImportExport.h"
 
 // Platform dependent shared_ptr definition.  Todo: more platforms, more elegance.
-#if defined (__GNUC__) && __GNUC__ >= 4 
+#if (defined (__GNUC__) && __GNUC__ >= 4 ) || defined(SWIG) || defined(SWIGMAC)
     #include <tr1/memory>
-    #define  HR_SHARED_PTR std::tr1::shared_ptr
-#elif defined (_MSC_VER)
+    #define HR_SHARED_PTR std::tr1::shared_ptr
+#elif defined (_MSC_VER) || defined(SWIGWIN)
     // TODO: handle multiple VS versions 
     #include <memory>
     #define  HR_SHARED_PTR std::tr1::shared_ptr

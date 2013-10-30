@@ -18,9 +18,20 @@ else (WIN32 AND NOT CYGWIN)
   set (CLASSPATH_SEPARATOR ":")
 endif(WIN32 AND NOT CYGWIN)
 
-execute_process(COMMAND ${JAVA_COMPILE} -cp ".${CLASSPATH_SEPARATOR}lib/*" -d . "@source1" "@source2" WORKING_DIRECTORY ${JNI_DIR})
-execute_process(COMMAND ${JAVA_ARCHIVE} cf hotrod-jni.jar org WORKING_DIRECTORY ${JNI_DIR})
-execute_process(COMMAND ${JAVA_COMPILE} -cp "hotrod-jni.jar${CLASSPATH_SEPARATOR}lib/*" -d . ${HOTROD_SOURCE_DIR}/test/JniTest.java WORKING_DIRECTORY ${JNI_DIR})
+execute_process(COMMAND ${JAVA_COMPILE} -cp ".${CLASSPATH_SEPARATOR}lib/*" -d . "@source1" "@source2" WORKING_DIRECTORY ${JNI_DIR} RESULT_VARIABLE return_code)
+if (NOT ${return_code} EQUAL 0)
+   message(FATAL_ERROR "Failed to compile.")
+endif(NOT ${return_code} EQUAL 0)
+
+execute_process(COMMAND ${JAVA_ARCHIVE} cf hotrod-jni.jar org WORKING_DIRECTORY ${JNI_DIR} RESULT_VARIABLE return_code)
+if (NOT ${return_code} EQUAL 0)
+   message(FATAL_ERROR "Failed to build jar.")
+endif(NOT ${return_code} EQUAL 0)
+
+execute_process(COMMAND ${JAVA_COMPILE} -cp "hotrod-jni.jar${CLASSPATH_SEPARATOR}lib/*" -d . ${HOTROD_SOURCE_DIR}/test/JniTest.java WORKING_DIRECTORY ${JNI_DIR} RESULT_VARIABLE return_code)
+if (NOT ${return_code} EQUAL 0)
+   message(FATAL_ERROR "Failed to compile JniTest.")
+endif(NOT ${return_code} EQUAL 0)
 
 if(NOT EXISTS ${JNI_DIR}/JniTest.class)
     message(FATAL_ERROR "JniTest compile failed")

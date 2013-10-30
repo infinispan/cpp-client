@@ -71,7 +71,21 @@ public class JniTest {
 	    System.out.println("=== Hot Rod integration test - test PutIfAbsent ====");
 	    hotRodIntegrationTest.testPutIfAbsent();
 	    System.out.println("=== Hot Rod integration test - test PutIfAbsent PASSED ====");
-	    
+
+            System.out.println("=== Hot Rod integration test - test GetVersionedCacheEntry ====");
+            hotRodIntegrationTest.testDestroyRemoteCacheFactory();
+            setup.invoke(hotRodIntegrationTest);
+
+            hotRodIntegrationTest.testGetVersionedCacheEntry();
+            System.out.println("=== Hot Rod integration test - test GetVersionedCacheEntry PASSED ====");
+
+            System.out.println("=== Hot Rod integration test - test GetWithMetadata ====");
+            hotRodIntegrationTest.testDestroyRemoteCacheFactory();
+            setup.invoke(hotRodIntegrationTest);
+
+            hotRodIntegrationTest.testGetWithMetadata();
+            System.out.println("=== Hot Rod integration test - test GetWithMetadata PASSED ====");
+            
 	    //TODO: testClear need investigations, it fails in the same manner than java
 	    //Exception in thread "main" java.lang.AssertionError
 		//at org.infinispan.client.hotrod.HotRodIntegrationTest.testClear(HotRodIntegrationTest.java:293)
