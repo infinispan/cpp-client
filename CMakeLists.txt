@@ -206,6 +206,7 @@ include (CTest)
 
 add_test (unit_test unit_test)
 add_test (hash_test hash_test)
+add_test (l3_test l3_test)
 add_test (start_server python ${CMAKE_CURRENT_SOURCE_DIR}/test/server_ctl.py start ${JAVA_RUNTIME} ${HOTROD_JBOSS_HOME} single)
 add_test (simple simple)
 add_test (stop_server python ${CMAKE_CURRENT_SOURCE_DIR}/test/server_ctl.py stop)
