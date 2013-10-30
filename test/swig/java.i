@@ -12,7 +12,7 @@
 //%include "std_shared_ptr.i"
 
 
-//%include "std_pair.i"
+%include "std_pair.i"
 
 
 
@@ -20,6 +20,7 @@
 
 %{
 #include <infinispan/hotrod/types.h>
+#include <infinispan/hotrod/defs.h>
 #include <infinispan/hotrod/ConnectionPoolConfiguration.h>
 #include <infinispan/hotrod/ServerConfiguration.h>
 #include <infinispan/hotrod/SslConfiguration.h>
@@ -56,6 +57,7 @@
 %template(MapType) std::map<std::string, std::string>;
 
 %include "infinispan/hotrod/types.h"
+%include "infinispan/hotrod/defs.h"
 %include "infinispan/hotrod/ImportExport.h"
 %include "infinispan/hotrod/Handle.h"
 
@@ -79,7 +81,6 @@
 %include "infinispan/hotrod/ConfigurationBuilder.h"
 %include "infinispan/hotrod/VersionedValue.h"
 %include "infinispan/hotrod/MetadataValue.h"
-%include "infinispan/hotrod/VersionedValue.h"
 %include "infinispan/hotrod/Flag.h"
 %include "infinispan/hotrod/TimeUnit.h"
 %include "infinispan/hotrod/RemoteCacheManager.h"
@@ -120,9 +121,19 @@ class RelayBytes {
 %}
 
 //%template(RelayShrPointer) HR_SHARED_PTR<RelayBytes>;
-//%template(MetadataPairReturn) std::pair<HR_SHARED_PTR<RelayBytes>, infinispan::hotrod::MetadataValue>;
+%template(MetadataPairReturn) std::pair<HR_SHARED_PTR<RelayBytes>, infinispan::hotrod::MetadataValue>;
+%template(VersionPairReturn) std::pair<HR_SHARED_PTR<RelayBytes>, infinispan::hotrod::VersionedValue>;
 //%template(MetadataMapReturn) std::map<HR_SHARED_PTR<RelayBytes>, HR_SHARED_PTR<RelayBytes> >;
 
+%inline %{
+ bool isNull(HR_SHARED_PTR<RelayBytes> ptr) {
+     return !ptr;
+ }
+
+ RelayBytes dereference(HR_SHARED_PTR<RelayBytes> ptr) {
+     return *ptr;
+ }
+%}
 
 // our mechanism for RemoteCache<byte[], byte[]> from the java side
 %template(RemoteCache_jb_jb) infinispan::hotrod::RemoteCache<RelayBytes, RelayBytes>;

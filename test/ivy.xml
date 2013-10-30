@@ -12,7 +12,8 @@
             <artifact name="infinispan-core" type="jar" />
         </dependency>
         <dependency org="org.infinispan" name="infinispan-client-hotrod" rev="6.0.0.CR1" >
-        	<artifact name="infinispan-client-hotrod" type="jar" m:classifier="tests" />
+                <artifact name="infinispan-client-hotrod" type="jar" m:classifier="tests" />
+                <artifact name="infinispan-client-hotrod" type="jar"/>
         </dependency>
     </dependencies>
 </ivy-module>
