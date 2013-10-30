@@ -4,6 +4,7 @@
 #include "hotrod/impl/consistenthash/ConsistentHashV2.h"
 #include "hotrod/impl/transport/tcp/InetSocketAddress.h"
 #include "hotrod/impl/protocol/HotRodConstants.h"
+#include "infinispan/hotrod/defs.h"
 #include <iostream>
 #include <sstream>
 #include <set>
@@ -22,7 +23,8 @@ using namespace infinispan::hotrod::consistenthash;
 using namespace infinispan::hotrod::transport;
 
 void consistentHashFactoryTest(uint32_t hashVersion) {
-    ConsistentHashFactory* hashFactory = new ConsistentHashFactory();
+    HR_SHARED_PTR<ConsistentHashFactory> hashFactory;
+    hashFactory.reset(new ConsistentHashFactory());
     ConsistentHash* hash = hashFactory->newConsistentHash(hashVersion);
     hrbytes data(const_cast<char*> ("acbde"), 5);
     uint32_t i1 = hash->getNormalizedHash(data);
@@ -33,8 +35,6 @@ void consistentHashFactoryTest(uint32_t hashVersion) {
     assert(i3 == i2);
     assert(i1 == i3);
     std::cout << "consistentHashFactoryTest for hash version " << hashVersion << " ok " << std::endl;
-
-    delete hashFactory;
 }
 
 std::map<InetSocketAddress, std::set<int32_t> > createServer2HashMap(){

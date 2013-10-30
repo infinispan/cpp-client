@@ -32,6 +32,7 @@ void TcpTransportFactory::start(
     }
 
     balancer.reset(RequestBalancingStrategy::newInstance());
+    hashFactory.reset(new ConsistentHashFactory());
 
     // TODO: SSL configuration
 
@@ -56,18 +57,11 @@ Transport& TcpTransportFactory::getTransport() {
 }
 
 Transport& TcpTransportFactory::getTransport(const hrbytes& key) {
-    // TODO: consistent hash
     ScopedLock<Mutex> l(lock);
     if (consistentHash != NULL) {
         return borrowTransportFromPool(consistentHash->getServer(key));
-        /*if (log.isTraceEnabled()) {
-         log.tracef("Using consistent hash for determining the server: " + server);
-         }*/
     } else {
         return borrowTransportFromPool(balancer->nextServer());
-        /*if (log.isTraceEnabled()) {
-         log.tracef("Using the balancer for determining the server: %s", server);
-         }*/
     }
 }
 
@@ -210,7 +204,8 @@ void TcpTransportFactory::updateHashFunction(
     ScopedLock<Mutex> l(lock);
     ConsistentHash* hash = hashFactory->newConsistentHash(hashFunctionVersion);
     if (hash == NULL) {
-        //TODO log noHasHFunctionConfigured(hashFunctionVersion);
+        std::cout << "updateHashFunction with hash version "
+            << hashFunctionVersion << " failed!" << std::endl;
     } else {
         hash->init(servers2Hash, numKeyOwners, hashSpace);
     }
