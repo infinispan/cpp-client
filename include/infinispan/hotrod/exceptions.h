@@ -23,7 +23,7 @@ class HR_EXTERN Exception : public std::exception
 /*
  * FIXME: We should really extend Exception, but apparently g++ is losing specific typeinfo across the shared library boundary
  */
-class HR_EXTERN HotRodClientException
+class HR_EXTERN HotRodClientException : public std::exception
 {
   public:
     explicit HotRodClientException(const std::string&);
