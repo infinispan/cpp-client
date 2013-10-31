@@ -70,14 +70,23 @@ int main(int argc, char** argv) {
 
     std::cout << "PASS: simple putIfAbsent"  << std::endl;
 
+    cache.put(k3, v3, 10, SECONDS);
     // getWithMetadata
-    std::pair<HR_SHARED_PTR<std::string>,MetadataValue> rv5 = cache.getWithMetadata(k3);
-    if (!rv5.first.get()) {
-        std::cerr << "getWithMetadata fail for " << k3 << " not found" << std::endl;
+    std::pair<HR_SHARED_PTR<std::string>, MetadataValue> rv5 = cache.getWithMetadata(k3);
+    if (!rv5.first.get() || rv5.second.lifespan != 10) {
+        std::cerr << "getWithMetadata with mortal entry fail for " << k3 << " not found" << std::endl;
         return 1;
     }
+    std::cout << "PASS: simple getWithMetadata with mortal entry"  << std::endl;
 
-    std::cout << "PASS: simple getWithMetadata"  << std::endl;
+    cache.put(k3, v3);
+    // getWithMetadata
+    rv5 = cache.getWithMetadata(k3);
+    if (!rv5.first.get() || rv5.second.lifespan >= 0) {
+        std::cerr << "getWithMetadata with immortal entry fail for " << k3 << std::endl;
+        return 1;
+    }
+    std::cout << "PASS: simple getWithMetadata with immortal entry"  << std::endl;
 
     // getWithVersion
     std::pair<HR_SHARED_PTR<std::string>, VersionedValue> rv5a = cache.getWithVersion(k3);

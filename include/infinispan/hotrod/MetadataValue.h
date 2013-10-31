@@ -10,12 +10,12 @@ namespace hotrod {
 class MetadataValue : public VersionedValue
 {
   public:
-    MetadataValue() : VersionedValue(), created(0), lifespan(0), lastUsed(0), maxIdle(0) {}
+    MetadataValue() : VersionedValue(), created(0), lifespan(-1), lastUsed(0), maxIdle(-1) {}
 
     int64_t created;
-    uint32_t lifespan;
+    int32_t lifespan;
     int64_t lastUsed;
-    uint32_t maxIdle;
+    int32_t maxIdle;
 };
 
 }} // namespace infinispan::hotrod
