@@ -16,8 +16,8 @@ import java.util.Set;
 import static org.jboss.logging.Logger.Level.*;
 
 /**
- * Log abstraction for the hot rod client. For this module, message ids
- * ranging from 4001 to 5000 inclusively have been reserved.
+ * Log abstraction for the hot rod client. For this module, message ids ranging from 4001 to 5000
+ * inclusively have been reserved.
  *
  * @author Galder Zamarreño
  * @since 5.0
