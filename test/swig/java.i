@@ -5,6 +5,7 @@
 %include "various.i"
 %include "std_string.i"
 %include "std_map.i"
+%include "std_vector.i"
 %include "stdint.i"
 
 //#define SWIG_SHARED_PTR_NAMESPACE std
@@ -123,7 +124,8 @@ class RelayBytes {
 //%template(RelayShrPointer) HR_SHARED_PTR<RelayBytes>;
 %template(MetadataPairReturn) std::pair<HR_SHARED_PTR<RelayBytes>, infinispan::hotrod::MetadataValue>;
 %template(VersionPairReturn) std::pair<HR_SHARED_PTR<RelayBytes>, infinispan::hotrod::VersionedValue>;
-//%template(MetadataMapReturn) std::map<HR_SHARED_PTR<RelayBytes>, HR_SHARED_PTR<RelayBytes> >;
+%template(MapReturn) std::map<HR_SHARED_PTR<RelayBytes>, HR_SHARED_PTR<RelayBytes> >;
+%template(VectorReturn) std::vector<HR_SHARED_PTR<RelayBytes> >;
 
 %inline %{
  bool isNull(HR_SHARED_PTR<RelayBytes> ptr) {
@@ -132,6 +134,13 @@ class RelayBytes {
 
  RelayBytes dereference(HR_SHARED_PTR<RelayBytes> ptr) {
      return *ptr;
+ }
+ 
+ std::vector<HR_SHARED_PTR<RelayBytes> > keySet(std::map<HR_SHARED_PTR<RelayBytes>, HR_SHARED_PTR<RelayBytes> > map) {
+     std::vector<HR_SHARED_PTR<RelayBytes> > result;
+     for (std::map<HR_SHARED_PTR<RelayBytes>, HR_SHARED_PTR<RelayBytes> >::iterator it = map.begin(); it != map.end(); ++it)
+         result.push_back(it->first);
+     return result;
  }
 %}
 

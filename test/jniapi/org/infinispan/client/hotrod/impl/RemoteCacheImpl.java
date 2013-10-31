@@ -15,10 +15,12 @@ import org.infinispan.client.hotrod.impl.MetadataValueImpl;
 import org.infinispan.client.hotrod.impl.VersionedValueImpl;
 import org.infinispan.client.hotrod.jni.Hotrod;
 import org.infinispan.client.hotrod.jni.JniHelper;
+import org.infinispan.client.hotrod.jni.MapReturn;
 import org.infinispan.client.hotrod.jni.MetadataPairReturn;
 import org.infinispan.client.hotrod.jni.RelayBytes;
 import org.infinispan.client.hotrod.jni.RemoteCache_jb_jb;
 import org.infinispan.client.hotrod.jni.RemoteCache_str_str;
+import org.infinispan.client.hotrod.jni.VectorReturn;
 import org.infinispan.client.hotrod.jni.VersionPairReturn;
 
 public class RemoteCacheImpl<K, V> implements RemoteCache<K, V> {
@@ -287,21 +289,7 @@ public class RemoteCacheImpl<K, V> implements RemoteCache<K, V> {
             return null;
         }
 
-        V value = null;
-        byte[] jcopy = new byte[(int) vrb.getLength()];
-        JniHelper.readNative(vrb, jcopy);
-        try {
-            value = (V) marshaller.objectFromByteBuffer(jcopy);
-            if (value == null) {
-                return null;
-            }
-        } catch (IOException e) {
-            System.out.println("Marshall error");
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            System.out.println("Marshall error");
-            e.printStackTrace();
-        }
+        V value = extractValue(vrb);
         JniHelper.dispose(vrb);
 
         return new VersionedValueImpl(versionPair.getSecond().getVersion(), value);
@@ -342,21 +330,7 @@ public class RemoteCacheImpl<K, V> implements RemoteCache<K, V> {
             return null;
         }
 
-        V value = null;
-        byte[] jcopy = new byte[(int) vrb.getLength()];
-        JniHelper.readNative(vrb, jcopy);
-        try {
-            value = (V) marshaller.objectFromByteBuffer(jcopy);
-            if (value == null) {
-                return null;
-            }
-        } catch (IOException e) {
-            System.out.println("Marshall error");
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            System.out.println("Marshall error");
-            e.printStackTrace();
-        }
+        V value = extractValue(vrb);
         JniHelper.dispose(vrb);
 
         org.infinispan.client.hotrod.jni.MetadataValue metadata = metadataPair.getSecond();
@@ -373,9 +347,59 @@ public class RemoteCacheImpl<K, V> implements RemoteCache<K, V> {
             return null;
         }
 
-        //TODO:
+        MapReturn mapReturn = jniRemoteCache.getBulk(size);
+        VectorReturn vectorReturn = Hotrod.keySet(mapReturn);
 
-        return null;
+        Map<K, V> result = new HashMap<K, V>();
+        for (int i = 0; i < vectorReturn.size(); i++) {
+            RelayBytes krb = Hotrod.dereference(vectorReturn.get(i));
+            RelayBytes vrb = Hotrod.dereference(mapReturn.get(vectorReturn.get(i)));
+
+            result.put(extractKey(krb), extractValue(vrb));
+
+            JniHelper.dispose(krb);
+            JniHelper.dispose(vrb);
+        }
+
+        return result;
+    }
+
+    private K extractKey(RelayBytes relayBytes) {
+        K key = null;
+        byte[] jcopy = new byte[(int) relayBytes.getLength()];
+        JniHelper.readNative(relayBytes, jcopy);
+        try {
+            key = (K) marshaller.objectFromByteBuffer(jcopy);
+            if (key == null) {
+                return null;
+            }
+        } catch (IOException e) {
+            System.out.println("Marshall error");
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            System.out.println("Marshall error");
+            e.printStackTrace();
+        }
+        return key;
+    }
+
+    private V extractValue(RelayBytes relayBytes) {
+        V value = null;
+        byte[] jcopy = new byte[(int) relayBytes.getLength()];
+        JniHelper.readNative(relayBytes, jcopy);
+        try {
+            value = (V) marshaller.objectFromByteBuffer(jcopy);
+            if (value == null) {
+                return null;
+            }
+        } catch (IOException e) {
+            System.out.println("Marshall error");
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            System.out.println("Marshall error");
+            e.printStackTrace();
+        }
+        return value;
     }
 }
 
