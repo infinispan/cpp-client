@@ -26,4 +26,8 @@ public class JniHelper {
             rb.delete();
         }
     }
+
+    public static org.infinispan.client.hotrod.jni.TimeUnit timeunitToSwig(java.util.concurrent.TimeUnit unit) {
+        return org.infinispan.client.hotrod.jni.TimeUnit.swigToEnum(unit.ordinal());
+     }
 }
