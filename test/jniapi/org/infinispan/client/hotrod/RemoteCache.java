@@ -10,25 +10,25 @@ import org.infinispan.client.hotrod.VersionedValue;
 
 public interface RemoteCache<K, V> {
 
-    public V put(K k, V v);
+    V put(K k, V v);
 
-    public V get(K k);
-    
-    public V remove(K k);
-    
-    public void clear();
-    
-    public boolean containsKey(K k);
-    
-    public V replace(K k, V v);
-    
-    //public V replaceWithVersion(K k, V nv, long version);
-    
-    public V putIfAbsent(K k, V v);
-    
-    public VersionedValue<V> getVersioned(K k);
+    V get(K k);
 
-    public MetadataValue<V> getWithMetadata(K key);
+    V remove(K k);
 
-    public Map<K, V> getBulk(int size);
+    void clear();
+
+    boolean containsKey(K k);
+
+    V replace(K k, V v);
+
+    //V replaceWithVersion(K k, V nv, long version);
+
+    V putIfAbsent(K k, V v);
+
+    VersionedValue<V> getVersioned(K k);
+
+    MetadataValue<V> getWithMetadata(K key);
+
+    Map<K, V> getBulk(int size);
 }
