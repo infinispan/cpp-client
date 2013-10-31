@@ -3,10 +3,13 @@
 package org.infinispan.client.hotrod.impl;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Map;
-import org.infinispan.commons.marshall.Marshaller;
+import java.util.concurrent.TimeUnit;
 
+import org.infinispan.commons.marshall.Marshaller;
+import org.infinispan.commons.util.Util;
 import org.infinispan.client.hotrod.MetadataValue;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
@@ -14,26 +17,23 @@ import org.infinispan.client.hotrod.VersionedValue;
 import org.infinispan.client.hotrod.impl.MetadataValueImpl;
 import org.infinispan.client.hotrod.impl.VersionedValueImpl;
 import org.infinispan.client.hotrod.jni.Hotrod;
-import org.infinispan.client.hotrod.jni.JniHelper;
 import org.infinispan.client.hotrod.jni.MapReturn;
 import org.infinispan.client.hotrod.jni.MetadataPairReturn;
 import org.infinispan.client.hotrod.jni.RelayBytes;
 import org.infinispan.client.hotrod.jni.RemoteCache_jb_jb;
-import org.infinispan.client.hotrod.jni.RemoteCache_str_str;
 import org.infinispan.client.hotrod.jni.VectorReturn;
 import org.infinispan.client.hotrod.jni.VersionPairReturn;
+
+import static org.infinispan.client.hotrod.jni.JniHelper.*;
 
 public class RemoteCacheImpl<K, V> implements RemoteCache<K, V> {
 
     private Marshaller marshaller;
     private RemoteCache_jb_jb jniRemoteCache;
-    private RemoteCache_str_str nativeStrCache;
 
     public RemoteCacheImpl(RemoteCacheManager manager, String name) {
         this.marshaller = manager.getMarshaller();
-        if (name.equals("native")) {
-            this.nativeStrCache = Hotrod.getStrStrCache(manager.getJniManager());
-        } else if (name == null) {
+        if (name == null) {
             this.jniRemoteCache = Hotrod.getJniRelayCache(manager.getJniManager());
         } else {
             this.jniRemoteCache = Hotrod.getJniRelayNamedCache(manager.getJniManager(), name);
@@ -42,221 +42,165 @@ public class RemoteCacheImpl<K, V> implements RemoteCache<K, V> {
 
     @Override
     public V put(K k, V v) {
-        if (nativeStrCache != null) {
-            //	    nativeStrCache.put((String) k, (String) v);
-            return null;
-        }
-        RelayBytes krb = new RelayBytes();
-        RelayBytes vrb = new RelayBytes();
-        try {
-            byte[] kbytes = marshaller.objectToByteBuffer(k);
-            byte[] vbytes = marshaller.objectToByteBuffer(v);
-            try {
-                JniHelper.setJvmBytes(krb, kbytes);
-                JniHelper.setJvmBytes(vrb, vbytes);
-                jniRemoteCache.put(krb, vrb);
-            } finally {
-                JniHelper.releaseJvmBytes(krb, kbytes);
-                JniHelper.releaseJvmBytes(vrb, vbytes);
+        return relayedInvoker(new RelayedMethod() {
+            @Override
+            public Object invoke(RelayBytes... rbs) {
+                return jniRemoteCache.put(rbs[0], rbs[1]);
             }
-        } catch (IOException e) {
-            System.out.println("Marshall error");
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            System.out.println("Marshall error");
-            e.printStackTrace();
-        }
-        return null;
+        }, k, v);
+    }
+
+    @Override
+    public V put(K k, V v, long lifespan, TimeUnit unit) {
+        final long l = lifespan;
+        final TimeUnit lu = unit;
+        return relayedInvoker(new RelayedMethod() {
+            @Override
+            public Object invoke(RelayBytes... rbs) {
+                return jniRemoteCache.put(rbs[0], rbs[1], BigInteger.valueOf(l), timeunitToSwig(lu));
+            }
+        }, k, v);
+    }
+
+    @Override
+    public V put(K k, V v, long lifespan, TimeUnit lifespanUnit, long maxIdleTime, TimeUnit maxIdleTimeUnit) {
+        final long l = lifespan;
+        final TimeUnit lu = lifespanUnit;
+        final long m = maxIdleTime;
+        final TimeUnit mu = maxIdleTimeUnit;
+        return relayedInvoker(new RelayedMethod() {
+            @Override
+            public Object invoke(RelayBytes... rbs) {
+                return jniRemoteCache.put(rbs[0], rbs[1], BigInteger.valueOf(l), timeunitToSwig(lu),
+                        BigInteger.valueOf(m), timeunitToSwig(mu));
+            }
+        }, k, v);
     }
 
     @Override
     public V get(K k) {
-        V result = null;
-        if (nativeStrCache != null) {
-            //	    return nativeStrCache.get(k);
-        }
-        if (jniRemoteCache != null) {
-            byte[] kbytes = null;
-            try {
-                kbytes = marshaller.objectToByteBuffer(k);
-            } catch (IOException e) {
-                System.out.println("Marshall error");
-                e.printStackTrace();
-            } catch (InterruptedException e) {
-                System.out.println("Marshall error");
-                e.printStackTrace();
+        return relayedInvoker(new RelayedMethod() {
+            @Override
+            public Object invoke(RelayBytes... rbs) {
+                return jniRemoteCache.get(rbs[0]);
             }
-
-            RelayBytes krb = new RelayBytes();
-            JniHelper.setJvmBytes(krb, kbytes);
-            RelayBytes vrb = jniRemoteCache.get(krb);
-            if (vrb != null) {
-                byte[] jcopy = new byte[(int) vrb.getLength()];
-                JniHelper.readNative(vrb, jcopy);
-                try {
-                    result = (V) marshaller.objectFromByteBuffer(jcopy);
-                } catch (IOException e) {
-                    System.out.println("Unmarshall error");
-                    e.printStackTrace();
-                } catch (ClassNotFoundException e) {
-                    System.out.println("Unmarshall error");
-                    e.printStackTrace();
-                }
-            }
-            JniHelper.dispose(vrb);
-        }
-
-        return result;
+        }, k);
     }
 
     @Override
     public boolean containsKey(K k) {
-
-        if (jniRemoteCache != null) {
-
-            byte[] kbytes = null;
-            try {
-                kbytes = marshaller.objectToByteBuffer(k);
-            } catch (IOException e) {
-                System.out.println("Marshall error");
-                e.printStackTrace();
-            } catch (InterruptedException e) {
-                System.out.println("Marshall error");
-                e.printStackTrace();
+        return relayedInvoker(new RelayedMethod() {
+            @Override
+            public Object invoke(RelayBytes... rbs) {
+                return jniRemoteCache.containsKey(rbs[0]);
             }
+        }, k);
+    }
 
-            RelayBytes krb = new RelayBytes();
-            JniHelper.setJvmBytes(krb, kbytes);
-
-            return jniRemoteCache.containsKey(krb);
-        }
-
-        return false;
+    @Override
+    public boolean containsValue(V v) {
+        return relayedInvoker(new RelayedMethod() {
+            @Override
+            public Object invoke(RelayBytes... rbs) {
+                return jniRemoteCache.containsValue(rbs[0]);
+            }
+        }, v);
     }
 
     @Override
     public V remove(K k) {
-        V result = null;
-        if (jniRemoteCache != null) {
-            byte[] kbytes = null;
-            try {
-                kbytes = marshaller.objectToByteBuffer(k);
-            } catch (IOException e) {
-                System.out.println("Marshall error");
-                e.printStackTrace();
-            } catch (InterruptedException e) {
-                System.out.println("Marshall error");
-                e.printStackTrace();
+        return relayedInvoker(new RelayedMethod() {
+            @Override
+            public Object invoke(RelayBytes... rbs) {
+                return jniRemoteCache.remove(rbs[0]);
             }
-
-            RelayBytes krb = new RelayBytes();
-            JniHelper.setJvmBytes(krb, kbytes);
-            RelayBytes vrb = jniRemoteCache.remove(krb);
-            if (vrb != null) {
-                byte[] jcopy = new byte[(int) vrb.getLength()];
-                JniHelper.readNative(vrb, jcopy);
-                try {
-                    result = (V) marshaller.objectFromByteBuffer(jcopy);
-                } catch (IOException e) {
-                    System.out.println("Marshall error");
-                    e.printStackTrace();
-                } catch (ClassNotFoundException e) {
-                    System.out.println("Marshall error");
-                    e.printStackTrace();
-                }
-            }
-            JniHelper.dispose(vrb);
-        }
-
-        return result;
+        }, k);
     }
 
     @Override
     public V replace(K k, V v) {
-        V result = null;
-        if (jniRemoteCache != null) {
-
-            RelayBytes krb = new RelayBytes();
-            RelayBytes vrb = new RelayBytes();
-            RelayBytes resrb = new RelayBytes();
-
-            try {
-                byte[] kbytes = marshaller.objectToByteBuffer(k);
-                byte[] vbytes = marshaller.objectToByteBuffer(v);
-
-                try {
-                    JniHelper.setJvmBytes(krb, kbytes);
-                    JniHelper.setJvmBytes(vrb, vbytes);
-                    resrb = jniRemoteCache.replace(krb, vrb);
-
-                    if (resrb != null) {
-                        byte[] jcopy = new byte[(int) resrb.getLength()];
-                        JniHelper.readNative(resrb, jcopy);
-                        try {
-                            result = (V) marshaller.objectFromByteBuffer(jcopy);
-                        } catch (IOException e) {
-                            System.out.println("Marshall error");
-                            e.printStackTrace();
-                        } catch (ClassNotFoundException e) {
-                            System.out.println("Marshall error");
-                            e.printStackTrace();
-                        }
-                        JniHelper.dispose(resrb);
-                    }
-
-                } finally {
-                    JniHelper.releaseJvmBytes(krb, kbytes);
-                    JniHelper.releaseJvmBytes(vrb, vbytes);
-                }
-
-            } catch (IOException e) {
-                System.out.println("Marshall error");
-                e.printStackTrace();
-            } catch (InterruptedException e) {
-                System.out.println("Marshall error");
-                e.printStackTrace();
+        return relayedInvoker(new RelayedMethod() {
+            @Override
+            public Object invoke(RelayBytes... rbs) {
+                return jniRemoteCache.replace(rbs[0], rbs[1]);
             }
+        }, k, v);
+    }
 
-            return result;
-        }
+    @Override
+    public V replace(K k, V v, long lifespan, TimeUnit unit) {
+        final long l = lifespan;
+        final TimeUnit lu = unit;
+        return relayedInvoker(new RelayedMethod() {
+            @Override
+            public Object invoke(RelayBytes... rbs) {
+                return jniRemoteCache.replace(rbs[0], rbs[1], BigInteger.valueOf(l), timeunitToSwig(lu));
+            }
+        }, k, v);
+    }
 
-        return null;
+    @Override
+    public V replace(K k, V v, long lifespan, TimeUnit lifespanUnit, long maxIdleTime, TimeUnit maxIdleTimeUnit) {
+        final long l = lifespan;
+        final TimeUnit lu = lifespanUnit;
+        final long m = maxIdleTime;
+        final TimeUnit mu = maxIdleTimeUnit;
+        return relayedInvoker(new RelayedMethod() {
+            @Override
+            public Object invoke(RelayBytes... rbs) {
+                return jniRemoteCache.replace(rbs[0], rbs[1], BigInteger.valueOf(l), timeunitToSwig(lu),
+                        BigInteger.valueOf(m), timeunitToSwig(mu));
+            }
+        }, k, v);
     }
 
     @Override
     public V putIfAbsent(K k, V v) {
-
-        RelayBytes krb = new RelayBytes();
-        RelayBytes vrb = new RelayBytes();
-        try {
-            byte[] kbytes = marshaller.objectToByteBuffer(k);
-            byte[] vbytes = marshaller.objectToByteBuffer(v);
-            try {
-                JniHelper.setJvmBytes(krb, kbytes);
-                JniHelper.setJvmBytes(vrb, vbytes);
-                jniRemoteCache.putIfAbsent(krb, vrb);
-            } finally {
-                JniHelper.releaseJvmBytes(krb, kbytes);
-                JniHelper.releaseJvmBytes(vrb, vbytes);
+        return relayedInvoker(new RelayedMethod() {
+            @Override
+            public Object invoke(RelayBytes... rbs) {
+                return jniRemoteCache.putIfAbsent(rbs[0], rbs[1]);
             }
-        } catch (IOException e) {
-            System.out.println("Marshall error");
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            System.out.println("Marshall error");
-            e.printStackTrace();
-        }
+        }, k, v);
+    }
 
-        return null;
+    @Override
+    public V putIfAbsent(K k, V v, long lifespan, TimeUnit unit) {
+        final long l = lifespan;
+        final TimeUnit lu = unit;
+        return relayedInvoker(new RelayedMethod() {
+            @Override
+            public Object invoke(RelayBytes... rbs) {
+                return jniRemoteCache.putIfAbsent(rbs[0], rbs[1], BigInteger.valueOf(l), timeunitToSwig(lu));
+            }
+        }, k, v);
+    }
+
+    @Override
+    public V putIfAbsent(K k, V v, long lifespan, TimeUnit lifespanUnit, long maxIdleTime, TimeUnit maxIdleTimeUnit) {
+        final long l = lifespan;
+        final TimeUnit lu = lifespanUnit;
+        final long m = maxIdleTime;
+        final TimeUnit mu = maxIdleTimeUnit;
+        return relayedInvoker(new RelayedMethod() {
+            @Override
+            public Object invoke(RelayBytes... rbs) {
+                return jniRemoteCache.putIfAbsent(rbs[0], rbs[1], BigInteger.valueOf(l), timeunitToSwig(lu),
+                        BigInteger.valueOf(m), timeunitToSwig(mu));
+            }
+        }, k, v);
     }
 
     @Override
     public void clear() {
         if (jniRemoteCache != null) {
-            if (jniRemoteCache != null) {
-                jniRemoteCache.clear();
-            }
+            jniRemoteCache.clear();
         }
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return jniRemoteCache.isEmpty();
     }
 
     @Override
@@ -270,13 +214,13 @@ public class RemoteCacheImpl<K, V> implements RemoteCache<K, V> {
         try {
             byte[] kbytes = marshaller.objectToByteBuffer(k);
             try {
-                JniHelper.setJvmBytes(krb, kbytes);
+                setJvmBytes(krb, kbytes);
                 versionPair = jniRemoteCache.getWithVersion(krb);
                 if (versionPair == null) {
                     return null;
                 }
             } finally {
-                JniHelper.releaseJvmBytes(krb, kbytes);
+                releaseJvmBytes(krb, kbytes);
             }
         } catch (IOException e) {
             System.out.println("Marshall error");
@@ -296,7 +240,7 @@ public class RemoteCacheImpl<K, V> implements RemoteCache<K, V> {
         }
 
         V value = extractValue(vrb);
-        JniHelper.dispose(vrb);
+        dispose(vrb);
 
         return new VersionedValueImpl(versionPair.getSecond().getVersion(), value);
     }
@@ -312,13 +256,13 @@ public class RemoteCacheImpl<K, V> implements RemoteCache<K, V> {
         try {
             byte[] kbytes = marshaller.objectToByteBuffer(k);
             try {
-                JniHelper.setJvmBytes(krb, kbytes);
+                setJvmBytes(krb, kbytes);
                 metadataPair = jniRemoteCache.getWithMetadata(krb);
                 if (metadataPair == null) {
                     return null;
                 }
             } finally {
-                JniHelper.releaseJvmBytes(krb, kbytes);
+                releaseJvmBytes(krb, kbytes);
             }
         } catch (IOException e) {
             System.out.println("Marshall error");
@@ -338,11 +282,11 @@ public class RemoteCacheImpl<K, V> implements RemoteCache<K, V> {
         }
 
         V value = extractValue(vrb);
-        JniHelper.dispose(vrb);
+        dispose(vrb);
 
         org.infinispan.client.hotrod.jni.MetadataValue metadata = metadataPair.getSecond();
-        return new MetadataValueImpl(metadata.getCreated(), (int) metadata.getLifespan(), metadata.getLastUsed(),
-                (int) metadata.getMaxIdle(), metadata.getVersion(), value);
+        return new MetadataValueImpl(metadata.getCreated(), metadata.getLifespan(), metadata.getLastUsed(),
+                metadata.getMaxIdle(), metadata.getVersion(), value);
     }
 
     @Override
@@ -361,8 +305,8 @@ public class RemoteCacheImpl<K, V> implements RemoteCache<K, V> {
 
             result.put(extractKey(krb), extractValue(vrb));
 
-            JniHelper.dispose(krb);
-            JniHelper.dispose(vrb);
+            dispose(krb);
+            dispose(vrb);
         }
 
         return result;
@@ -371,7 +315,7 @@ public class RemoteCacheImpl<K, V> implements RemoteCache<K, V> {
     private K extractKey(RelayBytes relayBytes) {
         K key = null;
         byte[] jcopy = new byte[(int) relayBytes.getLength()];
-        JniHelper.readNative(relayBytes, jcopy);
+        readNative(relayBytes, jcopy);
         try {
             key = (K) marshaller.objectFromByteBuffer(jcopy);
             if (key == null) {
@@ -390,7 +334,7 @@ public class RemoteCacheImpl<K, V> implements RemoteCache<K, V> {
     private V extractValue(RelayBytes relayBytes) {
         V value = null;
         byte[] jcopy = new byte[(int) relayBytes.getLength()];
-        JniHelper.readNative(relayBytes, jcopy);
+        readNative(relayBytes, jcopy);
         try {
             value = (V) marshaller.objectFromByteBuffer(jcopy);
             if (value == null) {
@@ -404,5 +348,44 @@ public class RemoteCacheImpl<K, V> implements RemoteCache<K, V> {
             e.printStackTrace();
         }
         return value;
+    }
+
+    private <R> R relayedInvoker(RelayedMethod m, Object... o) {
+        RelayBytes rb[] = new RelayBytes[o.length];
+        byte bytes[][] = new byte[o.length][];
+        try {
+            for (int i = 0; i < o.length; i++) {
+                rb[i] = new RelayBytes();
+                bytes[i] = marshaller.objectToByteBuffer(o[i]);
+                setJvmBytes(rb[i], bytes[i]);
+            }
+            Object ret = m.invoke(rb);
+            if (ret == null) {
+                return null;
+            } else if (ret instanceof RelayBytes) {
+                RelayBytes retrb = (RelayBytes) ret;
+                byte[] jcopy = new byte[(int) retrb.getLength()];
+                readNative(retrb, jcopy);
+                try {
+                    return (R) marshaller.objectFromByteBuffer(jcopy);
+                } finally {
+                    dispose(retrb);
+                }
+            } else {
+                return (R) ret;
+            }
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        } finally {
+            for (int i = 0; i < o.length; i++) {
+                releaseJvmBytes(rb[i], bytes[i]);
+            }
+        }
+    }
+
+    public interface RelayedMethod {
+        Object invoke(RelayBytes... rbs);
     }
 }

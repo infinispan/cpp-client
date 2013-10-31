@@ -3,14 +3,11 @@
 package org.infinispan.client.hotrod;
 
 // originals
-import org.infinispan.commons.marshall.Marshaller;
 import java.util.Properties;
 
-// jni wrappers
-import org.infinispan.client.hotrod.RemoteCache;
-import org.infinispan.client.hotrod.impl.RemoteCacheImpl;
-import org.infinispan.client.hotrod.jni.HotrodConstants;
 import org.infinispan.client.hotrod.jni.MapType;
+import org.infinispan.commons.marshall.Marshaller;
+// jni wrappers
 
 public class RemoteCacheManager /* implements BasicCacheContainer */{
 
