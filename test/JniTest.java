@@ -25,17 +25,18 @@ public class JniTest {
 	protected static RemoteCacheManager remCacheManager = null;
 
     public static void main(String[] args) {
-    
 	boolean usingJNI = false;
         System.out.println("at work");
-	
+
+        HotRodIntegrationTest hotRodIntegrationTest = null;
+        CacheContainerTest cacheContainerTest = null;
 
 	try {
 		System.out.println("Java + JNI Hot Rod Client");
 		
 	    //first test, the cache container test
 		System.out.println("=== Cache container test ====");
-		CacheContainerTest cacheContainerTest = new CacheContainerTest();
+                cacheContainerTest = new CacheContainerTest();
 		//invoking cacheContainerTest.createCacheManager();
 	    Method createCacheManager = cacheContainerTest.getClass().getSuperclass().getDeclaredMethod("createCacheManager");
 	    createCacheManager.setAccessible(true);
@@ -48,7 +49,7 @@ public class JniTest {
 	    
 	    System.out.println("=== Hot Rod integration test ====");
 	    
-	    HotRodIntegrationTest hotRodIntegrationTest = new HotRodIntegrationTest();
+            hotRodIntegrationTest = new HotRodIntegrationTest();
 	    Method hrIntcreateCacheManager = hotRodIntegrationTest.getClass().getSuperclass().getDeclaredMethod("createCacheManager");
 	    hrIntcreateCacheManager.setAccessible(true);
 	    Method setup = hotRodIntegrationTest.getClass().getSuperclass().getDeclaredMethod("setup");
@@ -95,17 +96,20 @@ public class JniTest {
 	    hotRodIntegrationTest.testClear();
 	    System.out.println("=== Hot Rod integration test - test Clear PASSED ====");*/
 	    
-	    hotRodIntegrationTest.testDestroyRemoteCacheFactory();
+            System.out.println("=== Hot Rod integration test ==== PASSED");
 	    
-	    System.out.println("=== Hot Rod integration test ==== PASSED");
-	    
-	} catch (java.lang.NoSuchMethodError e) {
-	    System.out.println("Test Error");
-	    e.printStackTrace();
-	} catch (Exception e) {
-		System.out.println("Test Error");
-		e.printStackTrace();
-	}
+        } catch (Throwable e) {
+            System.out.println("Test Error");
+            e.printStackTrace();
+            System.exit(1);
+        } finally {
+            if (hotRodIntegrationTest != null) {
+                hotRodIntegrationTest.testDestroyRemoteCacheFactory();
+            }
+            if (cacheContainerTest != null) {
+                cacheContainerTest.release();
+            }
+        }
     
 }
 }
