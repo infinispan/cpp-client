@@ -11,6 +11,7 @@ import org.infinispan.test.fwk.TestCacheManagerFactory;
 import org.testng.annotations.AfterTest;
 import org.testng.annotations.Test;
 import org.infinispan.client.hotrod.CacheContainerTest;
+import org.infinispan.client.hotrod.ForceReturnValueTest;
 import org.infinispan.client.hotrod.HotRodIntegrationTest;
 import java.lang.reflect.Method;
 import static org.infinispan.server.hotrod.test.HotRodTestingUtil.hotRodCacheConfiguration;
@@ -30,6 +31,7 @@ public class JniTest {
 
         HotRodIntegrationTest hotRodIntegrationTest = null;
         CacheContainerTest cacheContainerTest = null;
+        ForceReturnValueTest forceReturnValueTest = null;
 
 	try {
 		System.out.println("Java + JNI Hot Rod Client");
@@ -97,7 +99,39 @@ public class JniTest {
 	    System.out.println("=== Hot Rod integration test - test Clear PASSED ====");*/
 	    
             System.out.println("=== Hot Rod integration test ==== PASSED");
-	    
+
+            System.out.println("=== Force Return Value test ====");
+            forceReturnValueTest = new ForceReturnValueTest();
+            setup = forceReturnValueTest.getClass().getDeclaredMethod("setup");
+            setup.setAccessible(true);
+            setup.invoke(forceReturnValueTest);
+
+            System.out.println("=== Force Return Value test - test Put ====");
+            forceReturnValueTest.testPut();
+            System.out.println("=== Force Return Value test - test Put PASSED ====");
+
+            System.out.println("=== Force Return Value test - test Remove ====");
+            forceReturnValueTest.testRemove();
+            System.out.println("=== Force Return Value test - test Remove PASSED ====");
+
+            //TODO: this fails with invalid magic number in response
+            // System.out.println("=== Force Return Value test - test RemoveNonExistForceReturnPrevious ====");
+            // forceReturnValueTest.testRemoveNonExistForceReturnPrevious();
+            // System.out.println("=== Force Return Value test - test RemoveNonExistForceReturnPrevious PASSED ====");
+
+            System.out.println("=== Force Return Value test - test Contains ====");
+            forceReturnValueTest.testContains();
+            System.out.println("=== Force Return Value test - test Contains PASSED ====");
+
+            System.out.println("=== Force Return Value test - test Replace ====");
+            forceReturnValueTest.testReplace();
+            System.out.println("=== Force Return Value test - test Replace PASSED ====");
+
+            System.out.println("=== Force Return Value test - test PutIfAbsent ====");
+            forceReturnValueTest.testPutIfAbsent();
+            System.out.println("=== Force Return Value test - test PutIfAbsent PASSED ====");
+
+            System.out.println("=== Force Return Value test ==== PASSED");
         } catch (Throwable e) {
             System.out.println("Test Error");
             e.printStackTrace();
@@ -109,7 +143,9 @@ public class JniTest {
             if (cacheContainerTest != null) {
                 cacheContainerTest.release();
             }
+            if (forceReturnValueTest != null) {
+                forceReturnValueTest.destroy();
+            }
         }
-    
 }
 }

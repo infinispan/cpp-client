@@ -23,6 +23,10 @@ public class RemoteCacheManager /* implements BasicCacheContainer */{
         marshaller = new org.infinispan.commons.marshall.jboss.GenericJBossMarshaller();
     }
 
+    public RemoteCacheManager(String server, int port) {
+        this(String.format("%s:%d", server, port), true);
+    }
+
     public RemoteCacheManager(String servers, boolean start) {
         MapType converter = new MapType();
         converter.set(ISPN_CLIENT_HOTROD_SERVER_LIST, servers);

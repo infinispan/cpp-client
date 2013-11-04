@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.commons.util.Util;
+import org.infinispan.client.hotrod.Flag;
 import org.infinispan.client.hotrod.MetadataValue;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
@@ -310,6 +311,18 @@ public class RemoteCacheImpl<K, V> implements RemoteCache<K, V> {
         }
 
         return result;
+    }
+
+    @Override
+    public RemoteCache<K, V> withFlags(Flag... flags) {
+        int result = 0;
+        if (flags != null) {
+            for (Flag flag : flags) {
+                result |= flag.getFlagInt();
+            }
+        }
+        jniRemoteCache.withFlags(org.infinispan.client.hotrod.jni.Flag.swigToEnum(result));
+        return this;
     }
 
     private K extractKey(RelayBytes relayBytes) {
