@@ -32,10 +32,9 @@
           target: resolve              
          ================================= -->
     <target name="resolve" depends="init-ivy" description="--> retrieve dependencies with ivy">
-        <ivy:retrieve />
-        <move file="lib" tofile="${jni.test.dir}"/>
+        <ivy:retrieve pattern="${jni.test.dir}/[artifact]-[revision](-[classifier]).[ext]"/>
     </target>
     <target name="clean" description="--> clean the last build">
-        <delete dir="lib"/>
+        <delete dir="${jni.test.dir}"/>
     </target>
 </project>
