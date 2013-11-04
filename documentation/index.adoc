@@ -6,25 +6,102 @@ The Infinispan Community
 :numbered:
 
 == Introduction
-_TODO_
+Since Hot Rod is a binary, language neutral, protocol an Infinispan client can use any programming 
+language to interact with Java based Infinispan Hot Rod server as long as client APIs exist for that 
+particular client runtime. C\++ Hot Rod client allows C++ runtime applications to connect and interact 
+with an Infinispan Hot Rod server. 
+
 
 == Installation
 === Pre-requisites
-_TODO_
+We provide HotRod C\++ client in two library formats: static and shared/dynamic. Depending on user's 
+preference and deployment scenario one would usually choose static library to ensure that the version 
+of the Hot Rod C++ library that application was compiled with would be the version of the library used 
+at runtime. As it names implies static library is statically linked to an application thus increasing the 
+size of the final executable. In other cases shared Hot Rod C\++ library might be more suitable. Shared 
+libraries are usually stored and versioned separately. If an updated HotRod C++ library is considered 
+binary compatible with the original version shipped along user's application an updated Hot Rod C++ 
+library could be used in such a scenario without recompiling client application.
+
 
 === Download
-_TODO_
+For more information regarding downloads of various forms of Hot Rod C++ client library refer to 
+link:http://infinispan.org/hotrod-clients/[Hot Rod client web page] 
 
 == Usage
 === Configuration
-_TODO_
+
+C++ clients would typically interact with a remote Hot Rod server using RemoteCache API. However, 
+before any interaction is initiated one would have to configure RemoteCache to connect to a particular 
+Hot Rod server and more importantly choose a specific cache on that Hot Rod server. This is where 
+ConfigurationBuilder API comes in handy. ConfigurationBuilder allows users to not only specify 
+particular Hot Rod server to interact with but a range of other configuration options through its 
+intuitive fluent API. Users can configure specifics of the underlying connection pool, connection 
+timeout, particular Hot Rod protocol version and so on. Refer to ConfigurationBuilder API 
+documentation for more details.
+
+For example, this simple C\++ main executable file below uses application paramaters in combination 
+with ConfigurationBuilder API to configure a RemoteCacheManager instance and in turn RemoteCache 
+instance interacting with a remote Hot Rod server. Note the most important C++ Hot Rod includes as 
+well.       
+
+[source, C/C++]
+----
+#include "infinispan/hotrod/ConfigurationBuilder.h"
+#include "infinispan/hotrod/RemoteCacheManager.h"
+#include "infinispan/hotrod/RemoteCache.h"
+
+#include <stdlib.h>
+
+using namespace infinispan::hotrod;
+
+int main(int argc, char** argv) {
+    ConfigurationBuilder builder;
+    builder.addServer().host(argc > 1 ? argv[1] : "127.0.0.1").port(argc > 2 ? atoi(argv[2]) : 11222);
+    RemoteCacheManager cacheManager(builder.build(), false);
+    RemoteCache<std::string, std::string> cache = cacheManager.getCache<std::string, std::string>();
+    cacheManager.start();
+    return 0;
+}
+----
 
 === API
-_TODO_
+As we have seen the main API revolves around ConfigurationBuilder for configuration of a RemoteCacheManager.
+RemoteCacheManager is in turn a starting point for obtaining a reference to a RemoteCache. RemoteCache is 
+in fact the main API for interaction with a remote Hot Rod server and the specific cache on that server. 
+
+Continuing with a previous example from above, now that we have a RemoteCache reference one would simply 
+start invocations on a cache, inserting, removing, getting, and replacing values in a cache, as well as 
+others methods such as iterating key/value pairs, bulk get operations, clear method and so on.
+
+After interaction with a remote server is completed all related client resources are reclaimed once 
+RemoteCacheManager is stopped. 
+
+[source, C/C++]
+----
+    ..
+    RemoteCache<std::string, std::string> cache = cacheManager.getCache<std::string, std::string>();
+    cacheManager.start();
+
+    std::string k1("key13");   
+    std::string v1("boron");
+
+    // put
+    cache.put(k1, v1);
+    std::auto_ptr<std::string> rv(cache.get(k1));
+    
+    cache.putIfAbsent(k1, v1);
+    std::auto_ptr<std::string> rv2(cache.get(k1));
+    
+    std::map<HR_SHARED_PTR<std::string>,HR_SHARED_PTR<std::string> > map = cache.getBulk(0);
+    std::cout << "getBulk size" << map.size() << std::endl;
+    ..
+    .
+    cacheManager.stop();
+---- 
 
 == Contributing back
-Contributions, as always, are welcome be it in the form of code, tests
-or documentation.
+Contributions, as always, are welcome be it in the form of code, tests or documentation.
 
 === Source code
 This client, along with tests and documentation, are in GitHub, located under
