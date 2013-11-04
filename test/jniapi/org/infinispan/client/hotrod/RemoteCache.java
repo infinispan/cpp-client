@@ -47,4 +47,6 @@ public interface RemoteCache<K, V> {
     Map<K, V> getBulk(int size);
     
     boolean isEmpty();
+
+    RemoteCache<K, V> withFlags(Flag... flags);
 }
