@@ -89,22 +89,24 @@ public class RemoteCacheImpl<K, V> implements RemoteCache<K, V> {
 
     @Override
     public boolean containsKey(K k) {
-        return relayedInvoker(new RelayedMethod() {
+        Boolean b = relayedInvoker(new RelayedMethod() {
             @Override
             public Object invoke(RelayBytes... rbs) {
                 return jniRemoteCache.containsKey(rbs[0]);
             }
         }, k);
+        return b;
     }
 
     @Override
     public boolean containsValue(V v) {
-        return relayedInvoker(new RelayedMethod() {
+        Boolean b = relayedInvoker(new RelayedMethod() {
             @Override
             public Object invoke(RelayBytes... rbs) {
                 return jniRemoteCache.containsValue(rbs[0]);
             }
         }, v);
+        return b;
     }
 
     @Override
