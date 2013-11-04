@@ -74,11 +74,13 @@ endif (CMAKE_COMPILER_IS_GNUCXX)
 #add_custom_target(hotrod-jni-swig-out-dir ALL DEPENDS ${CMAKE_SWIG_OUTDIR})
 #add_dependencies(hotrod-swig hotrod-jni-swig-out-dir)
 
+file(GLOB_RECURSE JAVA_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/test/jniapi/*.java)
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/jni/JniTest.class
     COMMAND ${CMAKE_COMMAND} -DHOTROD_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}
         -D "JAVA_COMPILE=${JAVA_COMPILE}" "-DJAVA_ARCHIVE=${JAVA_ARCHIVE}"
         -P ${CMAKE_CURRENT_SOURCE_DIR}/test/swig/compile_java.cmake
+    DEPENDS ${JAVA_SOURCES}
 )
 
 add_custom_target(JniTest ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/jni/JniTest.class hotrod-swig)
