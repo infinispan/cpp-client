@@ -17,6 +17,7 @@ public:
     HeaderParams& writeHeader(
                 infinispan::hotrod::transport::Transport& transport,
                 HeaderParams& params) const;
+protected:
 
     std::map<infinispan::hotrod::transport::InetSocketAddress, std::set<int32_t> > computeNewHashes(
             infinispan::hotrod::transport::Transport& transport, uint32_t newTopologyId, int16_t numKeyOwners,
