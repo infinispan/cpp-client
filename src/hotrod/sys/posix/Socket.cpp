@@ -11,6 +11,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <string>
+#include <poll.h>
 
 #include <errno.h>
 #include <stdexcept>
@@ -118,14 +119,12 @@ void Socket::connect(const std::string& h, int p, int timeout) {
 
     if (s < 0) {
         if (error == EINPROGRESS) {
-            struct timeval tv;
-            tv.tv_sec = timeout / 1000;
-            tv.tv_usec = timeout % 1000;
-            fd_set sock_set;
-            FD_ZERO(&sock_set);
-            FD_SET(sock, &sock_set);
-            // Wait for the socket to become ready
-            s = select(sock + 1, NULL, &sock_set, NULL, &tv);
+            pollfd fds[1];
+            fds[0].fd = sock;
+            fds[0].events = POLLOUT;
+
+            s = poll(fds, 1, timeout);
+
             if (s > 0) {
                 int opt;
                 socklen_t optlen = sizeof(opt);
