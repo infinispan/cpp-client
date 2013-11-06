@@ -16,6 +16,8 @@ namespace hotrod {
 class HR_EXTERN Configuration
 {
   public:
+    static const char* PROTOCOL_VERSION_10;
+    static const char* PROTOCOL_VERSION_11;
     static const char* PROTOCOL_VERSION_12;
 
     Configuration(std::string protocolVersion,
