@@ -12,6 +12,8 @@ namespace hotrod {
 namespace protocol {
 
 CodecFactory::CodecFactory() {
+    codecMap[Configuration::PROTOCOL_VERSION_10] = new Codec10();
+    codecMap[Configuration::PROTOCOL_VERSION_11] = new Codec11();
     codecMap[Configuration::PROTOCOL_VERSION_12] = new Codec12();
 }
 
