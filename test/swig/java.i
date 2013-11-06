@@ -5,6 +5,7 @@
 %include "various.i"
 %include "std_string.i"
 %include "std_map.i"
+%include "std_set.i"
 %include "std_vector.i"
 %include "stdint.i"
 
@@ -125,6 +126,7 @@ class RelayBytes {
 %template(MetadataPairReturn) std::pair<HR_SHARED_PTR<RelayBytes>, infinispan::hotrod::MetadataValue>;
 %template(VersionPairReturn) std::pair<HR_SHARED_PTR<RelayBytes>, infinispan::hotrod::VersionedValue>;
 %template(MapReturn) std::map<HR_SHARED_PTR<RelayBytes>, HR_SHARED_PTR<RelayBytes> >;
+%template(SetReturn) std::set<HR_SHARED_PTR<RelayBytes> >;
 %template(VectorReturn) std::vector<HR_SHARED_PTR<RelayBytes> >;
 
 %inline %{
@@ -140,6 +142,13 @@ class RelayBytes {
      std::vector<HR_SHARED_PTR<RelayBytes> > result;
      for (std::map<HR_SHARED_PTR<RelayBytes>, HR_SHARED_PTR<RelayBytes> >::iterator it = map.begin(); it != map.end(); ++it)
          result.push_back(it->first);
+     return result;
+ }
+ 
+ std::vector<HR_SHARED_PTR<RelayBytes> > keys(std::set<HR_SHARED_PTR<RelayBytes> > set) {
+     std::vector<HR_SHARED_PTR<RelayBytes> > result;
+     for (std::set<HR_SHARED_PTR<RelayBytes> >::iterator it = set.begin(); it != set.end(); ++it)
+         result.push_back(*it);
      return result;
  }
 %}

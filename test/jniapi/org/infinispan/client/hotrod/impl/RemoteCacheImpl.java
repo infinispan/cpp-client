@@ -2,32 +2,37 @@
 
 package org.infinispan.client.hotrod.impl;
 
+import static org.infinispan.client.hotrod.jni.JniHelper.dispose;
+import static org.infinispan.client.hotrod.jni.JniHelper.readNative;
+import static org.infinispan.client.hotrod.jni.JniHelper.releaseJvmBytes;
+import static org.infinispan.client.hotrod.jni.JniHelper.setJvmBytes;
+import static org.infinispan.client.hotrod.jni.JniHelper.timeunitToSwig;
+
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
-import org.infinispan.commons.marshall.Marshaller;
-import org.infinispan.commons.util.Util;
 import org.infinispan.client.hotrod.Flag;
 import org.infinispan.client.hotrod.MetadataValue;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.VersionedValue;
-import org.infinispan.client.hotrod.impl.MetadataValueImpl;
-import org.infinispan.client.hotrod.impl.VersionedValueImpl;
 import org.infinispan.client.hotrod.jni.Hotrod;
 import org.infinispan.client.hotrod.jni.MapReturn;
 import org.infinispan.client.hotrod.jni.MetadataPairReturn;
 import org.infinispan.client.hotrod.jni.RelayBytes;
 import org.infinispan.client.hotrod.jni.RemoteCache_jb_jb;
+import org.infinispan.client.hotrod.jni.SetReturn;
 import org.infinispan.client.hotrod.jni.VectorReturn;
 import org.infinispan.client.hotrod.jni.VersionPairReturn;
+import org.infinispan.commons.marshall.Marshaller;
 
-import static org.infinispan.client.hotrod.jni.JniHelper.*;
-
-public class RemoteCacheImpl<K, V> implements RemoteCache<K, V> {
+public class RemoteCacheImpl<K, V> extends RemoteCacheUnsupported<K, V> {
 
     private Marshaller marshaller;
     private RemoteCache_jb_jb jniRemoteCache;
@@ -39,6 +44,31 @@ public class RemoteCacheImpl<K, V> implements RemoteCache<K, V> {
         } else {
             this.jniRemoteCache = Hotrod.getJniRelayNamedCache(manager.getJniManager(), name);
         }
+    }
+
+    @Override
+    public String getName() {
+        return jniRemoteCache.getName();
+    }
+
+    @Override
+    public String getVersion() {
+        return jniRemoteCache.getVersion();
+    }
+
+    @Override
+    public String getProtocolVersion() {
+        return jniRemoteCache.getProtocolVersion();
+    }
+
+    @Override
+    public void start() {
+        // Nothing to do
+    }
+
+    @Override
+    public void stop() {
+        // Nothing to do
     }
 
     @Override
@@ -64,11 +94,11 @@ public class RemoteCacheImpl<K, V> implements RemoteCache<K, V> {
     }
 
     @Override
-    public V put(K k, V v, long lifespan, TimeUnit lifespanUnit, long maxIdleTime, TimeUnit maxIdleTimeUnit) {
+    public V put(K k, V v, long lifespan, TimeUnit lifespanTimeUnit, long maxIdle, TimeUnit maxIdleUnit) {
         final long l = lifespan;
-        final TimeUnit lu = lifespanUnit;
-        final long m = maxIdleTime;
-        final TimeUnit mu = maxIdleTimeUnit;
+        final TimeUnit lu = lifespanTimeUnit;
+        final long m = maxIdle;
+        final TimeUnit mu = maxIdleUnit;
         return relayedInvoker(new RelayedMethod() {
             @Override
             public Object invoke(RelayBytes... rbs) {
@@ -143,11 +173,11 @@ public class RemoteCacheImpl<K, V> implements RemoteCache<K, V> {
     }
 
     @Override
-    public V replace(K k, V v, long lifespan, TimeUnit lifespanUnit, long maxIdleTime, TimeUnit maxIdleTimeUnit) {
+    public V replace(K k, V v, long lifespan, TimeUnit lifespanTimeUnit, long maxIdle, TimeUnit maxIdleUnit) {
         final long l = lifespan;
-        final TimeUnit lu = lifespanUnit;
-        final long m = maxIdleTime;
-        final TimeUnit mu = maxIdleTimeUnit;
+        final TimeUnit lu = lifespanTimeUnit;
+        final long m = maxIdle;
+        final TimeUnit mu = maxIdleUnit;
         return relayedInvoker(new RelayedMethod() {
             @Override
             public Object invoke(RelayBytes... rbs) {
@@ -180,11 +210,11 @@ public class RemoteCacheImpl<K, V> implements RemoteCache<K, V> {
     }
 
     @Override
-    public V putIfAbsent(K k, V v, long lifespan, TimeUnit lifespanUnit, long maxIdleTime, TimeUnit maxIdleTimeUnit) {
+    public V putIfAbsent(K k, V v, long lifespan, TimeUnit lifespanTimeUnit, long maxIdle, TimeUnit maxIdleUnit) {
         final long l = lifespan;
-        final TimeUnit lu = lifespanUnit;
-        final long m = maxIdleTime;
-        final TimeUnit mu = maxIdleTimeUnit;
+        final TimeUnit lu = lifespanTimeUnit;
+        final long m = maxIdle;
+        final TimeUnit mu = maxIdleUnit;
         return relayedInvoker(new RelayedMethod() {
             @Override
             public Object invoke(RelayBytes... rbs) {
@@ -192,6 +222,23 @@ public class RemoteCacheImpl<K, V> implements RemoteCache<K, V> {
                         BigInteger.valueOf(m), timeunitToSwig(mu));
             }
         }, k, v);
+    }
+
+    @Override
+    public void putAll(Map<? extends K, ? extends V> map) {
+       putAll(map, 0, TimeUnit.MILLISECONDS, 0, TimeUnit.MILLISECONDS);
+    }
+
+    @Override
+    public void putAll(Map<? extends K, ? extends V> map, long lifespan, TimeUnit lifespanTimeUnit) {
+        putAll(map, lifespan, lifespanTimeUnit, 0, TimeUnit.MILLISECONDS);
+    }
+
+    @Override
+    public void putAll(Map<? extends K, ? extends V> map, long lifespan, TimeUnit lifespanTimeUnit, long maxIdle, TimeUnit maxIdleUnit) {
+       for (Entry<? extends K, ? extends V> entry : map.entrySet()) {
+          put(entry.getKey(), entry.getValue(), lifespan, lifespanTimeUnit, maxIdle, maxIdleUnit);
+       }
     }
 
     @Override
@@ -264,6 +311,25 @@ public class RemoteCacheImpl<K, V> implements RemoteCache<K, V> {
         org.infinispan.client.hotrod.jni.MetadataValue metadata = metadataPair.getSecond();
         return new MetadataValueImpl(metadata.getCreated(), metadata.getLifespan(), metadata.getLastUsed(),
                 metadata.getMaxIdle(), metadata.getVersion(), value);
+    }
+
+    @Override
+    public Set<K> keySet() {
+        final SetReturn setReturn = jniRemoteCache.keySet();
+        final VectorReturn vectorReturn = Hotrod.keys(setReturn);
+        Set<K> result = new HashSet<K>();
+        for (int i = 0; i < vectorReturn.size(); i++) {
+            final int index = i;
+            K key = relayedInvoker(new RelayedMethod() {
+                   @Override
+                   public Object invoke(RelayBytes... rbs) {
+                       return Hotrod.dereference(vectorReturn.get(index));
+                   }
+               });
+            result.add(key);
+        }
+
+        return result;
     }
 
     @Override
@@ -346,5 +412,10 @@ public class RemoteCacheImpl<K, V> implements RemoteCache<K, V> {
 
     public interface RelayedMethod {
         Object invoke(RelayBytes... rbs);
+    }
+
+    @Override
+    public int size() {
+        return jniRemoteCache.size().intValue();
     }
 }

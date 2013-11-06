@@ -2,13 +2,26 @@
 
 package org.infinispan.client.hotrod;
 
+import java.util.Collection;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.infinispan.client.hotrod.MetadataValue;
 import org.infinispan.client.hotrod.VersionedValue;
+import org.infinispan.commons.util.concurrent.NotifyingFuture;
 
 public interface RemoteCache<K, V> {
+    String getName();
+
+    String getVersion();
+
+    String getProtocolVersion();
+
+    void start();
+
+    void stop();
 
     V put(K k, V v);
 
@@ -29,7 +42,7 @@ public interface RemoteCache<K, V> {
     void clear();
 
     boolean containsKey(K k);
-    
+
     boolean containsValue(V v);
 
     V replace(K k, V v);
@@ -38,15 +51,78 @@ public interface RemoteCache<K, V> {
 
     V replace(K key, V value, long lifespan, TimeUnit lifespanUnit, long maxIdleTime, TimeUnit maxIdleTimeUnit);
 
-    //V replaceWithVersion(K k, V nv, long version);
-
     VersionedValue<V> getVersioned(K k);
 
     MetadataValue<V> getWithMetadata(K key);
 
     Map<K, V> getBulk(int size);
-    
+
     boolean isEmpty();
 
     RemoteCache<K, V> withFlags(Flag... flags);
+
+    int size();
+
+    boolean replace(K k, V v1, V v2);
+
+    NotifyingFuture<Boolean> replaceAsync(K k, V v1, V v2, long lifespan, TimeUnit lifespanTimeUnit, long maxIdle, TimeUnit maxIdleTimeUnit);
+
+    NotifyingFuture<V> replaceAsync(K k, V v, long lifespan, TimeUnit lifespanTimeUnit, long maxIdle,
+            TimeUnit maxIdleTimeUnit);
+
+    NotifyingFuture<Boolean> replaceAsync(K k, V v1, V v2, long lifespan, TimeUnit lifespanTimeUnit);
+
+    NotifyingFuture<V> replaceAsync(K k, V v, long lifespan, TimeUnit lifespanTimeUnit);
+
+    NotifyingFuture<Boolean> replaceAsync(K k, V v1, V v2);
+
+    NotifyingFuture<V> replaceAsync(K k, V v);
+
+    NotifyingFuture<Boolean> removeAsync(K k, V v);
+
+    NotifyingFuture<V> removeAsync(K k);
+
+    NotifyingFuture<V> putIfAbsentAsync(K k, V v, long lifespan, TimeUnit lifespanTimeUnit, long maxIdle,
+            TimeUnit maxIdleTimeUnit);
+
+    NotifyingFuture<V> putIfAbsentAsync(K k, V v, long lifespan, TimeUnit lifespanTimeUnit);
+
+    NotifyingFuture<V> putIfAbsentAsync(K k, V v);
+
+    NotifyingFuture<V> putAsync(K k, V v, long lifespan, TimeUnit lifespanTimeUnit, long maxIdle,
+            TimeUnit maxIdleTimeUnit);
+
+    NotifyingFuture<V> putAsync(K k, V v, long lifespan, TimeUnit lifespanTimeUnit);
+
+    NotifyingFuture<V> putAsync(K k, V v);
+
+    NotifyingFuture<Void> putAllAsync(Map<? extends K, ? extends V> map, long lifespan, TimeUnit lifespanTimeUnit,
+            long maxIdle, TimeUnit maxIdleUnit);
+
+    NotifyingFuture<Void> putAllAsync(Map<? extends K, ? extends V> map, long arg1, TimeUnit arg2);
+
+    NotifyingFuture<Void> putAllAsync(Map<? extends K, ? extends V> map);
+
+    NotifyingFuture<V> getAsync(K k);
+
+    NotifyingFuture<Void> clearAsync();
+
+    boolean replace(K k, V v1, V v2, long lifespan, TimeUnit lifespanTimeUnit, long maxIdle, TimeUnit maxIdleUnit);
+
+    boolean replace(K k, V v1, V v2, long lifespan, TimeUnit lifespanTimeUnit);
+
+    void putAll(Map<? extends K, ? extends V> map, long lifespan, TimeUnit lifespanTimeUnit, long maxIdle,
+            TimeUnit maxIdleUnit);
+
+    void putAll(Map<? extends K, ? extends V> map, long lifespan, TimeUnit lifespanTimeUnit);
+
+    void putAll(Map<? extends K, ? extends V> m);
+
+    Set<K> keySet();
+
+    Collection<V> values();
+
+    Set<Entry<K, V>> entrySet();
+
+    boolean remove(K key, V value);
 }
