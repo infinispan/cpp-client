@@ -201,6 +201,9 @@ target_link_libraries (hash_test hotrod)
 add_executable (l3_test test/L3Test.cpp)
 target_link_libraries (l3_test hotrod)
 
+add_executable (itest test/InteractiveTest.cpp)
+target_link_libraries (itest hotrod)
+
 # the CTest include must be after the MEMORYCHECK settings are processed
 include (CTest)
 
