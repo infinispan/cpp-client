@@ -209,7 +209,7 @@ void TcpTransportFactory::updateHashFunction(
     } else {
         hash->init(servers2Hash, numKeyOwners, hashSpace);
     }
-    consistentHash.reset(hash);
+    consistentHash = hash;
 }
 
 ConsistentHashFactory& TcpTransportFactory::getConsistentHashFactory(){
