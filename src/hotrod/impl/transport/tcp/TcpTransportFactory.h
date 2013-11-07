@@ -23,7 +23,7 @@ class InetSocketAddress;
 class TcpTransportFactory : public TransportFactory
 {
   public:
-    TcpTransportFactory(const Configuration& config) : configuration(config) {};
+    TcpTransportFactory(const Configuration& config) : configuration(config),consistentHash(0) {};
     void start(protocol::Codec& codec, int64_t topologyId);
     void destroy();
 
@@ -59,7 +59,7 @@ class TcpTransportFactory : public TransportFactory
     void createAndPreparePool();
 
     HR_SHARED_PTR<infinispan::hotrod::consistenthash::ConsistentHashFactory> hashFactory;
-    HR_SHARED_PTR<infinispan::hotrod::consistenthash::ConsistentHash> consistentHash;
+    infinispan::hotrod::consistenthash::ConsistentHash* consistentHash;
     void updateTransportCount();
     void pingServers();
     Transport& borrowTransportFromPool(const InetSocketAddress& server);
