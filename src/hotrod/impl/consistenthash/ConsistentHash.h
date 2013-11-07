@@ -20,7 +20,7 @@ public:
                     std::set<int32_t> > & servers2Hash, int32_t numKeyOwners,
             int32_t hashSpace) = 0;
 
-    virtual infinispan::hotrod::transport::InetSocketAddress getServer(const hrbytes& key) = 0;
+    virtual const infinispan::hotrod::transport::InetSocketAddress& getServer(const hrbytes& key) = 0;
 
     /**
      * Computes hash code of a given int32_t and then normalizes it to ensure a positive

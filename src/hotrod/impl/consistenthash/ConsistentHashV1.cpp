@@ -53,7 +53,7 @@ void ConsistentHashV1::init(
     this->numKeyOwners = nKeyOwners;
 }
 
-InetSocketAddress ConsistentHashV1::getServer(const hrbytes& key){
+const InetSocketAddress& ConsistentHashV1::getServer(const hrbytes& key){
     int32_t normalisedHashForKey;
     if (hashSpaceIsMaxInt) {
         normalisedHashForKey = getNormalizedHash(key);
