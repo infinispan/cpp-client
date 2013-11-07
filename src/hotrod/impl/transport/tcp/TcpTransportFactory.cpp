@@ -57,12 +57,16 @@ Transport& TcpTransportFactory::getTransport() {
 }
 
 Transport& TcpTransportFactory::getTransport(const hrbytes& key) {
-    ScopedLock<Mutex> l(lock);
-    if (consistentHash != NULL) {
-        return borrowTransportFromPool(consistentHash->getServer(key));
-    } else {
-        return borrowTransportFromPool(balancer->nextServer());
+    const InetSocketAddress* server = NULL;
+    {
+        ScopedLock<Mutex> l(lock);
+        if (consistentHash != NULL) {
+            server = &consistentHash->getServer(key);
+        } else {
+            server = &balancer->nextServer();
+        }
     }
+    return borrowTransportFromPool(*server);
 }
 
 void TcpTransportFactory::releaseTransport(Transport& transport) {
