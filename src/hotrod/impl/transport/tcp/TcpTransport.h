@@ -43,7 +43,7 @@ class TcpTransport : public AbstractTransport
     TcpTransport();
     Socket socket;
     bool invalid;
-    const InetSocketAddress& serverAddress;
+    InetSocketAddress* serverAddress;
 
     bool isValid();
 

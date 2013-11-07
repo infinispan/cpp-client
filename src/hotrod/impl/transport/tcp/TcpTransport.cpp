@@ -16,7 +16,8 @@ namespace transport {
 
 TcpTransport::TcpTransport(
     const InetSocketAddress& a, TransportFactory& factory)
-: AbstractTransport(factory), socket(), /*inStr(*socket),*/ invalid(false), serverAddress(a) {
+: AbstractTransport(factory), socket(), /*inStr(*socket),*/ invalid(false){
+    serverAddress = new InetSocketAddress(a.getAddress(), a.getPort());
     socket.connect(a.getAddress(),a.getPort(), factory.getConnectTimeout());
     socket.setTimeout(factory.getSoTimeout());
     socket.setTcpNoDelay(factory.isTcpNoDelay());
@@ -129,6 +130,7 @@ void TcpTransport::invalidate() {
 
 void TcpTransport::destroy() {
     socket.close();
+    delete serverAddress;
 }
 
 bool TcpTransport::isValid(){
@@ -136,7 +138,7 @@ bool TcpTransport::isValid(){
 }
 
 const InetSocketAddress& TcpTransport::getServerAddress() {
-   return serverAddress;
+   return *serverAddress;
 }
 
 }}} /* namespace */
