@@ -18,6 +18,7 @@ void ConsistentHashV1::init(
         std::map<InetSocketAddress, std::set<int32_t> > & servers2Hash, int32_t nKeyOwners,
         int32_t hSpace) {
 
+    positions.clear();
     for (std::map<InetSocketAddress, std::set<int32_t> >::iterator outer_it =
             servers2Hash.begin(); outer_it != servers2Hash.end(); ++outer_it) {
 
