@@ -114,8 +114,9 @@ void TcpTransportFactory::createAndPreparePool()
 }
 
 void TcpTransportFactory::pingServers() {
-    for (std::vector<InetSocketAddress>::const_iterator iter = servers.begin();
-        iter != servers.end(); iter++) {
+    std::vector<InetSocketAddress> s = servers;
+    for (std::vector<InetSocketAddress>::const_iterator iter = s.begin();
+        iter != s.end(); iter++) {
        try {
           // Go through all statically configured nodes and force a
           // connection to be established and a ping message to be sent.

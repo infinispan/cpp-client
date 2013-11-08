@@ -14,7 +14,7 @@ namespace consistenthash {
 class ConsistentHash {
 
 public:
-	virtual ~ConsistentHash(){}
+    virtual ~ConsistentHash() { if (hash) delete hash; }
     virtual void init(
             std::map<infinispan::hotrod::transport::InetSocketAddress,
                     std::set<int32_t> > & servers2Hash, int32_t numKeyOwners,
@@ -33,7 +33,9 @@ public:
     virtual int32_t getNormalizedHash(const hrbytes& key) = 0;
 
 protected:
-    Hash *hash;
+    ConsistentHash(Hash* hash_) : hash(hash_) {}
+
+    Hash* hash;
 };
 
 }}} // namespace infinispan::hotrod::consistenthash

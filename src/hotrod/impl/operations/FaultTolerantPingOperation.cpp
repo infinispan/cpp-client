@@ -28,8 +28,8 @@ Transport& FaultTolerantPingOperation::getTransport(int /*retryCount*/)
 
 PingResult FaultTolerantPingOperation::executeOperation(transport::Transport& transport)
 {
-
-    return (new PingOperation(codec, topologyId, transport, cacheName))->execute();
+    PingOperation pingOp(codec, topologyId, transport, cacheName);
+    return pingOp.execute();
 }
 
 }}} /// namespace infinispan::hotrod::operations

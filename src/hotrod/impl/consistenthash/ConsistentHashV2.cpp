@@ -6,10 +6,7 @@ namespace infinispan {
 namespace hotrod {
 namespace consistenthash {
 
-
-ConsistentHashV2::ConsistentHashV2() {
-    hash = new MurmurHash3();
-}
+ConsistentHashV2::ConsistentHashV2(): ConsistentHashV1(new MurmurHash3()) {}
 
 }}} // namespace infinispan::hotrod::consistenthash
 

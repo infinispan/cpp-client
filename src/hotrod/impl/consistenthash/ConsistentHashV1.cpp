@@ -10,9 +10,9 @@ namespace hotrod {
 using transport::InetSocketAddress;
 namespace consistenthash {
 
-ConsistentHashV1::ConsistentHashV1() {
-    hash = new MurmurHash2();
-}
+ConsistentHashV1::ConsistentHashV1(): ConsistentHash(new MurmurHash2()), hashSpace(0), numKeyOwners(0), hashSpaceIsMaxInt(false) {}
+
+ConsistentHashV1::ConsistentHashV1(Hash* hash_): ConsistentHash(hash_), hashSpace(0), numKeyOwners(0), hashSpaceIsMaxInt(false) {}
 
 void ConsistentHashV1::init(
         std::map<InetSocketAddress, std::set<int32_t> > & servers2Hash, int32_t nKeyOwners,

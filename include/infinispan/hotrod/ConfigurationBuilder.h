@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+#include "infinispan/hotrod/defs.h"
 #include "infinispan/hotrod/ImportExport.h"
 #include "Builder.h"
 #include "Configuration.h"
@@ -55,7 +56,7 @@ class HR_EXTERN ConfigurationBuilder
     int m_keySizeEstimate;
     bool m_pingOnStartup;
     std::string m_protocolVersion;
-    std::vector<ServerConfigurationBuilder*> m_servers;
+    std::vector<HR_SHARED_PTR<ServerConfigurationBuilder> > m_servers;
     int m_socketTimeout;
     bool m_tcpNoDelay;
     int m_valueSizeEstimate;

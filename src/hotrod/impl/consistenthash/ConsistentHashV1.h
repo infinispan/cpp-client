@@ -36,7 +36,7 @@ private:
 
 protected:
     ConsistentHashV1();
-
+    ConsistentHashV1(Hash* hash_);
 };
 }}} // namespace infinispan::hotrod::consistenthash
 
