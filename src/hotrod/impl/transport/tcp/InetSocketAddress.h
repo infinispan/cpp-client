@@ -12,8 +12,8 @@ namespace transport {
 class InetSocketAddress
 {
   public:
-    InetSocketAddress(const std::string& addr, int p) :
-      address(addr), port(p) { }
+    InetSocketAddress(const std::string& addr, int p): address(addr), port(p) {}
+    InetSocketAddress(const InetSocketAddress& other): address(other.address), port(other.port) {}
 
     const std::string& getAddress() const { return address; }
     int getPort() const { return port; }
@@ -30,6 +30,8 @@ class InetSocketAddress
         }
         return false;
     }
+
+    friend std::ostream& operator<<(std::ostream& os, const InetSocketAddress& isa);
 
   private:
     std::string address;

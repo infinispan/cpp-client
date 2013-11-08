@@ -147,8 +147,10 @@ void Socket::connect(const std::string& h, int p, int timeout) {
 }
 
 void Socket::close() {
-    ::close(fd);
-    fd = -1;
+    if (fd >= 0) {
+        ::close(fd);
+        fd = -1;
+    }
 }
 
 void Socket::setTcpNoDelay(bool tcpNoDelay) {

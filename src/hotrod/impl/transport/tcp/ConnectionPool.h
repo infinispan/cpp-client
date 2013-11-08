@@ -36,6 +36,8 @@ class PoolWorker: public sys::Runnable {
 
 };
 
+typedef HR_SHARED_PTR<BlockingQueue<TcpTransport *> > TransportQueuePtr;
+
 class ConnectionPool
 {
   public:
@@ -49,8 +51,9 @@ class ConnectionPool
     }
 
     ~ConnectionPool() {
-        // FIXME: stop poolWorker
         close();
+        poolWorkerThread->join();
+        delete poolWorkerThread;
         clear();
     }
 
@@ -78,13 +81,14 @@ class ConnectionPool
     friend class PoolWorker;
 
   private:
-    void clear(const InetSocketAddress& key, BlockingQueue<TcpTransport *>* queue);
+    void clear(std::map<InetSocketAddress, TransportQueuePtr>& queue);
+    void clear(const InetSocketAddress& key, TransportQueuePtr queue);
 
     HR_SHARED_PTR<TransportObjectFactory> factory;
     const ConnectionPoolConfiguration& configuration;
     sys::Mutex lock;
-    std::map<InetSocketAddress, BlockingQueue<TcpTransport*>*> busy;
-    std::map<InetSocketAddress, BlockingQueue<TcpTransport*>*> idle;
+    std::map<InetSocketAddress, TransportQueuePtr > busy;
+    std::map<InetSocketAddress, TransportQueuePtr > idle;
     bool closed;
     PoolWorker poolWorker;
     sys::Thread *poolWorkerThread;

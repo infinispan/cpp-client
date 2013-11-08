@@ -13,7 +13,7 @@ ConnectionPoolConfigurationBuilder::ConnectionPoolConfigurationBuilder(Configura
         m_maxIdle(8),
         m_minIdle(0),
         m_numTestsPerEvictionRun(3),
-        m_timeBetweenEvictionRuns(-1),
+        m_timeBetweenEvictionRuns(120000),
         m_minEvictableIdleTime(1000l * 60l * 30l),
         m_testOnBorrow(false),
         m_testOnReturn(false),

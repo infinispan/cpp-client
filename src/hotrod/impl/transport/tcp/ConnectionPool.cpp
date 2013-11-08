@@ -6,24 +6,27 @@ namespace transport {
 
 void ConnectionPool::addObject(const InetSocketAddress& key) {
     sys::ScopedLock<sys::Mutex> l(lock);
-    BlockingQueue<TcpTransport *>* idleQ = new BlockingQueue<TcpTransport *>();
-    idle.insert(std::pair<InetSocketAddress, BlockingQueue<TcpTransport *> *>(key, idleQ));
+
+    TransportQueuePtr idleQ(new BlockingQueue<TcpTransport *>()); // = TransportQueue(BlockingQueue<TcpTransport *>* idleQ = new BlockingQueue<TcpTransport *>();
+    idle.insert(std::pair<InetSocketAddress, TransportQueuePtr>(key, idleQ));
     for (int i = 0; i < configuration.getMinIdle(); i++) {
         idleQ->push(&factory->makeObject(key));
     }
-    BlockingQueue<TcpTransport *>* busyQ = new BlockingQueue<TcpTransport *>();
-    busy.insert(std::pair<InetSocketAddress, BlockingQueue<TcpTransport *> *>(key, busyQ));
+    TransportQueuePtr busyQ(new BlockingQueue<TcpTransport *>()); //BlockingQueue<TcpTransport *>* busyQ = new BlockingQueue<TcpTransport *>();
+    busy.insert(std::pair<InetSocketAddress, TransportQueuePtr>(key, busyQ));
 }
 
 TcpTransport& ConnectionPool::borrowObject(const InetSocketAddress& key) {
     if (closed) {
         throw new HotRodClientException("Pool is closed");
     }
-    BlockingQueue<TcpTransport *>* idleQ = idle[key];
-    BlockingQueue<TcpTransport *>* busyQ = busy[key];
+    if (!idle.count(key) || !busy.count(key)) {
+        throw new HotRodClientException("Pool is closed");
+    }
+    TransportQueuePtr idleQ = idle[key];
+    TransportQueuePtr busyQ = busy[key];
 
     // See if an object is readily available
-
     TcpTransport* obj;
     bool ok = idleQ->poll(obj);
 
@@ -61,13 +64,13 @@ void ConnectionPool::invalidateObject(const InetSocketAddress& key, TcpTransport
 }
 
 void ConnectionPool::returnObject(const InetSocketAddress& key, TcpTransport& val) {
+    sys::ScopedLock<sys::Mutex> l(lock);
     bool ok = true;
 
-    BlockingQueue<TcpTransport *>* idleQ = idle[key];
-    BlockingQueue<TcpTransport *>* busyQ = busy[key];
-
     // Remove the object from the busy queue
-    busyQ->remove(&val);
+    if (busy.count(key)) {
+        busy[key]->remove(&val);
+    }
 
     // If necessary validate the object, then passivate it
     if (closed || (configuration.isTestOnReturn() && !factory->validateObject(key, val))) {
@@ -78,7 +81,11 @@ void ConnectionPool::returnObject(const InetSocketAddress& key, TcpTransport& va
 
     if (ok) {
         // The object is still valid, see if the idle queue wants it
-        ok = idleQ->offer(&val);
+        if (idle.count(key)) {
+            ok = idle[key]->offer(&val);
+        } else {
+            ok = false;
+        }
     }
 
     if (!ok) {
@@ -89,24 +96,29 @@ void ConnectionPool::returnObject(const InetSocketAddress& key, TcpTransport& va
 
 void ConnectionPool::clear() {
     sys::ScopedLock<sys::Mutex> l(lock);
-    for (std::map<InetSocketAddress, BlockingQueue<TcpTransport*>*>::iterator it = idle.begin(); it != idle.end(); ++it) {
-        clear(it->first);
+    clear(idle);
+    clear(busy);
+}
+
+void ConnectionPool::clear(std::map<InetSocketAddress, TransportQueuePtr>& queue) {
+    for (std::map<InetSocketAddress, TransportQueuePtr>::iterator it = queue.begin(); it != queue.end(); ++it) {
+        clear(it->first, it->second);
     }
+    queue.clear();
 }
 
 void ConnectionPool::clear(const InetSocketAddress& key) {
     sys::ScopedLock<sys::Mutex> l(lock);
-    BlockingQueue<TcpTransport *>* idleQ = idle[key];
+    TransportQueuePtr idleQ = idle[key];
     clear(key, idleQ);
     idle.erase(key);
 }
 
-void ConnectionPool::clear(const InetSocketAddress& key, BlockingQueue<TcpTransport *>* queue) {
+void ConnectionPool::clear(const InetSocketAddress& key, TransportQueuePtr queue) {
     while (queue->size() > 0) {
         TcpTransport* transport = queue->pop();
         factory->destroyObject(key, *transport);
     }
-    delete queue;
 }
 
 void ConnectionPool::checkIdle() {
@@ -124,15 +136,20 @@ void ConnectionPool::preparePool(const InetSocketAddress& key) {
 }
 
 void ConnectionPool::close() {
+    closed = true;
     sys::ScopedLock<sys::Mutex> l(lock);
     clear();
-    closed = true;
 }
 
 void PoolWorker::run() {
-    sys::Thread::sleep(pool->getConfiguration().getTimeBetweenEvictionRuns());
-    pool->checkIdle();
-    pool->testIdle();
+    while(!pool->closed) {
+        pool->checkIdle();
+        pool->testIdle();
+        // Sleep in 1 second bursts to let us be cancellable
+        for(long t = 0; t < pool->getConfiguration().getTimeBetweenEvictionRuns() && !pool->closed; t+=1000) {
+            sys::Thread::sleep(1000);
+        }
+    }
 }
 
 }}}

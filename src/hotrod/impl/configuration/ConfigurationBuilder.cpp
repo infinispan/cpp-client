@@ -2,6 +2,7 @@
 #include <fstream>
 #include <iostream>
 
+#include "infinispan/hotrod/defs.h"
 #include "infinispan/hotrod/ConfigurationBuilder.h"
 
 namespace infinispan {
@@ -11,9 +12,9 @@ const char* ConfigurationBuilder::PROTOCOL_VERSION_12 = "1.2";
 
 ServerConfigurationBuilder& ConfigurationBuilder::addServer()
 {
-  ServerConfigurationBuilder* builder = new ServerConfigurationBuilder(*this);
+  HR_SHARED_PTR<ServerConfigurationBuilder> builder(new ServerConfigurationBuilder(*this));
   m_servers.push_back(builder);
-  return *builder;
+  return *builder.get();
 }
 
 ConfigurationBuilder& ConfigurationBuilder::addServers(std::string servers)
@@ -105,8 +106,8 @@ Configuration ConfigurationBuilder::create()
 {
   std::vector<ServerConfiguration> servers;
   if(m_servers.size() > 0) {
-      for(std::vector<ServerConfigurationBuilder *>::iterator it = m_servers.begin(); it < m_servers.end(); it++) {
-          servers.push_back((*it)->create());
+      for(std::vector<HR_SHARED_PTR<ServerConfigurationBuilder> >::iterator it = m_servers.begin(); it < m_servers.end(); it++) {
+          servers.push_back((*it).get()->create());
       }
   } else {
       servers.push_back(ServerConfiguration("127.0.0.1", 11222));

@@ -149,6 +149,7 @@ add_library (
   src/hotrod/impl/protocol/CodecFactory.cpp
   src/hotrod/impl/transport/AbstractTransport.cpp
   src/hotrod/impl/transport/tcp/ConnectionPool.cpp
+  src/hotrod/impl/transport/tcp/InetSocketAddress.cpp
   src/hotrod/impl/transport/tcp/Socket.cpp
   src/hotrod/impl/transport/tcp/TcpTransport.cpp
   src/hotrod/impl/transport/tcp/TcpTransportFactory.cpp
