@@ -72,7 +72,7 @@ def stop(verbose=False):
                 time.sleep(1)
             else:
                 try:
-                    jproc.terminate()
+                    jproc_pid.terminate()
                     time.sleep(1)
                 except Exception:
                     pass
