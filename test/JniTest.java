@@ -10,6 +10,7 @@ import org.infinispan.test.SingleCacheManagerTest;
 import org.infinispan.test.fwk.TestCacheManagerFactory;
 import org.testng.annotations.AfterTest;
 import org.testng.annotations.Test;
+import org.infinispan.client.hotrod.BulkGetSimpleTest;
 import org.infinispan.client.hotrod.CacheContainerTest;
 import org.infinispan.client.hotrod.ForceReturnValueTest;
 import org.infinispan.client.hotrod.HotRodIntegrationTest;
@@ -32,6 +33,7 @@ public class JniTest {
         HotRodIntegrationTest hotRodIntegrationTest = null;
         CacheContainerTest cacheContainerTest = null;
         ForceReturnValueTest forceReturnValueTest = null;
+        BulkGetSimpleTest bulkGetSimpleTest = null;
 
 	try {
 		System.out.println("Java + JNI Hot Rod Client");
@@ -132,6 +134,18 @@ public class JniTest {
             System.out.println("=== Force Return Value test - test PutIfAbsent PASSED ====");
 
             System.out.println("=== Force Return Value test ==== PASSED");
+
+            System.out.println("=== Bulk Get Simple test ====");
+            bulkGetSimpleTest = new BulkGetSimpleTest();
+            createCacheManager = bulkGetSimpleTest.getClass().getSuperclass().getDeclaredMethod("createCacheManagers");
+            createCacheManager.setAccessible(true);
+            createCacheManager.invoke(bulkGetSimpleTest);
+
+            System.out.println("=== Bulk Get Simple test - test Get Bulk With Size ====");
+            bulkGetSimpleTest.testBulkGetWithSize();
+            System.out.println("=== Bulk Get Simple test - test Get Bulk With Size PASSED ====");
+
+            System.out.println("=== Bulk Get Simple test ==== PASSED");
         } catch (Throwable e) {
             System.out.println("Test Error");
             e.printStackTrace();
@@ -145,6 +159,16 @@ public class JniTest {
             }
             if (forceReturnValueTest != null) {
                 forceReturnValueTest.destroy();
+            }
+            if (bulkGetSimpleTest != null) {
+                try {
+                    Method destroyMethod = bulkGetSimpleTest.getClass().getSuperclass().getSuperclass().getDeclaredMethod("destroy");
+                    destroyMethod.setAccessible(true);
+                    destroyMethod.invoke(bulkGetSimpleTest);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+                bulkGetSimpleTest.release();
             }
         }
 }

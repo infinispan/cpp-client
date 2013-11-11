@@ -15,5 +15,8 @@
                 <artifact name="infinispan-client-hotrod" type="jar" m:classifier="tests" />
                 <artifact name="infinispan-client-hotrod" type="jar"/>
         </dependency>
+        <dependency org="org.jboss.jbossts.jta" name="narayana-jta" rev="4.17.13.Final">
+          <artifact name="narayana-jta" type="jar"/>
+        </dependency>
     </dependencies>
 </ivy-module>

@@ -212,38 +212,27 @@ public class RemoteCacheImpl<K, V> implements RemoteCache<K, V> {
             return null;
         }
 
-        VersionPairReturn versionPair = null;
-        RelayBytes krb = new RelayBytes();
-        try {
-            byte[] kbytes = marshaller.objectToByteBuffer(k);
-            try {
-                setJvmBytes(krb, kbytes);
-                versionPair = jniRemoteCache.getWithVersion(krb);
-                if (versionPair == null) {
-                    return null;
+        final VersionPairReturn versionPair = relayedInvoker(new RelayedMethod() {
+                @Override
+                public Object invoke(RelayBytes... rbs) {
+                    return jniRemoteCache.getWithVersion(rbs[0]);
                 }
-            } finally {
-                releaseJvmBytes(krb, kbytes);
-            }
-        } catch (IOException e) {
-            System.out.println("Marshall error");
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            System.out.println("Marshall error");
-            e.printStackTrace();
-        }
+            }, k);
 
         if (versionPair.getFirst() == null || Hotrod.isNull(versionPair.getFirst())) {
             return null;
         }
 
-        RelayBytes vrb = Hotrod.dereference(versionPair.getFirst());
-        if (vrb == null) {
+        V value = relayedInvoker(new RelayedMethod() {
+                @Override
+                public Object invoke(RelayBytes... rbs) {
+                    return Hotrod.dereference(versionPair.getFirst());
+                }
+            });
+
+        if (value == null) {
             return null;
         }
-
-        V value = extractValue(vrb);
-        dispose(vrb);
 
         return new VersionedValueImpl(versionPair.getSecond().getVersion(), value);
     }
@@ -254,38 +243,23 @@ public class RemoteCacheImpl<K, V> implements RemoteCache<K, V> {
             return null;
         }
 
-        MetadataPairReturn metadataPair = null;
-        RelayBytes krb = new RelayBytes();
-        try {
-            byte[] kbytes = marshaller.objectToByteBuffer(k);
-            try {
-                setJvmBytes(krb, kbytes);
-                metadataPair = jniRemoteCache.getWithMetadata(krb);
-                if (metadataPair == null) {
-                    return null;
-                }
-            } finally {
-                releaseJvmBytes(krb, kbytes);
-            }
-        } catch (IOException e) {
-            System.out.println("Marshall error");
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            System.out.println("Marshall error");
-            e.printStackTrace();
-        }
+        final MetadataPairReturn metadataPair = relayedInvoker(new RelayedMethod() {
+               @Override
+               public Object invoke(RelayBytes... rbs) {
+                   return jniRemoteCache.getWithMetadata(rbs[0]);
+               }
+            }, k);
 
-        if (metadataPair.getFirst() == null || Hotrod.isNull(metadataPair.getFirst())) {
+        if (metadataPair == null || metadataPair.getFirst() == null || Hotrod.isNull(metadataPair.getFirst())) {
             return null;
         }
 
-        RelayBytes vrb = Hotrod.dereference(metadataPair.getFirst());
-        if (vrb == null) {
-            return null;
-        }
-
-        V value = extractValue(vrb);
-        dispose(vrb);
+       V value = relayedInvoker(new RelayedMethod() {
+               @Override
+               public Object invoke(RelayBytes... rbs) {
+                   return Hotrod.dereference(metadataPair.getFirst());
+               }
+           });
 
         org.infinispan.client.hotrod.jni.MetadataValue metadata = metadataPair.getSecond();
         return new MetadataValueImpl(metadata.getCreated(), metadata.getLifespan(), metadata.getLastUsed(),
@@ -298,18 +272,26 @@ public class RemoteCacheImpl<K, V> implements RemoteCache<K, V> {
             return null;
         }
 
-        MapReturn mapReturn = jniRemoteCache.getBulk(size);
-        VectorReturn vectorReturn = Hotrod.keySet(mapReturn);
+        final MapReturn mapReturn = jniRemoteCache.getBulk(size);
+        final VectorReturn vectorReturn = Hotrod.keySet(mapReturn);
 
         Map<K, V> result = new HashMap<K, V>();
         for (int i = 0; i < vectorReturn.size(); i++) {
-            RelayBytes krb = Hotrod.dereference(vectorReturn.get(i));
-            RelayBytes vrb = Hotrod.dereference(mapReturn.get(vectorReturn.get(i)));
+            final int index = i;
+            K key = relayedInvoker(new RelayedMethod() {
+                    @Override
+                    public Object invoke(RelayBytes... rbs) {
+                        return Hotrod.dereference(vectorReturn.get(index));
+                    }
+                });
+            V value = relayedInvoker(new RelayedMethod() {
+                    @Override
+                    public Object invoke(RelayBytes... rbs) {
+                        return Hotrod.dereference(mapReturn.get(vectorReturn.get(index)));
+                    }
+                });
 
-            result.put(extractKey(krb), extractValue(vrb));
-
-            dispose(krb);
-            dispose(vrb);
+            result.put(key, value);
         }
 
         return result;
@@ -325,44 +307,6 @@ public class RemoteCacheImpl<K, V> implements RemoteCache<K, V> {
         }
         jniRemoteCache.withFlags(org.infinispan.client.hotrod.jni.Flag.swigToEnum(result));
         return this;
-    }
-
-    private K extractKey(RelayBytes relayBytes) {
-        K key = null;
-        byte[] jcopy = new byte[(int) relayBytes.getLength()];
-        readNative(relayBytes, jcopy);
-        try {
-            key = (K) marshaller.objectFromByteBuffer(jcopy);
-            if (key == null) {
-                return null;
-            }
-        } catch (IOException e) {
-            System.out.println("Marshall error");
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            System.out.println("Marshall error");
-            e.printStackTrace();
-        }
-        return key;
-    }
-
-    private V extractValue(RelayBytes relayBytes) {
-        V value = null;
-        byte[] jcopy = new byte[(int) relayBytes.getLength()];
-        readNative(relayBytes, jcopy);
-        try {
-            value = (V) marshaller.objectFromByteBuffer(jcopy);
-            if (value == null) {
-                return null;
-            }
-        } catch (IOException e) {
-            System.out.println("Marshall error");
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            System.out.println("Marshall error");
-            e.printStackTrace();
-        }
-        return value;
     }
 
     private <R> R relayedInvoker(RelayedMethod m, Object... o) {
