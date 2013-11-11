@@ -23,6 +23,10 @@ public class RemoteCacheManager /* implements BasicCacheContainer */{
         marshaller = new org.infinispan.commons.marshall.jboss.GenericJBossMarshaller();
     }
 
+    public RemoteCacheManager(String servers) {
+        this(servers, true);
+    }
+
     public RemoteCacheManager(String server, int port) {
         this(String.format("%s:%d", server, port), true);
     }
