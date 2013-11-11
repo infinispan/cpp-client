@@ -8,6 +8,7 @@
 
 namespace infinispan {
 namespace hotrod {
+class IntWrapper;
 namespace operations {
 
 class ReplaceIfUnmodifiedOperation
@@ -22,7 +23,7 @@ class ReplaceIfUnmodifiedOperation
         HR_SHARED_PTR<transport::TransportFactory> transportFactory,
         const hrbytes& key,
         const hrbytes& cacheName,
-        uint32_t topologyId,
+        IntWrapper& topologyId,
         uint32_t flags,
         const hrbytes& value,
         uint32_t lifespan,

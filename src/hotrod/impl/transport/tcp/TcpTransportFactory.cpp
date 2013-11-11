@@ -22,7 +22,7 @@ TransportFactory* TransportFactory::newInstance(const Configuration& configurati
 }
 
 void TcpTransportFactory::start(
-    Codec& codec, int64_t topologyId)
+    Codec& codec)
 {
     ScopedLock<Mutex> l(lock);
     for (std::vector<ServerConfiguration>::const_iterator iter=configuration.getServersConfiguration().begin();
@@ -36,7 +36,7 @@ void TcpTransportFactory::start(
 
     // TODO: SSL configuration
 
-    transportFactory.reset(new TransportObjectFactory(codec, *this, topologyId, configuration.isPingOnStartup()));
+    transportFactory.reset(new TransportObjectFactory(codec, *this, configuration.isPingOnStartup()));
 
     createAndPreparePool();
     balancer->setServers(servers);

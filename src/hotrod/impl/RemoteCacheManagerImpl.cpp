@@ -17,18 +17,18 @@ const std::string ISPN_CLIENT_HOTROD_SERVER_LIST("infinispan.client.hotrod.serve
 const std::string DefaultCacheName = "";
 
 RemoteCacheManagerImpl::RemoteCacheManagerImpl(bool start_)
-  : started(false), topologyId(0),
+  : started(false),
     configuration(ConfigurationBuilder().build()), codec(0)
 {
+	; //force topology read on first op
 	if (start_) start();
 }
 
 RemoteCacheManagerImpl::RemoteCacheManagerImpl(const std::map<std::string,std::string>& properties, bool start_)
-  : started(false), topologyId(0),
+  : started(false),
     configuration(ConfigurationBuilder().build()), codec(0)
 {
   std::map<std::string,std::string>::const_iterator server_prop;
-
   server_prop = properties.find(ISPN_CLIENT_HOTROD_SERVER_LIST);
   if(server_prop != properties.end()) {
       std::string serverList = server_prop->second;
@@ -39,7 +39,7 @@ RemoteCacheManagerImpl::RemoteCacheManagerImpl(const std::map<std::string,std::s
 }
 
 RemoteCacheManagerImpl::RemoteCacheManagerImpl(const Configuration& configuration_, bool start_)
-  : started(false), topologyId(0),
+  : started(false),
     configuration(configuration_), codec(0)
 {
   if (start_) start();
@@ -50,7 +50,7 @@ void RemoteCacheManagerImpl::start() {
     codec = CodecFactory::getCodec(configuration.getProtocolVersion().c_str());
     if (!started) {
         transportFactory.reset(TransportFactory::newInstance(configuration));
-        transportFactory->start(*codec, topologyId);
+        transportFactory->start(*codec);
 
        for(std::map<std::string, RemoteCacheHolder>::iterator iter = cacheName2RemoteCache.begin(); iter != cacheName2RemoteCache.end(); ++iter ) {
            startRemoteCache(*iter->second.first, iter->second.second);
@@ -112,7 +112,6 @@ void RemoteCacheManagerImpl::startRemoteCache(RemoteCacheImpl& remoteCache, bool
     OperationsFactory* operationsFactory = new OperationsFactory(
         transportFactory,
         remoteCache.getName(),
-        topologyId,
         forceReturnValue,
         *CodecFactory::getCodec(configuration.getProtocolVersion().c_str()));
 

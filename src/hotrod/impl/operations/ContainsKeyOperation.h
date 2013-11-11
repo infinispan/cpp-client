@@ -10,6 +10,7 @@
 
 namespace infinispan {
 namespace hotrod {
+class IntWrapper;
 namespace operations {
 
 class ContainsKeyOperation : public AbstractKeyOperation<bool>
@@ -23,7 +24,7 @@ class ContainsKeyOperation : public AbstractKeyOperation<bool>
             const infinispan::hotrod::protocol::Codec& codec,
             HR_SHARED_PTR<transport::TransportFactory> transportFactory,
             const hrbytes& key, const hrbytes& cacheName,
-            uint32_t topologyId, uint32_t flags);
+            IntWrapper& topologyId, uint32_t flags);
 
     friend class OperationsFactory;
 };

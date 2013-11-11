@@ -24,7 +24,7 @@ class TcpTransportFactory : public TransportFactory
 {
   public:
     TcpTransportFactory(const Configuration& config) : configuration(config),consistentHash(0) {};
-    void start(protocol::Codec& codec, int64_t topologyId);
+    void start(protocol::Codec& codec);
     void destroy();
 
     Transport& getTransport();

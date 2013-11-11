@@ -31,7 +31,6 @@ class RemoteCacheManagerImpl
   private:
     sys::Mutex lock;
     bool started;
-    int64_t topologyId;
     Configuration configuration;
     protocol::Codec* codec;
 

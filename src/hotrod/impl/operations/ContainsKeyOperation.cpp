@@ -16,7 +16,7 @@ ContainsKeyOperation::ContainsKeyOperation(
     HR_SHARED_PTR<transport::TransportFactory> transportFactory_,
     const hrbytes&    key_,
     const hrbytes&    cacheName_,
-    uint32_t          topologyId_,
+    IntWrapper&  topologyId_,
     uint32_t    flags_)
     : AbstractKeyOperation<bool>(
         codec_, transportFactory_, key_, cacheName_, topologyId_, flags_)

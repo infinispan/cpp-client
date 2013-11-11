@@ -42,7 +42,7 @@ HeaderParams& Codec10::writeHeader(
     transport.writeArray(params.cacheName);
     transport.writeVInt(params.flags);
     transport.writeByte(params.clientIntel);
-    transport.writeVInt(params.topologyId);
+    transport.writeVInt(params.topologyId.get());
     transport.writeByte(params.txMarker);
     return params;
 }
@@ -100,9 +100,9 @@ void Codec10::readNewTopologyIfPresent(
         readNewTopologyAndHash(transport, params.topologyId);
 }
 
-void Codec10::readNewTopologyAndHash(Transport& transport, uint32_t& topologyId) const {
+void Codec10::readNewTopologyAndHash(Transport& transport, IntWrapper& topologyId) const{
     uint32_t newTopologyId = transport.readVInt();
-    topologyId = newTopologyId; //update topologyId reference
+    topologyId.set(newTopologyId); //update topologyId reference
     int16_t numKeyOwners = transport.readUnsignedShort();
     uint8_t hashFunctionVersion = transport.readByte();
     uint32_t hashSpace = transport.readVInt();

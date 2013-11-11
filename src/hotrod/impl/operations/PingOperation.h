@@ -8,6 +8,7 @@
 namespace infinispan {
 namespace hotrod {
 class hrbytes;
+class IntWrapper;
 
 namespace operations {
 
@@ -27,13 +28,13 @@ class PingOperation : public HotRodOperation<PingResult>
     PingResult execute();
     PingOperation(
         const protocol::Codec& codec,
-        uint32_t topologyId,
+        IntWrapper& topologyId,
         transport::Transport& transport);
 
   private:
     PingOperation(
         const protocol::Codec& codec,
-        uint32_t topologyId,
+        IntWrapper& topologyId,
         transport::Transport& transport,
         const hrbytes& cacheName);
 

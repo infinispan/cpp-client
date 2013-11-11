@@ -16,7 +16,7 @@ BulkGetOperation::BulkGetOperation(
     const Codec&      codec_,
     HR_SHARED_PTR<TransportFactory> transportFactory_,
     const hrbytes&    cacheName_,
-    uint32_t          topologyId_,
+    IntWrapper&  topologyId_,
     uint32_t    flags_,
     int32_t  entryCount_)
     : RetryOnFailureOperation<std::map<hrbytes, hrbytes> >(

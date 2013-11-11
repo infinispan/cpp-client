@@ -49,7 +49,7 @@ template<class T> class RetryOnFailureOperation : public HotRodOperation<T>
     RetryOnFailureOperation(
         const protocol::Codec& _codec,
         HR_SHARED_PTR<transport::TransportFactory> _transportFactory,
-        const hrbytes& _cacheName, uint32_t _topologyId, uint32_t _flags) :
+        const hrbytes& _cacheName, IntWrapper& _topologyId, uint32_t _flags) :
             HotRodOperation<T>(_codec, _flags, _cacheName, _topologyId),
             transportFactory(_transportFactory) {}
 
