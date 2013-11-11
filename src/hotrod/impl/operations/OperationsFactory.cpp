@@ -1,4 +1,5 @@
 #include "infinispan/hotrod/types.h"
+#include "hotrod/impl/IntWrapper.h"
 #include "hotrod/impl/operations/OperationsFactory.h"
 #include "hotrod/impl/protocol/CodecFactory.h"
 #include "hotrod/impl/transport/Transport.h"
@@ -31,8 +32,8 @@ using namespace transport;
 
 OperationsFactory::OperationsFactory(
     HR_SHARED_PTR<infinispan::hotrod::transport::TransportFactory> tf, const std::string& cn,
-    uint32_t tid, bool frv, const Codec& c) :
-        transportFactory(tf), codec(c), forceReturnValue(frv), topologyId(tid), flags()
+    bool frv, const Codec& c) :
+        transportFactory(tf), topologyId(0), codec(c), forceReturnValue(frv), flags()
 {
     cacheNameBytes.reserve(cn.length());
     memcpy(cacheNameBytes.bytes(), cn.c_str(), cn.length());

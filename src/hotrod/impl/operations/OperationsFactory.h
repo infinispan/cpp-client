@@ -9,6 +9,7 @@ namespace infinispan {
 namespace hotrod {
 
 class RemoteCacheManagerImpl;
+class IntWrapper;
 
 namespace transport {
 class TransportFactory;
@@ -88,17 +89,17 @@ class OperationsFactory
 
   private:
     HR_SHARED_PTR<infinispan::hotrod::transport::TransportFactory> transportFactory;
+    IntWrapper topologyId;
     const infinispan::hotrod::protocol::Codec& codec;
     hrbytes cacheNameBytes;
     bool forceReturnValue;
-    uint32_t topologyId;
     uint32_t flags;
 
     uint32_t getFlags();
 
     OperationsFactory(
       HR_SHARED_PTR<infinispan::hotrod::transport::TransportFactory> transportFactory,
-      const std::string& cacheName, uint32_t topologyId, bool forceReturnValue,
+      const std::string& cacheName, bool forceReturnValue,
       const infinispan::hotrod::protocol::Codec& codec);
 
   friend class infinispan::hotrod::RemoteCacheManagerImpl;

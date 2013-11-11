@@ -7,6 +7,7 @@
 
 namespace infinispan {
 namespace hotrod {
+class IntWrapper;
 
 namespace transport {
 class Transport;
@@ -51,7 +52,7 @@ class Codec10 : public Codec
 
     void readNewTopologyAndHash(
         infinispan::hotrod::transport::Transport& transport,
-        uint32_t& topologyId) const;
+        IntWrapper& topologyId) const;
 
     void checkForErrorsInResponseStatus(
         infinispan::hotrod::transport::Transport& transport,

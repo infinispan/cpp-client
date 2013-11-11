@@ -17,8 +17,8 @@ PutOperation::PutOperation(
     HR_SHARED_PTR<transport::TransportFactory> transportFactory_,
     const hrbytes&    key_,
     const hrbytes&    cacheName_,
-    uint32_t          topologyId_,
-    uint32_t flags_,
+    IntWrapper&  topologyId_,
+    uint32_t          flags_,
     const hrbytes&    value_,
     uint32_t          lifespan_,
     uint32_t          maxIdle_)

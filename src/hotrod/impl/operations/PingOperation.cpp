@@ -12,12 +12,12 @@ using transport::Transport;
 
 namespace operations {
 
-PingOperation::PingOperation(const Codec& c, uint32_t id,
+PingOperation::PingOperation(const Codec& c, IntWrapper& id,
 		Transport& t, const hrbytes& n)
     : HotRodOperation<PingResult>(c, 0, n, id), transport(t)
 {}
 
-PingOperation::PingOperation(const Codec& c, uint32_t id,
+PingOperation::PingOperation(const Codec& c, IntWrapper& id,
 		Transport& t)
     : HotRodOperation<PingResult>(c, 0, hrbytes(), id), transport(t)
 {}

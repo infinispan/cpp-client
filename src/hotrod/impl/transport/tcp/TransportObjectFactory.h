@@ -17,7 +17,7 @@ class TransportObjectFactory
     TransportObjectFactory(
         protocol::Codec& codec,
         TcpTransportFactory& tcpTransportFactory,
-        int64_t topologyId, bool pingOnStartup);
+        bool pingOnStartup);
 
     TcpTransport& makeObject(const InetSocketAddress& address);
     bool validateObject(const InetSocketAddress& address, TcpTransport& transport);
@@ -28,13 +28,12 @@ class TransportObjectFactory
 
   private:
     TcpTransportFactory& tcpTransportFactory;
-    int64_t topologyId;
     bool pingOnStartup;
     infinispan::hotrod::protocol::Codec& codec;
 
     bool firstPingExecuted;
 
-    operations::PingResult ping(TcpTransport& tcpTransport, int64_t topologyId);
+    operations::PingResult ping(TcpTransport& tcpTransport);
 };
 
 }}} // namespace infinispan::hotrod::transport

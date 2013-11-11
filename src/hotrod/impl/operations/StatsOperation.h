@@ -14,6 +14,7 @@
 
 namespace infinispan {
 namespace hotrod {
+class IntWrapper;
 namespace operations {
 
 class StatsOperation : public RetryOnFailureOperation<std::map<std::string, std::string> >
@@ -23,7 +24,7 @@ class StatsOperation : public RetryOnFailureOperation<std::map<std::string, std:
             const infinispan::hotrod::protocol::Codec&       codec_,
             HR_SHARED_PTR<transport::TransportFactory> transportFactory_,
             const hrbytes&                                   cacheName_,
-            uint32_t                                         topologyId_,
+            IntWrapper&                                 topologyId_,
             uint32_t                                   flags_);
 
         infinispan::hotrod::transport::Transport& getTransport(int retryCount);

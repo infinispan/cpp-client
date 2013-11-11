@@ -120,6 +120,7 @@ add_library (
   src/hotrod/impl/configuration/SslConfigurationBuilder.cpp
   src/hotrod/impl/RemoteCacheManagerImpl.cpp
   src/hotrod/impl/RemoteCacheImpl.cpp
+  src/hotrod/impl/IntWrapper.cpp
   src/hotrod/impl/hash/MurmurHash2.cpp
   src/hotrod/impl/hash/MurmurHash3.cpp
   src/hotrod/impl/consistenthash/ConsistentHashFactory.cpp

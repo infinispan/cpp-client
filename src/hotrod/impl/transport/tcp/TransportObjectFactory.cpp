@@ -14,8 +14,8 @@ namespace transport {
 
 
 TransportObjectFactory::TransportObjectFactory(
-    Codec& c, TcpTransportFactory& factory, int64_t tid, bool pingable)
-    : tcpTransportFactory(factory), topologyId(tid),
+    Codec& c, TcpTransportFactory& factory, bool pingable)
+    : tcpTransportFactory(factory),
       pingOnStartup(pingable), codec(c), firstPingExecuted(false)
 { }
 
@@ -26,13 +26,13 @@ TcpTransport& TransportObjectFactory::makeObject(const InetSocketAddress& addres
 
         // Don't ignore exceptions from ping() command, since
         // they indicate that the transport instance is invalid.
-        ping(*tcpTransport, topologyId);
+        ping(*tcpTransport);
     }
     return *tcpTransport;
 }
 
 bool TransportObjectFactory::validateObject(const InetSocketAddress& /*address*/, TcpTransport& transport) {
-    return ping(transport, topologyId) == SUCCESS;
+    return ping(transport) == SUCCESS;
 }
 
 void TransportObjectFactory::destroyObject(const InetSocketAddress& /*address*/, TcpTransport& transport) {
@@ -51,9 +51,10 @@ void TransportObjectFactory::passivateObject(
 }
 
 PingResult TransportObjectFactory::ping(
-    TcpTransport& tcpTransport, int64_t _topologyId)
+    TcpTransport& tcpTransport)
 {
-    PingOperation po(codec, _topologyId, tcpTransport);
+	IntWrapper tid(std::numeric_limits<uint32_t>::max());
+    PingOperation po(codec, tid, tcpTransport);
     return po.execute();
 }
 

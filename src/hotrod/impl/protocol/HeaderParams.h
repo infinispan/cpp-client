@@ -3,6 +3,7 @@
 
 #include "infinispan/hotrod/types.h"
 #include "infinispan/hotrod/Flag.h"
+#include "hotrod/impl/IntWrapper.h"
 
 #include <set>
 
@@ -13,12 +14,12 @@ namespace protocol {
 class HeaderParams
 {
   public:
+	HeaderParams(IntWrapper& topId);
     HeaderParams& setOpCode(uint8_t opCode);
     HeaderParams& setCacheName(const hrbytes& cacheName);
     HeaderParams& setFlags(uint32_t flags);
     HeaderParams& setClientIntel(uint8_t clientIntel);
     HeaderParams& setTxMarker(uint8_t txMarker);
-    HeaderParams& setTopologyId(uint32_t topologyId);
     HeaderParams& setMessageId(uint64_t messageId);
 
   private:
@@ -30,7 +31,7 @@ class HeaderParams
     uint32_t flags;
     uint8_t clientIntel;
     uint8_t txMarker;
-    uint32_t topologyId;
+    IntWrapper& topologyId;
     uint64_t messageId;
 
     friend class Codec10;

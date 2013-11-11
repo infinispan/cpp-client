@@ -9,6 +9,8 @@ namespace infinispan {
 namespace hotrod {
 namespace protocol {
 
+HeaderParams::HeaderParams(IntWrapper& tid):topologyId(tid){
+}
 
 HeaderParams& HeaderParams::setOpCode(uint8_t code) {
 	opCode = code;
@@ -33,11 +35,6 @@ HeaderParams& HeaderParams::setClientIntel(uint8_t intel) {
 
 HeaderParams& HeaderParams::setTxMarker(uint8_t marker) {
     txMarker = marker;
-    return *this;
-}
-
-HeaderParams& HeaderParams::setTopologyId(uint32_t id) {
-    topologyId = id;
     return *this;
 }
 

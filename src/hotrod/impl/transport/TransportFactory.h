@@ -10,7 +10,6 @@
 
 namespace infinispan {
 namespace hotrod {
-
 class RemoteCacheManagerImpl;
 class Configuration;
 
@@ -29,7 +28,7 @@ class InetSocketAddress;
 class TransportFactory
 {
   public:
-    virtual void start(protocol::Codec& codec, int64_t topologyId) = 0;
+    virtual void start(protocol::Codec& codec) = 0;
     virtual void destroy() = 0;
 
     virtual Transport& getTransport() = 0;

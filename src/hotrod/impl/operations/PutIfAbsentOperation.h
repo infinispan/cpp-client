@@ -9,6 +9,7 @@
 
 namespace infinispan {
 namespace hotrod {
+class IntWrapper;
 namespace operations {
 
 class PutIfAbsentOperation : public AbstractKeyValueOperation<hrbytes>
@@ -23,7 +24,7 @@ class PutIfAbsentOperation : public AbstractKeyValueOperation<hrbytes>
             HR_SHARED_PTR<transport::TransportFactory> transportFactory_,
             const hrbytes& key,
             const hrbytes& cacheName,
-            uint32_t topologyId,
+            IntWrapper& topologyId,
             uint32_t flags,
             const hrbytes& value,
             uint32_t lifespan,
