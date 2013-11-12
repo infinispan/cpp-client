@@ -29,11 +29,10 @@ template<class T> class HotRodOperation : public protocol::HotRodConstants
     protocol::HeaderParams& writeHeader(
         transport::Transport& transport, uint8_t opCode)
     {
-       // TODO: CLIENT_INTELLIGENCE_HASH_DISTRIBUTION_AWARE
         protocol::HeaderParams* params =
             new protocol::HeaderParams();
         (*params).setOpCode(opCode).setCacheName(cacheName)
-            .setFlags(flags).setClientIntel(CLIENT_INTELLIGENCE_BASIC)
+            .setFlags(flags).setClientIntel(CLIENT_INTELLIGENCE_HASH_DISTRIBUTION_AWARE)
             .setTopologyId(topologyId).setTxMarker(NO_TX);
 
         return codec.writeHeader(transport, *params);
