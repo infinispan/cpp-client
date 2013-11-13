@@ -28,6 +28,7 @@ class HR_EXTERN RemoteCacheBase
   : public infinispan::hotrod::Handle<RemoteCacheImpl>
 {
   public:
+    const std::string& base_getName();
     void base_get(const void *key, void *rbuf);
     void base_put(const void *key, const void *value, int64_t life, int64_t idle, void *buf);
     void base_putIfAbsent(const void *key, const void *value, int64_t life, int64_t idle, void *buf);

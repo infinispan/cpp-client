@@ -2,6 +2,7 @@
 #include "infinispan/hotrod/RemoteCacheManager.h"
 #include "infinispan/hotrod/RemoteCache.h"
 #include "infinispan/hotrod/ScopedBuffer.h"
+#include "infinispan/hotrod/Version.h"
 
 #include <stdlib.h>
 #include <iostream>
@@ -18,6 +19,9 @@ int main(int argc, char** argv) {
     RemoteCacheManager cacheManager(builder.build(), false);
     RemoteCache<std::string, std::string> cache = cacheManager.getCache<std::string, std::string>();
     cacheManager.start();
+
+    std::cout << "HotRod C++ Library version " << cache.getVersion() << std::endl;
+    std::cout << "Protocol " << cache.getProtocolVersion() << std::endl;
 
     std::string k1("key13");
     std::string k2("key14");
@@ -181,7 +185,7 @@ int main(int argc, char** argv) {
     std::cout << "PASS: simple keySet" << std::endl;
 
     // getBulk
-    std::map<HR_SHARED_PTR<std::string>,HR_SHARED_PTR<std::string> > map = cache.getBulk(0);
+    std::map<HR_SHARED_PTR<std::string>,HR_SHARED_PTR<std::string> > map = cache.getBulk();
     if (map.size()!=1) {
         std::cerr << "getBulk fail got" << map.size() << " entries expected 1" << std::endl;
         return 1;

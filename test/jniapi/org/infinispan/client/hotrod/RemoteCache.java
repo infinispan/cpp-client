@@ -55,6 +55,8 @@ public interface RemoteCache<K, V> {
 
     MetadataValue<V> getWithMetadata(K key);
 
+    Map<K, V> getBulk();
+
     Map<K, V> getBulk(int size);
 
     boolean isEmpty();

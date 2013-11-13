@@ -1,0 +1,9 @@
+#include "infinispan/hotrod/Version.h"
+
+namespace infinispan {
+namespace hotrod {
+
+const std::string Version::PROTOCOL_VERSION = "HotRod C++ client, protocol version :1.2";
+const std::string Version::VERSION = "@HOTROD_VERSION@";
+
+}}

@@ -33,6 +33,7 @@ class RemoteCacheImpl
     void removeWithVersion(RemoteCacheBase& rcb, const void* k, uint64_t version, bool* res);
     void getWithMetadata(RemoteCacheBase& rcb, const void *key, void* vbuf, MetadataValue* metadata);
     void getWithVersion(RemoteCacheBase& rcb, const void *key, void* vbuf, VersionedValue* version);
+    void getBulk(RemoteCacheBase& rcb, std::map<void*, void*>* mbuf);
     void getBulk(RemoteCacheBase& rcb, int size, std::map<void*, void*>* mbuf);
     void keySet(RemoteCacheBase& rcb, int scope, std::set<void*>* result);
     void stats(std::map<std::string,std::string>* stats);

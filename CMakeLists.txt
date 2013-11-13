@@ -2,16 +2,10 @@ cmake_minimum_required (VERSION 2.6)
 
 project (infinispan-hotrod-c++ C CXX)
 
-
-
-#file(READ version.txt HR_VERSION_FILE)
-#string(REGEX MATCHALL "[0-9]+" HR_VERSION_LIST "${HR_VERSION_FILE}")
-
-#list(GET HR_VERSION_LIST 0 HR_VERSION_MAJOR)
-#list(GET HR_VERSION_LIST 1 HR_VERSION_MINOR)
-
-#set (HR_VERSION "${HR_VERSION_MAJOR}.${HR_VERSION_MINOR}")
-#message(STATUS "HR_VERSION: ${HR_VERSION}")
+set (CPACK_PACKAGE_VERSION_MAJOR "6")
+set (CPACK_PACKAGE_VERSION_MINOR "0")
+set (CPACK_PACKAGE_VERSION_PATCH "0-SNAPSHOT")
+set (HOTROD_VERSION "${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}")
 
 include_directories ("${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
@@ -102,6 +96,8 @@ else(HOTROD_WINAPI)
            src/hotrod/sys/posix/platform.cpp src/hotrod/sys/posix/Mutex.cpp)
 endif(HOTROD_WINAPI)
 
+configure_file(src/hotrod/impl/Version.cpp.in ${CMAKE_BINARY_DIR}/Version.cpp @ONLY)
+
 set (library_sources
   src/hotrod/api/RemoteCacheManager.cpp
   src/hotrod/api/RemoteCacheBase.cpp
@@ -155,6 +151,7 @@ set (library_sources
   src/hotrod/impl/transport/tcp/RoundRobinBalancingStrategy.cpp
   src/hotrod/sys/Runnable.cpp
   ${platform_sources}
+  ${CMAKE_BINARY_DIR}/Version.cpp
 )
 
 add_library (
@@ -267,7 +264,6 @@ else (WIN32)
 endif(WIN32)
 message (STATUS "Building for ${PLATFORM} on ${PACKAGE_ARCH}")
 set (CPACK_SYSTEM_NAME "${PLATFORM}-${PACKAGE_ARCH}")
-
 set (CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
 set (CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/License.txt")
 
@@ -277,3 +273,4 @@ install (FILES "${CMAKE_CURRENT_SOURCE_DIR}/License.txt" "${CMAKE_CURRENT_SOURCE
 install (TARGETS hotrod hotrod-static DESTINATION lib)
 
 include (CPack)
+
