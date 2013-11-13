@@ -17,7 +17,7 @@ class HR_EXTERN Exception : public std::exception
     virtual const char* what() const throw();
 
   private:
-    const std::string message;
+    std::string message;
 };
 
 /*
@@ -31,7 +31,7 @@ class HR_EXTERN HotRodClientException : public std::exception
     virtual ~HotRodClientException() throw();
     virtual const char* what() const throw();
   private:
-    const std::string message;
+    std::string message;
     uint64_t message_id;
     uint8_t status;
 };

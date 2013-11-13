@@ -11,11 +11,7 @@ const char* Exception::what() const throw() { return message.c_str(); }
 
 HotRodClientException::HotRodClientException(const std::string& msg) : message(msg), message_id(0), status(0) {}
 
-HotRodClientException::HotRodClientException(const std::string& msg, uint64_t message_id_, uint8_t status_) : message(msg), message_id(message_id_), status(status_) {}
-
-HotRodClientException::~HotRodClientException() throw() {}
-
-const char* HotRodClientException::what() const throw() {
+HotRodClientException::HotRodClientException(const std::string& msg, uint64_t message_id_, uint8_t status_) : message_id(message_id_), status(status_) {
     std::stringstream s;
     if (message_id > 0) {
         s << "Request for message id[" << message_id << "]";
@@ -23,8 +19,15 @@ const char* HotRodClientException::what() const throw() {
     if (status > 0) {
         s << " returned " << status;
     }
-    s << message;
-    return s.str().c_str();
+    s << msg;
+    const std::string& str = s.str();
+    message = str;
+}
+
+HotRodClientException::~HotRodClientException() throw() {}
+
+const char* HotRodClientException::what() const throw() {
+    return message.c_str();
 }
 
 TransportException::TransportException(const std::string& h, int p, const std::string& msg)
