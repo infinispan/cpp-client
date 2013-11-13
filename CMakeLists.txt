@@ -51,7 +51,7 @@ if (CMAKE_COMPILER_IS_GNUCXX)
 
   set (COMPILER_FLAGS "-fvisibility=hidden -fvisibility-inlines-hidden")
   set (WARNING_FLAGS
-        "${WERROR} -pedantic -Wall -Wextra -Wno-shadow -Wpointer-arith -Wcast-qual -Wcast-align -Wno-long-long -Wvolatile-register-var -Winvalid-pch -Wno-system-headers -Woverloaded-virtual -Wshadow")
+        "${WERROR} -pedantic -Wall -Wextra -Wno-shadow -Wpointer-arith -Wcast-qual -Wcast-align -Wno-long-long -Wvolatile-register-var -Winvalid-pch -Wno-system-headers -Woverloaded-virtual -Wshadow -Wno-variadic-macros")
   if (ENABLE_UNDEFINED_ERROR)
     set (CATCH_UNDEFINED "-Wl,--no-undefined")
   endif (ENABLE_UNDEFINED_ERROR)
