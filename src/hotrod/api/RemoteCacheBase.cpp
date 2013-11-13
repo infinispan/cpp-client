@@ -39,6 +39,10 @@ void RemoteCacheBase::init(operations::OperationsFactory* operationFactory) {
     impl->init(operationFactory);
 }
 
+const std::string& RemoteCacheBase::base_getName() {
+    return impl->getName();
+}
+
 void RemoteCacheBase::base_get(const void *key, void *buf) {
     impl->get(*this, key, buf);
 }

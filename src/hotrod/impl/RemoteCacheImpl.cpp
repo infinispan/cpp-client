@@ -175,6 +175,10 @@ void RemoteCacheImpl::getWithMetadata(RemoteCacheBase& remoteCacheBase, const vo
     metadata->maxIdle = m.maxIdle;
 }
 
+void RemoteCacheImpl::getBulk(RemoteCacheBase& remoteCacheBase, std::map<void*, void*>* mbuf) {
+    getBulk(remoteCacheBase, 0, mbuf);
+}
+
 void RemoteCacheImpl::getBulk(RemoteCacheBase& remoteCacheBase, int size, std::map<void*, void*>* mbuf) {
     assertRemoteCacheManagerIsStarted();
     hr_scoped_ptr<BulkGetOperation> gco(operationsFactory->newBulkGetOperation(size));

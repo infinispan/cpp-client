@@ -151,6 +151,10 @@ public class JniTest {
             bulkGetSimpleTest = new BulkGetSimpleTest();
             invokeMethod(bulkGetSimpleTest, "createCacheManagers");
 
+            System.out.println("=== Bulk Get Simple test - test Get Bulk ====");
+            bulkGetSimpleTest.testBulkGet();
+            System.out.println("=== Bulk Get Simple test - test Get Bulk PASSED ====");
+
             System.out.println("=== Bulk Get Simple test - test Get Bulk With Size ====");
             bulkGetSimpleTest.testBulkGetWithSize();
             System.out.println("=== Bulk Get Simple test - test Get Bulk With Size PASSED ====");

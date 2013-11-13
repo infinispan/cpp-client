@@ -332,6 +332,37 @@ public class RemoteCacheImpl<K, V> extends RemoteCacheUnsupported<K, V> {
     }
 
     @Override
+    public Map<K, V> getBulk() {
+        if (jniRemoteCache == null) {
+            return null;
+        }
+
+        final MapReturn mapReturn = jniRemoteCache.getBulk();
+        final VectorReturn vectorReturn = Hotrod.keySet(mapReturn);
+
+        Map<K, V> result = new HashMap<K, V>();
+        for (int i = 0; i < vectorReturn.size(); i++) {
+            final int index = i;
+            K key = relayedInvoker(new RelayedMethod() {
+                    @Override
+                    public Object invoke(RelayBytes... rbs) {
+                        return Hotrod.dereference(vectorReturn.get(index));
+                    }
+                });
+            V value = relayedInvoker(new RelayedMethod() {
+                    @Override
+                    public Object invoke(RelayBytes... rbs) {
+                        return Hotrod.dereference(mapReturn.get(vectorReturn.get(index)));
+                    }
+                });
+
+            result.put(key, value);
+        }
+
+        return result;
+    }
+
+    @Override
     public Map<K, V> getBulk(int size) {
         if (jniRemoteCache == null) {
             return null;

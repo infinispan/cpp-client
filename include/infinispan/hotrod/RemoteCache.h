@@ -9,6 +9,7 @@
 #include "infinispan/hotrod/MetadataValue.h"
 #include "infinispan/hotrod/TimeUnit.h"
 #include "infinispan/hotrod/VersionedValue.h"
+#include "infinispan/hotrod/Version.h"
 
 #include <cmath>
 #include <set>
@@ -24,15 +25,15 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
 {
   public:
     std::string getName() {
-	throw UnsupportedOperationException();
+        return base_getName();
     }
 
     std::string getVersion() {
-	throw UnsupportedOperationException();
+        return Version::getVersion();
     }
 
     std::string getProtocolVersion() {
-	throw UnsupportedOperationException();
+        return Version::getProtocolVersion();
     }
 
     V* get(const K& key) {
@@ -190,7 +191,7 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
     }
 
     std::map<HR_SHARED_PTR<K>, HR_SHARED_PTR<V> > getBulk() {
-	throw UnsupportedOperationException();
+        return getBulk(0);
     }
 
     std::map<HR_SHARED_PTR<K>, HR_SHARED_PTR<V> > getBulk(int nrOfEntries) {
@@ -206,7 +207,7 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
     }
 
     std::set<std::pair<K, V> > entrySet() {
-	throw UnsupportedOperationException();
+        throw UnsupportedOperationException();
     }
 
     std::set<HR_SHARED_PTR<K> > keySet() {
