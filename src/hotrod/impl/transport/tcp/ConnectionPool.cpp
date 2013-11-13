@@ -1,4 +1,5 @@
 #include "hotrod/impl/transport/tcp/ConnectionPool.h"
+#include <hotrod/sys/Log.h>
 
 namespace infinispan {
 namespace hotrod {
@@ -122,12 +123,12 @@ void ConnectionPool::clear(const InetSocketAddress& key, TransportQueuePtr queue
 }
 
 void ConnectionPool::checkIdle() {
-    std::cout << "Ensuring idle connection limits" << std::endl;
+    DEBUG("Ensuring idle connection limits");
     // TODO
 }
 
 void ConnectionPool::testIdle() {
-    std::cout << "Testing idle connections" << std::endl;
+    DEBUG("Testing idle connections");
     // TODO
 }
 

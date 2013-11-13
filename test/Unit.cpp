@@ -3,6 +3,7 @@
 #include <hotrod/sys/Mutex.h>
 #include <hotrod/sys/Condition.h>
 #include <hotrod/sys/RunOnce.h>
+#include <hotrod/sys/Log.h>
 #include "hotrod/impl/transport/tcp/InetSocketAddress.h"
 
 #include <iostream>
@@ -26,7 +27,7 @@ class Sleeper : public Runnable {
     void run() {
         Thread::sleep(sleepTime);
         status = 1;
-        std::cout << me << " done" << std::endl;
+        INFO("%s done", me.c_str());
     }
   private:
     std::string me;
@@ -38,20 +39,20 @@ class Sleeper : public Runnable {
 void threadTest() {
     int st1 = 0;
     int st2 = 0;
-    std::cout << "starting threads" << std::endl;
+    INFO("starting threads");
     Sleeper s1("sleeper 1", 500, st1);
     Sleeper s2("sleeper 2", 1500, st2);
     Thread t1((Runnable &) s1);
     Thread t2((Runnable &) s2);
     if ((st1 != 0) || (st2 != 0)) {
         passFail = 1;
-        std::cerr << "initial sleep fail" << std::endl;
+        ERROR("initial sleep fail");
     }
     t1.join();
     t2.join();
     if ((st1 != 1) || (st2 != 1)) {
         passFail = 1;
-        std::cerr << "post yield status fail (" << st1 << ") (" << st2 << ")" << std::endl;
+        ERROR("post yield status fail (%d) (%d)", st1, st2);
     }
     return;
 }
@@ -65,11 +66,11 @@ class Waiter : public Runnable {
             passFail = 5;
             // test is expected to timeout
             if (condition.wait(lock, 2000000)) {
-                std::cout << me << " timed waiter fail" << std::endl;
+                ERROR("%s timed waiter fail", me.c_str());
                 return;
             }
             passFail = 0;
-            std::cout << me << " timed waiter pass" << std::endl;
+            INFO("%s timed waiter pass", me.c_str());
             return;
         }
 
@@ -79,7 +80,7 @@ class Waiter : public Runnable {
                 return;
             if (available > 0) {
                 available--;
-                std::cout << me << " consumed one" << std::endl;
+                INFO("%s consumed one", me.c_str());
                 ScopedUnlock<Mutex> ul(lock);
                 Thread::sleep(100);
             }
@@ -99,7 +100,7 @@ class Waiter : public Runnable {
 void syncTest() {
     Mutex lock;
     Condition condition;
-    std::cout << "starting sync threads" << std::endl;
+    INFO("starting sync threads");
     Waiter tw("timed waiter", lock, condition, true);
     Waiter w1("waiter1", lock, condition, false);
     Waiter w2("waiter2", lock, condition, false);
@@ -124,10 +125,10 @@ void syncTest() {
         ScopedLock<Mutex> l(lock);
         if (available != 0) {
             passFail = 1;
-            std::cerr << "single notify fail" << std::endl;
+            ERROR("single notify fail");
             return;
         }
-        std::cout << "single notify pass" << std::endl;
+        INFO("single notify pass");
         available = 5;
         condition.notifyAll();
     }
@@ -137,7 +138,7 @@ void syncTest() {
         ScopedLock<Mutex> l(lock);
         if (available != 0) {
             passFail = 1;
-            std::cerr << "notifyAll fail" << std::endl;
+            ERROR("notifyAll fail");
             return;
         }
         waitersDone = true;
@@ -146,7 +147,7 @@ void syncTest() {
 
     t1.join();
     t2.join();
-    std::cout << "Sync test passed" << std::endl;
+    INFO("Sync test passed");
     return;
 }
 
@@ -177,18 +178,18 @@ class UseTestInit : public Runnable {
   public:
     UseTestInit(std::string name) : me(name) {}
     void run() {
-        std::cout << me << " starting" << std::endl;
+        INFO("%s starting", me.c_str());
         testInitializer.runOnce();
         // no thread should see 0 or >1
         if (testInitStatus != 1) passFail = 1;
-        std::cout << me << " done" << std::endl;
+        INFO("%s done", me.c_str());
     }
   private:
     std::string me;
 };
 
 void runOnceTest() {
-    std::cout << "starting once test" << std::endl;
+    INFO("starting once test");
     UseTestInit r1("run once worker 1");
     UseTestInit r2("run once worker 2");
     Thread t1((Runnable &) r1);
@@ -196,10 +197,11 @@ void runOnceTest() {
     t1.join();
     t2.join();
     if (testInitStatus != 1) passFail = 1;
-    if (passFail == 1)
-        std::cerr << "RunOnce test failed " << testInitStatus << std::endl;
-    else
-        std::cout << "RunOnce test passed" << std::endl;
+    if (passFail == 1) {
+        ERROR("RunOnce test failed %d", testInitStatus);
+    } else {
+        INFO("RunOnce test passed");
+    }
     return;
 }
 
@@ -246,7 +248,7 @@ void testTopologyChangeResponse() {
     //iterate over vector of InetSocketAddress and print them out
     for (std::vector<InetSocketAddress>::const_iterator it =
             socketAddresses.begin(); it != socketAddresses.end(); ++it) {
-        std::cout << it->getAddress() << std::endl;
+        INFO("%s", it->getAddress().c_str());
     }
 
     //create duplicate reference from above
@@ -260,9 +262,7 @@ void testTopologyChangeResponse() {
         if(hashesPtr->size() != 2) passFail =1;;
         std::set<int32_t>::iterator iter;
         for (iter = hashesPtr->begin(); iter != hashesPtr->end(); ++iter) {
-            std::cout << "For " << desired_host.getAddress() << ":"
-                    << desired_host.getPort() << " found hash " << *iter
-                    << std::endl;
+            INFO("For %s:%d found hash %d", desired_host.getAddress().c_str(), desired_host.getPort(), *iter);
         }
     }
 
@@ -275,13 +275,11 @@ void testTopologyChangeResponse() {
         if(hashesPtr->size() != 1) passFail =1;
         std::set<int32_t>::iterator iter3;
         for (iter3 = hashesPtr->begin(); iter3 != hashesPtr->end(); ++iter3) {
-            std::cout << "For " << desired_host2.getAddress() << ":"
-                    << desired_host2.getPort() << " found hash " << *iter3
-                    << std::endl;
+            INFO("For %s:%d found hash %d", desired_host2.getAddress().c_str(), desired_host2.getPort(), *iter3);
         }
     }
     if(map.size() != 9) passFail =1;
-    std::cout << "testTopologyChangeResponse tests passed" << std::endl;
+    INFO("testTopologyChangeResponse tests passed");
 }
 
 std::pair<std::vector<InetSocketAddress>,std::vector<InetSocketAddress> > updateServers(std::vector<InetSocketAddress>& newServers, std::vector<InetSocketAddress>& servers) {
@@ -307,7 +305,7 @@ std::pair<std::vector<InetSocketAddress>,std::vector<InetSocketAddress> > update
 
     //1. first add new servers. For servers that went down, the returned transport will fail for now
     for(std::vector<InetSocketAddress>::const_iterator it = addedServers.begin();it != addedServers.end();++it){
-       std::cout << "Adding to pool " << it->getAddress() << std::endl;
+       INFO("Adding to pool %s", it->getAddress().c_str());
     }
 
     //2. now set the server list to the active list of servers. All the active servers (potentially together with some
@@ -317,7 +315,7 @@ std::pair<std::vector<InetSocketAddress>,std::vector<InetSocketAddress> > update
 
     //3. Now just remove failed servers
     for (std::vector<InetSocketAddress>::const_iterator it = failedServers.begin(); it != failedServers.end(); ++it) {
-        std::cout << "Clearing pool with " << it->getAddress() << std::endl;
+        INFO("Clearing pool with %s", it->getAddress().c_str());
     }
 
     //servers.clear();
@@ -360,8 +358,9 @@ int main(int, char**) {
     if (res.first.size() != 2 || res.second.size() != 1) {
         passFail = 1;
     }
-    if (passFail == 0)
-        std::cout << "updateServers passed" << std::endl;
+    if (passFail == 0) {
+        INFO("updateServers passed");
+    }
 
     return passFail;
 }
