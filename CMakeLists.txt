@@ -102,10 +102,7 @@ else(HOTROD_WINAPI)
            src/hotrod/sys/posix/platform.cpp src/hotrod/sys/posix/Mutex.cpp)
 endif(HOTROD_WINAPI)
 
-
-
-add_library (
-  hotrod SHARED
+set (library_sources
   src/hotrod/api/RemoteCacheManager.cpp
   src/hotrod/api/RemoteCacheBase.cpp
   src/hotrod/api/exceptions.cpp
@@ -158,12 +155,29 @@ add_library (
   src/hotrod/impl/transport/tcp/RoundRobinBalancingStrategy.cpp
   src/hotrod/sys/Runnable.cpp
   ${platform_sources}
-  )
-target_link_libraries (hotrod ${platform_libs})
+)
+
+add_library (
+  hotrod SHARED
+  ${library_sources}
+)
+target_link_libraries (
+  hotrod ${platform_libs}
+)
 set_target_properties (
   hotrod
   PROPERTIES
   LINK_FLAGS "${CATCH_UNDEFINED}")
+
+add_library (
+  hotrod-static STATIC
+  ${library_sources}
+)
+set_target_properties(
+  hotrod-static
+  PROPERTIES
+  COMPILE_FLAGS -DHOTROD_DECLARE_STATIC
+)
 
 
 # TESTS
@@ -242,6 +256,6 @@ set (CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/License.txt")
 file (GLOB includes "${CMAKE_CURRENT_SOURCE_DIR}/include/infinispan/hotrod/*.h")
 install (FILES ${includes} DESTINATION include/infinispan/hotrod)
 install (FILES "${CMAKE_CURRENT_SOURCE_DIR}/License.txt" "${CMAKE_CURRENT_SOURCE_DIR}/dist/README.md" DESTINATION .)
-install (TARGETS hotrod DESTINATION lib)
+install (TARGETS hotrod hotrod-static DESTINATION lib)
 
 include (CPack)
