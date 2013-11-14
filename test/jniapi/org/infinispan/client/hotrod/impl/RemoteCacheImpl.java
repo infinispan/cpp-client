@@ -8,7 +8,6 @@ import static org.infinispan.client.hotrod.jni.JniHelper.releaseJvmBytes;
 import static org.infinispan.client.hotrod.jni.JniHelper.setJvmBytes;
 import static org.infinispan.client.hotrod.jni.JniHelper.timeunitToSwig;
 
-import java.io.IOException;
 import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -37,12 +36,12 @@ public class RemoteCacheImpl<K, V> extends RemoteCacheUnsupported<K, V> {
     private Marshaller marshaller;
     private RemoteCache_jb_jb jniRemoteCache;
 
-    public RemoteCacheImpl(RemoteCacheManager manager, String name) {
+    public RemoteCacheImpl(RemoteCacheManager manager, String name, boolean forceReturnValue) {
         this.marshaller = manager.getMarshaller();
         if (name == null) {
-            this.jniRemoteCache = Hotrod.getJniRelayCache(manager.getJniManager());
+            this.jniRemoteCache = Hotrod.getJniRelayCache(manager.getJniManager(), forceReturnValue);
         } else {
-            this.jniRemoteCache = Hotrod.getJniRelayNamedCache(manager.getJniManager(), name);
+            this.jniRemoteCache = Hotrod.getJniRelayNamedCache(manager.getJniManager(), name, forceReturnValue);
         }
     }
 

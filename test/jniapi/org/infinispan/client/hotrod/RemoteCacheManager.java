@@ -47,15 +47,19 @@ public class RemoteCacheManager /* implements BasicCacheContainer */{
     }
 
     public <K, V> org.infinispan.client.hotrod.RemoteCache<K, V> getCache() {
-        return new org.infinispan.client.hotrod.impl.RemoteCacheImpl<K, V>(this, "");
+        return new org.infinispan.client.hotrod.impl.RemoteCacheImpl<K, V>(this, "", false);
     }
 
-    public <K, V> org.infinispan.client.hotrod.RemoteCache<K, V> getNativeCache() {
-        return new org.infinispan.client.hotrod.impl.RemoteCacheImpl<K, V>(this, "native");
+    public <K, V> org.infinispan.client.hotrod.RemoteCache<K, V> getCache(boolean forceReturnValue) {
+        return new org.infinispan.client.hotrod.impl.RemoteCacheImpl<K, V>(this, "", forceReturnValue);
     }
 
     public <K, V> org.infinispan.client.hotrod.RemoteCache<K, V> getCache(String cacheName) {
-        return new org.infinispan.client.hotrod.impl.RemoteCacheImpl<K, V>(this, cacheName);
+        return new org.infinispan.client.hotrod.impl.RemoteCacheImpl<K, V>(this, cacheName, false);
+    }
+
+    public <K, V> org.infinispan.client.hotrod.RemoteCache<K, V> getCache(String cacheName, boolean forceReturnValue) {
+        return new org.infinispan.client.hotrod.impl.RemoteCacheImpl<K, V>(this, cacheName, forceReturnValue);
     }
 
     public Marshaller getMarshaller() {

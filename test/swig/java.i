@@ -89,13 +89,8 @@
 %include "infinispan/hotrod/RemoteCache.h"
 %include "infinispan/hotrod/Marshaller.h"
 
-
-
-%template(RemoteCache_str_str) infinispan::hotrod::RemoteCache<std::string, std::string>;
 // One class to pass bytes between the JVM and the native classes
 // For the exclusive use of Relay marshalling
-
-
 
 %ignore RelayBytes::setNative;
 %ignore RelayBytes::setJvm;
@@ -186,10 +181,8 @@ class RelayMarshaller: public infinispan::hotrod::Marshaller<RelayBytes> {
 
 %}
 
-infinispan::hotrod::RemoteCache<RelayBytes, RelayBytes>* getJniRelayCache(infinispan::hotrod::RemoteCacheManager& mgr);
-infinispan::hotrod::RemoteCache<std::string, std::string>* getStrStrCache(infinispan::hotrod::RemoteCacheManager& mgr);
-infinispan::hotrod::RemoteCache<RelayBytes, RelayBytes>* getJniRelayNamedCache(infinispan::hotrod::RemoteCacheManager& mgr, std::string name);
-infinispan::hotrod::RemoteCache<std::string, std::string>* getStrStrNamedCache(infinispan::hotrod::RemoteCacheManager& mgr, std::string name);
+infinispan::hotrod::RemoteCache<RelayBytes, RelayBytes>* getJniRelayCache(infinispan::hotrod::RemoteCacheManager& mgr, bool forceReturnValue);
+infinispan::hotrod::RemoteCache<RelayBytes, RelayBytes>* getJniRelayNamedCache(infinispan::hotrod::RemoteCacheManager& mgr, std::string name, bool forceReturnValue);
 
 %{
 using infinispan::hotrod::Marshaller;
@@ -202,21 +195,19 @@ using infinispan::hotrod::RemoteCacheManager;
 
 class RelayCacheBlob {
   public:
-     RelayCacheBlob(RemoteCacheManager &m) : 
+     RelayCacheBlob(RemoteCacheManager &m, bool forceReturnValue) : 
        keyMarshaller(new RelayMarshaller()),
        valueMarshaller(new RelayMarshaller()),
-       cache(m.getCache<RelayBytes, RelayBytes>(keyMarshaller, valueMarshaller)) {}
-       
-     RelayCacheBlob(RemoteCacheManager &m, std::string &name) : 
+       cache(m.getCache<RelayBytes, RelayBytes>(keyMarshaller, valueMarshaller, forceReturnValue)) {}
+
+     RelayCacheBlob(RemoteCacheManager &m, std::string &name, bool forceReturnValue) : 
        keyMarshaller(new RelayMarshaller()),
        valueMarshaller(new RelayMarshaller()),
-       cache(m.getCache<RelayBytes, RelayBytes>(keyMarshaller, valueMarshaller, name)) {}
+       cache(m.getCache<RelayBytes, RelayBytes>(keyMarshaller, valueMarshaller, name, forceReturnValue)) {}
 
      RemoteCache<RelayBytes, RelayBytes> *getCache() {
-	 return &cache;
+       return &cache;
      }
-     
-     
 
   private:
      HR_SHARED_PTR<Marshaller<RelayBytes> > keyMarshaller;
@@ -225,41 +216,13 @@ class RelayCacheBlob {
 };
 
 
-RemoteCache<RelayBytes, RelayBytes>* getJniRelayCache(RemoteCacheManager& mgr) {
-    RelayCacheBlob *p = new RelayCacheBlob(mgr); // leak (test only): TODO: blob cleanup
+RemoteCache<RelayBytes, RelayBytes>* getJniRelayCache(RemoteCacheManager& mgr, bool forceReturnValue) {
+    RelayCacheBlob *p = new RelayCacheBlob(mgr, forceReturnValue); // leak (test only): TODO: blob cleanup
     return p->getCache();
 }
 
-RemoteCache<RelayBytes, RelayBytes>* getJniRelayNamedCache(RemoteCacheManager& mgr, std::string name) {
-    RelayCacheBlob *p = new RelayCacheBlob(mgr, name); // leak (test only): TODO: blob cleanup
-    return p->getCache();
-}
-
-
-class StrCacheBlob {
-  public:
-     StrCacheBlob(RemoteCacheManager &m) : 
-       cache(m.getCache<std::string, std::string>()) {}
-     
-     StrCacheBlob(RemoteCacheManager &m, std::string &name) : 
-       cache(m.getCache<std::string, std::string>(name)) {}
-
-     RemoteCache<std::string, std::string> *getCache() {
-	 return &cache;
-     }
-
-  private:
-     RemoteCache<std::string, std::string> cache;
-};
-
-
-RemoteCache<std::string, std::string>* getStrStrCache(RemoteCacheManager& mgr) {
-    StrCacheBlob *p = new StrCacheBlob(mgr); // leak (test only): TODO: blob cleanup
-    return p->getCache();
-}
-
-RemoteCache<std::string, std::string>* getStrStrNamedCache(RemoteCacheManager& mgr, std::string name) {
-    StrCacheBlob *p = new StrCacheBlob(mgr, name); // leak (test only): TODO: blob cleanup
+RemoteCache<RelayBytes, RelayBytes>* getJniRelayNamedCache(RemoteCacheManager& mgr, std::string name, bool forceReturnValue) {
+    RelayCacheBlob *p = new RelayCacheBlob(mgr, name, forceReturnValue); // leak (test only): TODO: blob cleanup
     return p->getCache();
 }
 
