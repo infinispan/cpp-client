@@ -55,7 +55,7 @@ namespace {
 // TODO: centralized hotrod exceptions file name + line number
 void throwIOErr (const std::string& host, int port, const char *msg, int errnum) {
     std::string m(msg);
-    if (errno != 0) {
+    if (errnum != 0) {
         char buf[200];
         if (strerror_r(errnum, buf, 200) == 0) {
             m += " ";
@@ -126,9 +126,17 @@ void Socket::connect(const std::string& h, int p, int timeout) {
             s = poll(fds, 1, timeout);
 
             if (s > 0) {
+                if ((POLLOUT ^ fds[0].revents) != 0) {
+                    close();
+                    throwIOErr(host, port, "Connection failed.", 0);
+                }
+
                 int opt;
                 socklen_t optlen = sizeof(opt);
                 s = getsockopt(sock, SOL_SOCKET, SO_ERROR, (void*)(&opt), &optlen);
+            } else if (s == 0) {
+                close();
+                throwIOErr(host, port, "Connection timed out.", 0);
             } else {
                 error = errno;
             }

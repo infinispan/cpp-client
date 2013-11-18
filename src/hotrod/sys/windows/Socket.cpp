@@ -37,7 +37,7 @@ namespace {
 // TODO: centralized hotrod exceptions with file name and line number
 void throwIOErr (const std::string& host, int port, const char *msg, int errnum) {
     std::string m(msg);
-    if (errno != 0) {
+    if (errnum != 0) {
         char buf[200];
         if (strerror_s(buf, 200, errnum) == 0) {
             m += " ";
@@ -110,6 +110,9 @@ void Socket::connect(const std::string& h, int p, int timeout) {
                 int opt;
                 socklen_t optlen = sizeof(opt);
                 s = getsockopt(sock, SOL_SOCKET, SO_ERROR, (char *)(&opt), &optlen);
+            } else if (s == 0) {
+                close();
+                throwIOErr(host, port, "Connection timed out.", 0);
             } else {
                 error = WSAGetLastError();
             }
