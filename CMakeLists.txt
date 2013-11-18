@@ -178,19 +178,17 @@ set_target_properties(
 
 # API DOCS -- use target docs (i.e. make docs) from build directory to make api docs
 # Toggle BUILD_DOCS to turn on/off the generation of the API documentation
-option(BUILD_DOCS "Use Doxygen to create the HTML based API documentation" OFF)
-if(BUILD_DOCS)
-  FIND_PACKAGE(Doxygen)
-  if (NOT DOXYGEN_FOUND)
-    message(FATAL_ERROR "Doxygen is needed to build the documentation. Please install doxygen!")
-  endif()
+FIND_PACKAGE(Doxygen)
+if (DOXYGEN_FOUND)
   #-- Configure the Template Doxyfile for our specific project
   configure_file(Doxyfile.in
                  ${PROJECT_BINARY_DIR}/Doxyfile  @ONLY IMMEDIATE)
   #-- Add a custom target to run Doxygen when ever the project is built
-  add_custom_target (docs
+  add_custom_target (docs ALL
                      COMMAND ${DOXYGEN_EXECUTABLE} ${PROJECT_BINARY_DIR}/Doxyfile
                      SOURCES ${PROJECT_BINARY_DIR}/Doxyfile)
+  #Include the API docs in the package.
+  install (FILES ${CMAKE_BINARY_DIR}/api_docs/html/ DESTINATION docs/api)
 endif()
 
 # TESTS
