@@ -61,7 +61,7 @@ class HR_EXTERN ConfigurationBuilder
     ConnectionPoolConfigurationBuilder& connectionPool();
 
     /**
-     * Configures underlying TCP connection timeout.
+     * Configures underlying TCP connection timeout. Default is 60000 msec
      *
      *\return ConfigurationBuilder instance to be used for configuration
      */
@@ -69,21 +69,22 @@ class HR_EXTERN ConfigurationBuilder
 
     /**
      * Configures whether or not to force returning values on all cache operations
-     * that optionally return a value.
+     * that optionally return a value. Default is false.
      *
      *\return ConfigurationBuilder instance to be used for configuration
      */
     ConfigurationBuilder& forceReturnValues(bool forceReturnValues_);
 
     /**
-     * Sets the marshalled size estimate for keys in the remote cache.
+     * Sets the marshalled size estimate for keys in the remote cache. Default is 64 bytes.
      *
      *\return ConfigurationBuilder instance to be used for further configuration
      */
     ConfigurationBuilder& keySizeEstimate(int keySizeEstimate_);
 
     /**
-     * Sets whether to ping remote HotRod Infinispan servers before any cache operations are initiated.
+     * Sets whether to ping remote HotRod Infinispan servers before any cache
+     * operations are initiated. Default is true.
      *
      *\return ConfigurationBuilder instance to be used for further configuration
      */
@@ -92,7 +93,7 @@ class HR_EXTERN ConfigurationBuilder
     /**
      * Sets the protocol version for this ConfigurationBuilder. Protocol version is either:
      * Configuration::PROTOCOL_VERSION_10 or Configuration::PROTOCOL_VERSION_11 or
-     * Configuration::PROTOCOL_VERSION_12
+     * Configuration::PROTOCOL_VERSION_12. Default is PROTOCOL_VERSION_12.
      *
      *\return ConfigurationBuilder instance to be used for further configuration
      */
@@ -100,6 +101,7 @@ class HR_EXTERN ConfigurationBuilder
 
     /**
      * Sets the socket timeout for the underlying connections in this ConfigurationBuilder.
+     * Default is 60000 msec.
      *
      *\return ConfigurationBuilder instance to be used for further configuration
      */
@@ -113,14 +115,14 @@ class HR_EXTERN ConfigurationBuilder
     SslConfigurationBuilder& ssl();
 
     /**
-     * Set tcpNoDelay for this ConfigurationBuilder.
+     * Set tcpNoDelay for this ConfigurationBuilder. Default is true.
      *
      *\return ConfigurationBuilder instance to be used for further configuration
      */
     ConfigurationBuilder& tcpNoDelay(bool tcpNoDelay_);
 
     /**
-     * Sets the marshalled estimate of the values in this cache.
+     * Sets the marshalled estimate of the values in this cache. Default is 512 bytes.
      *
      *\return ConfigurationBuilder instance to be used for further configuration
      */

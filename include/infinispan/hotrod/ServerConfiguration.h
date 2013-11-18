@@ -14,7 +14,11 @@
 namespace infinispan {
 namespace hotrod {
 
-
+/**
+ * ServerConfiguration along with its factory ServerConfigurationBuilder provide
+ * configuration of remote HotRod servers C++ clients communicate with.
+ *
+ */
 class HR_EXTERN ServerConfiguration
 {
   public:
@@ -22,7 +26,18 @@ class HR_EXTERN ServerConfiguration
     ServerConfiguration(std::string host,
         int port);
 
+	/**
+	 * Returns host of this ServerConfiguration
+	 *
+	 * \return host as a string reference
+	 */
     const std::string& getHost() const;
+
+    /**
+    	 * Returns port of this ServerConfiguration
+    	 *
+    	 * \return port as an in reference
+    	 */
     const int& getPort() const;
 
   private:

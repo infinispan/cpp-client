@@ -4,6 +4,11 @@
 namespace infinispan {
 namespace hotrod {
 
+/**
+ * A convenient enumeration of various time units used
+ * mostly when inserting key/value pairs in RemoteCache.
+ *
+ */
 enum TimeUnit
 {
     NANOSECONDS,

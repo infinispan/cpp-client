@@ -45,22 +45,21 @@ with ConfigurationBuilder API to configure a RemoteCacheManager instance and in 
 instance interacting with a remote Hot Rod server. Note the most important C++ Hot Rod includes as 
 well.       
 
-[source, C/C++]
+.SimpleMain.cpp
 ----
 #include "infinispan/hotrod/ConfigurationBuilder.h"
 #include "infinispan/hotrod/RemoteCacheManager.h"
 #include "infinispan/hotrod/RemoteCache.h"
-
 #include <stdlib.h>
 
 using namespace infinispan::hotrod;
 
 int main(int argc, char** argv) {
-    ConfigurationBuilder builder;
-    builder.addServer().host(argc > 1 ? argv[1] : "127.0.0.1").port(argc > 2 ? atoi(argv[2]) : 11222);
-    RemoteCacheManager cacheManager(builder.build(), false);
-    RemoteCache<std::string, std::string> cache = cacheManager.getCache<std::string, std::string>();
-    cacheManager.start();
+    ConfigurationBuilder b;
+    b.addServer().host(argc>1?argv[1]:"127.0.0.1").port(argc>2?atoi(argv[2]):11222);
+    RemoteCacheManager cm(builder.build(), false);
+    RemoteCache<std::string, std::string> cache = cm.getCache<std::string, std::string>();
+    cm.start();
     return 0;
 }
 ----
@@ -77,27 +76,26 @@ others methods such as iterating key/value pairs, bulk get operations, clear met
 After interaction with a remote server is completed all related client resources are reclaimed once 
 RemoteCacheManager is stopped. 
 
-[source, C/C++]
+.SimpleMain.cpp
 ----
-    ..
-    RemoteCache<std::string, std::string> cache = cacheManager.getCache<std::string, std::string>();
-    cacheManager.start();
+    RemoteCache<std::string, std::string> rc = cm.getCache<std::string, std::string>();
+    cm.start();
 
     std::string k1("key13");   
     std::string v1("boron");
 
     // put
-    cache.put(k1, v1);
-    std::auto_ptr<std::string> rv(cache.get(k1));
+    rc.put(k1, v1);
+    std::auto_ptr<std::string> rv(rc.get(k1));
     
-    cache.putIfAbsent(k1, v1);
-    std::auto_ptr<std::string> rv2(cache.get(k1));
+    rc.putIfAbsent(k1, v1);
+    std::auto_ptr<std::string> rv2(rc.get(k1));
     
-    std::map<HR_SHARED_PTR<std::string>,HR_SHARED_PTR<std::string> > map = cache.getBulk(0);
+    std::map<HR_SHARED_PTR<std::string>,HR_SHARED_PTR<std::string> > map = rc.getBulk(0);
     std::cout << "getBulk size" << map.size() << std::endl;
     ..
     .
-    cacheManager.stop();
+    cm.stop();
 ---- 
 
 == Contributing back
