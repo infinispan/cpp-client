@@ -6,6 +6,7 @@
 #include "hotrod/impl/transport/tcp/InetSocketAddress.h"
 #include "hotrod/impl/consistenthash/ConsistentHash.h"
 #include "hotrod/impl/consistenthash/ConsistentHashFactory.h"
+#include "hotrod/sys/Log.h"
 
 #include <set>
 #include <map>
@@ -38,7 +39,8 @@ std::map<InetSocketAddress, std::set<int32_t> > Codec11::computeNewHashes(
     if (hashFunctionVersion != 0) {
         ch = transport.getTransportFactory().getConsistentHashFactory().newConsistentHash(hashFunctionVersion);
     } else {
-        //TODO log this
+        ch = 0;
+        WARN("Could not obtain a consistent hash for version %d", hashFunctionVersion);
     }
 
     for (uint32_t i = 0; i < clusterSize; i++) {
