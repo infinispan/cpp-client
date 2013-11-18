@@ -16,7 +16,15 @@
 
 %include "std_pair.i"
 
-
+%exception {
+    try {
+        $action
+    } catch (const std::exception& e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    } catch (...) {
+      SWIG_exception(SWIG_RuntimeError, "C++ unknown exception thrown");
+    }
+}
 
 //#define HR_SHARED_PTR std::tr1::shared_ptr
 
