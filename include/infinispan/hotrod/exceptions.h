@@ -20,8 +20,9 @@ class HR_EXTERN Exception : public std::exception
     std::string message;
 };
 
-/*
- * FIXME: We should really extend Exception, but apparently g++ is losing specific typeinfo across the shared library boundary
+/**
+ * Main Exception class thrown to indicate exceptions using HotRod client
+ *
  */
 class HR_EXTERN HotRodClientException : public std::exception
 {
@@ -36,6 +37,11 @@ class HR_EXTERN HotRodClientException : public std::exception
     uint8_t status;
 };
 
+/**
+ * TransportException indicating TCP communication exceptions with
+ * remote Hot Rod servers
+ *
+ */
 class HR_EXTERN TransportException : public HotRodClientException
 {
   public:
@@ -49,30 +55,54 @@ class HR_EXTERN TransportException : public HotRodClientException
     int port;
 };
 
+/**
+ * InvalidResponseException as it name implies indicates situations when some form of
+ * invalid response is received from a remote Hot Rod server.
+ *
+ */
 class HR_EXTERN InvalidResponseException : public HotRodClientException
 {
   public:
     InvalidResponseException(const std::string&);
 };
 
+/**
+ * RemoteNodeSuspectException as it name implies indicates situations when a remote
+ * Hot Rod server is not reachable.
+ *
+ */
 class HR_EXTERN RemoteNodeSuspectException : public HotRodClientException
 {
   public:
     RemoteNodeSuspectException(const std::string&, uint64_t message_id, uint8_t status);
 };
 
+/**
+ * InternalException
+ *
+ */
 class HR_EXTERN InternalException : public HotRodClientException
 {
   public:
     InternalException(const std::string&);
 };
 
+/**
+ * RemoteCacheManagerNotStartedException is throw when invocations on a RemoteCache
+ * are initiated while the underlying RemoteCacheManager has not been started previous to
+ * those invocations.
+ *
+ */
 class HR_EXTERN RemoteCacheManagerNotStartedException : public HotRodClientException
 {
   public:
     RemoteCacheManagerNotStartedException(const std::string&);
 };
 
+/**
+ * UnsupportedOperationException is thrown for uncompleted/planned Hot Rod client features.
+ *
+ */
 struct HR_EXTERN UnsupportedOperationException : public HotRodClientException
 {
 	UnsupportedOperationException();

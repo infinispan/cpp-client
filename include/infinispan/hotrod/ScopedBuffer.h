@@ -9,11 +9,11 @@ namespace infinispan {
 namespace hotrod {
 
 /*
- * A semi-smart ptr object to hold intermediate marshalled data in the
+ * A semi-smart pointer object to hold intermediate marshalled data in the
  * lifetime of a block.  For default case, the bytes are "owned" by
- * the scope and freed when the dtor is called on block exit.  Not for
+ * the scope and freed when the destructor is called on block exit.  Not for
  * general use.  Intended for short lived serialized bytes passed
- * between a marshaller and Hot Rod.  TODO: better name.
+ * between a marshaller and Hot Rod.
  */
 
 class ScopedBuffer

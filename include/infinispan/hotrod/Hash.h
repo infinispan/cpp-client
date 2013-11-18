@@ -6,7 +6,14 @@
 
 namespace infinispan {
 namespace hotrod {
-
+/**
+ * Consistent hashing interface. Two implementations are provided by default,
+ * MurmurHash2 and MurmurHash3. Clients are not expected to provide
+ * additional implementations.
+ *
+ *
+ * See https://sites.google.com/site/murmurhash/ for more details.
+ */
 class HR_EXTERN Hash {
 public:
     virtual ~Hash() {};
