@@ -3,6 +3,7 @@
 
 #include "infinispan/hotrod/ImportExport.h"
 #include "hotrod/sys/Mutex.h"
+#include "hotrod/sys/Path.h"
 #include <stdexcept>
 #include <iostream>
 #include <stdarg.h>
@@ -63,7 +64,13 @@ class HR_EXTERN Log
         char buf[2048];
         vsnprintf(buf, 2048, format, vl);
         ScopedLock<Mutex> sl(lock);
-        std::cerr << level << "[" << (const char *)(strrchr(fname, '/')+1) << ":" << lineno << "] " << buf << std::endl;
+
+        const char* pfname = strrchr(fname, PATH_SEP);
+        if (pfname == NULL) {
+          /* Use the full fname if no separator is found. */
+          pfname = fname;
+        }
+        std::cerr << level << "[" << (const char *)(pfname + 1) << ":" << lineno << "] " << buf << std::endl;
     }
 };
 
@@ -78,3 +85,4 @@ class HR_EXTERN Log
 static infinispan::hotrod::sys::Log logger;
 
 #endif  /* ISPN_HOTROD_LOG_H */
+
