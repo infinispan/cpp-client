@@ -9,13 +9,18 @@ For more information, please refer to [the documentation of this client library]
 ## Build ##
 Build prerequisites: 
 
-    CMake 2.8 (2.6 may work except for swig subset)
-    C++03 plus shared_ptr TR1 support.
-    Infinispan server distribution (located via JBOSS_HOME or cmake directive)
-    Java (any version compatible with the Infinispan distribution)
-    Python 2.6 or newer
+* CMake 2.8 (2.6 may work except for swig subset)
+* C++03 plus shared_ptr TR1 support.
+* Infinispan server distribution (located via JBOSS_HOME or cmake directive)
+* Java (any version compatible with the Infinispan distribution)
+* Python 2.6 or newer
   
-optional: SWIG, Doxygen
+optional: Doxygen
+
+Components needed to use swig tests: 
+* Apache Ant 1.8.x (http://ant.apache.org/)
+* Apache Ivy 2.3.x (http://ant.apache.org/ivy/)
+* SWIG 2.0.x (http://www.swig.org/)
 
 On Linux, use the package manager for your distribution to install the
 necessary packages.  You may have to point to a special repository,
@@ -25,10 +30,9 @@ On Windows, Visual Studio 2008 + SP1, or any newer version, is
 required.  You can obtain Windows installable distributions of other
 needed software from:
 
-    http://www.python.org/download/releases/
-    http://www.swig.org/download.html
-    http://www.cmake.org/cmake/resources/software.html
-  
+* http://www.python.org/download/releases/
+* http://www.swig.org/download.html
+* http://www.cmake.org/cmake/resources/software.html
 
 To build (where "srcdir" is the directory containg this README):
 
@@ -43,26 +47,3 @@ Platforms with makefiles and Valgrind may have additional targets:
     make test
     make memtest
     make memtestv
-
-## Test with SWIG ##
-The Java swig module is experimental and tested on Linux only.
-
-Components needed to use swig tests: 
-Apache Ant 1.8.x (http://ant.apache.org/), Apache Ivy 2.3.x (http://ant.apache.org/ivy/) and SWIG 2.0.x (http://www.swig.org/)
-
-For building the JNI libraries and uncomment, in the top level CMakeLists.txt file, the line:
-
-  #add_subdirectory(test/swig)
-  
-  build the project as described above.
-  
-  cd srcdir/test
-  
-  ant resolve
-  
-  cd srcdir
-  
-  ./sandbox/mkjar.sh
-
-Use the run_jni.sh script in srcdir/jnitmp to run jni tests.
-
