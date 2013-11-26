@@ -60,7 +60,7 @@ endif (MSVC)
 if (NOT DEFINED COMPILER_FLAGS)
     message(FATAL_ERROR "Compiler flags not set for this build type")
 endif (NOT DEFINED COMPILER_FLAGS)
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMPILER_FLAGS} ${WARNING_FLAGS}")
+#set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMPILER_FLAGS} ${WARNING_FLAGS}")
 
 if(WIN32 AND NOT CYGWIN)
   # linking against Windows native libraries, including mingw
@@ -154,42 +154,15 @@ set (library_sources
   ${CMAKE_BINARY_DIR}/Version.cpp
 )
 
-add_library (
-  hotrod SHARED
-  ${library_sources}
-)
-target_link_libraries (
-  hotrod ${platform_libs}
-)
-set_target_properties (
-  hotrod
-  PROPERTIES
-  LINK_FLAGS "${CATCH_UNDEFINED}")
+# Build a shared library
+add_library (hotrod SHARED ${library_sources})
+target_link_libraries (hotrod ${platform_libs})
+set_target_properties (hotrod PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS}")
+set_target_properties (hotrod PROPERTIES LINK_FLAGS "${CATCH_UNDEFINED}")
 
-add_library (
-  hotrod-static STATIC
-  ${library_sources}
-)
-set_target_properties(
-  hotrod-static
-  PROPERTIES
-  COMPILE_FLAGS -DHOTROD_DECLARE_STATIC
-)
-
-# API DOCS -- use target docs (i.e. make docs) from build directory to make api docs
-# Toggle BUILD_DOCS to turn on/off the generation of the API documentation
-FIND_PACKAGE(Doxygen)
-if (DOXYGEN_FOUND)
-  #-- Configure the Template Doxyfile for our specific project
-  configure_file(Doxyfile.in
-                 ${PROJECT_BINARY_DIR}/Doxyfile  @ONLY IMMEDIATE)
-  #-- Add a custom target to run Doxygen when ever the project is built
-  add_custom_target (docs ALL
-                     COMMAND ${DOXYGEN_EXECUTABLE} ${PROJECT_BINARY_DIR}/Doxyfile
-                     SOURCES ${PROJECT_BINARY_DIR}/Doxyfile)
-  #Include the API docs in the package.
-  install (FILES ${CMAKE_BINARY_DIR}/api_docs/html/ DESTINATION docs/api)
-endif()
+# Build a static library
+add_library (hotrod-static STATIC ${library_sources})
+set_target_properties(hotrod-static PROPERTIES COMPILE_FLAGS "-DHOTROD_DECLARE_STATIC ${COMPILER_FLAGS} ${WARNING_FLAGS}")
 
 # TESTS
 
@@ -217,18 +190,23 @@ endif (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.sh") AND (EXISTS "${HOT
 
 add_executable (simple test/Simple.cpp)
 set_property(TARGET simple PROPERTY INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/include")
+set_target_properties (simple PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS}")
 target_link_libraries (simple hotrod)
 
 add_executable (unit_test test/Unit.cpp)
+set_target_properties (unit_test PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS}")
 target_link_libraries (unit_test hotrod)
 
 add_executable (hash_test test/HashTest.cpp)
+set_target_properties (hash_test PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS}")
 target_link_libraries (hash_test hotrod)
 
 add_executable (l3_test test/L3Test.cpp)
+set_target_properties (l3_test PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS}")
 target_link_libraries (l3_test hotrod)
 
 add_executable (itest test/InteractiveTest.cpp)
+set_target_properties (itest PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS}")
 target_link_libraries (itest hotrod)
 
 # the CTest include must be after the MEMORYCHECK settings are processed
@@ -273,7 +251,7 @@ else (WIN32)
         set (PLATFORM "DEB") 
     endif(EXISTS "/etc/redhat-release")
 endif(WIN32)
-message (STATUS "Building for ${PLATFORM} on ${PACKAGE_ARCH}")
+message (STATUS "Build ${CMAKE_BUILD_TYPE} for ${PLATFORM} on ${PACKAGE_ARCH}")
 set (CPACK_SYSTEM_NAME "${PLATFORM}-${PACKAGE_ARCH}")
 set (CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
 set (CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/License.txt")
@@ -285,3 +263,16 @@ install (TARGETS hotrod hotrod-static DESTINATION lib)
 
 include (CPack)
 
+# API DOCS -- use target docs (i.e. make docs) from build directory to make api docs
+# Toggle BUILD_DOCS to turn on/off the generation of the API documentation
+FIND_PACKAGE(Doxygen)
+if (DOXYGEN_FOUND)
+  #-- Configure the Template Doxyfile for our specific project
+  configure_file(Doxyfile.in ${PROJECT_BINARY_DIR}/Doxyfile  @ONLY IMMEDIATE)
+  #-- Add a custom target to run Doxygen when ever the project is built
+  add_custom_target (docs ALL
+                     COMMAND ${DOXYGEN_EXECUTABLE} ${PROJECT_BINARY_DIR}/Doxyfile
+                     SOURCES ${PROJECT_BINARY_DIR}/Doxyfile)
+  #Include the API docs in the package.
+  install (FILES ${CMAKE_BINARY_DIR}/api_docs/html/ DESTINATION docs/api)
+endif()

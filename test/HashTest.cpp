@@ -5,10 +5,9 @@
 #include <string>
 #include <assert.h>
 
-volatile int passFail = 0;
-volatile int available = 0;
-
 using namespace infinispan::hotrod;
+
+#define UNUSED(x) ((void)x)
 
 void testHashConsistency(const Hash& hash) {
     hrbytes data(const_cast<char*>("acbde"), 5);
@@ -19,6 +18,10 @@ void testHashConsistency(const Hash& hash) {
     assert(i1 == i2);
     assert(i3 == i2);
     assert(i1 == i3);
+
+    UNUSED(i1);
+    UNUSED(i2);
+    UNUSED(i3);
 }
 
 void murmurHash2Test() {
@@ -36,5 +39,5 @@ void murmurHash3Test() {
 int main(int, char**) {
     murmurHash2Test();
     murmurHash3Test();
-    return passFail;
+    return 0;
 }
