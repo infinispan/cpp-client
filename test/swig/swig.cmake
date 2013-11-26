@@ -38,8 +38,6 @@ endif(WIN32 AND NOT CYGWIN)
 
 SET(CMAKE_SWIG_OUTDIR ${CMAKE_CURRENT_BINARY_DIR}/jni/src/org/infinispan/client/hotrod/jni)
 
-set (CMAKE_CXX_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS}")
-
 set(JNI_DIR "${CMAKE_CURRENT_BINARY_DIR}/jni")
 if (NOT (EXISTS ${JNI_DIR}))
     file(MAKE_DIRECTORY ${JNI_DIR})
@@ -64,15 +62,9 @@ set_target_properties(hotrod-swig
     PREFIX "${CMAKE_SHARED_LIBRARY_PREFIX}")
 
 if (CMAKE_COMPILER_IS_GNUCXX)
-    set_target_properties(hotrod-swig PROPERTIES COMPILE_FLAGS "-pedantic -Wall -Wextra -Wno-unused-function -Wno-shadow -Wno-unused-parameter -Wpointer-arith -Wno-cast-qual -Wcast-align -Wno-long-long -Wvolatile-register-var -Winvalid-pch -Wno-system-headers -Woverloaded-virtual -Wshadow")
+    set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/test/swig/javaJAVA_wrap.cxx
+               PROPERTIES COMPILE_FLAGS "-w")
 endif (CMAKE_COMPILER_IS_GNUCXX)
-
-
-#add_custom_command(OUTPUT ${CMAKE_SWIG_OUTDIR}
-#                   COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_SWIG_OUTDIR}
-#                   COMMENT "Creating target directory for hotrod-jni sources")
-#add_custom_target(hotrod-jni-swig-out-dir ALL DEPENDS ${CMAKE_SWIG_OUTDIR})
-#add_dependencies(hotrod-swig hotrod-jni-swig-out-dir)
 
 file(GLOB_RECURSE JAVA_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/test/jniapi/*.java)
 

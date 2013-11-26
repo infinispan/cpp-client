@@ -14,13 +14,13 @@
 #include <algorithm>
 #include <assert.h>
 
-volatile int passFail = 0;
-volatile int available = 0;
 
 using namespace infinispan::hotrod;
 using infinispan::hotrod::protocol::HotRodConstants;
 using namespace infinispan::hotrod::consistenthash;
 using namespace infinispan::hotrod::transport;
+
+#define UNUSED(x) ((void)x)
 
 void consistentHashFactoryTest(uint32_t hashVersion) {
     HR_SHARED_PTR<ConsistentHashFactory> hashFactory;
@@ -35,6 +35,10 @@ void consistentHashFactoryTest(uint32_t hashVersion) {
     assert(i3 == i2);
     assert(i1 == i3);
     std::cout << "consistentHashFactoryTest for hash version " << hashVersion << " ok " << std::endl;
+
+    UNUSED(i1);
+    UNUSED(i2);
+    UNUSED(i3);
 }
 
 std::map<InetSocketAddress, std::set<int32_t> > createServer2HashMap(){
@@ -103,5 +107,5 @@ int main(int, char**) {
     consistentHashInitTest(HotRodConstants::CONSISTENT_HASH_V1, h);
     consistentHashInitTest(HotRodConstants::CONSISTENT_HASH_V2, h);
     delete h;
-    return passFail;
+    return 0;
 }
