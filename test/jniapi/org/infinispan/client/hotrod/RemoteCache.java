@@ -39,6 +39,8 @@ public interface RemoteCache<K, V> {
 
     V remove(K k);
 
+    boolean removeWithVersion(K key, long version);
+
     void clear();
 
     boolean containsKey(K k);
@@ -50,6 +52,12 @@ public interface RemoteCache<K, V> {
     V replace(K key, V value, long lifespan, TimeUnit unit);
 
     V replace(K key, V value, long lifespan, TimeUnit lifespanUnit, long maxIdleTime, TimeUnit maxIdleTimeUnit);
+
+    boolean replaceWithVersion(K key, V newValue, long version);
+
+    boolean replaceWithVersion(K key, V newValue, long version, int lifespanSeconds);
+
+    boolean replaceWithVersion(K key, V newValue, long version, int lifespanSeconds, int maxIdleTimeSeconds);
 
     VersionedValue<V> getVersioned(K k);
 
@@ -127,4 +135,6 @@ public interface RemoteCache<K, V> {
     Set<Entry<K, V>> entrySet();
 
     boolean remove(K key, V value);
+
+    ServerStatistics stats();
 }

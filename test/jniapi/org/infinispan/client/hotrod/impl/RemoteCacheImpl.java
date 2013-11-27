@@ -20,13 +20,16 @@ import org.infinispan.client.hotrod.Flag;
 import org.infinispan.client.hotrod.MetadataValue;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
+import org.infinispan.client.hotrod.ServerStatistics;
 import org.infinispan.client.hotrod.VersionedValue;
 import org.infinispan.client.hotrod.jni.Hotrod;
 import org.infinispan.client.hotrod.jni.MapReturn;
+import org.infinispan.client.hotrod.jni.MapType;
 import org.infinispan.client.hotrod.jni.MetadataPairReturn;
 import org.infinispan.client.hotrod.jni.RelayBytes;
 import org.infinispan.client.hotrod.jni.RemoteCache_jb_jb;
 import org.infinispan.client.hotrod.jni.SetReturn;
+import org.infinispan.client.hotrod.jni.StringVectorReturn;
 import org.infinispan.client.hotrod.jni.VectorReturn;
 import org.infinispan.client.hotrod.jni.VersionPairReturn;
 import org.infinispan.commons.marshall.Marshaller;
@@ -150,6 +153,18 @@ public class RemoteCacheImpl<K, V> extends RemoteCacheUnsupported<K, V> {
     }
 
     @Override
+    public boolean removeWithVersion(K k, long version) {
+        final BigInteger v1 = BigInteger.valueOf(version);
+        Boolean b = relayedInvoker(new RelayedMethod() {
+            @Override
+            public Object invoke(RelayBytes... rbs) {
+                return jniRemoteCache.removeWithVersion(rbs[0], v1);
+            }
+        }, k);
+        return b;
+    }
+
+    @Override
     public V replace(K k, V v) {
         return relayedInvoker(new RelayedMethod() {
             @Override
@@ -184,6 +199,46 @@ public class RemoteCacheImpl<K, V> extends RemoteCacheUnsupported<K, V> {
                         BigInteger.valueOf(m), timeunitToSwig(mu));
             }
         }, k, v);
+    }
+
+    @Override
+    public boolean replaceWithVersion(K k, V v, long version) {
+        final BigInteger v1 = BigInteger.valueOf(version);
+        Boolean b = relayedInvoker(new RelayedMethod() {
+            @Override
+            public Object invoke(RelayBytes... rbs) {
+                return jniRemoteCache.replaceWithVersion(rbs[0], rbs[1], v1);
+            }
+        }, k, v);
+        return b;
+    }
+
+
+    @Override
+    public boolean replaceWithVersion(K k, V v, long version, int lifespanSeconds) {
+        final BigInteger v1 = BigInteger.valueOf(version);
+        final BigInteger ls = BigInteger.valueOf(lifespanSeconds);
+        Boolean b = relayedInvoker(new RelayedMethod() {
+            @Override
+            public Object invoke(RelayBytes... rbs) {
+                return jniRemoteCache.replaceWithVersion(rbs[0], rbs[1], v1, ls);
+            }
+        }, k, v);
+        return b;
+    }
+
+    @Override
+    public boolean replaceWithVersion(K k, V v, long version, int lifespanSeconds, int maxIdleTimeSeconds) {
+        final BigInteger v1 = BigInteger.valueOf(version);
+        final BigInteger ls = BigInteger.valueOf(lifespanSeconds);
+        final BigInteger mi = BigInteger.valueOf(maxIdleTimeSeconds);
+        Boolean b = relayedInvoker(new RelayedMethod() {
+            @Override
+            public Object invoke(RelayBytes... rbs) {
+                return jniRemoteCache.replaceWithVersion(rbs[0], rbs[1], v1, ls, mi);
+            }
+        }, k, v);
+        return b;
     }
 
     @Override
@@ -448,4 +503,19 @@ public class RemoteCacheImpl<K, V> extends RemoteCacheUnsupported<K, V> {
     public int size() {
         return jniRemoteCache.size().intValue();
     }
+
+    @Override
+    public ServerStatistics stats() {
+        MapType jniStats = jniRemoteCache.stats();
+        final StringVectorReturn vectorReturn = Hotrod.keySet(jniStats);
+        ServerStatisticsImpl stats = new ServerStatisticsImpl();
+        for (int i = 0; i < vectorReturn.size(); i++) {
+            String key = vectorReturn.get(i);
+            stats.addStats(key, jniStats.get(key));
+        }
+
+        return stats;
+    }
+
+
 }
