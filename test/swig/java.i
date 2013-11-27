@@ -46,23 +46,8 @@
 #include <infinispan/hotrod/ScopedBuffer.h>
 #include <infinispan/hotrod/Marshaller.h>
 
-//ZZZ
 #include <iostream>
 %}
-
-//I want use java.util.Map, not obscure SWIG types
-//%typemap(jstype) std::map<std::string, std::string> "java.util.Map<String,String>"
-//%typemap(javain,pre="    MapType temp$javainput = $javaclassname.convertMap($javainput);",pgcppname="temp$javainput") std::map<std::string, std::string> "$javaclassname.getCPtr(temp$javainput)"
-//%typemap(javaout,pre="   MapType temp$javainput = $javaclassname.convertMap($javainput);",pgcppname="temp$javainput") std::map<std::string, std::string> "$javaclassname.getCPtr(temp$javainput)"
-//%typemap(javacode) std::map<std::string, std::string> %{
-//  static $javaclassname convertMap(java.util.Map<String,String> in) {
-//    $javaclassname out = new $javaclassname();
-//    for (java.util.Map.Entry<String, String> entry : in.entrySet()) {
-//      out.set(entry.getKey(), entry.getValue());      
-//    }
-//    return out;
-//  }    
-//%}
 
 %template(MapType) std::map<std::string, std::string>;
 
@@ -131,6 +116,7 @@ class RelayBytes {
 %template(MapReturn) std::map<HR_SHARED_PTR<RelayBytes>, HR_SHARED_PTR<RelayBytes> >;
 %template(SetReturn) std::set<HR_SHARED_PTR<RelayBytes> >;
 %template(VectorReturn) std::vector<HR_SHARED_PTR<RelayBytes> >;
+%template(StringVectorReturn) std::vector<std::string>;
 
 %inline %{
  bool isNull(HR_SHARED_PTR<RelayBytes> ptr) {
@@ -152,6 +138,13 @@ class RelayBytes {
      std::vector<HR_SHARED_PTR<RelayBytes> > result;
      for (std::set<HR_SHARED_PTR<RelayBytes> >::iterator it = set.begin(); it != set.end(); ++it)
          result.push_back(*it);
+     return result;
+ }
+ 
+ std::vector<std::string > keySet(std::map<std::string, std::string > map) {
+     std::vector<std::string > result;
+     for (std::map<std::string, std::string >::iterator it = map.begin(); it != map.end(); ++it)
+         result.push_back(it->first);
      return result;
  }
 %}
