@@ -22,18 +22,16 @@ class RemoteCacheManagerImpl;
  * the %RemoteCacheManager must be started first.  Beside other things, this instantiates
  * connections to Hot Rod server(s). Starting the %RemoteCacheManager can be done either at
  * creation by passing start==true to constructor or after construction by calling ::start
- * method.
- * <p/>
- * %RemoteCacheManager is an "expensive" object, as it manages a set of persistent TCP
+ * method.</p>
+ *
+ * <p>%RemoteCacheManager is an "expensive" object, as it manages a set of persistent TCP
  * connections to the Hot Rod servers. It is recommended to only have one instance of it
- * per runtime and to cache it between calls to the server (i.e. remoteCache %operations).
- * <p/>
- * After you are done with RemoteCacheManager stop needs to be called explicitly in order
- * to release all the resources (e.g. threads, TCP connections).
- * <p/>
- * <p/>
- * <b>%Configuration:</b>
- * <p/>
+ * per runtime and to cache it between calls to the server (i.e. remoteCache %operations).</p>
+ *
+ * <p>After you are done with RemoteCacheManager stop needs to be called explicitly in order
+ * to release all the resources (e.g. threads, TCP connections).</p>
+
+ * <p><b>%Configuration:</b></p>
  * The cache manager is configured through a Configuration object passed to the constructor.
  *
  */
@@ -46,7 +44,7 @@ class HR_EXTERN RemoteCacheManager : public Handle<RemoteCacheManagerImpl>
      * object an an optional boolean parameter indicating whether to also start this
      * RemoteCacheManager as well.
      *
-     *\param optional boolean parameter indicating whether to start this RemoteCacheManager
+     *\param start optional boolean parameter indicating whether to start this RemoteCacheManager
      */
     explicit RemoteCacheManager(bool start = true);
 
@@ -61,7 +59,7 @@ class HR_EXTERN RemoteCacheManager : public Handle<RemoteCacheManagerImpl>
      *
      *\param configuration the Configuration reference to use for configuration of this
      *RemoteCacheManager
-     *\param optional boolean parameter indicating whether to start this RemoteCacheManager
+     *\param start optional boolean parameter indicating whether to start this RemoteCacheManager
      */
     explicit RemoteCacheManager(
         const Configuration& configuration,
@@ -158,7 +156,6 @@ class HR_EXTERN RemoteCacheManager : public Handle<RemoteCacheManagerImpl>
      *
      * \param km the key marshaller
      * \param vm the value marshaller
-     * \param name the cache name to connect to on a remote Infinispan server
      * \param forceReturnValue if true all cache %operations that optionally return a value
      * will indeed return a value.
      * \return the default RemoteCache to interact with on a remote Infinispan server
