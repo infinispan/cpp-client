@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 2.6)
+cmake_minimum_required (VERSION 2.8)
 
 project (infinispan-hotrod-c++ C CXX)
 
@@ -166,11 +166,6 @@ set_target_properties(hotrod-static PROPERTIES COMPILE_FLAGS "-DHOTROD_DECLARE_S
 
 # TESTS
 
-# TODO: decide on cmake 2.6 or 2.8, which differ greatly in FindJava
-# and FindJNI needed for SWIG-ed Java bindings.  The following
-# suffices for running the Hot Rod server to support native C++
-# testing:
-
 find_package(Java)
 if (NOT JAVA_RUNTIME)
     message(FATAL_ERROR "Java javac compiler not found")
@@ -215,12 +210,12 @@ include (CTest)
 add_test (unit_test unit_test)
 add_test (hash_test hash_test)
 add_test (l3_test l3_test)
-add_test (start_server python ${CMAKE_CURRENT_SOURCE_DIR}/test/server_ctl.py start ${JAVA_RUNTIME} ${HOTROD_JBOSS_HOME} single)
+add_test (start_server python ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py start ${JAVA_RUNTIME} ${HOTROD_JBOSS_HOME} single)
 add_test (simple simple)
-add_test (stop_server python ${CMAKE_CURRENT_SOURCE_DIR}/test/server_ctl.py stop)
+add_test (stop_server python ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py stop)
 
 if (ENABLE_SWIG_TESTING)
-    include(test/swig/swig.cmake)
+    include(jni/swig.cmake)
 endif (ENABLE_SWIG_TESTING)
 
 if (ENABLE_VALGRIND)
@@ -269,6 +264,10 @@ FIND_PACKAGE(Doxygen)
 if (DOXYGEN_FOUND)
   #-- Configure the Template Doxyfile for our specific project
   configure_file(Doxyfile.in ${PROJECT_BINARY_DIR}/Doxyfile  @ONLY IMMEDIATE)
+  # Delete any previously generated docs
+  if(EXISTS ${CMAKE_BINARY_DIR}/api_docs)
+      file(REMOVE_RECURSE ${CMAKE_BINARY_DIR}/api_docs)
+  endif(EXISTS ${CMAKE_BINARY_DIR}/api_docs)
   #-- Add a custom target to run Doxygen when ever the project is built
   add_custom_target (docs ALL
                      COMMAND ${DOXYGEN_EXECUTABLE} ${PROJECT_BINARY_DIR}/Doxyfile

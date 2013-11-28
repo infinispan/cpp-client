@@ -69,6 +69,14 @@ public class RemoteCacheManager /* implements BasicCacheContainer */{
     public org.infinispan.client.hotrod.jni.RemoteCacheManager getJniManager() {
         return jniRemoteCacheManager;
     }
+    
+    public void start() {
+       jniRemoteCacheManager.start();
+    }
+    
+    public void stop() {
+       jniRemoteCacheManager.stop();
+    }
 
     static {
         System.loadLibrary("hotrod");

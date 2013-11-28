@@ -9,7 +9,7 @@ For more information, please refer to [the documentation of this client library]
 ## Build ##
 Build prerequisites: 
 
-* CMake 2.8 (2.6 may work except for swig subset)
+* CMake 2.8
 * C++03 plus shared_ptr TR1 support.
 * Infinispan server distribution (located via JBOSS_HOME or cmake directive)
 * Java (any version compatible with the Infinispan distribution)
@@ -18,8 +18,7 @@ Build prerequisites:
 optional: Doxygen
 
 Components needed to use swig tests: 
-* Apache Ant 1.8.x (http://ant.apache.org/)
-* Apache Ivy 2.3.x (http://ant.apache.org/ivy/)
+* Apache Maven 3.0.x (http://maven.apache.org/)
 * SWIG 2.0.x (http://www.swig.org/)
 
 On Linux, use the package manager for your distribution to install the

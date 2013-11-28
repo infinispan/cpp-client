@@ -8,8 +8,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import org.infinispan.client.hotrod.MetadataValue;
-import org.infinispan.client.hotrod.VersionedValue;
 import org.infinispan.commons.util.concurrent.NotifyingFuture;
 
 public interface RemoteCache<K, V> {
