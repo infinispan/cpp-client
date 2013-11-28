@@ -24,23 +24,23 @@ namespace hotrod {
 /**
  * Provides remote reference to a cache residing on a Hot Rod server/cluster.
  *
- * %RemoteCache is intended to be similar to Infinispan Java %RemoteCache interface as much as possible. Just
- * like %RemoteCache interface in its Java HotRod counterpart %RemoteCache features:
+ * <p>%RemoteCache is intended to be similar to Infinispan Java %RemoteCache interface as much as possible. Just
+ * like %RemoteCache interface in its Java HotRod counterpart %RemoteCache features:</p>
  *
- * <p/>
+ * <p>
  * <b>New methods</b>: Although some methods are very simila to Java Map interface, %RemoteCache also adds new
- * methods to optimize/reduce network traffic: e.g. versioned put operation.
- * <p/>
- * <b>Concurrency</b>: implementations will support multi-threaded access.
- * <p/>
- * <b>Return values</b>: previously existing values for certain methods are not returned, NULL
- * is returned instead unless method is using fluent variant withFlags (see below).
- * <p/>
- * <b>Synthetic methods</b>: aggregate methods are being implemented based on other Hot Rod %operations. For example,
+ * methods to optimize/reduce network traffic: e.g. versioned put operation.</p>
+ *
+ * <p><b>Concurrency</b>: implementations will support multi-threaded access.</p>
+ *
+ * <p><b>Return values</b>: previously existing values for certain methods are not returned, NULL
+ * is returned instead unless method is using fluent variant withFlags (see below).</p>
+ *
+ * <p><b>Synthetic methods</b>: aggregate methods are being implemented based on other Hot Rod %operations. For example,
  * putAll method is implemented using  multiple individual puts. Therefore these methods are not atomic and that they are
- * costly, e.g. as the number of network round-trips is not one, but the size of the added map.
- * <p/>
- * It is possible change the default method behavior using Flag enum. For example:
+ * costly, e.g. as the number of network round-trips is not one, but the size of the added map.</p>
+ *
+ * <p>It is possible change the default method behavior using Flag enum. For example:
  * <pre>
  *      %RemoteCache cache = ...;
  *      std::auto_ptr<std::string> rv(cache.withFlags(FORCE_RETURN_VALUE).put(k,v));
@@ -48,8 +48,7 @@ namespace hotrod {
  *
  * In the previous example Flag enum FORCE_RETURN_VALUE will make the client to also return previously existing value
  * associated with <tt>k</tt> key. If this flag would not be present, %RemoteCache would return (by default) <tt>NULL</tt>.
- * This is in order to avoid fetching a possibly large object from the remote server, which might not be needed.
- * <p/>
+ * This is in order to avoid fetching a possibly large object from the remote server, which might not be needed.</p>
  *
  */
 template <class K, class V> class RemoteCache : private RemoteCacheBase
@@ -95,18 +94,21 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
         return vbuf.getBytes() ? valueMarshaller->unmarshall(vbuf) : NULL;
     }
     /**
-     * Associates the specified value with the specified key in this cache.
-     * <p>
-     * If the cache previously contained a mapping for the key, the old value is replaced by the
-     * specified value.
-     *<p>
-     * If the return value of this operation will be ignored by the application,
+     * <p>Associates the specified value with the specified key in this cache.</p>
+     *
+     * <p>If the cache previously contained a mapping for the key, the old value is replaced by the
+     * specified value.</p>
+     *
+     * <p>If the return value of this operation will be ignored by the application,
      * the user is strongly encouraged to use the IGNORE_RETURN_VALUES Flag
      * when invoking this method in order to make it behave as efficiently
-     * as possible (i.e. avoiding needless remote or network calls).
+     * as possible (i.e. avoiding needless remote or network calls).</p>
      *
      * \param key  key with which the specified value is to be associated
-     * \param value  value value to be associated with the specified key
+     * \param val  value value to be associated with the specified key
+     * \param lifespan  lifespan of the entry.  Negative values are interpreted as unlimited lifespan.
+     * \param maxIdle  the maximum amount of time this key is allowed to be idle for before it is considered as
+     *                        expired
      *
      * \return the previous value associated with key, or NULL if there was no mapping for key.
      *
@@ -117,28 +119,27 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
 	return put(key, val, lifespan, SECONDS, maxIdle, SECONDS);
     }
     /**
-     * Associates the specified value with the specified key in this cache.
-     * <p>
-     * If the cache previously contained a mapping for the key, the old value is replaced by the
-     * specified value.
-     *<p>
-     * If the return value of this operation will be ignored by the application,
+     * <p>Associates the specified value with the specified key in this cache.</p>
+     *
+     * <p>If the cache previously contained a mapping for the key, the old value is replaced by the
+     * specified value.</p>
+     *
+     * <p>If the return value of this operation will be ignored by the application,
      * the user is strongly encouraged to use the IGNORE_RETURN_VALUES Flag
      * when invoking this method in order to make it behave as efficiently
-     * as possible (i.e. avoiding needless remote or network calls).
+     * as possible (i.e. avoiding needless remote or network calls).</p>
      *
      * \param key  key with which the specified value is to be associated
-     * \param value  value value to be associated with the specified key
+     * \param val  value value to be associated with the specified key
      * \param lifespan  lifespan of the entry.  Negative values are interpreted as unlimited lifespan.
-     *  \param lifespanUnit  unit of measurement for the lifespan
+     * \param lifespanUnit  unit of measurement for the lifespan
      *
      * \return the previous value associated with key, or NULL if there was no mapping for key.
      *
      */
-    V* put(
-        const K& key, const V& val, uint64_t lifespan, TimeUnit lifespanUnit)
+    V* put(const K& key, const V& val, uint64_t lifespan, TimeUnit lifespanUnit)
     {
-	return put(key, val, lifespan, lifespanUnit, 0, SECONDS);
+        return put(key, val, lifespan, lifespanUnit, 0, SECONDS);
     }
     /**
      * Associates the specified value with the specified key in this cache.
@@ -152,7 +153,7 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      * as possible (i.e. avoiding needless remote or network calls).
      *
      * \param key  key with which the specified value is to be associated
-     * \param value  value value to be associated with the specified key
+     * \param val  value value to be associated with the specified key
      * \param lifespan  lifespan of the entry.  Negative values are interpreted as unlimited lifespan.
      *  \param lifespanUnit  unit of measurement for the lifespan
      *  \param maxIdle  the maximum amount of time this key is allowed to be idle for before it is considered as
@@ -162,10 +163,9 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      * \return the previous value associated with key, or NULL if there was no mapping for key.
      *
      */
-    V* put(
-	const K& key, const V& val, uint64_t lifespan, TimeUnit lifespanUnit, uint64_t maxIdle, TimeUnit maxIdleUnit)
+    V* put(const K& key, const V& val, uint64_t lifespan, TimeUnit lifespanUnit, uint64_t maxIdle, TimeUnit maxIdleUnit)
     {
-	ScopedBuffer vbuf;
+        ScopedBuffer vbuf;
         base_put(&key, &val, toSeconds(lifespan, lifespanUnit), toSeconds(maxIdle, maxIdleUnit), &vbuf);
         return vbuf.getBytes() ? valueMarshaller->unmarshall(vbuf) : NULL;
     }
@@ -174,14 +174,13 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      * is not already associated with some value. In such case key is associated with the given value.
      *
      * \param key  key with which the specified value is to be associated
-     * \param value  value value to be associated with the specified key
+     * \param val  value value to be associated with the specified key
      * \param lifespan  lifespan of the entry.  Negative values are interpreted as unlimited lifespan.
      *  \param maxIdle  the maximum amount of time this key is allowed to be idle for before it is considered as
      *                        expired
      * \return the previous value associated with the specified key, or NULL if there was no mapping for the key.
      */
-    V* putIfAbsent(
-        const K& key, const V& val, uint64_t lifespan = 0, uint64_t maxIdle = 0)
+    V* putIfAbsent(const K& key, const V& val, uint64_t lifespan = 0, uint64_t maxIdle = 0)
     {
 	return putIfAbsent(key, val, lifespan, SECONDS, maxIdle, SECONDS);
     }
@@ -190,33 +189,31 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      * is not already associated with some value. In such case key is associated with the given value.
      *
      * \param key  key with which the specified value is to be associated
-     * \param value  value value to be associated with the specified key
+     * \param val  value value to be associated with the specified key
      * \param lifespan  lifespan of the entry.  Negative values are interpreted as unlimited lifespan.
      * \param lifespanUnit  unit of measurement for the lifespan
      * \return the previous value associated with the specified key, or NULL if there was no mapping for the key.
      */
-    V* putIfAbsent(
-		   const K& key, const V& val, uint64_t lifespan, TimeUnit lifespanUnit)
+    V* putIfAbsent(const K& key, const V& val, uint64_t lifespan, TimeUnit lifespanUnit)
     {
-	return putIfAbsent(key, val, lifespan, lifespanUnit, 0, SECONDS);
+        return putIfAbsent(key, val, lifespan, lifespanUnit, 0, SECONDS);
     }
     /**
      * Associates the specified value with the specified key in this cache if the specified key
      * is not already associated with some value. In such case key is associated with the given value.
      *
      * \param key  key with which the specified value is to be associated
-     * \param value  value value to be associated with the specified key
+     * \param val  value value to be associated with the specified key
      * \param lifespan  lifespan of the entry.  Negative values are interpreted as unlimited lifespan.
-     *  \param lifespanUnit  unit of measurement for the lifespan
-     *  \param maxIdle  the maximum amount of time this key is allowed to be idle for before it is considered as
+     * \param lifespanUnit  unit of measurement for the lifespan
+     * \param maxIdle  the maximum amount of time this key is allowed to be idle for before it is considered as
      *                        expired
      * \param maxIdleUnit  time unit for max idle time
      * \return the previous value associated with the specified key, or NULL if there was no mapping for the key.
      */
-    V* putIfAbsent(
-		   const K& key, const V& val, uint64_t lifespan, TimeUnit lifespanUnit, uint64_t maxIdle, TimeUnit maxIdleUnit)
+    V* putIfAbsent(const K& key, const V& val, uint64_t lifespan, TimeUnit lifespanUnit, uint64_t maxIdle, TimeUnit maxIdleUnit)
     {
-	ScopedBuffer vbuf;
+        ScopedBuffer vbuf;
         base_putIfAbsent(&key, &val, toSeconds(lifespan, lifespanUnit), toSeconds(maxIdle, maxIdleUnit), &vbuf);
         return vbuf.getBytes() ? valueMarshaller->unmarshall(vbuf) : NULL;
     }
@@ -225,14 +222,14 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      * calling put(k, v) on this cache once for each mapping from key k to value v in the specified map.
      * The behavior of this operation is undefined if the specified map is modified while the operation is in progress.
      *
-     * \param  map to be stored in this cache
+     * \param map to be stored in this cache
      * \param lifespan  lifespan of the entry.  Negative values are interpreted as unlimited lifespan.
      * \param maxIdle  the maximum amount of time this key is allowed to be idle for before it is considered as
      *                        expired
      */
     void putAll(const std::map<K, V>& map, uint64_t lifespan = 0, uint64_t maxIdle = 0)
     {
-	return putAll(map, lifespan, SECONDS, maxIdle, SECONDS);
+        putAll(map, lifespan, SECONDS, maxIdle, SECONDS);
     }
     /**
      * Copies all of the mappings from the specified map to this cache. The effect of this call is equivalent to that of
@@ -246,7 +243,7 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      */
     void putAll(const std::map<K, V>& map, uint64_t lifespan, TimeUnit lifespanUnit)
     {
-	return putAll(map, lifespan, lifespanUnit, 0, SECONDS);
+        putAll(map, lifespan, lifespanUnit, 0, SECONDS);
     }
     /**
      * Copies all of the mappings from the specified map to this cache. The effect of this call is equivalent to that of
@@ -263,12 +260,12 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      */
     void putAll(const std::map<K, V>& map, uint64_t lifespan, TimeUnit lifespanUnit, uint64_t maxIdle, TimeUnit maxIdleUnit)
     {
-	uint64_t lifespanMillis = toSeconds(lifespan, lifespanUnit);
-	uint64_t maxIdleMillis = toSeconds(maxIdle, maxIdleUnit);
+        uint64_t lifespanMillis = toSeconds(lifespan, lifespanUnit);
+        uint64_t maxIdleMillis = toSeconds(maxIdle, maxIdleUnit);
 
-	for (typename std::map<K, V>::const_iterator it = map.begin(); it != map.end(); ++it) {
-	    put(it->first, it->second, lifespanMillis, maxIdleMillis);
-	}
+        for (typename std::map<K, V>::const_iterator it = map.begin(); it != map.end(); ++it) {
+            put(it->first, it->second, lifespanMillis, maxIdleMillis);
+        }
     }
     /**
      * Replaces the entry for a key with a given new value.
@@ -281,8 +278,7 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      *
      * \return the previous value associated with the specified key, or NULL if there was no mapping for the key.
      */
-    V* replace(
-	       const K& key, const V& val, uint64_t lifespan = 0, uint64_t maxIdle = 0)
+    V* replace(const K& key, const V& val, uint64_t lifespan = 0, uint64_t maxIdle = 0)
     {
 	return replace(key, val, lifespan, SECONDS, maxIdle, SECONDS);
     }
@@ -297,10 +293,9 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      *
      * \return the previous value associated with the specified key, or NULL if there was no mapping for the key.
      */
-    V* replace(
-	       const K& key, const V& val, uint64_t lifespan, TimeUnit lifespanUnit)
+    V* replace(const K& key, const V& val, uint64_t lifespan, TimeUnit lifespanUnit)
     {
-	return replace(key, val, lifespan, lifespanUnit, 0, SECONDS);
+        return replace(key, val, lifespan, lifespanUnit, 0, SECONDS);
     }
     /**
      * Replaces the entry for a key with a given new value.
@@ -315,8 +310,7 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      *
      * \return the previous value associated with the specified key, or NULL if there was no mapping for the key.
      */
-    V* replace(
-	       const K& key, const V& val, uint64_t lifespan, TimeUnit lifespanUnit, uint64_t maxIdle, TimeUnit maxIdleUnit)
+    V* replace(const K& key, const V& val, uint64_t lifespan, TimeUnit lifespanUnit, uint64_t maxIdle, TimeUnit maxIdleUnit)
     {
         ScopedBuffer vbuf;
         base_replace(&key, &val, toSeconds(lifespan, lifespanUnit), toSeconds(maxIdle, maxIdleUnit), &vbuf);
@@ -334,8 +328,7 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      *
      * \return the previous value associated with the specified key, or NULL if there was no mapping for the key.
      */
-    V* replace(
-	       const K& key, const V& oldVal, const V& val, uint64_t lifespan = 0, uint64_t maxIdle = 0)
+    V* replace(const K& key, const V& oldVal, const V& val, uint64_t lifespan = 0, uint64_t maxIdle = 0)
     {
 	return replace(key, oldVal, val, lifespan, SECONDS, maxIdle, SECONDS);
     }
@@ -350,8 +343,7 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      *
      * \return the previous value associated with the specified key, or NULL if there was no mapping for the key.
      */
-    V* replace(
-	       const K& key, const V& oldVal, const V& val, uint64_t lifespan, TimeUnit lifespanUnit)
+    V* replace(const K& key, const V& oldVal, const V& val, uint64_t lifespan, TimeUnit lifespanUnit)
     {
 	return replace(key, oldVal, val, lifespan, lifespanUnit, 0, SECONDS);
     }
@@ -368,8 +360,7 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      * \param maxIdleUnit  time unit for max idle time
      * \return the previous value associated with the specified key, or NULL if there was no mapping for the key.
      */
-    V* replace(
-	       const K& key, const V& oldVal, const V& val, uint64_t lifespan, TimeUnit lifespanUnit, uint64_t maxIdle, TimeUnit maxIdleUnit)
+    V* replace(const K& key, const V& oldVal, const V& val, uint64_t lifespan, TimeUnit lifespanUnit, uint64_t maxIdle, TimeUnit maxIdleUnit)
     {
 	throw UnsupportedOperationException();
     }
@@ -400,7 +391,7 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      * thrown if his method is invoked.
      */
     bool containsValue(const V& val) {
-	throw UnsupportedOperationException();
+        throw UnsupportedOperationException();
     }
     /**
      * Replaces the given value only if its version matches the supplied version.
