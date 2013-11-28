@@ -1,3 +1,5 @@
+package org.infinispan.client.jni.hotrod;
+
 import org.testng.reporters.TextReporter;
 import org.testng.TestNG;
 import org.infinispan.client.hotrod.BulkGetKeysSimpleTest;
