@@ -8,6 +8,7 @@
 #include "hotrod/impl/transport/tcp/InetSocketAddress.h"
 
 #include <iostream>
+#include <iomanip>
 #include <sstream>
 #include <set>
 #include <map>
@@ -53,8 +54,8 @@ uint8_t Codec10::readHeader(
     uint8_t magic = transport.readByte();
     if (magic != HotRodConstants::RESPONSE_MAGIC) {
         std::ostringstream message;
-        message << "Invalid magic number. Expected " <<
-            HotRodConstants::RESPONSE_MAGIC << " and received " << magic;
+        message << std::hex << std::setfill('0');
+        message << "Invalid magic number. Expected 0x" << std::setw(2) << static_cast<unsigned>(HotRodConstants::RESPONSE_MAGIC) << " and received 0x" << std::setw(2) << static_cast<unsigned>(magic);
         throw InvalidResponseException(message.str());
     }
 

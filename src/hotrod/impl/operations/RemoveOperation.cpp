@@ -25,12 +25,9 @@ RemoveOperation::RemoveOperation(
 hrbytes RemoveOperation::executeOperation(Transport& transport)
 {
     hrbytes result;
-    uint8_t status = sendKeyOperation(key,
+    sendKeyOperation(key,
         transport, REMOVE_REQUEST, REMOVE_RESPONSE);
-    if (status != KEY_DOES_NOT_EXIST_STATUS) {
-        result = AbstractKeyOperation<hrbytes>::returnPossiblePrevValue(transport);
-    }
-    return result;
+    return AbstractKeyOperation<hrbytes>::returnPossiblePrevValue(transport);
 }
 
 }}} /// namespace infinispan::hotrod::operations
