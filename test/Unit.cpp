@@ -7,6 +7,7 @@
 #include "hotrod/impl/transport/tcp/InetSocketAddress.h"
 
 #include <iostream>
+#include <iterator>
 #include <sstream>
 #include <set>
 #include <map>
