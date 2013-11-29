@@ -1,11 +1,14 @@
-#include "infinispan/hotrod/exceptions.h"
-#include "hotrod/sys/Socket.h"
-
-#include <winsock2.h>
 #include <Ws2tcpip.h>
 #include <fcntl.h>
+#include <string.h>
 #include <iostream>
 #include <sstream>
+#include <stdexcept>
+
+#include "infinispan/hotrod/exceptions.h"
+#include "hotrod/sys/Log.h"
+#include "hotrod/sys/Socket.h"
+
 
 namespace infinispan {
 namespace hotrod {
@@ -16,6 +19,27 @@ namespace sys {
 
 
 namespace windows {
+
+static void *get_in_addr(struct sockaddr *sa) {
+    if (sa->sa_family == AF_INET)
+        return &(((struct sockaddr_in*)sa)->sin_addr);
+    return &(((struct sockaddr_in6*)sa)->sin6_addr);
+}
+
+static int getPreferredIPStack() {
+    const char *stack = getenv("HOTROD_IPSTACK");
+    if (stack == 0) {
+        return AF_UNSPEC;
+    }  else if (!_stricmp(stack, "IPV4")) {
+        return AF_INET;
+    } else if (!_stricmp(stack, "IPV6")) {
+        return AF_INET6;
+    } else {
+        throw std::runtime_error("Invalid HOTROD_IPSTACK environment variable");
+    }
+}
+
+static int preferredIPStack = getPreferredIPStack();
 
 class Socket: public infinispan::hotrod::sys::Socket {
   public:
@@ -34,7 +58,7 @@ class Socket: public infinispan::hotrod::sys::Socket {
 };
 
 namespace {
-// TODO: centralized hotrod exceptions with file name and line number
+
 void throwIOErr (const std::string& host, int port, const char *msg, int errnum) {
     std::string m(msg);
     if (errnum != 0) {
@@ -68,63 +92,86 @@ Socket::Socket() : fd(INVALID_SOCKET) {
 }
 
 void Socket::connect(const std::string& h, int p, int timeout) {
+    struct addrinfo hints;
+    struct addrinfo *addr, *addr_list;
+    char ip[INET6_ADDRSTRLEN];
+    int error, flags;
+    u_long non_blocking;
+    SOCKET sock;
+
     host = h;
     port = p;
     if (fd != INVALID_SOCKET) throwIOErr(host, port, "reconnect attempt", 0);
 
-    struct addrinfo hints;
     memset(&hints, 0, sizeof(struct addrinfo));
-    hints.ai_family = AF_UNSPEC;
+    hints.ai_family = preferredIPStack;
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_protocol = 0;
     hints.ai_flags = 0;
-    struct addrinfo *addr;
+
     std::ostringstream ostr;
     ostr << port;
-    int ec = getaddrinfo(host.c_str(), ostr.str().c_str(), NULL, &addr);
+
+    int ec = getaddrinfo(host.c_str(), ostr.str().c_str(), &hints, &addr_list);
     if (ec) throwIOErr(host, port,"Error while invoking getaddrinfo", WSAGetLastError());
 
-    SOCKET sock = socket(addr->ai_family, SOCK_STREAM, getprotobyname("tcp")->p_proto);
-    if (sock == INVALID_SOCKET) throwIOErr(host, port,"connect", WSAGetLastError());
+    // Cycle through all returned addresses
+    for(addr = addr_list; addr != NULL; addr = addr->ai_next ) {
+        inet_ntop(addr->ai_family, get_in_addr((struct sockaddr *)addr->ai_addr), ip, sizeof(ip));
+        sock = socket(addr->ai_family, addr->ai_socktype, addr->ai_protocol);
+        if (sock == INVALID_SOCKET) {
+            DEBUG("Failed to obtain socket for address family %d", addr->ai_family);
+            continue;
+        }
 
-    // Make the socket non-blocking for the connection
-    u_long non_blocking = 1;
-    ioctlsocket(sock, FIONBIO, &non_blocking);
+        // Make the socket non-blocking for the connection
+        non_blocking = 1;
+        ioctlsocket(sock, FIONBIO, &non_blocking);
 
-    // Connect
-    int s = ::connect(sock, addr->ai_addr, addr->ai_addrlen);
-    int error = WSAGetLastError();
-    freeaddrinfo(addr);
+        // Connect
+        DEBUG("Attempting connection to %s:%d", ip, port);
+        int s = ::connect(sock, addr->ai_addr, addr->ai_addrlen);
+        error = WSAGetLastError();
 
-    if (s < 0) {
-        if (error == WSAEWOULDBLOCK) {
-            struct timeval tv;
-            tv.tv_sec = timeout / 1000;
-            tv.tv_usec = timeout % 1000;
-            fd_set sock_set;
-            FD_ZERO(&sock_set);
-            FD_SET(sock, &sock_set);
-            // Wait for the socket to become ready
-            s = select(sock + 1, NULL, &sock_set, NULL, &tv);
-            if (s > 0) {
-                int opt;
-                socklen_t optlen = sizeof(opt);
-                s = getsockopt(sock, SOL_SOCKET, SO_ERROR, (char *)(&opt), &optlen);
-            } else if (s == 0) {
-                close();
-                throwIOErr(host, port, "Connection timed out.", 0);
+
+        if (s < 0) {
+            if (error == WSAEWOULDBLOCK) {
+                struct timeval tv;
+                tv.tv_sec = timeout / 1000;
+                tv.tv_usec = timeout % 1000;
+                fd_set sock_set;
+                FD_ZERO(&sock_set);
+                FD_SET(sock, &sock_set);
+                // Wait for the socket to become ready
+                s = select(sock + 1, NULL, &sock_set, NULL, &tv);
+                if (s > 0) {
+                    int opt;
+                    socklen_t optlen = sizeof(opt);
+                    s = getsockopt(sock, SOL_SOCKET, SO_ERROR, (char *)(&opt), &optlen);
+                } else if (s == 0) {
+                    close();
+                    DEBUG("Timed out connecting to %s:%d", ip, port);
+                    continue;
+                } else {
+                    error = WSAGetLastError();
+                }
             } else {
-                error = WSAGetLastError();
+                s = -1;
             }
+        }
+        if (s < 0) {
+            close();
         } else {
-            s = -1;
+            // We got a successful connection
+            break;
         }
     }
-    if (s < 0) {
-        close();
-        throwIOErr(host, port, "Error during connection", error);
+    freeaddrinfo(addr_list);
+    /* No address succeeded */
+    if(addr == NULL) {
+        throwIOErr(host, port, "Failed to connect", error);
     }
-
+    DEBUG("Connected to %s:%d", ip, port);
     // Set to blocking mode again
     non_blocking = 0;
     ioctlsocket(sock, FIONBIO, &non_blocking);
