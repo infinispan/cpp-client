@@ -11,7 +11,7 @@
    </parent>
    <groupId>org.infinispan</groupId>
    <artifactId>infinispan-client-hotrod-jni</artifactId>
-   <version>6.0.1-SNAPSHOT</version>
+   <version>@HOTROD_VERSION@</version>
    <packaging>jar</packaging>
    <name>Infinispan HotRod JNI Wrapper</name>
    <description>Infinispan HotRod JNI Wrapper</description>

@@ -40,6 +40,7 @@ if(EXISTS ${JNI_DIR})
 endif(EXISTS ${JNI_DIR})
   
 file(COPY ${CMAKE_SOURCE_DIR}/jni DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
+configure_file(jni/pom.xml ${PROJECT_BINARY_DIR}/jni/pom.xml  @ONLY IMMEDIATE)
 
 set(CMAKE_SWIG_OUTDIR "${JNI_DIR}/src/main/java/org/infinispan/client/hotrod/jni")
 set(CMAKE_SWIG_FLAGS -package "org.infinispan.client.hotrod.jni")
