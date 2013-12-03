@@ -1,10 +1,10 @@
-cmake_minimum_required (VERSION 2.8)
+cmake_minimum_required (VERSION 2.6)
 
-project (infinispan-hotrod-c++ C CXX)
+project (infinispan-hotrod-cpp C CXX)
 
 set (CPACK_PACKAGE_VERSION_MAJOR "6")
 set (CPACK_PACKAGE_VERSION_MINOR "0")
-set (CPACK_PACKAGE_VERSION_PATCH "1-SNAPSHOT")
+set (CPACK_PACKAGE_VERSION_PATCH "2-SNAPSHOT")
 set (HOTROD_VERSION "${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}")
 
 include_directories ("${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_SOURCE_DIR}/src")
@@ -159,6 +159,7 @@ add_library (hotrod SHARED ${library_sources})
 target_link_libraries (hotrod ${platform_libs})
 set_target_properties (hotrod PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS}")
 set_target_properties (hotrod PROPERTIES LINK_FLAGS "${CATCH_UNDEFINED}")
+set_target_properties (hotrod PROPERTIES SOVERSION "1.0")
 
 # Build a static library
 add_library (hotrod-static STATIC ${library_sources})
@@ -170,18 +171,6 @@ find_package(Java)
 if (NOT JAVA_RUNTIME)
     message(FATAL_ERROR "Java javac compiler not found")
 endif (NOT JAVA_RUNTIME)
-
-if (NOT DEFINED HOTROD_JBOSS_HOME)
-   if (NOT DEFINED ENV{JBOSS_HOME})
-      message(FATAL_ERROR "you must set the JBOSS_HOME environment variable or use -DHOTROD_JBOSS_HOME=/the/path")
-   else (NOT DEFINED ENV{JBOSS_HOME})
-      set(HOTROD_JBOSS_HOME $ENV{JBOSS_HOME} CACHE FILEPATH "Infinispan HOME dir")
-   endif (NOT DEFINED ENV{JBOSS_HOME})
-endif (NOT DEFINED HOTROD_JBOSS_HOME)
-
-if (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.sh") AND (EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.bat")))
-    message(FATAL_ERROR "JBOSS_HOME ${HOTROD_JBOSS_HOME} does not have needed startup scripts")
-endif (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.sh") AND (EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.bat")))
 
 add_executable (simple test/Simple.cpp)
 set_property(TARGET simple PROPERTY INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/include")
@@ -210,9 +199,22 @@ include (CTest)
 add_test (unit_test unit_test)
 add_test (hash_test hash_test)
 add_test (l3_test l3_test)
-add_test (start_server python ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py start ${JAVA_RUNTIME} ${HOTROD_JBOSS_HOME} single)
-add_test (simple simple)
-add_test (stop_server python ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py stop)
+
+if (NOT DEFINED HOTROD_JBOSS_HOME)
+   if (NOT DEFINED ENV{JBOSS_HOME})
+      message(WARNING "you must set the JBOSS_HOME environment variable or use -DHOTROD_JBOSS_HOME=/the/path if you want to run integration tests")
+   else (NOT DEFINED ENV{JBOSS_HOME})
+      set(HOTROD_JBOSS_HOME $ENV{JBOSS_HOME} CACHE FILEPATH "Infinispan HOME dir")
+   endif (NOT DEFINED ENV{JBOSS_HOME})
+endif (NOT DEFINED HOTROD_JBOSS_HOME)
+
+if (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.sh") AND (EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.bat")))
+    message( "JBOSS_HOME ${HOTROD_JBOSS_HOME} does not have needed startup scripts")
+else (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.sh") AND (EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.bat")))
+    add_test (start_server python ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py start ${JAVA_RUNTIME} ${HOTROD_JBOSS_HOME} single)
+    add_test (simple simple)
+    add_test (stop_server python ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py stop)
+endif (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.sh") AND (EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.bat")))
 
 if (ENABLE_SWIG_TESTING)
     include(jni/swig.cmake)
@@ -254,7 +256,7 @@ set (CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/License.txt")
 file (GLOB includes "${CMAKE_CURRENT_SOURCE_DIR}/include/infinispan/hotrod/*.h")
 install (FILES ${includes} DESTINATION include/infinispan/hotrod)
 install (FILES "${CMAKE_CURRENT_SOURCE_DIR}/License.txt" "${CMAKE_CURRENT_SOURCE_DIR}/dist/README.md" DESTINATION .)
-install (TARGETS hotrod hotrod-static DESTINATION lib)
+install (TARGETS hotrod hotrod-static DESTINATION lib${LIB_SUFFIX})
 
 include (CPack)
 
@@ -274,4 +276,5 @@ if (DOXYGEN_FOUND)
                      SOURCES ${PROJECT_BINARY_DIR}/Doxyfile)
   #Include the API docs in the package.
   install (FILES ${CMAKE_BINARY_DIR}/api_docs/html/ DESTINATION docs/api)
-endif()
+endif (DOXYGEN_FOUND)
+
