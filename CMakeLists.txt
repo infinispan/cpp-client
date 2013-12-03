@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 2.8)
+cmake_minimum_required (VERSION 2.6)
 
 project (infinispan-hotrod-cpp C CXX)
 
@@ -159,6 +159,7 @@ add_library (hotrod SHARED ${library_sources})
 target_link_libraries (hotrod ${platform_libs})
 set_target_properties (hotrod PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS}")
 set_target_properties (hotrod PROPERTIES LINK_FLAGS "${CATCH_UNDEFINED}")
+set_target_properties (hotrod PROPERTIES SOVERSION "1.0")
 
 # Build a static library
 add_library (hotrod-static STATIC ${library_sources})
@@ -255,7 +256,7 @@ set (CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/License.txt")
 file (GLOB includes "${CMAKE_CURRENT_SOURCE_DIR}/include/infinispan/hotrod/*.h")
 install (FILES ${includes} DESTINATION include/infinispan/hotrod)
 install (FILES "${CMAKE_CURRENT_SOURCE_DIR}/License.txt" "${CMAKE_CURRENT_SOURCE_DIR}/dist/README.md" DESTINATION .)
-install (TARGETS hotrod hotrod-static DESTINATION lib)
+install (TARGETS hotrod hotrod-static DESTINATION lib${LIB_SUFFIX})
 
 include (CPack)
 
