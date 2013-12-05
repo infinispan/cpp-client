@@ -25,4 +25,16 @@ import static org.jboss.logging.Logger.Level.*;
 @MessageLogger(projectCode = "ISPN")
 public interface Log extends BasicLogger {
 
+   @LogMessage(level = WARN)
+   @Message(value = "Unable to convert string property [%s] to an int! Using default value of %d", id = 4018)
+   void unableToConvertStringPropertyToInt(String value, int defaultValue);
+
+   @LogMessage(level = WARN)
+   @Message(value = "Unable to convert string property [%s] to a long! Using default value of %d", id = 4019)
+   void unableToConvertStringPropertyToLong(String value, long defaultValue);
+
+   @LogMessage(level = WARN)
+   @Message(value = "Unable to convert string property [%s] to a boolean! Using default value of %b", id = 4020)
+   void unableToConvertStringPropertyToBoolean(String value, boolean defaultValue);
+   
 }
