@@ -45,7 +45,7 @@ inline uint64_t rotl64(uint64_t x, int8_t r) {
 #define ROTL32(x,y)     rotl32(x,y)
 #define ROTL64(x,y)     rotl64(x,y)
 
-#define BIG_CONSTANT(x) (x##LLU)
+#define BIG_CONSTANT(x) (x##LL)
 
 #endif // !defined(_MSC_VER)
 
@@ -53,28 +53,12 @@ inline uint64_t rotl64(uint64_t x, int8_t r) {
 // Block read - if your platform needs to do endian-swapping or can only
 // handle aligned reads, do the conversion here
 
-FORCE_INLINE uint32_t getblock32(const uint32_t * p, int i) {
-    return p[i];
-}
-
-FORCE_INLINE uint64_t getblock64(const uint64_t * p, int i) {
+FORCE_INLINE int64_t getblock64(const int64_t * p, int i) {
     return p[i];
 }
 
 //-----------------------------------------------------------------------------
 // Finalization mix - force all bits of a hash block to avalanche
-
-FORCE_INLINE uint32_t fmix32(uint32_t h) {
-    h ^= h >> 16;
-    h *= 0x85ebca6b;
-    h ^= h >> 13;
-    h *= 0xc2b2ae35;
-    h ^= h >> 16;
-
-    return h;
-}
-
-//----------
 
 FORCE_INLINE uint64_t fmix64(uint64_t k) {
     k ^= k >> 33;
@@ -88,207 +72,114 @@ FORCE_INLINE uint64_t fmix64(uint64_t k) {
 
 //-----------------------------------------------------------------------------
 
-void MurmurHash3_x64_128(const void * key, const int len, const uint32_t seed,
-        void * out) {
-    const uint8_t * data = (const uint8_t*) key;
-    const int nblocks = len / 16;
 
-    uint64_t h1 = seed;
-    uint64_t h2 = seed;
-
-    const uint64_t c1 = BIG_CONSTANT(0x87c37b91114253d5);
-    const uint64_t c2 = BIG_CONSTANT(0x4cf5ad432745937f);
-
-    //----------
-    // body
-
-    const uint64_t * blocks = (const uint64_t *) (data);
-
-    for (int i = 0; i < nblocks; i++) {
-        uint64_t k1 = getblock64(blocks, i * 2 + 0);
-        uint64_t k2 = getblock64(blocks, i * 2 + 1);
-
-        k1 *= c1;
-        k1 = ROTL64(k1, 31);
-        k1 *= c2;
-        h1 ^= k1;
-
-        h1 = ROTL64(h1, 27);
-        h1 += h2;
-        h1 = h1 * 5 + 0x52dce729;
-
-        k2 *= c2;
-        k2 = ROTL64(k2, 33);
-        k2 *= c1;
-        h2 ^= k2;
-
-        h2 = ROTL64(h2, 31);
-        h2 += h1;
-        h2 = h2 * 5 + 0x38495ab5;
-    }
-
-    //----------
-    // tail
-
-    const uint8_t * tail = (const uint8_t*) (data + nblocks * 16);
-
-    uint64_t k1 = 0;
-    uint64_t k2 = 0;
-
-    switch (len & 15) {
-    case 15:
-        k2 ^= ((uint64_t) tail[14]) << 48;
-    case 14:
-        k2 ^= ((uint64_t) tail[13]) << 40;
-    case 13:
-        k2 ^= ((uint64_t) tail[12]) << 32;
-    case 12:
-        k2 ^= ((uint64_t) tail[11]) << 24;
-    case 11:
-        k2 ^= ((uint64_t) tail[10]) << 16;
-    case 10:
-        k2 ^= ((uint64_t) tail[9]) << 8;
-    case 9:
-        k2 ^= ((uint64_t) tail[8]) << 0;
-        k2 *= c2;
-        k2 = ROTL64(k2, 33);
-        k2 *= c1;
-        h2 ^= k2;
-
-    case 8:
-        k1 ^= ((uint64_t) tail[7]) << 56;
-    case 7:
-        k1 ^= ((uint64_t) tail[6]) << 48;
-    case 6:
-        k1 ^= ((uint64_t) tail[5]) << 40;
-    case 5:
-        k1 ^= ((uint64_t) tail[4]) << 32;
-    case 4:
-        k1 ^= ((uint64_t) tail[3]) << 24;
-    case 3:
-        k1 ^= ((uint64_t) tail[2]) << 16;
-    case 2:
-        k1 ^= ((uint64_t) tail[1]) << 8;
-    case 1:
-        k1 ^= ((uint64_t) tail[0]) << 0;
-        k1 *= c1;
-        k1 = ROTL64(k1, 31);
-        k1 *= c2;
-        h1 ^= k1;
-    };
-
-    //----------
-    // finalization
-
-    h1 ^= len;
-    h2 ^= len;
-
-    h1 += h2;
-    h2 += h1;
-
-    h1 = fmix64(h1);
-    h2 = fmix64(h2);
-
-    h1 += h2;
-    h2 += h1;
-
-    ((uint64_t*) out)[0] = h1;
-    ((uint64_t*) out)[1] = h2;
-}
-
-uint64_t MurmurHash3_x64_64(const void * key, const int len, const uint32_t seed) {
+uint64_t MurmurHash3_x64_64(const void * key, const int32_t len, const int32_t seed) {
     // Exactly the same as MurmurHash3_x64_128, except it only returns state.h1
-    const uint8_t * data = (const uint8_t*) key;
+    const int8_t * data = (const int8_t*) key;
     const int nblocks = len / 16;
 
-    uint64_t h1 = seed;
-    uint64_t h2 = seed;
+    int64_t h1 = BIG_CONSTANT(0x9368e53c2f6af274) ^ seed;
+    int64_t h2 = BIG_CONSTANT(0x586dcd208f7cd3fd) ^ seed;
 
-    const uint64_t c1 = BIG_CONSTANT(0x87c37b91114253d5);
-    const uint64_t c2 = BIG_CONSTANT(0x4cf5ad432745937f);
+    int64_t c1 = BIG_CONSTANT(0x87c37b91114253d5);
+    int64_t c2 = BIG_CONSTANT(0x4cf5ad432745937f);
 
-    //----------
-    // body
-
-    const uint64_t * blocks = (const uint64_t *) (data);
+    const int64_t * blocks = (const int64_t *) (data);
 
     for (int i = 0; i < nblocks; i++) {
-        uint64_t k1 = getblock64(blocks, i * 2 + 0);
-        uint64_t k2 = getblock64(blocks, i * 2 + 1);
+        int64_t k1 = getblock64(blocks, i * 2 + 0);
+        int64_t k2 = getblock64(blocks, i * 2 + 1);
+
+        // bmix
 
         k1 *= c1;
-        k1 = ROTL64(k1, 31);
+        k1 = ROTL64(k1, 23);
         k1 *= c2;
         h1 ^= k1;
-
-        h1 = ROTL64(h1, 27);
         h1 += h2;
-        h1 = h1 * 5 + 0x52dce729;
+
+        h2 = ROTL64(h2, 41);
+
 
         k2 *= c2;
-        k2 = ROTL64(k2, 33);
+        k2 = ROTL64(k2, 23);
         k2 *= c1;
         h2 ^= k2;
-
-        h2 = ROTL64(h2, 31);
         h2 += h1;
-        h2 = h2 * 5 + 0x38495ab5;
+
+        h1 = h1 * 3 + 0x52dce729;
+        h2 = h2 * 3 + 0x38495ab5;
+
+        c1 = c1 * 5 + 0x7b7d159c;
+        c2 = c2 * 5 + 0x6bce6396;
     }
 
     //----------
     // tail
 
-    const uint8_t * tail = (const uint8_t*) (data + nblocks * 16);
+    const int8_t * tail = (const int8_t*) (data + nblocks * 16);
 
-    uint64_t k1 = 0;
-    uint64_t k2 = 0;
+    int64_t k1 = 0;
+    int64_t k2 = 0;
 
     switch (len & 15) {
     case 15:
-        k2 ^= ((uint64_t) tail[14]) << 48;
+        k2 ^= ((int64_t) tail[14]) << 48;
     case 14:
-        k2 ^= ((uint64_t) tail[13]) << 40;
+        k2 ^= ((int64_t) tail[13]) << 40;
     case 13:
-        k2 ^= ((uint64_t) tail[12]) << 32;
+        k2 ^= ((int64_t) tail[12]) << 32;
     case 12:
-        k2 ^= ((uint64_t) tail[11]) << 24;
+        k2 ^= ((int64_t) tail[11]) << 24;
     case 11:
-        k2 ^= ((uint64_t) tail[10]) << 16;
+        k2 ^= ((int64_t) tail[10]) << 16;
     case 10:
-        k2 ^= ((uint64_t) tail[9]) << 8;
+        k2 ^= ((int64_t) tail[9]) << 8;
     case 9:
-        k2 ^= ((uint64_t) tail[8]) << 0;
-        k2 *= c2;
-        k2 = ROTL64(k2, 33);
-        k2 *= c1;
-        h2 ^= k2;
-
+        k2 ^= ((int64_t) tail[8]) << 0;
     case 8:
-        k1 ^= ((uint64_t) tail[7]) << 56;
+        k1 ^= ((int64_t) tail[7]) << 56;
     case 7:
-        k1 ^= ((uint64_t) tail[6]) << 48;
+        k1 ^= ((int64_t) tail[6]) << 48;
     case 6:
-        k1 ^= ((uint64_t) tail[5]) << 40;
+        k1 ^= ((int64_t) tail[5]) << 40;
     case 5:
-        k1 ^= ((uint64_t) tail[4]) << 32;
+        k1 ^= ((int64_t) tail[4]) << 32;
     case 4:
-        k1 ^= ((uint64_t) tail[3]) << 24;
+        k1 ^= ((int64_t) tail[3]) << 24;
     case 3:
-        k1 ^= ((uint64_t) tail[2]) << 16;
+        k1 ^= ((int64_t) tail[2]) << 16;
     case 2:
-        k1 ^= ((uint64_t) tail[1]) << 8;
+        k1 ^= ((int64_t) tail[1]) << 8;
     case 1:
-        k1 ^= ((uint64_t) tail[0]) << 0;
+        k1 ^= ((int64_t) tail[0]) << 0;
+    };
+
+    if ((len & 15) != 0) {
+        // bmix
         k1 *= c1;
-        k1 = ROTL64(k1, 31);
+        k1 = ROTL64(k1, 23);
         k1 *= c2;
         h1 ^= k1;
-    };
+        h1 += h2;
+
+        h2 = ROTL64(h2, 41);
+
+        k2 *= c2;
+        k2 = ROTL64(k2, 23);
+        k2 *= c1;
+        h2 ^= k2;
+        h2 += h1;
+
+        h1 = h1 * 3 + 0x52dce729;
+        h2 = h2 * 3 + 0x38495ab5;
+
+        c1 = c1 * 5 + 0x7b7d159c;
+        c2 = c2 * 5 + 0x6bce6396;
+    }
 
     //----------
     // finalization
-
-    h1 ^= len;
     h2 ^= len;
 
     h1 += h2;
@@ -303,8 +194,8 @@ uint64_t MurmurHash3_x64_64(const void * key, const int len, const uint32_t seed
     return h1;
 }
 
-uint32_t MurmurHash3_x64_32(const void * key, const uint32_t len, const uint32_t seed) {
-    return (uint32_t) (MurmurHash3_x64_64(key, len, seed) >> 32);
+int32_t MurmurHash3_x64_32(const void * key, const int32_t len, const int32_t seed) {
+    return (int32_t) ((uint64_t) MurmurHash3_x64_64(key, len, seed) >> 32);
 }
 
 // Method declarations
@@ -313,22 +204,64 @@ MurmurHash3::~MurmurHash3() {}
 
 uint32_t MurmurHash3::hash(const hrbytes& key) const {
     hrbytes& k = const_cast<hrbytes&>(key);
-    return MurmurHash3_x64_32(k.bytes(), k.length(), 9001);
+    return (uint32_t) MurmurHash3_x64_32(k.bytes(), k.length(), 9001);
 }
 
 uint32_t MurmurHash3::hash(int32_t key) const {
-    unsigned char buffer[4] = { 0 };
-    read_int(buffer, key);
-    return MurmurHash3_x64_32(buffer, 4, 9001);
-}
+	// Obtained by inlining MurmurHash3_x64_32(byte[], 9001) and removing all the unused code
+	// (since we know the input is always 4 bytes and we only need 4 bytes of output)
+	int8_t b0 = (int8_t) key;
+	int8_t b1 = (int8_t) ((uint32_t) key >> 8);
+	int8_t b2 = (int8_t) ((uint32_t) key >> 16);
+	int8_t b3 = (int8_t) ((uint32_t) key >> 24);
 
-void MurmurHash3::read_int(unsigned char *results, int32_t num) const {
-    int32_t count = 0;
-    int32_t len = sizeof(int32_t);
-    char *num_bytes = (char*) &num;
-    for (count = 0; count < len; count++) {
-        results[count] = num_bytes[count];
-    }
+	int64_t h1 = 0x9368e53c2f6af274L ^ 9001;
+	int64_t h2 = 0x586dcd208f7cd3fdL ^ 9001;
+
+	int64_t c1 = 0x87c37b91114253d5L;
+	int64_t c2 = 0x4cf5ad432745937fL;
+
+	int64_t k1 = 0;
+	int64_t k2 = 0;
+
+	k1 ^= (int64_t) b3 << 24;
+	k1 ^= (int64_t) b2 << 16;
+	k1 ^= (int64_t) b1 << 8;
+	k1 ^= b0;
+
+	// bmix
+	k1 *= c1;
+	k1 = ROTL64(k1, 23);
+	k1 *= c2;
+	h1 ^= k1;
+	h1 += h2;
+
+	h2 = ROTL64(h2, 41);
+
+	k2 *= c2;
+	k2 = ROTL64(k2, 23);
+	k2 *= c1;
+	h2 ^= k2;
+	h2 += h1;
+
+	h1 = h1 * 3 + 0x52dce729;
+	h2 = h2 * 3 + 0x38495ab5;
+
+	c1 = c1 * 5 + 0x7b7d159c;
+	c2 = c2 * 5 + 0x6bce6396;
+
+	h2 ^= 4;
+
+	h1 += h2;
+	h2 += h1;
+
+	h1 = fmix64(h1);
+	h2 = fmix64(h2);
+
+	h1 += h2;
+	h2 += h1;
+
+	return (int32_t) ((uint64_t) h1 >> 32);
 }
 
 }} // namespace
