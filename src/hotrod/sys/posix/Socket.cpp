@@ -97,7 +97,7 @@ void Socket::connect(const std::string& h, int p, int timeout) {
     struct addrinfo hints;
     struct addrinfo *addr, *addr_list;
     char ip[INET6_ADDRSTRLEN];
-    int error, flags, sock;
+    int error = 0, flags, sock;
 
     host = h;
     port = p;
