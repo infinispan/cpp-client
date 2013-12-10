@@ -25,21 +25,11 @@ public class Configuration {
    private final ExecutorFactoryConfiguration asyncExecutorFactory;
    private final Class<? extends RequestBalancingStrategy> balancingStrategy;
    private final WeakReference<ClassLoader> classLoader;
-//   private final ConnectionPoolConfiguration connectionPool;
-//   private final int connectionTimeout;
    private final Class<? extends ConsistentHash>[] consistentHashImpl;
-//   private final boolean forceReturnValues;
-//   private final int keySizeEstimate;
    private final Class<? extends Marshaller> marshallerClass;
    private final Marshaller marshaller;
-//   private final boolean pingOnStartup;
-//   private final String protocolVersion;
    private final List<ServerConfiguration> servers;
-//   private final int socketTimeout;
-//   private final SslConfiguration ssl;
-//   private final boolean tcpNoDelay;
    private final Class<? extends TransportFactory> transportFactory;
-//   private final int valueSizeEstimate;
    
    private org.infinispan.client.hotrod.jni.Configuration jniConfiguration;
 
@@ -88,6 +78,10 @@ public class Configuration {
       this.marshaller = marshaller;
       this.servers = Collections.unmodifiableList(servers);
       this.transportFactory = transportFactory;
+   }
+
+   public org.infinispan.client.hotrod.jni.Configuration getJniConfiguration() {
+      return jniConfiguration;
    }
 
    public ExecutorFactoryConfiguration asyncExecutorFactory() {

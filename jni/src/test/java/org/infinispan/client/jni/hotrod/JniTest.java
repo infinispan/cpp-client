@@ -1,31 +1,56 @@
 package org.infinispan.client.jni.hotrod;
 
-import org.testng.reporters.TextReporter;
-import org.testng.TestNG;
+import org.infinispan.client.hotrod.BulkGetKeysDistTest;
+import org.infinispan.client.hotrod.BulkGetKeysReplTest;
 import org.infinispan.client.hotrod.BulkGetKeysSimpleTest;
+import org.infinispan.client.hotrod.BulkGetReplTest;
 import org.infinispan.client.hotrod.BulkGetSimpleTest;
-import org.infinispan.client.hotrod.CacheContainerTest;
 import org.infinispan.client.hotrod.DefaultExpirationTest;
 import org.infinispan.client.hotrod.ForceReturnValueTest;
+import org.infinispan.client.hotrod.ForceReturnValuesTest;
 import org.infinispan.client.hotrod.HotRodIntegrationTest;
+import org.infinispan.client.hotrod.HotRodServerStartStopTest;
 import org.infinispan.client.hotrod.HotRodStatisticsTest;
-
+import org.infinispan.client.hotrod.ServerErrorTest;
+import org.infinispan.client.hotrod.ServerShutdownTest;
+import org.infinispan.client.hotrod.SocketTimeoutErrorTest;
+import org.testng.TestNG;
+import org.testng.reporters.TextReporter;
 
 public class JniTest {
-    public static void main(String[] args) {
-        TestNG testng = new TestNG();
-        TextReporter tr = new TextReporter("SWIG Tests", 2);
-        testng.setTestClasses(new Class[] { DefaultExpirationTest.class, HotRodIntegrationTest.class, ForceReturnValueTest.class, BulkGetSimpleTest.class, BulkGetKeysSimpleTest.class, HotRodStatisticsTest.class });
-        testng.addListener(tr);
-        testng.run();
-        /*
-         * We expect two failures:
-         *  ForceReturnValueTest.testRemoveNonExistForceReturnPrevious
-         *  HotRodIntegrationTest.testReplaceWithVersionWithLifespanAsync
-         */
+   public static void main(String[] args) {
+      TestNG testng = new TestNG();
+      TextReporter tr = new TextReporter("SWIG Tests", 2);
 
+      testng.setTestClasses(new Class[] {
+            //Might work after HRCPP-103 is fixed
+            //                  BulkGetKeysDistTest.class,
+            //                  BulkGetKeysReplTest.class, 
+            //                  BulkGetReplTest.class, 
 
-        if (testng.hasFailure() && tr.getFailedTests().size() > 2)
-            System.exit(1);
-    }
+            //Known to work
+            BulkGetKeysSimpleTest.class, 
+            BulkGetSimpleTest.class, 
+            DefaultExpirationTest.class,
+            ForceReturnValueTest.class, 
+            ForceReturnValuesTest.class, 
+            HotRodIntegrationTest.class,
+            HotRodServerStartStopTest.class, 
+            HotRodStatisticsTest.class, 
+            ServerErrorTest.class,
+            ServerShutdownTest.class, 
+            SocketTimeoutErrorTest.class, 
+      });
+      testng.addListener(tr);
+      testng.run();
+      /*
+       * We expect one failure: HotRodIntegrationTest.testReplaceWithVersionWithLifespanAsync
+       */
+
+      String[] expectedTestFailures = { "HotRodIntegrationTest.testReplaceWithVersionWithLifespanAsync" };
+
+      if (testng.hasFailure() && tr.getFailedTests().size() > expectedTestFailures.length) {
+         System.exit(1);
+      }
+   }
 }
