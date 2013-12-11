@@ -140,4 +140,24 @@ public abstract class RemoteCacheUnsupported<K, V> implements RemoteCache<K, V> 
         throw new UnsupportedOperationException();
     }
 
+    @Override
+    public NotifyingFuture<Boolean> replaceWithVersionAsync(K key, V newValue, long version) {
+       throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public NotifyingFuture<Boolean> replaceWithVersionAsync(K key, V newValue, long version, int lifespanSeconds) {
+       throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public NotifyingFuture<Boolean> replaceWithVersionAsync(K key, V newValue, long version, int lifespanSeconds, int maxIdleSeconds) {
+       throw new UnsupportedOperationException();
+    }
+    
+    @Override
+    public NotifyingFuture<Boolean> removeWithVersionAsync(K key, long version) {
+       throw new UnsupportedOperationException();
+    }
+
 }
