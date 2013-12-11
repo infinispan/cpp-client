@@ -135,4 +135,10 @@ public interface RemoteCache<K, V> {
     boolean remove(K key, V value);
 
     ServerStatistics stats();
+
+    NotifyingFuture<Boolean> replaceWithVersionAsync(K key, V newValue, long version);
+    NotifyingFuture<Boolean> replaceWithVersionAsync(K key, V newValue, long version, int lifespanSeconds);
+    NotifyingFuture<Boolean> replaceWithVersionAsync(K key, V newValue, long version, int lifespanSeconds, int maxIdleSeconds);
+    
+    NotifyingFuture<Boolean> removeWithVersionAsync(K key, long version);
 }
