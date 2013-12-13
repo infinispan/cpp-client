@@ -51,9 +51,6 @@ def start(args):
         pickle.dump(jproc, output)
     output.close()
 
-    # TODO: better check that the server has had time to initialize, but for now...
-    time.sleep(3)
-
     return 0
 
 def stop(verbose=False):
