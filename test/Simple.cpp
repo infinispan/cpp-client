@@ -13,6 +13,15 @@
 
 using namespace infinispan::hotrod;
 
+template <class T>
+void assert_not_null(const std::string& message, int line,  const std::auto_ptr<T>& pointer) {
+  if (pointer.get() == 0) {
+    std::cerr << message << ":" << line << std::endl;
+    std::cerr.flush();
+    throw std::exception();
+  }
+}
+
 int main(int argc, char** argv) {
     ConfigurationBuilder builder;
     builder.addServer().host(argc > 1 ? argv[1] : "127.0.0.1").port(argc > 2 ? atoi(argv[2]) : 11222);
@@ -33,6 +42,7 @@ int main(int argc, char** argv) {
     // put
     cache.put(k1, v1);
     std::auto_ptr<std::string> rv(cache.get(k1));
+    assert_not_null("get returned null!", __LINE__, rv);
     if (rv->compare(v1)) {
         std::cerr << "get/put fail for " << k1 << " got " << *rv << " expected " << v1 << std::endl;
         return 1;
@@ -40,6 +50,7 @@ int main(int argc, char** argv) {
 
     cache.put(k2, v2);
     std::auto_ptr<std::string> rv2(cache.get(k2));
+    assert_not_null("get returned null!", __LINE__, rv2);
     if (rv2->compare(v2)) {
         std::cerr << "get/put fail for " << k2 << " got " << *rv2 << " expected " << v2 << std::endl;
         return 1;
@@ -60,6 +71,7 @@ int main(int argc, char** argv) {
     // putIfAbsent
     cache.putIfAbsent(k3, v3);
     std::auto_ptr<std::string> rv3(cache.get(k3));
+    assert_not_null("get returned null!", __LINE__, rv3);
     if (rv3->compare(v3)) {
         std::cerr << "putIfAbsent fail for " << k3 << " got " << *rv3 << " expected " << v3 << std::endl;
         return 1;
@@ -67,6 +79,7 @@ int main(int argc, char** argv) {
 
     cache.putIfAbsent(k3, v4);
     std::auto_ptr<std::string> rv4(cache.get(k3));
+    assert_not_null("get returned null!", __LINE__, rv4);
     if (rv4->compare(v3)) {
         std::cerr << "putIfAbsent fail for " << k3 << " got " << *rv4 << " expected " << v3 << std::endl;
         return 1;
@@ -104,6 +117,7 @@ int main(int argc, char** argv) {
     // replaceWithVersion
     cache.replaceWithVersion(k3, v4, rv5.second.version);
     std::auto_ptr<std::string> rv6(cache.get(k3));
+    assert_not_null("get returned null!", __LINE__, rv6);
     if (rv6->compare(v4)) {
         std::cerr << "putIfAbsent fail for " << k3 << " got " << *rv6 << " expected " << v4 << std::endl;
         return 1;
@@ -111,6 +125,7 @@ int main(int argc, char** argv) {
 
     cache.replaceWithVersion(k3, v3, rv5.second.version);
     std::auto_ptr<std::string> rv7(cache.get(k3));
+    assert_not_null("get returned null!", __LINE__, rv7);
     if (rv7->compare(v4)) {
         std::cerr << "putIfAbsent fail for " << k3 << " got " << *rv7 << " expected " << v4 << std::endl;
         return 1;
@@ -163,6 +178,7 @@ int main(int argc, char** argv) {
     }
 
     std::auto_ptr<std::string> rv9(cache.withFlags(FORCE_RETURN_VALUE).put(k4,v6));
+    assert_not_null("get returned null!", __LINE__, rv9);
     if (rv9->compare(v5)) {
         std::cerr << "put with FORCE_RETURN_FLAG fail for " << k4 << " got " << *rv9 << " expected " << v5 << std::endl;
         return 1;
@@ -201,6 +217,7 @@ int main(int argc, char** argv) {
     // replace
     cache.replace(k4,v5);
     std::auto_ptr<std::string> rv10(cache.get(k4));
+    assert_not_null("get returned null!", __LINE__, rv10);
     if (rv10->compare(v5)) {
         std::cerr << "replace fail for " << k4 << " got " << *rv10 << " expected " << v5 << std::endl;
         return 1;
