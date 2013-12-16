@@ -19,10 +19,10 @@ void ConnectionPool::addObject(const InetSocketAddress& key) {
 
 TcpTransport& ConnectionPool::borrowObject(const InetSocketAddress& key) {
     if (closed) {
-        throw new HotRodClientException("Pool is closed");
+        throw HotRodClientException("Pool is closed");
     }
     if (!idle.count(key) || !busy.count(key)) {
-        throw new HotRodClientException("Pool is closed");
+        throw HotRodClientException("Pool is closed");
     }
     TransportQueuePtr idleQ = idle[key];
     TransportQueuePtr busyQ = busy[key];

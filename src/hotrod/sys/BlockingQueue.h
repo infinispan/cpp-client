@@ -24,7 +24,7 @@ public:
         ScopedLock<Mutex> l(lock);
 
         if (capacity > 0 && queue.size() == capacity) {
-            throw new Exception("Queue is full");
+            throw Exception("Queue is full");
         }
         queue.push_back(value);
         condition.notify();
