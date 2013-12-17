@@ -1,7 +1,9 @@
 #ifndef ISPN_HOTROD_TRANSPORT_INETSOCKETADDRESS_H
 #define ISPN_HOTROD_TRANSPORT_INETSOCKETADDRESS_H
 
+#include "infinispan/hotrod/ImportExport.h"
 
+#include <set>
 #include <string>
 #include <iostream>
 
@@ -9,32 +11,24 @@ namespace infinispan {
 namespace hotrod {
 namespace transport {
 
-class InetSocketAddress
+class HR_EXTERN InetSocketAddress
 {
   public:
-    InetSocketAddress(const std::string& addr, int p): address(addr), port(p) {}
-    InetSocketAddress(const InetSocketAddress& other): address(other.address), port(other.port) {}
+    InetSocketAddress(const std::string& host, int p);
+    InetSocketAddress(const InetSocketAddress& other);
 
-    const std::string& getAddress() const { return address; }
-    int getPort() const { return port; }
-    bool operator ==(const InetSocketAddress & rhs) {
-        return getAddress().compare(rhs.getAddress()) == 0 && getPort() == rhs.getPort();
-    }
+    const std::string& getHostname() const;
+    const std::set<std::string>& getAddresses() const;
+    int getPort() const;
 
-    bool operator <(const InetSocketAddress & rhs) const {
-        int comparator = getAddress().compare(rhs.getAddress());
-        if (comparator < 0) {
-            return true;
-        } else if (comparator == 0) {
-            return getPort() < rhs.getPort();
-        }
-        return false;
-    }
+    bool operator ==(const InetSocketAddress& rhs) const;
+    bool operator <(const InetSocketAddress& rhs) const;
 
     friend std::ostream& operator<<(std::ostream& os, const InetSocketAddress& isa);
 
   private:
-    std::string address;
+    std::string hostname;
+    std::set<std::string> addresses;
     int port;
 };
 

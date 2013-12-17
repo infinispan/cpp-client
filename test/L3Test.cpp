@@ -52,7 +52,7 @@ std::map<InetSocketAddress, std::set<int32_t> > createServer2HashMap(){
         int32_t hashCode = i;
         //std::cout << host << ":" << port << std::endl;
         InetSocketAddress address(host, port);
-        if (address.getAddress().compare("host01") == 0) {
+        if (address.getHostname().compare("host01") == 0) {
             InetSocketAddress duplicate("host012", 2);
             address = duplicate;
         }
@@ -90,7 +90,7 @@ void consistentHashInitTest(uint32_t hashVersion, std::string* host) {
     std::copy(host->begin(),host->end(), hostCopy.begin());
     InetSocketAddress address = hash->getServer(hrbytes(&hostCopy[0], host->length()));
 
-    std::cout << "consistentHash for hash version " << hashVersion << " returned " << address.getAddress() << std::endl;
+    std::cout << "consistentHash for hash version " << hashVersion << " returned " << address.getHostname() << std::endl;
     delete hashFactory;
 }
 

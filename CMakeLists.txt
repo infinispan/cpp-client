@@ -90,10 +90,10 @@ endif (ENABLE_VALGRIND)
 # Select driver
 if(HOTROD_WINAPI)
   set (platform_sources src/hotrod/sys/windows/Socket.cpp src/hotrod/sys/windows/Thread.cpp
-           src/hotrod/sys/windows/platform.cpp)
+           src/hotrod/sys/windows/platform.cpp src/hotrod/sys/windows/Inet.cpp)
 else(HOTROD_WINAPI)
   set (platform_sources src/hotrod/sys/posix/Socket.cpp src/hotrod/sys/posix/Thread.cpp
-           src/hotrod/sys/posix/platform.cpp src/hotrod/sys/posix/Mutex.cpp)
+           src/hotrod/sys/posix/platform.cpp src/hotrod/sys/posix/Mutex.cpp src/hotrod/sys/posix/Inet.cpp)
 endif(HOTROD_WINAPI)
 
 configure_file(src/hotrod/impl/Version.cpp.in ${CMAKE_BINARY_DIR}/Version.cpp @ONLY)

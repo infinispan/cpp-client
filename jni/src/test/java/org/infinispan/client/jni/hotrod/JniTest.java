@@ -23,12 +23,10 @@ public class JniTest {
       TextReporter tr = new TextReporter("SWIG Tests", 2);
 
       testng.setTestClasses(new Class[] {
-            //Might work after HRCPP-103 is fixed
-            //                  BulkGetKeysDistTest.class,
-            //                  BulkGetKeysReplTest.class, 
-            //                  BulkGetReplTest.class, 
-
             //Known to work
+            BulkGetKeysDistTest.class,
+            BulkGetKeysReplTest.class, 
+            BulkGetReplTest.class, 
             BulkGetKeysSimpleTest.class, 
             BulkGetSimpleTest.class, 
             DefaultExpirationTest.class,

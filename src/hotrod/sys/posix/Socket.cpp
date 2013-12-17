@@ -1,5 +1,6 @@
 #include "infinispan/hotrod/exceptions.h"
 #include "hotrod/sys/Log.h"
+#include "hotrod/sys/Inet.h"
 #include "hotrod/sys/Socket.h"
 
 #include <sys/types.h>
@@ -31,25 +32,6 @@ namespace sys {
 // Part of a straw man IO layer
 
 namespace posix {
-
-static void *get_in_addr(struct sockaddr *sa) {
-    if (sa->sa_family == AF_INET)
-        return &(((struct sockaddr_in*)sa)->sin_addr);
-    return &(((struct sockaddr_in6*)sa)->sin6_addr);
-}
-
-static int getPreferredIPStack() {
-    const char *stack = getenv("HOTROD_IPSTACK");
-    if (stack == 0) {
-        return AF_UNSPEC;
-    }  else if (!strcasecmp(stack, "IPV4")) {
-        return AF_INET;
-    } else if (!strcasecmp(stack, "IPV6")) {
-        return AF_INET6;
-    } else {
-        throw std::runtime_error("Invalid HOTROD_IPSTACK environment variable");
-    }
-}
 
 static int preferredIPStack = getPreferredIPStack();
 
@@ -94,7 +76,6 @@ Socket::Socket() : fd(-1), port(-1) {}
 Socket::~Socket() { close(); }
 
 void Socket::connect(const std::string& h, int p, int timeout) {
-    struct addrinfo hints;
     struct addrinfo *addr, *addr_list;
     char ip[INET6_ADDRSTRLEN];
     int error = 0, flags, sock;
@@ -103,16 +84,7 @@ void Socket::connect(const std::string& h, int p, int timeout) {
     port = p;
     if (fd != -1) throwIOErr(host, port, "reconnect attempt", 0);
 
-    memset(&hints, 0, sizeof(struct addrinfo));
-    hints.ai_family = preferredIPStack;
-    hints.ai_socktype = SOCK_STREAM;
-    hints.ai_protocol = IPPROTO_TCP;
-    hints.ai_flags = 0;
-
-    std::ostringstream ostr;
-    ostr << port;
-
-    int ec = getaddrinfo(host.c_str(), ostr.str().c_str(), &hints, &addr_list);
+    int ec = getaddrinfo(host, port, &addr_list);
     if (ec) throwIOErr(host, port,"Error while invoking getaddrinfo", errno);
 
     // Cycle through all returned addresses

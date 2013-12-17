@@ -27,7 +27,7 @@ static void printServers(RemoteCacheManager &manager) {
 	std::vector<InetSocketAddress> servers = getServers(manager);
 	std::cout << "Servers:\n";
 	for (AddrVector::iterator it = servers.begin(); it != servers.end(); ++it) {
-		std::cout << it->getAddress() << ":" << it->getPort() << std::endl;
+		std::cout << it->getHostname() << ":" << it->getPort() << std::endl;
 	}
 }
 

@@ -17,8 +17,8 @@ namespace transport {
 TcpTransport::TcpTransport(
     const InetSocketAddress& a, TransportFactory& factory)
 : AbstractTransport(factory), socket(), /*inStr(*socket),*/ invalid(false){
-    serverAddress = new InetSocketAddress(a.getAddress(), a.getPort());
-    socket.connect(a.getAddress(),a.getPort(), factory.getConnectTimeout());
+    serverAddress = new InetSocketAddress(a);
+    socket.connect(a.getHostname(),a.getPort(), factory.getConnectTimeout());
     socket.setTimeout(factory.getSoTimeout());
     socket.setTcpNoDelay(factory.isTcpNoDelay());
 }

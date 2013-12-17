@@ -218,7 +218,7 @@ void testTopologyChangeResponse() {
         int16_t port = i;
         int32_t hashCode = i;
         InetSocketAddress address(host, port);
-        if (address.getAddress().compare("host01") == 0) {
+        if (address.getHostname().compare("host01") == 0) {
             InetSocketAddress duplicate("host012", 2);
             address = duplicate;
         }
@@ -249,7 +249,7 @@ void testTopologyChangeResponse() {
     //iterate over vector of InetSocketAddress and print them out
     for (std::vector<InetSocketAddress>::const_iterator it =
             socketAddresses.begin(); it != socketAddresses.end(); ++it) {
-        INFO("%s", it->getAddress().c_str());
+        INFO("%s", it->getHostname().c_str());
     }
 
     //create duplicate reference from above
@@ -263,7 +263,7 @@ void testTopologyChangeResponse() {
         if(hashesPtr->size() != 2) passFail =1;;
         std::set<int32_t>::iterator iter;
         for (iter = hashesPtr->begin(); iter != hashesPtr->end(); ++iter) {
-            INFO("For %s:%d found hash %d", desired_host.getAddress().c_str(), desired_host.getPort(), *iter);
+            INFO("For %s:%d found hash %d", desired_host.getHostname().c_str(), desired_host.getPort(), *iter);
         }
     }
 
@@ -276,7 +276,7 @@ void testTopologyChangeResponse() {
         if(hashesPtr->size() != 1) passFail =1;
         std::set<int32_t>::iterator iter3;
         for (iter3 = hashesPtr->begin(); iter3 != hashesPtr->end(); ++iter3) {
-            INFO("For %s:%d found hash %d", desired_host2.getAddress().c_str(), desired_host2.getPort(), *iter3);
+            INFO("For %s:%d found hash %d", desired_host2.getHostname().c_str(), desired_host2.getPort(), *iter3);
         }
     }
     if(map.size() != 9) passFail =1;
@@ -306,7 +306,7 @@ std::pair<std::vector<InetSocketAddress>,std::vector<InetSocketAddress> > update
 
     //1. first add new servers. For servers that went down, the returned transport will fail for now
     for(std::vector<InetSocketAddress>::const_iterator it = addedServers.begin();it != addedServers.end();++it){
-       INFO("Adding to pool %s", it->getAddress().c_str());
+       INFO("Adding to pool %s", it->getHostname().c_str());
     }
 
     //2. now set the server list to the active list of servers. All the active servers (potentially together with some
@@ -316,7 +316,7 @@ std::pair<std::vector<InetSocketAddress>,std::vector<InetSocketAddress> > update
 
     //3. Now just remove failed servers
     for (std::vector<InetSocketAddress>::const_iterator it = failedServers.begin(); it != failedServers.end(); ++it) {
-        INFO("Clearing pool with %s", it->getAddress().c_str());
+        INFO("Clearing pool with %s", it->getHostname().c_str());
     }
 
     //servers.clear();
