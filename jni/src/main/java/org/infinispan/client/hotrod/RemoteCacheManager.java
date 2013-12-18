@@ -3,9 +3,12 @@
 package org.infinispan.client.hotrod;
 
 // originals
+import java.io.IOException;
+import java.net.URL;
 import java.util.Properties;
 
 import org.infinispan.client.hotrod.configuration.Configuration;
+import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.client.hotrod.jni.MapType;
 import org.infinispan.commons.marshall.Marshaller;
 // jni wrappers
@@ -19,6 +22,11 @@ public class RemoteCacheManager /* implements BasicCacheContainer */{
 
     public RemoteCacheManager() {
         jniRemoteCacheManager = new org.infinispan.client.hotrod.jni.RemoteCacheManager();
+        marshaller = new org.infinispan.commons.marshall.jboss.GenericJBossMarshaller();
+    }
+
+    public RemoteCacheManager(boolean start) {
+        jniRemoteCacheManager = new org.infinispan.client.hotrod.jni.RemoteCacheManager(start);
         marshaller = new org.infinispan.commons.marshall.jboss.GenericJBossMarshaller();
     }
 
@@ -50,8 +58,22 @@ public class RemoteCacheManager /* implements BasicCacheContainer */{
        marshaller = new org.infinispan.commons.marshall.jboss.GenericJBossMarshaller();
     }
 
+    public RemoteCacheManager(URL config, boolean start) throws IOException {
+       Properties props = new Properties();
+       props.load(config.openStream());
+       new RemoteCacheManager(props, start);
+    }
+    
     public RemoteCacheManager(Properties props) {
-       this((String) props.get(ISPN_CLIENT_HOTROD_SERVER_LIST));
+       this(props, true);
+    }
+    
+    public RemoteCacheManager(Properties props, boolean start) {
+       this((String) props.get(ISPN_CLIENT_HOTROD_SERVER_LIST), start);
+       // TODO: The configuration generated from properties causes the "Failed to connect Operation now in progress" error
+//      jniRemoteCacheManager = new org.infinispan.client.hotrod.jni.RemoteCacheManager(new ConfigurationBuilder()
+//            .withProperties(props).build().getJniConfiguration(), start);
+//      marshaller = new org.infinispan.commons.marshall.jboss.GenericJBossMarshaller();
     }
     
     public <K, V> org.infinispan.client.hotrod.RemoteCache<K, V> getCache() {
@@ -76,6 +98,10 @@ public class RemoteCacheManager /* implements BasicCacheContainer */{
 
     public org.infinispan.client.hotrod.jni.RemoteCacheManager getJniManager() {
         return jniRemoteCacheManager;
+    }
+    
+    public boolean isStarted() {
+       return jniRemoteCacheManager.isStarted();
     }
     
     public void start() {
