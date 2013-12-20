@@ -49,6 +49,8 @@ class TransportFactory
             std::map<InetSocketAddress, std::set<int32_t> >& servers2Hash,
             int32_t numKeyOwners, uint8_t hashFunctionVersion,
             int32_t hashSpace) = 0;
+    virtual void clearHashFunction() = 0;
+
     virtual infinispan::hotrod::consistenthash::ConsistentHashFactory
     & getConsistentHashFactory() = 0;
 
