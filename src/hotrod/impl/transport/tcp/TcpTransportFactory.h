@@ -43,6 +43,7 @@ class TcpTransportFactory : public TransportFactory
                 std::map<InetSocketAddress, std::set<int32_t> >& servers2Hash,
                 int32_t numKeyOwners, uint8_t hashFunctionVersion,
                 int32_t hashSpace);
+    void clearHashFunction();
     infinispan::hotrod::consistenthash::ConsistentHashFactory
             & getConsistentHashFactory();
 

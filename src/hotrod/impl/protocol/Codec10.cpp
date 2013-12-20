@@ -6,6 +6,7 @@
 #include "hotrod/impl/transport/Transport.h"
 #include "hotrod/impl/transport/TransportFactory.h"
 #include "hotrod/impl/transport/tcp/InetSocketAddress.h"
+#include "hotrod/sys/Log.h"
 
 #include <iostream>
 #include <iomanip>
@@ -120,7 +121,8 @@ void Codec10::readNewTopologyAndHash(Transport& transport, IntWrapper& topologyI
     transport.getTransportFactory().updateServers(socketAddresses);
 
     if (hashFunctionVersion == 0) {
-        //TODO log there was no hash function present
+        DEBUG("No hash function present.");
+        transport.getTransportFactory().clearHashFunction();
     } else {
         transport.getTransportFactory().updateHashFunction(m, numKeyOwners,
                 hashFunctionVersion, hashSpace);
