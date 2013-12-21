@@ -55,18 +55,20 @@ class Socket: public infinispan::hotrod::sys::Socket {
 namespace {
 
 void throwIOErr (const std::string& host, int port, const char *msg, int errnum) {
-    std::string m(msg);
+    std::ostringstream m;
+    m << msg;
+    m << " (host: " << host;
+    m << " port: " << port << ")";
+
     if (errnum != 0) {
         char buf[200];
         if (strerror_r(errnum, buf, 200) == 0) {
-            m += " ";
-            m += buf;
+            m << " " << buf;
         } else {
-            m += " ";
-            m += strerror(errnum);
+            m << " " << strerror(errnum);
         }
     }
-    throw TransportException(host, port, m);
+    throw TransportException(host, port, m.str());
 }
 
 } /* namespace */
@@ -85,7 +87,11 @@ void Socket::connect(const std::string& h, int p, int timeout) {
     if (fd != -1) throwIOErr(host, port, "reconnect attempt", 0);
 
     int ec = getaddrinfo(host, port, &addr_list);
-    if (ec) throwIOErr(host, port,"Error while invoking getaddrinfo", errno);
+    if (ec) {
+        std::ostringstream msg;
+        msg << "Error while invoking getaddrinfo: " << gai_strerror(ec);
+        throwIOErr(host, port, msg.str().c_str(), 0);
+    }
 
     // Cycle through all returned addresses
     for(addr = addr_list; addr != NULL; addr = addr->ai_next ) {
