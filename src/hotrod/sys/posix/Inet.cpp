@@ -65,7 +65,7 @@ std::set<std::string> resolve(const std::string& hostname, bool no_throw) {
             result.insert(hostname);
         } else {
             std::ostringstream msg;
-            msg << "Failed to resolve: " << hostname;
+            msg << "Failed to resolve: " << hostname << " error: " << gai_strerror(ec);
             throw Exception(msg.str());
         }
     } else {
