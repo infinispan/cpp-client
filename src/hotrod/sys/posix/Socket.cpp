@@ -94,18 +94,28 @@ void Socket::connect(const std::string& h, int p, int timeout) {
     }
 
     // Cycle through all returned addresses
-    for(addr = addr_list; addr != NULL; addr = addr->ai_next ) {
-        inet_ntop(addr->ai_family, get_in_addr((struct sockaddr *)addr->ai_addr), ip, sizeof(ip));
-        sock = socket(addr->ai_family, addr->ai_socktype, addr->ai_protocol);
-        if (sock == -1) {
-            DEBUG("Failed to obtain socket for address family %d", addr->ai_family);
-            continue;
-        }
+    bool preferred = true;
+    while (true) {
+        bool found = false;
+        for(addr = addr_list; addr != NULL; addr = addr->ai_next ) {
+            inet_ntop(addr->ai_family, get_in_addr((struct sockaddr *)addr->ai_addr), ip, sizeof(ip));
+            if ((preferred && (preferredIPStack != addr->ai_family))
+                || (!preferred && (preferredIPStack == addr->ai_family))) {
+                // Skip non-preferred addresses on the first run and preferred ones on the second one.
+                continue;
+            }
+            TRACE("Trying to connect to %s (%s).", ip, host.c_str());
 
-        // OSX portability as MSG_NOSIGNAL is not defined on OSX
-        #ifdef MSG_NOSIGNAL
+            sock = socket(addr->ai_family, addr->ai_socktype, addr->ai_protocol);
+            if (sock == -1) {
+                DEBUG("Failed to obtain socket for address family %d", addr->ai_family);
+                continue;
+            }
+
+            // OSX portability as MSG_NOSIGNAL is not defined on OSX
+#ifdef MSG_NOSIGNAL
             sendFlag = MSG_NOSIGNAL;
-        #else
+#else
             sendFlag = 0;
             int optval = 1;
             if (setsockopt(sock, SOL_SOCKET, SO_NOSIGPIPE, &optval, sizeof(optval)) == -1) {
@@ -113,48 +123,56 @@ void Socket::connect(const std::string& h, int p, int timeout) {
                 DEBUG("Error %d while invoking setsockopt", errno);
                 continue;
             }
-        #endif
+#endif
 
 
-        // Make the socket non-blocking for the connection
-        flags = fcntl(sock,F_GETFL,0);
-        fcntl(sock, F_SETFL, flags | O_NONBLOCK);
+            // Make the socket non-blocking for the connection
+            flags = fcntl(sock,F_GETFL,0);
+            fcntl(sock, F_SETFL, flags | O_NONBLOCK);
 
-        // Connect
-        DEBUG("Attempting connection to %s:%d", ip, port);
-        int s = ::connect(sock, addr->ai_addr, addr->ai_addrlen);
-        error = errno;
+            // Connect
+            DEBUG("Attempting connection to %s:%d", ip, port);
+            int s = ::connect(sock, addr->ai_addr, addr->ai_addrlen);
+            error = errno;
 
-        if (s < 0) {
-            if (error == EINPROGRESS) {
-                pollfd fds[1];
-                fds[0].fd = sock;
-                fds[0].events = POLLOUT;
-                s = poll(fds, 1, timeout);
-                if (s > 0) {
-                    if ((POLLOUT ^ fds[0].revents) != 0) {
+            if (s < 0) {
+                if (error == EINPROGRESS) {
+                    pollfd fds[1];
+                    fds[0].fd = sock;
+                    fds[0].events = POLLOUT;
+                    s = poll(fds, 1, timeout);
+                    if (s > 0) {
+                        if ((POLLOUT ^ fds[0].revents) != 0) {
+                            close();
+                            DEBUG("Failed to connect to %s:%d", ip, port);
+                            continue;
+                        }
+                        int opt;
+                        socklen_t optlen = sizeof(opt);
+                        s = getsockopt(sock, SOL_SOCKET, SO_ERROR, (void*)(&opt), &optlen);
+                    } else if (s == 0) {
                         close();
-                        DEBUG("Failed to connect to %s:%d", ip, port);
+                        DEBUG("Timed out connecting to %s:%d", ip, port);
                         continue;
+                    } else {
+                        error = errno;
                     }
-                    int opt;
-                    socklen_t optlen = sizeof(opt);
-                    s = getsockopt(sock, SOL_SOCKET, SO_ERROR, (void*)(&opt), &optlen);
-                } else if (s == 0) {
-                    close();
-                    DEBUG("Timed out connecting to %s:%d", ip, port);
-                    continue;
                 } else {
-                    error = errno;
+                    s = -1;
                 }
+            }
+            if (s < 0) {
+                close();
             } else {
-                s = -1;
+                // We got a successful connection
+                found = true;
+                break;
             }
         }
-        if (s < 0) {
-            close();
+        if (!found && preferred) {
+            // Try the non-preferred addresses.
+            preferred = false;
         } else {
-            // We got a successful connection
             break;
         }
     }
