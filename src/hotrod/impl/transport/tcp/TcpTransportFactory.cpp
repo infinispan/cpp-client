@@ -217,6 +217,10 @@ void TcpTransportFactory::updateHashFunction(
     consistentHash = hash;
 }
 
+void TcpTransportFactory::clearHashFunction() {
+    consistentHash = NULL;
+}
+
 ConsistentHashFactory& TcpTransportFactory::getConsistentHashFactory(){
     ScopedLock<Mutex> l(lock);
     return *hashFactory;
