@@ -27,33 +27,28 @@ int InetSocketAddress::getPort() const {
     return port;
 }
 
-
 bool InetSocketAddress::operator==(const InetSocketAddress& rhs) const {
     if (port != rhs.getPort()) {
         return false;
     }
-    
-    std::set<std::string> rhs_addresses = rhs.getAddresses();
+    return isSameHost(this->getAddresses(), rhs.getAddresses());
+}
 
-    for (std::set<std::string>::iterator it = addresses.begin(); it != addresses.end(); ++it) {
-        if (rhs_addresses.find(*it) != rhs_addresses.end()) {
+bool InetSocketAddress::operator<(const InetSocketAddress& rhs) const {
+    if (isSameHost(this->getAddresses(), rhs.getAddresses())) {
+        return getPort() < rhs.getPort();
+    }
+    return addresses < rhs.getAddresses();
+}
+
+bool InetSocketAddress::isSameHost(const std::set<std::string>& lhs, const std::set<std::string>& rhs) const {
+    for (std::set<std::string>::iterator it = lhs.begin(); it != lhs.end(); ++it) {
+        if (rhs.find(*it) != rhs.end()) {
             return true;
         }
     }
     return false;
 }
-
-bool InetSocketAddress::operator<(const InetSocketAddress& rhs) const {
-    std::set<std::string> rhs_addresses = rhs.getAddresses();;
-
-    if (addresses < rhs_addresses) {
-        return true;
-    } else if (addresses == rhs_addresses) {
-        return getPort() < rhs.getPort();
-    }
-    return false;
-}
-
 
 std::ostream& operator<<(std::ostream& os, const InetSocketAddress& isa) {
     os << "InetSocketAddress[hostname=" << isa.hostname << ", port=" << isa.port << ", addresses=";
