@@ -30,6 +30,8 @@ class HR_EXTERN InetSocketAddress
     std::string hostname;
     std::set<std::string> addresses;
     int port;
+
+    bool isSameHost(const std::set<std::string>& lhs, const std::set<std::string>& rhs) const;
 };
 
 }}} // namespace infinispan::hotrod::transport
