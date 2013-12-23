@@ -32,13 +32,11 @@ int getPreferredIPStack() {
     }
 }
 
-static int preferredIPStack = getPreferredIPStack();
-
 int getaddrinfo(const std::string& host, int port, struct addrinfo **addr_list) {
     struct addrinfo hints;
 
     memset(&hints, 0, sizeof(struct addrinfo));
-    hints.ai_family = preferredIPStack;
+    hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_protocol = 0;
     hints.ai_flags = 0;

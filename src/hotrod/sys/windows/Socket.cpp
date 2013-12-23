@@ -93,53 +93,71 @@ void Socket::connect(const std::string& h, int p, int timeout) {
     }
 
     // Cycle through all returned addresses
-    for(addr = addr_list; addr != NULL; addr = addr->ai_next ) {
-        inet_ntop(addr->ai_family, get_in_addr((struct sockaddr *)addr->ai_addr), ip, sizeof(ip));
-        sock = socket(addr->ai_family, addr->ai_socktype, addr->ai_protocol);
-        if (sock == INVALID_SOCKET) {
-            DEBUG("Failed to obtain socket for address family %d", addr->ai_family);
-            continue;
-        }
+    bool preferred = true;
+    while (true) {
+        bool found = false;
+        for(addr = addr_list; addr != NULL; addr = addr->ai_next ) {
+            inet_ntop(addr->ai_family, get_in_addr((struct sockaddr *)addr->ai_addr), ip, sizeof(ip));
+            if ((preferred && (preferredIPStack != addr->ai_family))
+                || (!preferred && (preferredIPStack == addr->ai_family))) {
+                // Skip non-preferred addresses on the first run and preferred ones on the second one.
+                continue;
+            }
+            TRACE("Trying to connect to %s (%s).", ip, host.c_str());
 
-        // Make the socket non-blocking for the connection
-        non_blocking = 1;
-        ioctlsocket(sock, FIONBIO, &non_blocking);
+            sock = socket(addr->ai_family, addr->ai_socktype, addr->ai_protocol);
+            if (sock == INVALID_SOCKET) {
+                DEBUG("Failed to obtain socket for address family %d", addr->ai_family);
+                continue;
+            }
 
-        // Connect
-        DEBUG("Attempting connection to %s:%d", ip, port);
-        int s = ::connect(sock, addr->ai_addr, addr->ai_addrlen);
-        error = WSAGetLastError();
+            // Make the socket non-blocking for the connection
+            non_blocking = 1;
+            ioctlsocket(sock, FIONBIO, &non_blocking);
+
+            // Connect
+            DEBUG("Attempting connection to %s:%d", ip, port);
+            int s = ::connect(sock, addr->ai_addr, addr->ai_addrlen);
+            error = WSAGetLastError();
 
 
-        if (s < 0) {
-            if (error == WSAEWOULDBLOCK) {
-                struct timeval tv;
-                tv.tv_sec = timeout / 1000;
-                tv.tv_usec = timeout % 1000;
-                fd_set sock_set;
-                FD_ZERO(&sock_set);
-                FD_SET(sock, &sock_set);
-                // Wait for the socket to become ready
-                s = select(sock + 1, NULL, &sock_set, NULL, &tv);
-                if (s > 0) {
-                    int opt;
-                    socklen_t optlen = sizeof(opt);
-                    s = getsockopt(sock, SOL_SOCKET, SO_ERROR, (char *)(&opt), &optlen);
-                } else if (s == 0) {
-                    close();
-                    DEBUG("Timed out connecting to %s:%d", ip, port);
-                    continue;
+            if (s < 0) {
+                if (error == WSAEWOULDBLOCK) {
+                    struct timeval tv;
+                    tv.tv_sec = timeout / 1000;
+                    tv.tv_usec = timeout % 1000;
+                    fd_set sock_set;
+                    FD_ZERO(&sock_set);
+                    FD_SET(sock, &sock_set);
+                    // Wait for the socket to become ready
+                    s = select(sock + 1, NULL, &sock_set, NULL, &tv);
+                    if (s > 0) {
+                        int opt;
+                        socklen_t optlen = sizeof(opt);
+                        s = getsockopt(sock, SOL_SOCKET, SO_ERROR, (char *)(&opt), &optlen);
+                    } else if (s == 0) {
+                        close();
+                        DEBUG("Timed out connecting to %s:%d", ip, port);
+                        continue;
+                    } else {
+                        error = WSAGetLastError();
+                    }
                 } else {
-                    error = WSAGetLastError();
+                    s = -1;
                 }
+            }
+            if (s < 0) {
+                close();
             } else {
-                s = -1;
+                // We got a successful connection
+                found = true;
+                break;
             }
         }
-        if (s < 0) {
-            close();
+        if (!found && preferred) {
+            // Try the non-preferred addresses.
+            preferred = false;
         } else {
-            // We got a successful connection
             break;
         }
     }
