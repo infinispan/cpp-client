@@ -38,7 +38,7 @@ public class ConnectionPoolConfigurationBuilder extends AbstractConfigurationChi
 
    ConnectionPoolConfigurationBuilder(ConfigurationBuilder builder) {
       super(builder);
-      this.jniConnectionPoolConfigurationBuilder = new org.infinispan.client.hotrod.jni.ConnectionPoolConfigurationBuilder(builder.getJniConfigurationBuilder());
+      this.jniConnectionPoolConfigurationBuilder = builder.getJniConfigurationBuilder().connectionPool();
    }
 
    /**
