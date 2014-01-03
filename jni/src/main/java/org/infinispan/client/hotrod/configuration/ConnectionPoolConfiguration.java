@@ -7,14 +7,16 @@ package org.infinispan.client.hotrod.configuration;
  * @since 5.3
  */
 public class ConnectionPoolConfiguration {
-   private ExhaustedAction exhaustedAction;
+   private ExhaustedAction exhaustedAction = ExhaustedAction.WAIT;
    
    private org.infinispan.client.hotrod.jni.ConnectionPoolConfiguration jniConnectionPoolConfiguration;
 
    public ConnectionPoolConfiguration(
          org.infinispan.client.hotrod.jni.ConnectionPoolConfiguration jniConnectionPoolConfiguration) {
       this.jniConnectionPoolConfiguration = jniConnectionPoolConfiguration;
-      this.exhaustedAction.setExhaustedAction(this.jniConnectionPoolConfiguration.getExhaustedAction());
+      if (jniConnectionPoolConfiguration != null) {
+         this.exhaustedAction.setExhaustedAction(this.jniConnectionPoolConfiguration.getExhaustedAction());
+      }
    }
    
    public org.infinispan.client.hotrod.jni.ConnectionPoolConfiguration getJniConnectionPoolConfiguration() {

@@ -14,7 +14,7 @@ public class ServerConfigurationBuilder extends AbstractConfigurationChildBuilde
 
    ServerConfigurationBuilder(ConfigurationBuilder builder) {
       super(builder);
-      jniServerConfigurationBuilder = new org.infinispan.client.hotrod.jni.ServerConfigurationBuilder(builder.getJniConfigurationBuilder());
+      jniServerConfigurationBuilder = builder.getJniConfigurationBuilder().addServer();
    }
 
    public ServerConfigurationBuilder host(String host) {

@@ -80,7 +80,7 @@ public class ConfigurationBuilder implements ConfigurationChildBuilder, Builder<
          int port = ConfigurationProperties.DEFAULT_HOTROD_PORT;
          if (components.length > 1)
             port = Integer.parseInt(components[1]);
-         this.addServer().host(host).port(port);
+         this.addServer().host(host).port(port);         
       }
       return this;
    }
@@ -235,31 +235,32 @@ public class ConfigurationBuilder implements ConfigurationChildBuilder, Builder<
    @Override
    public ConfigurationBuilder withProperties(Properties properties) {
       TypedProperties typed = TypedProperties.toTypedProperties(properties);
-
-      if (typed.containsKey(ConfigurationProperties.ASYNC_EXECUTOR_FACTORY)) {
-         this.asyncExecutorFactory().factoryClass(typed.getProperty(ConfigurationProperties.ASYNC_EXECUTOR_FACTORY));
-      }
-      this.asyncExecutorFactory().withExecutorProperties(typed);
-      this.balancingStrategy(typed.getProperty(ConfigurationProperties.REQUEST_BALANCING_STRATEGY, balancingStrategy.getName()));
+      
+      //TODO: Don't call methods that throw UnsupportedOperationException
+//      if (typed.containsKey(ConfigurationProperties.ASYNC_EXECUTOR_FACTORY)) {
+//         this.asyncExecutorFactory().factoryClass(typed.getProperty(ConfigurationProperties.ASYNC_EXECUTOR_FACTORY));
+//      }
+//      this.asyncExecutorFactory().withExecutorProperties(typed);
+//      this.balancingStrategy(typed.getProperty(ConfigurationProperties.REQUEST_BALANCING_STRATEGY, balancingStrategy.getName()));
       this.connectionPool.withPoolProperties(typed);
       this.connectionTimeout(typed.getIntProperty(ConfigurationProperties.CONNECT_TIMEOUT, connectionTimeout));
-      for (int i = 1; i <= consistentHashImpl.length; i++) {
-         this.consistentHashImpl(i, typed.getProperty(ConfigurationProperties.HASH_FUNCTION_PREFIX + "." + i, consistentHashImpl[i - 1].getName()));
-      }
+//      for (int i = 1; i <= consistentHashImpl.length; i++) {
+//         this.consistentHashImpl(i, typed.getProperty(ConfigurationProperties.HASH_FUNCTION_PREFIX + "." + i, consistentHashImpl[i - 1].getName()));
+//      }
       this.forceReturnValues(typed.getBooleanProperty(ConfigurationProperties.FORCE_RETURN_VALUES, forceReturnValues));
       this.keySizeEstimate(typed.getIntProperty(ConfigurationProperties.KEY_SIZE_ESTIMATE, keySizeEstimate));
-      if (typed.containsKey(ConfigurationProperties.MARSHALLER)) {
-         this.marshaller(typed.getProperty(ConfigurationProperties.MARSHALLER));
-      }
+//      if (typed.containsKey(ConfigurationProperties.MARSHALLER)) {
+//         this.marshaller(typed.getProperty(ConfigurationProperties.MARSHALLER));
+//      }
       this.pingOnStartup(typed.getBooleanProperty(ConfigurationProperties.PING_ON_STARTUP, pingOnStartup));
       this.protocolVersion(typed.getProperty(ConfigurationProperties.PROTOCOL_VERSION, protocolVersion));
       this.servers.clear();
       this.addServers(typed.getProperty(ConfigurationProperties.SERVER_LIST, ""));
       this.socketTimeout(typed.getIntProperty(ConfigurationProperties.SO_TIMEOUT, socketTimeout));
       this.tcpNoDelay(typed.getBooleanProperty(ConfigurationProperties.TCP_NO_DELAY, tcpNoDelay));
-      if (typed.containsKey(ConfigurationProperties.TRANSPORT_FACTORY)) {
-         this.transportFactory(typed.getProperty(ConfigurationProperties.TRANSPORT_FACTORY));
-      }
+//      if (typed.containsKey(ConfigurationProperties.TRANSPORT_FACTORY)) {
+//         this.transportFactory(typed.getProperty(ConfigurationProperties.TRANSPORT_FACTORY));
+//      }
       this.valueSizeEstimate(typed.getIntProperty(ConfigurationProperties.VALUE_SIZE_ESTIMATE, valueSizeEstimate));
       return this;
    }

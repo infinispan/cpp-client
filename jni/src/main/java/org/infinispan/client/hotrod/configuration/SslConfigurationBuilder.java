@@ -34,7 +34,7 @@ public class SslConfigurationBuilder extends AbstractConfigurationChildBuilder i
 
    protected SslConfigurationBuilder(ConfigurationBuilder builder) {
       super(builder);
-      this.jniSslConfigurationBuilder = new org.infinispan.client.hotrod.jni.SslConfigurationBuilder(builder.getJniConfigurationBuilder());
+      this.jniSslConfigurationBuilder = builder.getJniConfigurationBuilder().ssl();
    }
 
    /**

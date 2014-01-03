@@ -1,12 +1,14 @@
 package org.infinispan.client.jni.hotrod;
 
+import static org.testng.Assert.assertEquals;
+
 import org.infinispan.client.hotrod.BulkGetKeysDistTest;
 import org.infinispan.client.hotrod.BulkGetKeysReplTest;
 import org.infinispan.client.hotrod.BulkGetKeysSimpleTest;
 import org.infinispan.client.hotrod.BulkGetReplTest;
 import org.infinispan.client.hotrod.BulkGetSimpleTest;
-import org.infinispan.client.hotrod.CacheManagerStoppedTest;
 import org.infinispan.client.hotrod.ClientAsymmetricClusterTest;
+import org.infinispan.client.hotrod.CacheManagerStoppedTest;
 import org.infinispan.client.hotrod.DefaultExpirationTest;
 import org.infinispan.client.hotrod.ForceReturnValueTest;
 import org.infinispan.client.hotrod.ForceReturnValuesTest;
@@ -27,18 +29,16 @@ public class JniTest {
       TextReporter tr = new TextReporter("SWIG Tests", 2);
 
       testng.setTestClasses(new Class[] {
-            // "Failed to connect Operation now in progress"
-            //            RemoteCacheManagerTest.class,
-            //            ClientAsymmetricClusterTest.class,
-            //            ServerRestartTest.class,
+//            RemoteCacheManagerTest.class,
+//            ClientAsymmetricClusterTest.class,
 
             //Known to work
-            BulkGetKeysDistTest.class,
+            BulkGetKeysDistTest.class, 
             BulkGetKeysReplTest.class, 
             BulkGetKeysSimpleTest.class, 
-            BulkGetReplTest.class, 
+            BulkGetReplTest.class,
             BulkGetSimpleTest.class, 
-            CacheManagerStoppedTest.class,
+            CacheManagerStoppedTest.class, 
             DefaultExpirationTest.class,
             ForceReturnValuesTest.class, 
             ForceReturnValueTest.class, 
@@ -46,32 +46,26 @@ public class JniTest {
             HotRodServerStartStopTest.class, 
             HotRodStatisticsTest.class, 
             ServerErrorTest.class,
-            ServerShutdownTest.class, 
+            ServerRestartTest.class,
+            ServerShutdownTest.class,
             SocketTimeoutErrorTest.class, 
       });
+
       testng.addListener(tr);
       testng.run();
 
       String[] expectedTestFailures = { 
             // Async operations are not supported currently
             "HotRodIntegrationTest.testReplaceWithVersionWithLifespanAsync",
-            // These CacheManagerStoppedTest throw the wrong exception from JNI
-            "CacheManagerStoppedTest.testGet",
-            "CacheManagerStoppedTest.testGetCacheOperations2",
-            "CacheManagerStoppedTest.testGetCacheOperations3",
-            "CacheManagerStoppedTest.testPut",
-            "CacheManagerStoppedTest.testPutAll",
             "CacheManagerStoppedTest.testPutAllAsync",
             "CacheManagerStoppedTest.testPutAsync",
-            "CacheManagerStoppedTest.testReplace",
             "CacheManagerStoppedTest.testReplaceAsync",
-            "CacheManagerStoppedTest.testVersionedGet",
-            "CacheManagerStoppedTest.testVersionedRemove",
             "CacheManagerStoppedTest.testVersionedRemoveAsync",
+            // Here until HRCPP-118 is resolved
+            "SocketTimeoutErrorTest.testErrorWhileDoingPut",
       };
 
-      if (testng.hasFailure() && tr.getFailedTests().size() > expectedTestFailures.length) {
-         System.exit(1);
-      }
+      assertEquals(tr.getFailedTests().size(), expectedTestFailures.length);
+      System.exit(0);
    }
 }
