@@ -22,7 +22,7 @@ TcpTransport& ConnectionPool::borrowObject(const InetSocketAddress& key) {
         throw HotRodClientException("Pool is closed");
     }
     if (!idle.count(key) || !busy.count(key)) {
-        throw HotRodClientException("Pool is closed");
+        throw HotRodClientException("Pool has no idle or no busy transports.");
     }
     TransportQueuePtr idleQ = idle[key];
     TransportQueuePtr busyQ = busy[key];
@@ -59,8 +59,21 @@ TcpTransport& ConnectionPool::borrowObject(const InetSocketAddress& key) {
 
 void ConnectionPool::invalidateObject(const InetSocketAddress& key, TcpTransport* val) {
     sys::ScopedLock<sys::Mutex> l(lock);
-    if (val != NULL) {
-        factory->destroyObject(key, *val);
+    if (val != NULL) {        
+		// Remove from busy queue
+		std::map<InetSocketAddress, TransportQueuePtr>::iterator busyIt = busy.find(key);
+		if (busyIt == busy.end()) {
+			throw HotRodClientException("No busy queue for address!");
+		}
+		busyIt->second->remove(val);
+		// Destroy object
+		factory->destroyObject(key, *val);
+		// Add new transport to idle queue
+		std::map<InetSocketAddress, TransportQueuePtr>::iterator idleIt = idle.find(key);
+		if (idleIt == idle.end()) {
+			throw HotRodClientException("No idle queue for address!");
+		}
+		idleIt->second->push(&factory->makeObject(key));
     }
 }
 
