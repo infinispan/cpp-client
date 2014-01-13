@@ -23,11 +23,27 @@ def trim_valgrind(args):
         del args[0]
     return args
 
+def fix_cmake_prepended_args(args):
+    bin_index = 0;
+    for arg in args:
+        if (not arg.startswith('--')):
+            break
+        bin_index += 1
+
+    if (bin_index > 0 and bin_index < len(args)):
+        # There are arguments before the valgrind binary in the command line.
+        # Move the binary at the head of the line.
+        tmp = args[0]
+        args[0] = args[bin_index]
+        args[bin_index] = tmp
+
 def main():
     args = sys.argv[1:]
+    fix_cmake_prepended_args(args)
+
     disable = False
     # list here tests to remove from valgrind scrutiny, i.e. 'cmd1|cmd2'
-    no_memcheck = re.compile('server_ctl')
+    no_memcheck = re.compile('server_ctl|probe_port')
     for arg in args:
         if no_memcheck.search(arg) :
             disable = True
