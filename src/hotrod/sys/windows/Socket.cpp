@@ -49,10 +49,10 @@ void throwIOErr (const std::string& host, int port, const char *msg, int errnum)
 
     if (errnum != 0) {
         char buf[200];
-        if (strerror_s(buf, 200, errnum) == 0) {
+        if (FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, errnum, 0, buf, 200, NULL) != 0) {
             m << " " << buf;
         } else {
-            m << " " << strerror(errnum);
+            m << " Unknown WSA error " << errnum;
         }
     }
     throw TransportException(host, port, m.str());
