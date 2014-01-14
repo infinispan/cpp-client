@@ -16,24 +16,13 @@
 
 %include "std_pair.i"
 
-%exception {
-    try {
-        $action
-    } catch (const std::exception& e) {
-      SWIG_exception(SWIG_RuntimeError, e.what());
-    } catch (std::exception *e) {
-      SWIG_exception(SWIG_RuntimeError, e->what());
-    } catch (...) {
-      SWIG_exception(SWIG_RuntimeError, "C++ unknown exception thrown");
-    }
-}
-
 //#define HR_SHARED_PTR std::tr1::shared_ptr
 
 %{
 #include <infinispan/hotrod/types.h>
 #include <infinispan/hotrod/defs.h>
 #include <infinispan/hotrod/ConnectionPoolConfiguration.h>
+#include <infinispan/hotrod/exceptions.h>
 #include <infinispan/hotrod/ServerConfiguration.h>
 #include <infinispan/hotrod/SslConfiguration.h>
 #include <infinispan/hotrod/Configuration.h>
@@ -83,6 +72,39 @@
 %include "infinispan/hotrod/RemoteCacheManager.h"
 %include "infinispan/hotrod/RemoteCache.h"
 %include "infinispan/hotrod/Marshaller.h"
+
+%include "infinispan/hotrod/exceptions.h"
+
+%exception {
+    try {
+        $action
+    } catch (const infinispan::hotrod::InvalidResponseException& e) {
+      jclass clazz = jenv->FindClass("org/infinispan/client/hotrod/exceptions/InvalidResponseException");
+      jenv->ThrowNew(clazz, e.what());
+    } catch (const infinispan::hotrod::RemoteCacheManagerNotStartedException& e) {
+      jclass clazz = jenv->FindClass("org/infinispan/client/hotrod/exceptions/RemoteCacheManagerNotStartedException");
+      jenv->ThrowNew(clazz, e.what());
+    } catch (const infinispan::hotrod::UnsupportedOperationException& e) {
+      jclass clazz = jenv->FindClass("java/lang/UnsupportedOperationException");
+      jenv->ThrowNew(clazz, e.what());
+    } catch (const infinispan::hotrod::HotRodClientException& e) {
+      jclass clazz = jenv->FindClass("org/infinispan/client/hotrod/exceptions/HotRodClientException");
+      jenv->ThrowNew(clazz, e.what());
+    } catch (const infinispan::hotrod::Exception& e) {
+      jclass clazz = jenv->FindClass("java/lang/Exception");
+      jenv->ThrowNew(clazz, e.what());
+    } catch (const std::runtime_error& e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    } catch (const std::exception& e) {
+      jclass clazz = jenv->FindClass("java/lang/Exception");
+      jenv->ThrowNew(clazz, e.what());
+    } catch (const std::exception *e) {
+      jclass clazz = jenv->FindClass("java/lang/Exception");
+      jenv->ThrowNew(clazz, e->what());
+    } catch (...) {
+      SWIG_exception(SWIG_UnknownError, "C++ unknown exception thrown");
+    }
+}
 
 // One class to pass bytes between the JVM and the native classes
 // For the exclusive use of Relay marshalling
