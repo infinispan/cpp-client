@@ -16,6 +16,7 @@ import java.util.Set;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
+import org.infinispan.client.hotrod.exceptions.RemoteCacheManagerNotStartedException;
 import org.infinispan.client.hotrod.Flag;
 import org.infinispan.client.hotrod.MetadataValue;
 import org.infinispan.client.hotrod.RemoteCache;
@@ -38,9 +39,11 @@ public class RemoteCacheImpl<K, V> extends RemoteCacheUnsupported<K, V> {
 
     private Marshaller marshaller;
     private RemoteCache_jb_jb jniRemoteCache;
+    private RemoteCacheManager remoteCacheManager;
 
     public RemoteCacheImpl(RemoteCacheManager manager, String name, boolean forceReturnValue) {
         this.marshaller = manager.getMarshaller();
+        this.remoteCacheManager = manager;
         if (name == null) {
             this.jniRemoteCache = Hotrod.getJniRelayCache(manager.getJniManager(), forceReturnValue);
         } else {
@@ -290,9 +293,14 @@ public class RemoteCacheImpl<K, V> extends RemoteCacheUnsupported<K, V> {
 
     @Override
     public void putAll(Map<? extends K, ? extends V> map, long lifespan, TimeUnit lifespanTimeUnit, long maxIdle, TimeUnit maxIdleUnit) {
-       for (Entry<? extends K, ? extends V> entry : map.entrySet()) {
-          put(entry.getKey(), entry.getValue(), lifespan, lifespanTimeUnit, maxIdle, maxIdleUnit);
-       }
+      if (!remoteCacheManager.isStarted()) {
+         throw new RemoteCacheManagerNotStartedException(
+               "Cannot perform operations on a cache associated with an unstarted RemoteCacheManager. "
+                     + "Use RemoteCacheManager.start before using the remote cache.");
+      }
+      for (Entry<? extends K, ? extends V> entry : map.entrySet()) {
+         put(entry.getKey(), entry.getValue(), lifespan, lifespanTimeUnit, maxIdle, maxIdleUnit);
+      }
     }
 
     @Override
