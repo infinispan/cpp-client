@@ -611,13 +611,13 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
 	uint64_t result;
 	switch (unit) {
 	case NANOSECONDS:
-	    result = ceil(time / 1000000000.0);
+	    result = (uint64_t) ceil(time / 1000000000.0);
 	    break;
 	case MICROSECONDS:
-	    result = ceil(time / 1000000.0);
+	    result = (uint64_t) ceil(time / 1000000.0);
 	    break;
 	case MILLISECONDS:
-	    result = ceil(time / 1000.0);
+	    result = (uint64_t) ceil(time / 1000.0);
 	    break;
 	case SECONDS:
 	    result = time;
