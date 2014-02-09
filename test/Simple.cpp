@@ -99,7 +99,9 @@ int main(int argc, char** argv) {
     cache.put(k3, v3);
     // getWithMetadata
     rv5 = cache.getWithMetadata(k3);
-    if (!rv5.first.get() || rv5.second.lifespan >= 0) {
+    if (!rv5.first.get()
+        || rv5.second.lifespan >= 0 || rv5.second.created >= 0
+        || rv5.second.maxIdle >= 0 || rv5.second.lastUsed >= 0) {
         std::cerr << "getWithMetadata with immortal entry fail for " << k3 << std::endl;
         return 1;
     }
