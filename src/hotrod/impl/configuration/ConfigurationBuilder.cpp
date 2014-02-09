@@ -123,7 +123,7 @@ Configuration ConfigurationBuilder::create()
       m_socketTimeout,
       sslConfigurationBuilder.create(),
       m_tcpNoDelay,
-      m_keySizeEstimate);
+      m_valueSizeEstimate);
 }
 
 ConfigurationBuilder& ConfigurationBuilder::read(Configuration& bean)
