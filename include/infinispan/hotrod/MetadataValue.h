@@ -10,7 +10,7 @@ namespace hotrod {
 class MetadataValue : public VersionedValue
 {
   public:
-    MetadataValue() : VersionedValue(), created(0), lifespan(-1), lastUsed(0), maxIdle(-1) {}
+    MetadataValue() : VersionedValue(), created(-1), lifespan(-1), lastUsed(-1), maxIdle(-1) {}
 
     int64_t created;
     int32_t lifespan;
