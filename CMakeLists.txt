@@ -157,6 +157,14 @@ set (library_sources
 # Build a shared library
 add_library (hotrod SHARED ${library_sources})
 target_link_libraries (hotrod ${platform_libs})
+
+if (WIN32 AND NOT CMAKE_SIZEOF_VOID_P MATCHES "8")
+    set (OUTPUT_NAME_SUFFIX "32")
+else (WIN32 AND NOT CMAKE_SIZEOF_VOID_P MATCHES "8")
+    set (OUTPUT_NAME_SUFFIX "")
+endif (WIN32 AND NOT CMAKE_SIZEOF_VOID_P MATCHES "8")
+
+set_target_properties (hotrod PROPERTIES OUTPUT_NAME "hotrod${OUTPUT_NAME_SUFFIX}")
 set_target_properties (hotrod PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS}")
 set_target_properties (hotrod PROPERTIES LINK_FLAGS "${CATCH_UNDEFINED}")
 set_target_properties (hotrod PROPERTIES SOVERSION "1.0")
