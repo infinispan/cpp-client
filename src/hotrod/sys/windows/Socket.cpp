@@ -186,9 +186,7 @@ void Socket::setTcpNoDelay(bool tcpNoDelay) {
 }
 
 void Socket::setTimeout(int timeout) {
-    struct timeval tv;
-    tv.tv_sec = timeout / 1000;
-    tv.tv_usec = timeout % 1000;
+    DWORD tv = timeout;
 
     if (setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (const char *) &tv, sizeof(tv)) < 0) {
         throwIOErr(host, port, "Failure setting receive socket timeout", WSAGetLastError());
