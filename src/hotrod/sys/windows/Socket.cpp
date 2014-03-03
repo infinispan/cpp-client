@@ -198,14 +198,15 @@ void Socket::setTimeout(int timeout) {
 }
 
 size_t Socket::read(char *p, size_t length) {
-    while(1) {
+    int retry = 10;
+    while(true) {
         ssize_t n =  recv(fd, p, (int) length, 0);
-        if (n == SOCKET_ERROR)
-            throwIOErr(host, port, "read", WSAGetLastError());
-        else if (n == 0)
-            return 0;
-        else
+        if (n >= 0)
             return n;
+        else if ((n == WSATRY_AGAIN || n == WSAEINTR) && retry > 0)
+            retry--;
+        else
+            throwIOErr(host, port, "read", WSAGetLastError());
     }
 }
 
