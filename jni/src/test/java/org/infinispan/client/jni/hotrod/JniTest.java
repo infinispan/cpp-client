@@ -63,8 +63,6 @@ public class JniTest {
             "CacheManagerStoppedTest.testPutAsync",
             "CacheManagerStoppedTest.testReplaceAsync",
             "CacheManagerStoppedTest.testVersionedRemoveAsync",
-            // Here until HRCPP-118 is resolved
-            "SocketTimeoutErrorTest.testErrorWhileDoingPut",
       };
 
       assertEquals(tr.getFailedTests().size(), expectedTestFailures.length);

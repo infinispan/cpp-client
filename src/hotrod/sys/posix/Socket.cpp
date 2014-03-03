@@ -216,14 +216,15 @@ void Socket::setTimeout(int timeout) {
 }
 
 size_t Socket::read(char *p, size_t length) {
-    while(1) {
+    int retry = 10;
+    while(true) {
         ssize_t n =  recv(fd, p, length, 0);
-        if (n < 0 && errno != EAGAIN)
-            throwIOErr(host, port, "read", errno);
-        else if (n == 0)
-            throwIOErr(host, port, "no read", 0);
-        else
+        if (n > 0)
             return n;
+        else if ((errno == EAGAIN || errno == EINTR) && retry > 0)
+            retry--;
+        else if (n <= 0)
+            throwIOErr(host, port, "read", errno);
     }
 }
 
