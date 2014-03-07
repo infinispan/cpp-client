@@ -14,21 +14,13 @@ namespace transport {
 
 
 TransportObjectFactory::TransportObjectFactory(
-    Codec& c, TcpTransportFactory& factory, bool pingable)
+    Codec& c, TcpTransportFactory& factory)
     : tcpTransportFactory(factory),
-      pingOnStartup(pingable), codec(c), firstPingExecuted(false)
+      codec(c)
 { }
 
 TcpTransport& TransportObjectFactory::makeObject(const InetSocketAddress& address) {
-    TcpTransport* tcpTransport = new TcpTransport(address, tcpTransportFactory);
-    if (pingOnStartup && !firstPingExecuted) {
-        firstPingExecuted = true;
-
-        // Don't ignore exceptions from ping() command, since
-        // they indicate that the transport instance is invalid.
-        ping(*tcpTransport);
-    }
-    return *tcpTransport;
+    return *(new TcpTransport(address, tcpTransportFactory));
 }
 
 bool TransportObjectFactory::validateObject(const InetSocketAddress& /*address*/, TcpTransport& transport) {
