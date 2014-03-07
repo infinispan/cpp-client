@@ -69,6 +69,12 @@ add_custom_command(OUTPUT ${JNI_DIR}/target/org/infinispan/client/jni/hotrod/Jni
 
 add_custom_target(JniTest ALL DEPENDS ${JNI_DIR}/target/org/infinispan/client/jni/hotrod/JniTest.class hotrod-swig)
 
+#Target for deploying the jar to the maven repo. Usage: cmake --build . --target JniDeploy
+add_custom_target(JniDeploy
+  ${MVN_PROGRAM} "deploy"
+  DEPENDS ${JNI_DIR}/target/org/infinispan/client/jni/hotrod/JniTest.class hotrod-swig
+  WORKING_DIRECTORY "${JNI_DIR}")
+
 #For generators with multiple configurations make sure all of the possible target locations are in the java.library.path
 set(JAVA_LIBRARY_PATH ".")
 foreach(loop_var ${CMAKE_CONFIGURATION_TYPES})
