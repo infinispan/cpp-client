@@ -36,7 +36,7 @@ void TcpTransportFactory::start(
 
     // TODO: SSL configuration
 
-    transportFactory.reset(new TransportObjectFactory(codec, *this, configuration.isPingOnStartup()));
+    transportFactory.reset(new TransportObjectFactory(codec, *this));
 
     createAndPreparePool();
     balancer->setServers(servers);
@@ -115,17 +115,19 @@ void TcpTransportFactory::createAndPreparePool()
 
 void TcpTransportFactory::pingServers() {
     std::vector<InetSocketAddress> s = servers;
-    for (std::vector<InetSocketAddress>::const_iterator iter = s.begin();
-        iter != s.end(); iter++) {
-       try {
-          // Go through all statically configured nodes and force a
-          // connection to be established and a ping message to be sent.
-          connectionPool->returnObject(*iter, connectionPool->borrowObject(*iter));
-       } catch (Exception& e) {
-          // Ping's objective is to retrieve a potentially newer
-          // version of the Hot Rod cluster topology, so ignore
-          // exceptions from nodes that might not be up any more.
-       }
+    for (std::vector<InetSocketAddress>::const_iterator iter = s.begin(); iter != s.end(); iter++) {
+        TcpTransport* transport;
+        try {
+            // Go through all statically configured nodes and force a
+            // connection to be established and a ping message to be sent.
+            transport = &connectionPool->borrowObject(*iter);
+            transportFactory->ping(*transport);
+            connectionPool->returnObject(*iter, *transport);
+        } catch (Exception& e) {
+            // Ping's objective is to retrieve a potentially newer
+            // version of the Hot Rod cluster topology, so ignore
+            // exceptions from nodes that might not be up any more.
+        }
     }
 }
 

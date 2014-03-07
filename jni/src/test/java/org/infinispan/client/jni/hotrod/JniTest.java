@@ -20,6 +20,7 @@ import org.infinispan.client.hotrod.ServerErrorTest;
 import org.infinispan.client.hotrod.ServerRestartTest;
 import org.infinispan.client.hotrod.ServerShutdownTest;
 import org.infinispan.client.hotrod.SocketTimeoutErrorTest;
+import org.infinispan.client.hotrod.retry.ServerFailureRetryTest;
 import org.testng.TestNG;
 import org.testng.reporters.TextReporter;
 
@@ -31,6 +32,7 @@ public class JniTest {
       testng.setTestClasses(new Class[] {
 //            RemoteCacheManagerTest.class,
 //            ClientAsymmetricClusterTest.class,
+              ServerFailureRetryTest.class,
 
             //Known to work
             BulkGetKeysDistTest.class, 
