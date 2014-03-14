@@ -28,7 +28,7 @@ TcpTransport& ConnectionPool::borrowObject(const InetSocketAddress& key) {
     TransportQueuePtr busyQ = busy[key];
 
     // See if an object is readily available
-    TcpTransport* obj;
+    TcpTransport* obj = 0;
     bool ok = idleQ->poll(obj);
 
     for (;;) {
