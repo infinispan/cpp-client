@@ -215,11 +215,11 @@ uint32_t MurmurHash3::hash(int32_t key) const {
 	int8_t b2 = (int8_t) ((uint32_t) key >> 16);
 	int8_t b3 = (int8_t) ((uint32_t) key >> 24);
 
-	int64_t h1 = 0x9368e53c2f6af274L ^ 9001;
-	int64_t h2 = 0x586dcd208f7cd3fdL ^ 9001;
+	int64_t h1 = BIG_CONSTANT(0x9368e53c2f6af274) ^ 9001;
+	int64_t h2 = BIG_CONSTANT(0x586dcd208f7cd3fd) ^ 9001;
 
-	int64_t c1 = 0x87c37b91114253d5L;
-	int64_t c2 = 0x4cf5ad432745937fL;
+	int64_t c1 = BIG_CONSTANT(0x87c37b91114253d5);
+	int64_t c2 = BIG_CONSTANT(0x4cf5ad432745937f);
 
 	int64_t k1 = 0;
 	int64_t k2 = 0;

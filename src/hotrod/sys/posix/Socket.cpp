@@ -80,7 +80,7 @@ Socket::~Socket() { close(); }
 void Socket::connect(const std::string& h, int p, int timeout) {
     struct addrinfo *addr, *addr_list;
     char ip[INET6_ADDRSTRLEN];
-    int error = 0, flags, sock;
+    int error = 0, flags = 0, sock = 0;
 
     host = h;
     port = p;
