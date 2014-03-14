@@ -78,7 +78,7 @@ def stop(verbose=False):
         os.unlink('servers.pkl')
     else:
         if verbose:
-            print 'no test servers in use'
+            print('no test servers in use')
     return 0
 
 def main():
