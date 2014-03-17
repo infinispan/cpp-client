@@ -1,5 +1,7 @@
 package org.infinispan.client.hotrod.exceptions;
 
+import java.net.SocketTimeoutException;
+
 /**
  * Base class for exceptions reported by the hot rod client.
  *
@@ -15,6 +17,9 @@ public class HotRodClientException extends RuntimeException {
 
    public HotRodClientException(String message) {
       super(message);
+      if(message.startsWith("timeout")){
+         initCause(new SocketTimeoutException(message));
+      }
    }
 
    public HotRodClientException(Throwable cause) {
