@@ -1,3 +1,4 @@
+import logging
 import socket
 import sys
 import time
@@ -19,8 +20,8 @@ def main():
             s.connect(destination)
             sys.stdout.write('succeded!\n')
             break
-        except socket.error as ex:
-            sys.stdout.write('failed with "%s". ' % ex)
+        except socket.error:
+            logging.exception('Socket connection failed')
 
             if cumulated_time < timeout:
                 sys.stdout.write('Retrying in %ds (%ds to timeout).\n' % (reattempt_delay, timeout - cumulated_time))

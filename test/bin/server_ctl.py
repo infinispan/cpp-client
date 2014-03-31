@@ -3,6 +3,7 @@
 #        python server_ctl stop
 
 import os
+import platform
 import sys
 import string
 import subprocess
@@ -13,7 +14,7 @@ import pickle
 def static_java_args(java, jboss_home) :
     # No luck calling standalone.bat without hanging.
     # This is what the batch file does in the default case for 6.0.0.
-    return [java, '-XX:+TieredCompilation', '-XX:+UseCompressedOops',
+    cmd = [java, '-XX:+TieredCompilation', '-XX:+UseCompressedOops',
             '-Xms64M', '-Xmx512M', '-XX:MaxPermSize=256M', '-Djava.net.preferIPv4Stack=true',
             '-Djboss.modules.system.pkgs=org.jboss.byteman',
             '-Dorg.jboss.boot.log.file=' + jboss_home + '/standalone/log/server.log',
@@ -21,6 +22,10 @@ def static_java_args(java, jboss_home) :
             '-jar', jboss_home + '/jboss-modules.jar', '-mp', jboss_home + '/modules',
             '-jaxpmodule', 'javax.xml.jaxp-provider', 'org.jboss.as.standalone', 
             '-Djboss.home.dir=' + jboss_home]
+    # This option doesn't work on a 32-bit JVM
+    if platform.architecture(java)[0].find('32') != -1:
+        cmd.remove('-XX:+UseCompressedOops')
+    return cmd
 
 def start(args):
     stop(verbose=False)
