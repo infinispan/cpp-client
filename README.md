@@ -37,9 +37,20 @@ To build (where "srcdir" is the directory containg this README):
 
     os_make_directory my_build  [arbitrary location]
     cd my_build
-    cmake [-DHOTROD_JBOSS_HOME=/path/to/ispn/dist] path/to/srcdir
-    cmake --build .
-    ctest [-V]
+    cmake [-G <generator>] [-DHOTROD_JBOSS_HOME=/path/to/ispn/dist] path/to/srcdir
+    cmake --build . [--config <configuration>]
+    ctest [-V] [-C <configuration>]
+    cpack [-G <cpack_generator>] [-C <configuration>]
+
+On windows platforms:
+
+* to build the 64bit binaries you need to specify a 64bit generator using
+the -G cmake flag (e.g. -G "Visual Studio 12 Win64").
+* you can specify a custom configuration (e.g. Debug/Release/RelWithDebInfo...)
+by passing the --config flag during the build phase (you will need to pass
+the same configuration to ctest and cpack using the -C flag).
+
+Please check the cmake/ctest/cpack documentation for details.
 
 Platforms with makefiles and Valgrind may have additional targets:
 
