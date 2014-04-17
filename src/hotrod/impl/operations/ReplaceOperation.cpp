@@ -21,12 +21,17 @@ ReplaceOperation::ReplaceOperation(
 
 hrbytes ReplaceOperation::executeOperation(Transport& transport)
 {
+    TRACE("Execute Replace(flags=%u, lifespan=%u, maxIdle=%u)", flags, lifespan, maxIdle);
+    TRACEBYTES("key = ", key);
+    TRACEBYTES("value = ", value);
     hrbytes previousValue;
     uint8_t status = sendPutOperation(
         transport, REPLACE_REQUEST, REPLACE_RESPONSE);
     if (status == NO_ERROR_STATUS || status == NOT_PUT_REMOVED_REPLACED_STATUS) {
         previousValue =
             AbstractKeyValueOperation<hrbytes>::returnPossiblePrevValue(transport);
+    } else {
+        TRACE("Error status %u", status);
     }
     return previousValue;
 }

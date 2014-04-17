@@ -61,14 +61,15 @@ template<class T> class RetryOnFailureOperation : public HotRodOperation<T>
         }
     }
 
-    void logErrorAndThrowExceptionIfNeeded(int i, const HotRodClientException&) {
+    void logErrorAndThrowExceptionIfNeeded(int i, const HotRodClientException& e) {
         if (i >= transportFactory->getTransportCount() - 1
-            || transportFactory->getTransportCount() < 0)
-        {
-            // log
-    	    throw;
+            || transportFactory->getTransportCount() < 0) {
+            ERROR("Exception encountered, retry %d of %d: %s",
+                i, transportFactory->getTransportCount(), e.what());
+            throw; // TODO: e.raise();
         } else {
-            // log
+            TRACE("Exception encountered, retry %d of %d: %s",
+                i, transportFactory->getTransportCount(), e.what());
         }
     }
 

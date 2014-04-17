@@ -57,7 +57,10 @@ template<class T> class AbstractKeyOperation : public RetryOnFailureOperation<T>
     hrbytes returnPossiblePrevValue(transport::Transport& transport) {
         hrbytes result;
         if (hasForceReturn(RetryOnFailureOperation<T>::flags)) {
+            TRACEBYTES("return value = ", result);
             result = transport.readArray();
+        } else {
+            TRACE("No return value");
         }
         return result;
     }
@@ -65,18 +68,21 @@ template<class T> class AbstractKeyOperation : public RetryOnFailureOperation<T>
     VersionedOperationResponse returnVersionedOperationResponse(
         transport::Transport& transport, protocol::HeaderParams& params)
     {
-        uint8_t respStatus =
+        uint8_t status =
             RetryOnFailureOperation<T>::readHeaderAndValidate(transport, params);
         VersionedOperationResponse::RspCode code;
-        if (respStatus == protocol::HotRodConstants::NO_ERROR_STATUS) {
+        if (status == protocol::HotRodConstants::NO_ERROR_STATUS) {
            	code = VersionedOperationResponse::SUCCESS;
-        } else if (respStatus == protocol::HotRodConstants::NOT_PUT_REMOVED_REPLACED_STATUS) {
+        } else if (status == protocol::HotRodConstants::NOT_PUT_REMOVED_REPLACED_STATUS) {
+            TRACE("Operation failed due to modification");
             code = VersionedOperationResponse::MODIFIED_KEY;
-        } else if (respStatus == protocol::HotRodConstants::KEY_DOES_NOT_EXIST_STATUS) {
+        } else if (status == protocol::HotRodConstants::KEY_DOES_NOT_EXIST_STATUS) {
+            TRACE("Key does not exist!");
             code = VersionedOperationResponse::NO_SUCH_KEY;
         } else {
+            TRACE("Error status %u", status);
             std::ostringstream message;
-            message << "Unknown response status: " << std::hex << (int)respStatus;
+            message << "Unknown response status: " << std::hex << (int) status;
             // TODO: check exception type
             throw InvalidResponseException(message.str());
         }

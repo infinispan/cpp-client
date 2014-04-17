@@ -24,11 +24,16 @@ ContainsKeyOperation::ContainsKeyOperation(
 
 bool ContainsKeyOperation::executeOperation(Transport& transport)
 {
+    TRACE("Execute ContainsKey(flags=%u)", flags);
+    TRACEBYTES("key = ", key);
     bool containsKey = false;
     uint8_t status = sendKeyOperation(key,
         transport, CONTAINS_KEY_REQUEST, CONTAINS_KEY_RESPONSE);
     if (status == NO_ERROR_STATUS) {
         containsKey = true;
+        TRACE("Result is true");
+    } else {
+        TRACE("Error status %u", status);
     }
     return containsKey;
 }

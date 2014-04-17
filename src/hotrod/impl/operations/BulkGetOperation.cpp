@@ -30,6 +30,7 @@ Transport& BulkGetOperation::getTransport(int /*retryCount*/)
 
 std::map<hrbytes,hrbytes> BulkGetOperation::executeOperation(infinispan::hotrod::transport::Transport& transport)
 {
+    TRACE("Execute BulkGet(flags=%u, entryCount=%d)", flags, entryCount);
     hr_scoped_ptr<HeaderParams> params(&(RetryOnFailureOperation<std::map<hrbytes, hrbytes> >::writeHeader(transport, BULK_GET_REQUEST)));
     transport.writeVInt(entryCount);
     transport.flush();
@@ -39,6 +40,15 @@ std::map<hrbytes,hrbytes> BulkGetOperation::executeOperation(infinispan::hotrod:
         hrbytes key = transport.readArray();
         hrbytes value = transport.readArray();
         result[key] = value;
+    }
+    if (logger.isTraceEnabled()) {
+        for (std::map<hrbytes,hrbytes>::iterator it = result.begin(); it != result.end(); ++it) {
+            TRACEBYTES("return key = ", it->first);
+            TRACEBYTES("return value = ", it->second);
+        }
+        if (result.size() == 0) {
+            TRACE("No data in bulk");
+        }
     }
     return result;
 }

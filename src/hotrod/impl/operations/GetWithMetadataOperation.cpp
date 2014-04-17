@@ -26,6 +26,8 @@ GetWithMetadataOperation::GetWithMetadataOperation(
 MetadataValueImpl<hrbytes> GetWithMetadataOperation::executeOperation(Transport& transport)
 {
     MetadataValueImpl<hrbytes> result;
+    TRACE("Execute GetWithMetadata(flags=%u)", flags);
+    TRACEBYTES("key = ", key);
     uint8_t status = sendKeyOperation(
         key, transport, GET_WITH_METADATA_REQUEST, GET_WITH_METADATA_RESPONSE);
     if (status == NO_ERROR_STATUS) {
@@ -40,6 +42,10 @@ MetadataValueImpl<hrbytes> GetWithMetadataOperation::executeOperation(Transport&
         }
         result.setVersion(transport.readLong());
         result.setValue(transport.readArray());
+        TRACE("return created=%lld, lifespan=%d, lastUsed=%lld, maxIdle=%d, version=%lld", result.created, result.lifespan, result.lastUsed, result.maxIdle, result.version);
+        TRACEBYTES("return value = ", result.getValue());
+    } else {
+        TRACE("Error status %u", status);
     }
     return result;
 }

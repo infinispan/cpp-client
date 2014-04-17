@@ -24,13 +24,16 @@ PingOperation::PingOperation(const Codec& c, IntWrapper& id,
 
 PingResult PingOperation::execute() {
     //HeaderParams params;
+	TRACE("Executing Ping");
 	hr_scoped_ptr<infinispan::hotrod::protocol::HeaderParams> params(&writeHeader(transport, HotRodConstants::PING_REQUEST));
 	transport.flush();
 
     uint8_t respStatus = readHeaderAndValidate(transport, *params);
     if (respStatus == HotRodConstants::NO_ERROR_STATUS) {
+    	TRACE("Ping successful!");
     	return SUCCESS;
     } else {
+    	TRACE("Ping failed!");
     	return FAIL;
     }
 }

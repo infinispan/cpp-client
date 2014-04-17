@@ -20,9 +20,14 @@ GetOperation::GetOperation(
 
 hrbytes GetOperation::executeOperation(Transport& transport) {
     hrbytes result;
+    TRACE("Executing Get(flags=%u)", flags);
+    TRACEBYTES("key = ", key);
     uint8_t status = sendKeyOperation(key, transport, GET_REQUEST, GET_RESPONSE);
     if (status == NO_ERROR_STATUS) {
         result = transport.readArray();
+        TRACEBYTES("return value = ", result);
+    } else {
+        TRACE("Error status %u", status);
     }
     return result;
 }
