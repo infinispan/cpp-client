@@ -29,16 +29,19 @@ Transport& StatsOperation::getTransport(int /*retryCount*/)
 
 std::map<std::string, std::string> StatsOperation::executeOperation(Transport& transport)
 {
+    TRACE("Executing Stats");
     hr_scoped_ptr<HeaderParams> params(&(RetryOnFailureOperation<std::map<std::string, std::string> >::writeHeader(transport, STATS_REQUEST)));
     transport.flush();
     RetryOnFailureOperation<std::map<std::string, std::string> >::readHeaderAndValidate(transport, *params);
 
     int nrOfStats = transport.readVInt();
+    TRACE("Stats returning map of %d entries:", nrOfStats);
     std::map<std::string, std::string> result;
     for (int i = 0; i < nrOfStats; i++) {
         std::string statName = transport.readString();
         std::string statValue = transport.readString();
         result[statName] = statValue;
+        TRACE("%s -> %s", statName.c_str(), statValue.c_str());
     }
     return result;
 }

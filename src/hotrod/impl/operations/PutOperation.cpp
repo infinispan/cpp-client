@@ -27,8 +27,11 @@ PutOperation::PutOperation(
 {}
 
 hrbytes PutOperation::executeOperation(Transport& transport) {
+    TRACE("Executing Put(flags=%u, lifespan=%u, maxIdle=%u)", flags, lifespan, maxIdle);
+    TRACEBYTES("key = ", key);
+    TRACEBYTES("value = ", value);
     uint8_t status = sendPutOperation(transport, PUT_REQUEST, PUT_RESPONSE);
-   if (status != NO_ERROR_STATUS) {
+    if (status != NO_ERROR_STATUS) {
         std::ostringstream message;
         message << "Unexpected response status: " << status;
         throw InvalidResponseException(message.str());

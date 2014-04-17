@@ -5,6 +5,8 @@
 #include <pthread.h>
 #include <unistd.h>
 #include <time.h>
+#include <iostream>
+#include <iomanip>
 
 namespace infinispan {
 namespace hotrod {
@@ -45,6 +47,16 @@ bool Thread::operator==(const Thread& t) const {
 
 bool Thread::operator!=(const Thread& t) const {
     return !(*this==t);
+}
+
+std::string Thread::id() const {
+    std::ostringstream stream;
+    stream << std::hex << std::setfill('0');
+    unsigned char *ptc = (unsigned char *)(void *)(&(impl->thread));
+    for (size_t i = 0; i < sizeof(pthread_t); ++i) {
+        stream << std::setw(2) << (int) ptc[i];
+    }
+    return stream.str();
 }
 
 void Thread::join(){

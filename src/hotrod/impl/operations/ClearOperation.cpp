@@ -27,9 +27,11 @@ Transport& ClearOperation::getTransport(int /*retryCount*/)
 
 hrbytes ClearOperation::executeOperation(infinispan::hotrod::transport::Transport& transport)
 {
+    TRACE("Executing Clear(flags=%u)", flags);
     hr_scoped_ptr<HeaderParams> params(&(RetryOnFailureOperation<hrbytes>::writeHeader(transport, CLEAR_REQUEST)));
     transport.flush();
     RetryOnFailureOperation<hrbytes>::readHeaderAndValidate(transport, *params);
+    TRACE("Finished Clear");
     return hrbytes();
 }
 

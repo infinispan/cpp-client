@@ -22,6 +22,9 @@ ReplaceIfUnmodifiedOperation::ReplaceIfUnmodifiedOperation(
 VersionedOperationResponse ReplaceIfUnmodifiedOperation::executeOperation(
     Transport& transport)
 {
+    TRACE("Execute ReplaceIfUnmodified(flags=%d, lifespan=%d, maxIdle=%d, version=%lld)", flags, lifespan, maxIdle, version);
+    TRACEBYTES("key = ", key);
+    TRACEBYTES("value = ", value);
     // 1) write header
     hr_scoped_ptr<infinispan::hotrod::protocol::HeaderParams> params(
         &(AbstractKeyOperation<VersionedOperationResponse>::writeHeader(

@@ -30,6 +30,7 @@ Transport& BulkGetKeysOperation::getTransport(int /*retryCount*/)
 
 std::set<hrbytes> BulkGetKeysOperation::executeOperation(Transport& transport)
 {
+    TRACE("Execute BulkGetKeys(flags=%u,scope=%d)", flags, scope);
     hr_scoped_ptr<HeaderParams> params(&(RetryOnFailureOperation<std::set<hrbytes> >::writeHeader(transport, BULK_GET_KEYS_REQUEST)));
     transport.writeVInt(scope);
     transport.flush();
@@ -37,6 +38,14 @@ std::set<hrbytes> BulkGetKeysOperation::executeOperation(Transport& transport)
     std::set<hrbytes> result;
     while (transport.readByte()==1) {
         result.insert(transport.readArray());
+    }
+    if (logger.isTraceEnabled()) {
+        for (std::set<hrbytes>::iterator it = result.begin(); it != result.end(); ++it) {
+            TRACEBYTES("return key = ", *it);
+        }
+        if (result.size() == 0) {
+            TRACE("No data in bulk");
+        }
     }
     return result;
 }

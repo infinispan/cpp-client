@@ -9,6 +9,8 @@
 
 #include <process.h>
 #include <windows.h>
+#include <iostream>
+#include <iomanip>
 
 /*
  * This implementation distinguishes between two types of thread: Hot
@@ -215,6 +217,12 @@ bool Thread::operator==(const Thread& t) const {
 
 bool Thread::operator!=(const Thread& t) const {
     return !(*this==t);
+}
+
+std::string Thread::id() const {
+    std::ostringstream stream;
+    stream << std::hex << std::setw(8) << std::setfill('0') << impl->threadId;
+    return stream.str();
 }
 
 void Thread::join() {

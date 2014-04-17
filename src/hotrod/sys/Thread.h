@@ -52,6 +52,7 @@ class HR_EXTERN Thread
     operator bool();
     bool operator==(const Thread&) const;
     bool operator!=(const Thread&) const;
+    std::string id() const;
 
     void join();
 

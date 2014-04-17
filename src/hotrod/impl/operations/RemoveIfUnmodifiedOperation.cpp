@@ -26,6 +26,8 @@ RemoveIfUnmodifiedOperation::RemoveIfUnmodifiedOperation(
 
 VersionedOperationResponse RemoveIfUnmodifiedOperation::executeOperation(Transport& transport)
 {
+    TRACE("Execute RemoteIfUnmodified(flags=%u, version=%lld)", flags, version);
+    TRACEBYTES("key = ", key);
     // 1) write header
     hr_scoped_ptr<infinispan::hotrod::protocol::HeaderParams> params(
         &(AbstractKeyOperation<VersionedOperationResponse>::writeHeader(

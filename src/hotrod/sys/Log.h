@@ -1,15 +1,26 @@
 #ifndef ISPN_HOTROD_LOG_H
 #define ISPN_HOTROD_LOG_H
 
+#include "infinispan/hotrod/types.h"
 #include "infinispan/hotrod/ImportExport.h"
 #include "hotrod/sys/Mutex.h"
-#include "hotrod/sys/Path.h"
 #include <stdexcept>
 #include <iostream>
+#include <iomanip>
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
 
+#define LOG_LEVEL_TRACE "TRACE"
+#define LOG_LEVEL_DEBUG "DEBUG"
+#define LOG_LEVEL_INFO  "INFO"
+#define LOG_LEVEL_WARN  "WARN"
+#define LOG_LEVEL_ERROR "ERROR"
+
+#define ENV_HOTROD_LOG_LEVEL    "HOTROD_LOG_LEVEL"
+#define ENV_HOTROD_LOG_THREADS  "HOTROD_LOG_THREADS"
+#define ENV_HOTROD_LOG_TIME     "HOTROD_LOG_TIME"
+#define ENV_HOTROD_LOG_TRACE_BYTES_MAX  "HOTROD_LOG_TRACE_BYTES_MAX"
 
 namespace infinispan {
 namespace hotrod {
@@ -20,24 +31,7 @@ typedef enum LogLevel { LEVEL_TRACE, LEVEL_DEBUG, LEVEL_INFO, LEVEL_WARN, LEVEL_
 class HR_EXTERN Log
 {
   public:
-    Log() {
-        const char *level = getenv("HOTROD_LOG_LEVEL");
-        if (level == 0) {
-            m_level = LEVEL_ERROR;
-        } else if (!strcmp(level, "TRACE")) {
-            m_level = LEVEL_TRACE;
-        } else if (!strcmp(level, "DEBUG")) {
-            m_level = LEVEL_DEBUG;
-        } else if (!strcmp(level, "INFO")) {
-            m_level = LEVEL_INFO;
-        } else if (!strcmp(level, "WARN")) {
-            m_level = LEVEL_WARN;
-        } else if (!strcmp(level, "ERROR")) {
-            m_level = LEVEL_ERROR;
-        } else {
-            throw std::runtime_error("Invalid HOTROD_LOG_LEVEL environment variable");
-        }
-    }
+    Log();
 
     Log(LogLevel level) {
         m_level = level;
@@ -45,11 +39,12 @@ class HR_EXTERN Log
 
     ~Log() {}
 
-    void trace(const char *fname, const int lineno, const char *format, ...) { va_list vl; va_start(vl, format); log("TRACE", fname, lineno, format, vl); va_end(vl); }
-    void debug(const char *fname, const int lineno, const char *format, ...) { va_list vl; va_start(vl, format); log("DEBUG", fname, lineno, format, vl); va_end(vl); }
-    void info(const char *fname, const int lineno, const char *format, ...) { va_list vl; va_start(vl, format); log("INFO", fname, lineno, format, vl); va_end(vl); }
-    void warn(const char *fname, const int lineno, const char *format, ...) { va_list vl; va_start(vl, format); log("WARN", fname, lineno, format, vl); va_end(vl); }
-    void error(const char *fname, const int lineno, const char *format, ...) { va_list vl; va_start(vl, format); log("ERROR", fname, lineno, format, vl); va_end(vl); }
+    void trace(const char *fname, const int lineno, const char *format, ...) { va_list vl; va_start(vl, format); log(LOG_LEVEL_TRACE, fname, lineno, format, vl); va_end(vl); }
+    void trace(const char *fname, const int lineno, const char *message, const infinispan::hotrod::hrbytes &bytes) { log(LOG_LEVEL_TRACE, fname, lineno, message, bytes); }
+    void debug(const char *fname, const int lineno, const char *format, ...) { va_list vl; va_start(vl, format); log(LOG_LEVEL_DEBUG, fname, lineno, format, vl); va_end(vl); }
+    void info(const char *fname, const int lineno, const char *format, ...) { va_list vl; va_start(vl, format); log(LOG_LEVEL_INFO, fname, lineno, format, vl); va_end(vl); }
+    void warn(const char *fname, const int lineno, const char *format, ...) { va_list vl; va_start(vl, format); log(LOG_LEVEL_WARN, fname, lineno, format, vl); va_end(vl); }
+    void error(const char *fname, const int lineno, const char *format, ...) { va_list vl; va_start(vl, format); log(LOG_LEVEL_ERROR, fname, lineno, format, vl); va_end(vl); }
 
     bool isTraceEnabled() { return m_level == LEVEL_TRACE; }
     bool isDebugEnabled() { return m_level <= LEVEL_DEBUG; }
@@ -59,22 +54,17 @@ class HR_EXTERN Log
   private:
     Mutex lock;
     LogLevel m_level;
+    bool m_logThread;
+    bool m_logTime;
+    unsigned m_traceBytesMax;
 
-    void log(const char *level, const char *fname, const int lineno, const char *format, va_list vl) {
-        char buf[2048];
-        vsnprintf(buf, 2048, format, vl);
-        ScopedLock<Mutex> sl(lock);
-
-        const char* pfname = strrchr(fname, PATH_SEP);
-        if (pfname == NULL) {
-          /* Use the full fname if no separator is found. */
-          pfname = fname;
-        }
-        std::cerr << level << "[" << (const char *)(pfname + 1) << ":" << lineno << "] " << buf << std::endl;
-    }
+    void log(const char *level, const char *fname, const int lineno);
+    void log(const char *level, const char *fname, const int lineno, const char *format, va_list vl);
+    void log(const char *level, const char *fname, const int lineno, const char *message, const infinispan::hotrod::hrbytes &bytes);
 };
 
 #define TRACE(...) if (logger.isTraceEnabled()) logger.trace(__FILE__, __LINE__, __VA_ARGS__)
+#define TRACEBYTES(message, bytes) if (logger.isTraceEnabled()) logger.trace(__FILE__, __LINE__, message, bytes)
 #define DEBUG(...) if (logger.isDebugEnabled()) logger.debug(__FILE__, __LINE__, __VA_ARGS__)
 #define INFO(...) if (logger.isInfoEnabled()) logger.info(__FILE__, __LINE__, __VA_ARGS__)
 #define WARN(...) if (logger.isWarnEnabled()) logger.warn(__FILE__, __LINE__, __VA_ARGS__)
