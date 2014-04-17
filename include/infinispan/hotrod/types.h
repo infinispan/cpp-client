@@ -76,7 +76,7 @@ class hrbytes {
         bool disabled;
     };
 
-    unsigned int length() { return len; }
+    unsigned int length() const { return len; }
     char* bytes() const { return dumbBytes ? dumbBytes : smartBytes.get(); }
 
     hrbytes() : dumbBytes(0), len(0) {}
