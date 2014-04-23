@@ -179,11 +179,6 @@ set_target_properties(hotrod-static PROPERTIES COMPILE_FLAGS "-DHOTROD_DECLARE_S
 
 # TESTS
 
-find_package(Java)
-if (NOT JAVA_RUNTIME)
-    message(FATAL_ERROR "Java javac compiler not found")
-endif (NOT JAVA_RUNTIME)
-
 add_executable (simple test/Simple.cpp)
 set_property(TARGET simple PROPERTY INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/include")
 set_target_properties (simple PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS}")
@@ -212,6 +207,8 @@ add_test (unit_test unit_test)
 add_test (hash_test hash_test)
 add_test (l3_test l3_test)
 
+find_package(Java)
+
 if (NOT DEFINED HOTROD_JBOSS_HOME)
    if (NOT DEFINED ENV{JBOSS_HOME})
       message(WARNING "you must set the JBOSS_HOME environment variable or use -DHOTROD_JBOSS_HOME=/the/path if you want to run integration tests")
@@ -221,8 +218,11 @@ if (NOT DEFINED HOTROD_JBOSS_HOME)
 endif (NOT DEFINED HOTROD_JBOSS_HOME)
 
 if (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.sh") AND (EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.bat")))
-    message( "JBOSS_HOME ${HOTROD_JBOSS_HOME} does not have needed startup scripts")
+    message(WARNING "JBOSS_HOME ${HOTROD_JBOSS_HOME} does not have needed startup scripts")
 else (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.sh") AND (EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.bat")))
+    if (NOT JAVA_RUNTIME)
+        message(FATAL_ERROR "Java not found")
+    endif (NOT JAVA_RUNTIME)
     find_package(PythonInterp REQUIRED)
     add_test (start_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py start ${JAVA_RUNTIME} ${HOTROD_JBOSS_HOME} single)
     add_test (probe_port ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/probe_port.py localhost 11222 60)
@@ -231,7 +231,11 @@ else (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.sh") AND (EXISTS "${HOTR
 endif (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.sh") AND (EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.bat")))
 
 if (ENABLE_SWIG_TESTING)
-    include(jni/swig.cmake)
+    if (NOT JAVA_RUNTIME)
+        message(WARNING "Cannot enable SWIG tests without Java")
+    else (NOT JAVA_RUNTIME)
+        include(jni/swig.cmake)
+    endif (NOT JAVA_RUNTIME)
 endif (ENABLE_SWIG_TESTING)
 
 if (ENABLE_VALGRIND)
@@ -266,10 +270,11 @@ message (STATUS "Build ${CMAKE_BUILD_TYPE} for ${PLATFORM} on ${PACKAGE_ARCH}")
 set (CPACK_SYSTEM_NAME "${PLATFORM}-${PACKAGE_ARCH}")
 set (CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
 set (CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/License.txt")
+set (DOCDIR .)
 
 file (GLOB includes "${CMAKE_CURRENT_SOURCE_DIR}/include/infinispan/hotrod/*.h")
 install (FILES ${includes} DESTINATION include/infinispan/hotrod)
-install (FILES "${CMAKE_CURRENT_SOURCE_DIR}/License.txt" "${CMAKE_CURRENT_SOURCE_DIR}/dist/README.md" DESTINATION .)
+install (FILES "${CMAKE_CURRENT_SOURCE_DIR}/License.txt" "${CMAKE_CURRENT_SOURCE_DIR}/dist/README.md" DESTINATION ${DOCDIR})
 install (TARGETS hotrod hotrod-static DESTINATION lib${LIB_SUFFIX})
 
 include (CPack)
@@ -289,6 +294,6 @@ if (DOXYGEN_FOUND)
                      COMMAND ${DOXYGEN_EXECUTABLE} ${PROJECT_BINARY_DIR}/Doxyfile
                      SOURCES ${PROJECT_BINARY_DIR}/Doxyfile)
   #Include the API docs in the package.
-  install (FILES ${CMAKE_BINARY_DIR}/api_docs/html/ DESTINATION docs/api)
+  install (FILES ${CMAKE_BINARY_DIR}/api_docs/html/ DESTINATION ${DOCDIR}/api)
 endif (DOXYGEN_FOUND)
 
