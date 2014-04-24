@@ -178,7 +178,7 @@ void Codec10::checkForErrorsInResponseStatus(Transport& transport, HeaderParams&
             throw InternalException("Unknown status: " + status);
         }
         }
-    } catch (Exception const& e) {
+    } catch (const Exception &e) {
         // Some operations require invalidating the transport
         switch (status) {
         case HotRodConstants::INVALID_MAGIC_OR_MESSAGE_ID_STATUS:
@@ -188,7 +188,7 @@ void Codec10::checkForErrorsInResponseStatus(Transport& transport, HeaderParams&
             transport.invalidate();
         }
         }
-        throw e; // rethrow
+        throw;
     }
 }
 
