@@ -28,7 +28,7 @@ namespace sys {
 
 typedef enum LogLevel { LEVEL_TRACE, LEVEL_DEBUG, LEVEL_INFO, LEVEL_WARN, LEVEL_ERROR } LogLevel;
 
-class HR_EXTERN Log
+class Log
 {
   public:
     Log();
