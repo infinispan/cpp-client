@@ -6,6 +6,7 @@
 #include "hotrod/impl/protocol/Codec.h"
 #include "infinispan/hotrod/Configuration.h"
 #include "hotrod/impl/consistenthash/ConsistentHash.h"
+#include "hotrod/sys/Log.h"
 #include <algorithm>
 
 namespace infinispan {
@@ -123,7 +124,9 @@ void TcpTransportFactory::pingServers() {
             transport = &connectionPool->borrowObject(*iter);
             transportFactory->ping(*transport);
             connectionPool->returnObject(*iter, *transport);
-        } catch (Exception& e) {
+        } catch (const Exception &e) {
+            TRACE("Initial ping has thrown an exception when pinging %s:%d : %s",
+                iter->getHostname().c_str(), iter->getPort(), e.what());
             // Ping's objective is to retrieve a potentially newer
             // version of the Hot Rod cluster topology, so ignore
             // exceptions from nodes that might not be up any more.
