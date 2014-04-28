@@ -5,11 +5,8 @@
 #include "infinispan/hotrod/ImportExport.h"
 #include "hotrod/sys/Mutex.h"
 #include <stdexcept>
-#include <iostream>
-#include <iomanip>
 #include <stdarg.h>
 #include <stdlib.h>
-#include <string.h>
 
 #define LOG_LEVEL_TRACE "TRACE"
 #define LOG_LEVEL_DEBUG "DEBUG"
@@ -28,6 +25,7 @@ namespace sys {
 
 typedef enum LogLevel { LEVEL_TRACE, LEVEL_DEBUG, LEVEL_INFO, LEVEL_WARN, LEVEL_ERROR } LogLevel;
 
+/* The class is used in some of the tests, therefore, it is exported */
 class HR_EXTERN Log
 {
   public:
@@ -56,7 +54,7 @@ class HR_EXTERN Log
     LogLevel m_level;
     bool m_logThread;
     bool m_logTime;
-    unsigned m_traceBytesMax;
+    size_t m_traceBytesMax;
 
     void log(const char *level, const char *fname, const int lineno);
     void log(const char *level, const char *fname, const int lineno, const char *format, va_list vl);
@@ -72,7 +70,7 @@ class HR_EXTERN Log
 
 }}}
 
-static infinispan::hotrod::sys::Log logger;
+extern HR_EXTERN infinispan::hotrod::sys::Log logger;
 
 #endif  /* ISPN_HOTROD_LOG_H */
 
