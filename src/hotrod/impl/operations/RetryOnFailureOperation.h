@@ -6,6 +6,7 @@
 #include "hotrod/impl/operations/HotRodOperation.h"
 #include "hotrod/impl/transport/TransportFactory.h"
 #include "hotrod/impl/transport/tcp/InetSocketAddress.h"
+#include "hotrod/sys/Log.h"
 
 namespace infinispan {
 namespace hotrod {
@@ -24,13 +25,13 @@ template<class T> class RetryOnFailureOperation : public HotRodOperation<T>
                 const T& result = executeOperation(*transport);
                 releaseTransport(transport);
                 return result;
-            } catch(const TransportException& te) {
+            } catch (const TransportException& te) {
                 // Invalidate transport since this exception means that this
                 // instance is no longer usable and should be destroyed
             	transport::InetSocketAddress isa(te.getHost(),te.getPort());
                 transportFactory->invalidateTransport(isa, transport);
                 logErrorAndThrowExceptionIfNeeded(retryCount, te);
-            } catch(const RemoteNodeSuspectException& rnse) {
+            } catch (const RemoteNodeSuspectException& rnse) {
                 // Do not invalidate transport because this exception is caused
                 // as a result of a server finding out that another node has
                 // been suspected, so there's nothing really wrong with the server
@@ -61,14 +62,15 @@ template<class T> class RetryOnFailureOperation : public HotRodOperation<T>
         }
     }
 
-    void logErrorAndThrowExceptionIfNeeded(int i, const HotRodClientException&) {
+    void logErrorAndThrowExceptionIfNeeded(int i, const HotRodClientException &e) {
         if (i >= transportFactory->getTransportCount() - 1
-            || transportFactory->getTransportCount() < 0)
-        {
-            // log
-    	    throw;
+            || transportFactory->getTransportCount() < 0) {
+            ERROR("Exception encountered, retry %d of %d: %s",
+                i, transportFactory->getTransportCount(), e.what());
+            throw; 
         } else {
-            // log
+            TRACE("Exception encountered, retry %d of %d: %s",
+                i, transportFactory->getTransportCount(), e.what());
         }
     }
 

@@ -92,7 +92,7 @@ int main(int argc, char** args) {
 				break;
 			}
 		}
-	} catch (std::exception &e) {
+	} catch (const std::exception &e) {
 		std::cerr << "Failed with error: " << e.what() << "\n";
 		return 1;
 	}

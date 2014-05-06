@@ -3,6 +3,7 @@
 #include "infinispan/hotrod/exceptions.h"
 #include "hotrod/impl/transport/tcp/TcpTransport.h"
 #include "hotrod/impl/transport/tcp/TcpTransportFactory.h"
+#include "hotrod/sys/Log.h"
 
 #include <iostream>
 #include <cstring>
@@ -118,9 +119,9 @@ void TcpTransport::readBytes(hrbytes& bytes, uint32_t size) {
 void TcpTransport::release() {
     try {
         socket.close();
-    } catch(Exception& e) {
+    } catch (const Exception& e) {
         invalid = true;
-        // log
+        TRACE("Caught exception when closing socket: %s", e.what());
     }
 }
 

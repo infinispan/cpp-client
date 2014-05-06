@@ -24,7 +24,7 @@ class HR_EXTERN Exception : public std::exception
  * Main Exception class thrown to indicate exceptions using HotRod client
  *
  */
-class HR_EXTERN HotRodClientException : public std::exception
+class HR_EXTERN HotRodClientException : public Exception
 {
   public:
     explicit HotRodClientException(const std::string&);
