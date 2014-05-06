@@ -17,7 +17,7 @@
    <description>Infinispan HotRod JNI Wrapper</description>
 
    <properties>
-      <version.org.infinispan>6.0.0.Final</version.org.infinispan>
+      <version.org.infinispan>7.0.0.Alpha3</version.org.infinispan>
       <version.org.jboss.logging.processor>1.1.0.Final</version.org.jboss.logging.processor>
       <version.org.jboss.jbossts>4.17.13.Final</version.org.jboss.jbossts>
       <version.org.testng>6.8</version.org.testng>
