@@ -38,11 +38,24 @@ class Configuration
             const SslConfiguration _sslConfiguration,
             bool _tcpNoDelay,
             int _valueSizeEstimate):
-                protocolVersion(_protocolVersion), connectionPoolConfiguration(_connectionPoolConfiguration),
+                protocolVersion(_protocolVersion), protocolVersionPtr(),
+                connectionPoolConfiguration(_connectionPoolConfiguration),
                 connectionTimeout(_connectionTimeout), forceReturnValue(_forceReturnValue),
                 keySizeEstimate(_keySizeEstimate), pingOnStartup(_pingOnStartup), servers(_serversConfiguration),
                 socketTimeout(_socketTimeout), sslConfiguration(_sslConfiguration),tcpNoDelay(_tcpNoDelay),
                 valueSizeEstimate(_valueSizeEstimate) {}
+
+    /**
+     * DEPRECATED. Use getProtocolVersionCString().
+     * In the future, this should return either const char * or std::string
+     */
+    HR_EXTERN const std::string &getProtocolVersion() const {
+        if (protocolVersionPtr.get() == NULL) {
+            const_cast<Configuration *>(this)->protocolVersionPtr
+                    .set(new std::string(protocolVersion.c_string()), &deleteString);
+        }
+        return *(protocolVersionPtr.get());
+    }
 
     /**
      * Gets the protocol version for this Configuration. Protocol version is either:
@@ -51,8 +64,7 @@ class Configuration
      *
      *\return String representation of the protocol version
      */
-    // TODO: direct const char * or copy std::string?
-    HR_EXTERN const char *getProtocolVersion() const;
+    HR_EXTERN const char *getProtocolVersionCString() const;
 
     /**
      * Gets the ConnectionPoolConfiguration instance for this Configuration.
@@ -130,8 +142,9 @@ class Configuration
      */
     HR_EXTERN const int& getValueSizeEstimate() const;
 
-  private:
+private:
     portable::string protocolVersion;
+    portable::local_ptr<std::string> protocolVersionPtr;
     ConnectionPoolConfiguration connectionPoolConfiguration;
     int connectionTimeout;
     bool forceReturnValue;
@@ -142,6 +155,8 @@ class Configuration
     SslConfiguration sslConfiguration;
     bool tcpNoDelay;
     int valueSizeEstimate;
+
+    static void deleteString(std::string *str) { delete str; }
 };
 
 }} // namespace

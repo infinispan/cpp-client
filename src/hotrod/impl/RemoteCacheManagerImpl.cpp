@@ -47,7 +47,7 @@ RemoteCacheManagerImpl::RemoteCacheManagerImpl(const Configuration& configuratio
 
 void RemoteCacheManagerImpl::start() {
     ScopedLock<Mutex> l(lock);
-    codec = CodecFactory::getCodec(configuration.getProtocolVersion());
+    codec = CodecFactory::getCodec(configuration.getProtocolVersionCString());
     if (!started) {
         transportFactory.reset(TransportFactory::newInstance(configuration));
         transportFactory->start(*codec);
@@ -113,7 +113,7 @@ void RemoteCacheManagerImpl::startRemoteCache(RemoteCacheImpl& remoteCache, bool
         transportFactory,
         remoteCache.getName(),
         forceReturnValue,
-        *CodecFactory::getCodec(configuration.getProtocolVersion()));
+        *CodecFactory::getCodec(configuration.getProtocolVersionCString()));
 
     remoteCache.init(operationsFactory);
 

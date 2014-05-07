@@ -27,7 +27,7 @@ template<class T> class RetryOnFailureOperation : public HotRodOperation<T>
             } catch (const TransportException& te) {
                 // Invalidate transport since this exception means that this
                 // instance is no longer usable and should be destroyed
-            	transport::InetSocketAddress isa(te.getHost(),te.getPort());
+            	transport::InetSocketAddress isa(te.getHostCString(),te.getPort());
                 transportFactory->invalidateTransport(isa, transport);
                 logErrorAndThrowExceptionIfNeeded(retryCount, te);
             } catch (const RemoteNodeSuspectException& rnse) {

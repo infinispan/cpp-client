@@ -69,7 +69,7 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      * \return a version string
      */
     std::string getVersion() {
-        return Version::getVersion();
+        return Version::getVersionCString();
     }
 
     /**
@@ -78,7 +78,7 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      * \return protocol version as string
      */
     std::string getProtocolVersion() {
-        return Version::getProtocolVersion();
+        return Version::getProtocolVersionCString();
     }
 
     /**
@@ -621,6 +621,10 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
 
     portable::counting_ptr<Marshaller<K> > keyMarshaller;
     portable::counting_ptr<Marshaller<V> > valueMarshaller;
+
+    // DEPRECATED: Library code must not use these fields
+    portable::counting_ptr<portable::counted_wrapper<HR_SHARED_PTR<Marshaller<K> > > > keyMarshallerPtr;
+    portable::counting_ptr<portable::counted_wrapper<HR_SHARED_PTR<Marshaller<V> > > > valueMarshallerPtr;
 
   friend class RemoteCacheManager;
 };

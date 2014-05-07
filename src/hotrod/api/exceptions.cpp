@@ -34,7 +34,7 @@ TransportException::TransportException(const std::string& h, int p, const std::s
 
 TransportException::~TransportException() throw() {}
 
-const char *TransportException::getHost() const { return host.c_string(); }
+const char *TransportException::getHostCString() const { return host.c_string(); }
 int TransportException::getPort() const { return port;}
 
 InvalidResponseException::InvalidResponseException(const std::string& msg) : HotRodClientException(msg) {}

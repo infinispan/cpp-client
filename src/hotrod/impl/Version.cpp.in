@@ -3,7 +3,7 @@
 namespace infinispan {
 namespace hotrod {
 
-const char *Version::PROTOCOL_VERSION = "HotRod C++ client, protocol version :1.2";
+const char *Version::PROTOCOL_VERSION = "HotRod C++ client, protocol version: 1.2";
 const char *Version::VERSION = "@HOTROD_VERSION@";
 
 }}

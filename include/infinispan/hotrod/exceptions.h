@@ -48,11 +48,20 @@ class HR_EXTERN TransportException : public HotRodClientException
     TransportException(const std::string& host, int port, const std::string&);
     ~TransportException() throw();
 
-    const char *getHost() const;
+    const std::string &getHost() const {
+        if (hostPtr.get() == NULL) {
+            const_cast<TransportException *>(this)->hostPtr.set(new std::string(host.c_string()), &deleteString);
+        }
+        return *(hostPtr.get());
+    }
+    const char *getHostCString() const;
     int getPort() const;
   private:
     const portable::string host;
+    portable::local_ptr<std::string> hostPtr;
     int port;
+
+    static void deleteString(std::string *str) { delete str; }
 };
 
 /**

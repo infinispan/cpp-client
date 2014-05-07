@@ -26,7 +26,7 @@ class ValueUnmarshallerFtor;
 
 class RemoteCacheBase
 {
-  public:
+protected:
     HR_EXTERN const char *base_getName();
     HR_EXTERN void *base_get(const void *key);
     HR_EXTERN void *base_put(const void *key, const void *value, int64_t life, int64_t idle);
@@ -44,7 +44,7 @@ class RemoteCacheBase
     HR_EXTERN void  base_stats(portable::map<portable::string,portable::string> &sbuf);
     HR_EXTERN void  base_clear();
     HR_EXTERN void  base_withFlags(Flag flag);
-protected:
+
     RemoteCacheBase() {}
     HR_EXTERN void setMarshallers(void* rc, MarshallHelperFn kf, MarshallHelperFn vf, UnmarshallHelperFn ukf, UnmarshallHelperFn uvf);
 

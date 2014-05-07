@@ -22,16 +22,23 @@ namespace hotrod {
  */
 class HR_EXTERN ServerConfiguration
 {
-  public:
+public:
     ServerConfiguration(): host(""), port(0) {} // for use just in collections
     ServerConfiguration(const std::string &_host, int _port): host(_host), port(_port) {}
 
+    const std::string &getHost() const
+    {
+        if (hostPtr.get() == NULL) {
+            const_cast<ServerConfiguration *>(this)->hostPtr.set(new std::string(host.c_string()), &deleteString);
+        }
+        return *hostPtr.get();
+    }
 	/**
 	 * Returns host of this ServerConfiguration
 	 *
 	 * \return host as a string reference
 	 */
-    const char *getHost() const
+    const char *getHostCString() const
     {
         return host.c_string();
     }
@@ -46,9 +53,12 @@ class HR_EXTERN ServerConfiguration
         return port;
     }
 
-  private:
+private:
     portable::string host;
+    portable::local_ptr<std::string> hostPtr;
     int port;
+
+    static void deleteString(std::string *str) { delete str; }
 };
 
 }

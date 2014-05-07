@@ -30,7 +30,7 @@ void TcpTransportFactory::start(
     for (std::vector<ServerConfiguration>::const_iterator iter = configuredServers.begin();
         iter != configuredServers.end(); iter++)
     {
-        servers.push_back(InetSocketAddress(iter->getHost(), iter->getPort()));
+        servers.push_back(InetSocketAddress(iter->getHostCString(), iter->getPort()));
     }
 
     balancer.reset(RequestBalancingStrategy::newInstance());

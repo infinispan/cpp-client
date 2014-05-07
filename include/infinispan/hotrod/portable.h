@@ -380,6 +380,14 @@ public:
     virtual ~counted_object() {}
 };
 
+template<typename T> class counted_wrapper: public counted_object {
+private:
+    T m_object;
+public:
+    counted_wrapper(const T &o): m_object(o) {}
+    T &operator()() { return m_object; }
+};
+
 template<typename T> class counting_ptr {
 public:
     typedef void (*destroy)(T *);
@@ -444,6 +452,25 @@ public:
     }
     const T *operator->() const {
         return (const T *)m_ptr;
+    }
+};
+
+template<typename T> class local_ptr {
+private:
+    typedef void (*destroy)(T *);
+    T *m_ptr;
+    destroy m_destroy;
+public:
+    local_ptr(): m_ptr(0), m_destroy(0) {}
+    local_ptr(const local_ptr &): m_ptr(0), m_destroy(0) {} // copying does not persist value
+    local_ptr &operator=(const local_ptr &) { return *this; }
+    ~local_ptr() { if (m_ptr) m_destroy(m_ptr); }
+    const T *get() const { return m_ptr; }
+    T *get() { return m_ptr; }
+    void set(T *ptr, void (*dtor)(T *)) {
+        if (m_ptr) m_destroy(m_ptr);
+        m_ptr = ptr;
+        m_destroy = dtor;
     }
 };
 

@@ -71,7 +71,7 @@ class ServerConfigurationBuilder
 	 */
     virtual ServerConfigurationBuilder& read(ServerConfiguration& configuration)
     {
-        m_host = configuration.getHost();
+        m_host = configuration.getHostCString();
         m_port = configuration.getPort();
         return *this;
     }
