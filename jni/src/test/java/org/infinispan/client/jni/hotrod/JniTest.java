@@ -29,10 +29,8 @@ public class JniTest {
       TextReporter tr = new TextReporter("SWIG Tests", 2);
 
       testng.setTestClasses(new Class[] {
-            //HRCPP-119
-//            RemoteCacheManagerTest.class,
             //HRCPP-120
-//            ClientAsymmetricClusterTest.class,
+            //ClientAsymmetricClusterTest.class,
 
             //Known to work
             BulkGetKeysDistTest.class, 
@@ -41,32 +39,56 @@ public class JniTest {
             BulkGetReplTest.class,
             BulkGetSimpleTest.class, 
             CacheManagerStoppedTest.class, 
-            DefaultExpirationTest.class,
+            CrossLanguageHotRodTest.class,
+            DefaultExpirationTest.class, 
             ForceReturnValuesTest.class, 
-            ForceReturnValueTest.class, 
-            HotRodIntegrationTest.class,
+            ForceReturnValueTest.class,
+            HotRodIntegrationTest.class, 
             HotRodServerStartStopTest.class, 
-            HotRodStatisticsTest.class, 
-            ServerErrorTest.class,
-            ServerRestartTest.class,
+            HotRodStatisticsTest.class,
+            RemoteCacheManagerTest.class, 
+            ServerErrorTest.class, 
+            ServerRestartTest.class, 
             ServerShutdownTest.class,
-            SocketTimeoutErrorTest.class, 
-            
+            SocketTimeoutErrorTest.class,
+
       });
 
       testng.addListener(tr);
       testng.run();
 
-      String[] expectedTestFailures = { 
+      String[] expectedTestFailures = {
             // Async operations are not supported currently
-            "HotRodIntegrationTest.testReplaceWithVersionWithLifespanAsync",
+            "HotRodIntegrationTest.testReplaceWithVersionWithLifespanAsync", 
             "CacheManagerStoppedTest.testPutAllAsync",
-            "CacheManagerStoppedTest.testPutAsync",
+            "CacheManagerStoppedTest.testPutAsync", 
             "CacheManagerStoppedTest.testReplaceAsync",
             "CacheManagerStoppedTest.testVersionedRemoveAsync",
-      };
+            // RemoteCacheManager doesn't support these tests
+            "RemoteCacheManagerTest.testUrlAndBooleanConstructor", 
+            "RemoteCacheManagerTest.testMarshallerInstance",
+            "RemoteCacheManagerTest.testGetUndefinedCache", };
 
-      assertEquals(tr.getFailedTests().size(), expectedTestFailures.length);
-      System.exit(0);
+      final int expectedFailures = expectedTestFailures.length;
+      final int expectedSkips = 0;
+      final int actualFailures = tr.getFailedTests().size();
+      final int actualSkips = tr.getSkippedTests().size();
+
+      int exitCode = 0;
+      if (expectedFailures != actualFailures) {
+         exitCode = 1;
+         System.err.println(String.format("Failures expected: %d actual: %d", expectedFailures, actualFailures));
+      }
+
+      if (expectedSkips != actualSkips) {
+         exitCode = 1;
+         System.err.println(String.format("Skips expected: %d actual: %d", expectedSkips, actualSkips));
+      }
+
+      /*
+       * Force exit when tests pass also as some of the tests expected to fail might not properly
+       * clean-up and as a result the process will not terminate when main() returns.
+       */
+      System.exit(exitCode);
    }
 }
