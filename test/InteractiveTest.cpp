@@ -45,6 +45,7 @@ int main(int argc, char** args) {
 		std::cerr << "Usage: itest host port cache\n";
 		return -1;
 	}
+	std::cout << "Using " << Version::getProtocolVersion() << " (version " << Version::getVersion() << ")\n";
 	ConfigurationBuilder builder;
 	builder.addServer().host(args[1]).port(atoi(args[2]));
 	try {
@@ -53,7 +54,7 @@ int main(int argc, char** args) {
 		bool printHelp = true;
 		for (;;) {
 			if (printHelp) {
-				std::cout << "Type command: [g]et | [p]ut | [r]emove | print [s]ervers | [q]uit\n";
+				std::cout << "Type command: [g]et | [p]ut | [r]emove | [q]uit\n";
 			}
 			printHelp = true;
 			int c = getchar();

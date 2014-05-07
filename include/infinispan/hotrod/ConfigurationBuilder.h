@@ -230,7 +230,7 @@ class ConfigurationBuilder
      */
     virtual ConfigurationBuilder& read(Configuration& configuration) {
         // FIXME: read pool, ssl and server configs
-        m_protocolVersion = configuration.getProtocolVersion();
+        m_protocolVersion = configuration.getProtocolVersionCString();
         m_connectionTimeout = configuration.getConnectionTimeout();
         m_forceReturnValue = configuration.isForceReturnValue();
         m_pingOnStartup = configuration.isPingOnStartup();
@@ -241,6 +241,8 @@ class ConfigurationBuilder
         return *this;
     }
 
+    // DEPRECATED: use Configuration::PROTOCOL_VERSION_12 instead
+    HR_EXTERN static const char *PROTOCOL_VERSION_12;
 
   private:
     int m_connectionTimeout;
