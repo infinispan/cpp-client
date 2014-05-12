@@ -38,7 +38,7 @@ import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.server.hotrod.HotRodServer;
 import org.infinispan.test.SingleCacheManagerTest;
 import org.infinispan.test.fwk.TestCacheManagerFactory;
-import org.testng.annotations.AfterTest;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -173,11 +173,21 @@ public class CrossLanguageHotRodTest extends SingleCacheManagerTest {
       String[] classpath = System.getProperty("java.class.path").split(File.pathSeparator);
       ArrayList<URL> jars = new ArrayList<URL>();
       for (String path : classpath) {
-         if (!path.contains("test-classes") && !path.contains("hotrod-jni.jar")) {
+         if (path.matches(".*infinispan-client-hotrod.*\\.jar")) {
             jars.add(new File(path).toURI().toURL());
          }
       }
-      ucl = new URLClassLoader(jars.toArray(new URL[0]), null);
+      ucl = new URLClassLoader(jars.toArray(new URL[0]), null) {
+              protected Class<?> findClass(String name) throws ClassNotFoundException {
+                  try {
+                      /* Try to find the class in the java hotrod client jar first. */
+                      return super.findClass(name);
+                  } catch (ClassNotFoundException ex) {
+                      /* Delegate to the main CL if it's not a class from that jar. */
+                      return getClass().getClassLoader().loadClass(name);
+                  }
+              }
+          };
 
       Class<?> javaRCMClass = ucl.loadClass("org.infinispan.client.hotrod.RemoteCacheManager");
       try {
@@ -210,7 +220,7 @@ public class CrossLanguageHotRodTest extends SingleCacheManagerTest {
       javaGetVersionMethod = javaMVClass.getMethod("getVersion");
    }
 
-   @AfterTest
+   @AfterMethod(alwaysRun=true)
    public void release() {
       killCacheManagers(cacheManager);
       cppRemoteCacheManager.stop();
@@ -659,9 +669,24 @@ public class CrossLanguageHotRodTest extends SingleCacheManagerTest {
          } catch (InterruptedException e) {
             //Eat this!
          }
+
          for (int i = 0; i < valueArray.length; i++) {
-            assertTrue(checkEquality(valueArray[i], javaGetMethod.invoke(javaCacheObject, "k" + i)), "Expected: ("
-                  + valueArray[i] + "), Actual: (" + javaGetMethod.invoke(javaCacheObject, "k" + i) + ")");
+             String key = "k" + i;
+
+             long now = System.currentTimeMillis();
+             Object actual = javaGetMethod.invoke(javaCacheObject, key);
+
+             Object metadata = javaGetWithMetadataMethod.invoke(javaCacheObject, key);
+             long created = (Long) javaGetCreatedMethod.invoke(metadata);
+
+             /* Make sure we are not past the maxIdle time. */
+             boolean pastMaxIdle = now > (created + maxIdleSec * 1000);
+             if (pastMaxIdle) {
+                 assertEquals(actual, null);
+             } else {
+                 assertTrue(checkEquality(valueArray[i], actual),
+                            String.format("Expected: (%s), Actual: (%s)", valueArray[i], actual));
+             }
          }
 
          try {

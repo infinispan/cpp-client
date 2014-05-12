@@ -70,7 +70,29 @@ public class JniTest {
             "RemoteCacheManagerTest.testGetUndefinedCache",
       };
 
-      assertEquals(tr.getFailedTests().size(), expectedTestFailures.length);
-      System.exit(0);
+      final int expectedFailures = expectedTestFailures.length;
+      final int expectedSkips = 0;
+      final int actualFailures = tr.getFailedTests().size();
+      final int actualSkips = tr.getSkippedTests().size();
+
+      int exitCode = 0;
+      if (expectedFailures != actualFailures) {
+          exitCode = 1;
+          System.err.println(String.format("Failures expected: %d actual: %d",
+                                           expectedFailures,
+                                           actualFailures));
+      }
+
+      if (expectedSkips != actualSkips) {
+          exitCode = 1;
+          System.err.println(String.format("Skips expected: %d actual: %d",
+                                           expectedSkips,
+                                           actualSkips));
+      }
+
+      /* Force exit when tests pass also as some of the tests expected to fail
+         might not properly clean-up and as a result the process will not terminate
+         when main() returns. */
+      System.exit(exitCode);
    }
 }
