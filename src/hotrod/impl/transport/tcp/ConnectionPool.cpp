@@ -156,11 +156,17 @@ void ConnectionPool::close() {
 }
 
 void PoolWorker::run() {
+    long totalTime = pool->getConfiguration().getTimeBetweenEvictionRuns();
+    if (totalTime <= 0) {
+        // When non-positive, no eviction thread will be launched.
+        return;
+    }
+
     while(!pool->closed) {
         pool->checkIdle();
         pool->testIdle();
         // Sleep in 1 second bursts to let us be cancellable
-        for(long t = 0; t < pool->getConfiguration().getTimeBetweenEvictionRuns() && !pool->closed; t+=1000) {
+        for(long t = 0; t < totalTime && !pool->closed; t+=1000) {
             sys::Thread::sleep(1000);
         }
     }
