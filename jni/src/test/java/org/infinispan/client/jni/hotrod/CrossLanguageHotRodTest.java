@@ -617,6 +617,7 @@ public class CrossLanguageHotRodTest extends SingleCacheManagerTest {
       assertEquals(0, cppCache.size().longValue());
 
       for (String command : lifespanMaxIdleCommands) {
+         long created = System.currentTimeMillis();
          if (command.equals(lifespanMaxIdleCommands[0])) {
             for (int i = 0; i < valueArray.length; i++) {
                assertEquals(null, cppPut(cppCache, "k" + i, valueArray[i], false, lifespanSec, maxIdleSec));
@@ -675,9 +676,6 @@ public class CrossLanguageHotRodTest extends SingleCacheManagerTest {
 
              long now = System.currentTimeMillis();
              Object actual = javaGetMethod.invoke(javaCacheObject, key);
-
-             Object metadata = javaGetWithMetadataMethod.invoke(javaCacheObject, key);
-             long created = (Long) javaGetCreatedMethod.invoke(metadata);
 
              /* Make sure we are not past the maxIdle time. */
              boolean pastMaxIdle = now > (created + maxIdleSec * 1000);
