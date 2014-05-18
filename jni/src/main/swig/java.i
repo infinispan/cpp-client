@@ -81,28 +81,37 @@
     } catch (const infinispan::hotrod::InvalidResponseException& e) {
       jclass clazz = jenv->FindClass("org/infinispan/client/hotrod/exceptions/InvalidResponseException");
       jenv->ThrowNew(clazz, e.what());
+      return $null;
     } catch (const infinispan::hotrod::RemoteCacheManagerNotStartedException& e) {
       jclass clazz = jenv->FindClass("org/infinispan/client/hotrod/exceptions/RemoteCacheManagerNotStartedException");
       jenv->ThrowNew(clazz, e.what());
+      return $null;
     } catch (const infinispan::hotrod::UnsupportedOperationException& e) {
       jclass clazz = jenv->FindClass("java/lang/UnsupportedOperationException");
       jenv->ThrowNew(clazz, e.what());
+      return $null;
     } catch (const infinispan::hotrod::HotRodClientException& e) {
       jclass clazz = jenv->FindClass("org/infinispan/client/hotrod/exceptions/HotRodClientException");
       jenv->ThrowNew(clazz, e.what());
+      return $null;
     } catch (const infinispan::hotrod::Exception& e) {
       jclass clazz = jenv->FindClass("java/lang/Exception");
       jenv->ThrowNew(clazz, e.what());
+      return $null;
     } catch (const std::runtime_error& e) {
       SWIG_exception(SWIG_RuntimeError, e.what());
+      return $null;
     } catch (const std::exception& e) {
       jclass clazz = jenv->FindClass("java/lang/Exception");
       jenv->ThrowNew(clazz, e.what());
+      return $null;
     } catch (const std::exception *e) {
       jclass clazz = jenv->FindClass("java/lang/Exception");
       jenv->ThrowNew(clazz, e->what());
+      return $null;
     } catch (...) {
       SWIG_exception(SWIG_UnknownError, "C++ unknown exception thrown");
+      return $null;
     }
 }
 
