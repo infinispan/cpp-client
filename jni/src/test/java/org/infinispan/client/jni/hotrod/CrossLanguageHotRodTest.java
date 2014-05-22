@@ -44,7 +44,7 @@ import org.testng.annotations.Test;
 
 /**
  * Tests C++ and Java Hot Rod Client interoperability.
- * 
+ *
  * @author Alan Field
  */
 public class CrossLanguageHotRodTest extends SingleCacheManagerTest {
@@ -617,7 +617,6 @@ public class CrossLanguageHotRodTest extends SingleCacheManagerTest {
       assertEquals(0, cppCache.size().longValue());
 
       for (String command : lifespanMaxIdleCommands) {
-         long created = System.currentTimeMillis();
          if (command.equals(lifespanMaxIdleCommands[0])) {
             for (int i = 0; i < valueArray.length; i++) {
                assertEquals(null, cppPut(cppCache, "k" + i, valueArray[i], false, lifespanSec, maxIdleSec));
@@ -676,6 +675,9 @@ public class CrossLanguageHotRodTest extends SingleCacheManagerTest {
 
              long now = System.currentTimeMillis();
              Object actual = javaGetMethod.invoke(javaCacheObject, key);
+
+             long created = (Long) javaGetCreatedMethod.invoke(
+				    javaGetWithMetadataMethod.invoke(javaCacheObject, key));
 
              /* Make sure we are not past the maxIdle time. */
              boolean pastMaxIdle = now > (created + maxIdleSec * 1000);
@@ -1104,9 +1106,9 @@ public class CrossLanguageHotRodTest extends SingleCacheManagerTest {
    }
 
    /**
-    * 
+    *
     * Utility method to test object equality including arrays
-    * 
+    *
     * @param obj1
     *           first object
     * @param obj2
