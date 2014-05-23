@@ -47,6 +47,7 @@ import org.testng.annotations.Test;
  * 
  * @author Alan Field
  */
+@Test(testName = "client.hotrod.CrossLanguageHotRodTest", groups = "functional")
 public class CrossLanguageHotRodTest extends SingleCacheManagerTest {
    final String DEFAULT_CACHE_MANAGER = "local";
    final String DEFAULT_CACHE = "testcache";
@@ -530,16 +531,7 @@ public class CrossLanguageHotRodTest extends SingleCacheManagerTest {
             }
          }
 
-         try {
-            Thread.sleep(lifespanSec * 2000);
-         } catch (InterruptedException e) {
-            //Eat this!
-         }
-
-         for (int i = 0; i < valueArray.length; i++) {
-            assertEquals(null, javaGetMethod.invoke(javaCacheObject, "k" + i));
-            assertFalse((Boolean) javaContainsKeyMethod.invoke(javaCacheObject, "k" + i));
-         }
+         cppClear(cppCache, DEFAULT_CACHE);
          assertTrue(cppCache.isEmpty());
          assertEquals(0, cppCache.size().longValue());
       }
@@ -590,16 +582,7 @@ public class CrossLanguageHotRodTest extends SingleCacheManagerTest {
             }
          }
 
-         try {
-            Thread.sleep(maxIdleSec * 2000);
-         } catch (InterruptedException e) {
-            //Eat this!
-         }
-
-         for (int i = 0; i < valueArray.length; i++) {
-            assertEquals(null, javaGetMethod.invoke(javaCacheObject, "k" + i));
-            assertFalse((Boolean) javaContainsKeyMethod.invoke(javaCacheObject, "k" + i));
-         }
+         cppClear(cppCache, DEFAULT_CACHE);
          assertTrue(cppCache.isEmpty());
          assertEquals(0, cppCache.size().longValue());
       }
@@ -617,7 +600,6 @@ public class CrossLanguageHotRodTest extends SingleCacheManagerTest {
       assertEquals(0, cppCache.size().longValue());
 
       for (String command : lifespanMaxIdleCommands) {
-         long created = System.currentTimeMillis();
          if (command.equals(lifespanMaxIdleCommands[0])) {
             for (int i = 0; i < valueArray.length; i++) {
                assertEquals(null, cppPut(cppCache, "k" + i, valueArray[i], false, lifespanSec, maxIdleSec));
@@ -665,37 +647,7 @@ public class CrossLanguageHotRodTest extends SingleCacheManagerTest {
             }
          }
 
-         try {
-            Thread.sleep(maxIdleSec * 500);
-         } catch (InterruptedException e) {
-            //Eat this!
-         }
-
-         for (int i = 0; i < valueArray.length; i++) {
-             String key = "k" + i;
-
-             long now = System.currentTimeMillis();
-             Object actual = javaGetMethod.invoke(javaCacheObject, key);
-
-             /* Make sure we are not past the maxIdle time. */
-             boolean pastMaxIdle = now > (created + maxIdleSec * 1000);
-             if (pastMaxIdle) {
-                 assertEquals(actual, null);
-             } else {
-                 assertTrue(checkEquality(valueArray[i], actual),
-                            String.format("Expected: (%s), Actual: (%s)", valueArray[i], actual));
-             }
-         }
-
-         try {
-            Thread.sleep(lifespanSec * 2000);
-         } catch (InterruptedException e) {
-            //Eat this!
-         }
-         for (int i = 0; i < valueArray.length; i++) {
-            assertEquals(null, javaGetMethod.invoke(javaCacheObject, "k" + i));
-            assertFalse((Boolean) javaContainsKeyMethod.invoke(javaCacheObject, "k" + i));
-         }
+         cppClear(cppCache, DEFAULT_CACHE);
          assertTrue(cppCache.isEmpty());
          assertEquals(0, cppCache.size().longValue());
       }
