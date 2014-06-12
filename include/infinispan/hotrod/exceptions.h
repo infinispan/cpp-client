@@ -58,6 +58,7 @@ class HR_EXTERN TransportException : public HotRodClientException
     int getPort() const;
   private:
     const portable::string host;
+    __pragma(warning(suppress:4251))
     portable::local_ptr<std::string> hostPtr;
     int port;
 
