@@ -1,8 +1,4 @@
-
-
-#include "infinispan/hotrod/types.h"
 #include "hotrod/impl/operations/RemoveOperation.h"
-#include <cstring>
 
 namespace infinispan {
 namespace hotrod {
@@ -24,7 +20,7 @@ RemoveOperation::RemoveOperation(
 
 hrbytes RemoveOperation::executeOperation(Transport& transport)
 {
-    TRACE("Execute Remove(flags=%u)");
+    TRACE("Execute Remove(flags=%u)", flags);
     TRACEBYTES("key = ", key);
     hrbytes result;
     sendKeyOperation(key,

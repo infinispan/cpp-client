@@ -7,26 +7,9 @@ const char* Configuration::PROTOCOL_VERSION_10 = "1.0";
 const char* Configuration::PROTOCOL_VERSION_11 = "1.1";
 const char* Configuration::PROTOCOL_VERSION_12 = "1.2";
 
-Configuration::Configuration(std::string version,
-        const ConnectionPoolConfiguration& cpc,
-        int connTimeout,
-        bool forceReturnVal,
-        int kSizeEstimate,
-        bool pingOnStartupPar,
-        std::vector<ServerConfiguration,std::allocator<ServerConfiguration> > serversConfiguration,
-        int socketTimeoutPar,
-        SslConfiguration sslConfig,
-        bool tcpNoDelayPar,
-        int vSizeEstimate) : protocolVersion(version), connectionPoolConfiguration(cpc), connectionTimeout(connTimeout),
-            forceReturnValue(forceReturnVal), keySizeEstimate(kSizeEstimate), pingOnStartup(pingOnStartupPar), servers(serversConfiguration),
-            socketTimeout(socketTimeoutPar), sslConfiguration(sslConfig),tcpNoDelay(tcpNoDelayPar),valueSizeEstimate(vSizeEstimate)
+const char *Configuration::getProtocolVersionCString() const
 {
-
-}
-
-const std::string& Configuration::getProtocolVersion() const
-{
-  return Configuration::protocolVersion;
+  return Configuration::protocolVersion.c_string();
 }
 
 const ConnectionPoolConfiguration& Configuration::getConnectionPoolConfiguration() const
@@ -52,11 +35,6 @@ const int& Configuration::getKeySizeEstimate() const
 const bool& Configuration::isPingOnStartup() const
 {
   return Configuration::pingOnStartup;
-}
-
-const std::vector<ServerConfiguration>& Configuration::getServersConfiguration() const
-{
-  return Configuration::servers;
 }
 
 const int& Configuration::getSocketTimeout() const

@@ -1,16 +1,16 @@
 #ifndef ISPN_HOTROD_MURMURMHASH3_H
 #define ISPN_HOTROD_MURMURMHASH3_H
 
-#include "infinispan/hotrod/Hash.h"
+#include "hotrod/impl/hash/Hash.h"
 
 namespace infinispan {
 namespace hotrod {
 
-class HR_EXTERN MurmurHash3: public Hash {
+class MurmurHash3: public Hash {
 public:
     ~MurmurHash3();
 
-    uint32_t hash(const hrbytes& key) const;
+    uint32_t hash(const void *key, size_t size) const;
     uint32_t hash(int32_t key) const;
 
 private:

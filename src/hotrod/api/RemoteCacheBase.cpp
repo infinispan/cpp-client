@@ -9,7 +9,7 @@
 namespace infinispan {
 namespace hotrod {
 
-RemoteCacheBase::RemoteCacheBase() : Handle<RemoteCacheImpl>(NULL) {}
+#define IMPL ((RemoteCacheImpl *) impl.get())
 
 void RemoteCacheBase::setMarshallers(void* rc, MarshallHelperFn kf, MarshallHelperFn vf, UnmarshallHelperFn ukf, UnmarshallHelperFn uvf) {
     remoteCachePtr = rc;
@@ -19,101 +19,97 @@ void RemoteCacheBase::setMarshallers(void* rc, MarshallHelperFn kf, MarshallHelp
     baseValueUnmarshallFn = uvf;
 }
     
-void RemoteCacheBase::baseKeyMarshall(const void* k, void *buf) {
+void RemoteCacheBase::baseKeyMarshall(const void* k, ScopedBuffer &buf) {
     baseKeyMarshallFn(remoteCachePtr, k, buf);
 }
 
-void RemoteCacheBase::baseValueMarshall(const void* v, void *buf) {
+void RemoteCacheBase::baseValueMarshall(const void* v, ScopedBuffer &buf) {
     baseValueMarshallFn(remoteCachePtr, v, buf);
 }
 
-void* RemoteCacheBase::baseKeyUnmarshall(const void* buf) {
+void* RemoteCacheBase::baseKeyUnmarshall(const ScopedBuffer &buf) {
     return baseKeyUnmarshallFn(remoteCachePtr, buf);
 }
 
-void* RemoteCacheBase::baseValueUnmarshall(const void* buf) {
+void* RemoteCacheBase::baseValueUnmarshall(const ScopedBuffer &buf) {
     return baseValueUnmarshallFn(remoteCachePtr, buf);
 }
 
-void RemoteCacheBase::init(operations::OperationsFactory* operationFactory) {
-    impl->init(operationFactory);
+const char *RemoteCacheBase::base_getName() {
+    return IMPL->getName();
 }
 
-const std::string& RemoteCacheBase::base_getName() {
-    return impl->getName();
+void *RemoteCacheBase::base_get(const void *key) {
+    return IMPL->get(*this, key);
 }
 
-void RemoteCacheBase::base_get(const void *key, void *buf) {
-    impl->get(*this, key, buf);
+void *RemoteCacheBase::base_put(const void *key, const void *val, int64_t life, int64_t idle) {
+    return IMPL->put(*this, key, val, life, idle);
 }
 
-void RemoteCacheBase::base_put(const void *key, const void *val, int64_t life, int64_t idle, void *buf) {
-    impl->put(*this, key, val, life, idle, buf);
+void *RemoteCacheBase::base_putIfAbsent(const void *key, const void *val, int64_t life, int64_t idle) {
+    return IMPL->putIfAbsent(*this, key, val, life, idle);
 }
 
-void RemoteCacheBase::base_putIfAbsent(const void *key, const void *val, int64_t life, int64_t idle, void *buf) {
-    impl->putIfAbsent(*this, key, val, life, idle, buf);
+void *RemoteCacheBase::base_replace(const void *key, const void *val, int64_t life, int64_t idle) {
+    return IMPL->replace(*this, key, val, life, idle);
 }
 
-void RemoteCacheBase::base_replace(const void *key, const void *val, int64_t life, int64_t idle, void *buf) {
-    impl->replace(*this, key, val, life, idle, buf);
+void *RemoteCacheBase::base_remove(const void *key) {
+    return IMPL->remove(*this, key);
 }
 
-void RemoteCacheBase::base_remove(const void *key, void *rbuf) {
-    impl->remove(*this, key, rbuf);
+bool RemoteCacheBase::base_containsKey(const void *key){
+    return IMPL->containsKey(*this, key);
 }
 
-void RemoteCacheBase::base_containsKey(const void *key, bool *res){
-    impl->containsKey(*this, key, res);
-}
-
-void RemoteCacheBase::base_replaceWithVersion(const void *key, const void *value, int64_t version, int64_t life, int64_t idle, bool *res)
+bool RemoteCacheBase::base_replaceWithVersion(const void *key, const void *value, int64_t version, int64_t life, int64_t idle)
 {
-    impl->replaceWithVersion(*this, key, value, version, life, idle, res);
+    return IMPL->replaceWithVersion(*this, key, value, version, life, idle);
 }
 
-void RemoteCacheBase::base_removeWithVersion(const void *key, int64_t version, bool *res)
+bool RemoteCacheBase::base_removeWithVersion(const void *key, int64_t version)
 {
-    impl->removeWithVersion(*this, key, version, res);
+    return IMPL->removeWithVersion(*this, key, version);
 }
 
-void RemoteCacheBase::base_getWithVersion(const void *key, void* vbuf, VersionedValue* version)
+void *RemoteCacheBase::base_getWithVersion(const void *key, VersionedValue* version)
 {
-    impl->getWithVersion(*this, key, vbuf, version);
+    return IMPL->getWithVersion(*this, key, version);
 }
 
-void RemoteCacheBase::base_getWithMetadata(const void *key, void* vbuf, MetadataValue* metadata)
+void *RemoteCacheBase::base_getWithMetadata(const void *key, MetadataValue* metadata)
 {
-    impl->getWithMetadata(*this, key, vbuf, metadata);
+    return IMPL->getWithMetadata(*this, key, metadata);
 }
 
-void RemoteCacheBase::base_getBulk(int size, std::map<void*, void*>* mbuf)
+void RemoteCacheBase::base_getBulk(int size, portable::map<void*, void*> &mbuf)
 {
-    impl->getBulk(*this, size, mbuf);
+    IMPL->getBulk(*this, size, mbuf);
 }
 
 
-void RemoteCacheBase::base_keySet(int scope, std::set<void*>* result)
+void RemoteCacheBase::base_keySet(int scope, portable::vector<void*> &result)
 {
-    impl->keySet(*this, scope, result);
+    IMPL->keySet(*this, scope, result);
 }
 
-void RemoteCacheBase::base_stats(std::map<std::string,std::string>* stats)
+void RemoteCacheBase::base_stats(portable::map<portable::string,portable::string> &stats)
 {
-    impl->stats(stats);
+    IMPL->stats(stats);
 }
 
 void RemoteCacheBase::base_clear()
 {
-    impl->clear();
+    IMPL->clear();
 }
 
 void RemoteCacheBase::base_ping() {
-    impl->ping();
+    IMPL->ping();
 }
 
 void RemoteCacheBase::base_withFlags(Flag flags) {
-    impl->withFlags(flags);
+    IMPL->withFlags(flags);
 }
 
 }} /* namespace */

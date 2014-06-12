@@ -1,9 +1,4 @@
-
-
-#include "infinispan/hotrod/types.h"
 #include "hotrod/impl/operations/GetWithMetadataOperation.h"
-#include "hotrod/impl/MetadataValueImpl.h"
-#include <cstring>
 
 namespace infinispan {
 namespace hotrod {

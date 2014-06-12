@@ -1,7 +1,6 @@
 #include "hotrod/impl/consistenthash/ConsistentHashV1.h"
 #include "hotrod/impl/transport/tcp/InetSocketAddress.h"
 #include "hotrod/impl/hash/MurmurHash2.h"
-#include "infinispan/hotrod/types.h"
 #include <limits>
 #include <algorithm>
 
@@ -30,7 +29,7 @@ void ConsistentHashV1::init(
         }
     }
 
-    int32_t hashWheelSize = positions.size();
+    int32_t hashWheelSize = (int32_t) positions.size();
     //log.tracef("Positions (%d entries) are: %s", hashWheelSize, positions);
 
     hashes.clear();
@@ -78,7 +77,7 @@ int32_t ConsistentHashV1::getNormalizedHash(int32_t objectId) {
 
 int32_t ConsistentHashV1::getNormalizedHash(const hrbytes& key) {
     // make sure no negative numbers are involved.
-    return hash->hash(key) & std::numeric_limits<int32_t>::max();
+    return hash->hash(key.bytes(), key.length()) & std::numeric_limits<int32_t>::max();
 }
 
 int32_t ConsistentHashV1::getHashIndex(int32_t normalisedHashForKey) {
@@ -98,7 +97,7 @@ int32_t ConsistentHashV1::getHashIndex(int32_t normalisedHashForKey) {
          } else {
          return (low - hashes.begin()) - 1;
          }*/
-        return low - hashes.begin();
+        return (int32_t) (low - hashes.begin());
     } else {
         return 0;
     }

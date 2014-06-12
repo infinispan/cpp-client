@@ -1,6 +1,5 @@
 
 
-#include "infinispan/hotrod/types.h"
 #include "hotrod/impl/operations/BulkGetKeysOperation.h"
 
 #include <set>

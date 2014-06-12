@@ -1,4 +1,4 @@
-#include "infinispan/hotrod/types.h"
+#include "hotrod/types.h"
 #include "hotrod/sys/Msg.h"
 #include "hotrod/impl/RemoteCacheImpl.h"
 #include "hotrod/impl/RemoteCacheManagerImpl.h"
@@ -37,24 +37,23 @@ using namespace sys;
 RemoteCacheImpl::RemoteCacheImpl(RemoteCacheManagerImpl& rcm, const std::string& n)
     :remoteCacheManager(rcm), name(n) {}
 
-void RemoteCacheImpl::get(RemoteCacheBase& remoteCacheBase, const void *k, void* b) {
+void *RemoteCacheImpl::get(RemoteCacheBase& remoteCacheBase, const void *k) {
     assertRemoteCacheManagerIsStarted();
-	ScopedBuffer kbuf;
-    ScopedBuffer& vbuf(*(ScopedBuffer *)b);
-    remoteCacheBase.baseKeyMarshall(k, &kbuf);
+	ScopedBuffer kbuf, obuf;
+    remoteCacheBase.baseKeyMarshall(k, kbuf);
     hrbytes keyBytes(kbuf.getBytes(), kbuf.getLength());
 
     hr_scoped_ptr<GetOperation> gco(operationsFactory->newGetKeyOperation(keyBytes));
     hrbytes bytes = gco->execute();
-    bytes.releaseTo(vbuf);
+    bytes.releaseTo(obuf);
+    return obuf.getBytes() ? remoteCacheBase.baseValueUnmarshall(obuf) : NULL;
 }
 
-void RemoteCacheImpl::put(RemoteCacheBase& remoteCacheBase, const void *k, const void* v, uint64_t life, uint64_t idle, void* b) {
+void *RemoteCacheImpl::put(RemoteCacheBase& remoteCacheBase, const void *k, const void* v, uint64_t life, uint64_t idle) {
 	assertRemoteCacheManagerIsStarted();
-	ScopedBuffer kbuf, vbuf;
-    ScopedBuffer& obuf(*(ScopedBuffer *)b);
-    remoteCacheBase.baseKeyMarshall(k, &kbuf);
-    remoteCacheBase.baseValueMarshall(v, &vbuf);
+	ScopedBuffer kbuf, vbuf, obuf;
+    remoteCacheBase.baseKeyMarshall(k, kbuf);
+    remoteCacheBase.baseValueMarshall(v, vbuf);
     hrbytes keyBytes(kbuf.getBytes(), kbuf.getLength());
 
     hrbytes valueBytes(vbuf.getBytes(), vbuf.getLength());
@@ -62,20 +61,21 @@ void RemoteCacheImpl::put(RemoteCacheBase& remoteCacheBase, const void *k, const
     hr_scoped_ptr<PutOperation> op(operationsFactory->newPutKeyValueOperation(keyBytes, valueBytes,life,idle));
     hrbytes bytes = op->execute();
     bytes.releaseTo(obuf);
+    return obuf.getBytes() ? remoteCacheBase.baseValueUnmarshall(obuf) : NULL;
 }
 
-void RemoteCacheImpl::putIfAbsent(RemoteCacheBase& remoteCacheBase, const void *k, const void* v, uint64_t life, uint64_t idle, void* b) {
+void *RemoteCacheImpl::putIfAbsent(RemoteCacheBase& remoteCacheBase, const void *k, const void* v, uint64_t life, uint64_t idle) {
     assertRemoteCacheManagerIsStarted();
-    ScopedBuffer kbuf, vbuf;
-    ScopedBuffer& obuf(*(ScopedBuffer *)b);
-    remoteCacheBase.baseKeyMarshall(k, &kbuf);
-    remoteCacheBase.baseValueMarshall(v, &vbuf);
+    ScopedBuffer kbuf, vbuf, obuf;
+    remoteCacheBase.baseKeyMarshall(k, kbuf);
+    remoteCacheBase.baseValueMarshall(v, vbuf);
     hrbytes keyBytes(kbuf.getBytes(), kbuf.getLength());
     hrbytes valueBytes(vbuf.getBytes(), vbuf.getLength());
     applyDefaultExpirationFlags(life, idle);
     hr_scoped_ptr<PutIfAbsentOperation> op(operationsFactory->newPutIfAbsentOperation(keyBytes, valueBytes,life,idle));
     hrbytes bytes = op->execute();
     bytes.releaseTo(obuf);
+    return obuf.getBytes() ? remoteCacheBase.baseValueUnmarshall(obuf) : NULL;
 }
 
 PingResult RemoteCacheImpl::ping() {
@@ -83,132 +83,123 @@ PingResult RemoteCacheImpl::ping() {
     return op->execute();
 }
 
-void RemoteCacheImpl::replace(RemoteCacheBase& remoteCacheBase, const void *k, const void* v, uint64_t life, uint64_t idle, void* b) {
+void *RemoteCacheImpl::replace(RemoteCacheBase& remoteCacheBase, const void *k, const void* v, uint64_t life, uint64_t idle) {
     assertRemoteCacheManagerIsStarted();
-    ScopedBuffer kbuf, vbuf;
-    ScopedBuffer& obuf(*(ScopedBuffer *)b);
-    remoteCacheBase.baseKeyMarshall(k, &kbuf);
-    remoteCacheBase.baseValueMarshall(v, &vbuf);
+    ScopedBuffer kbuf, vbuf, obuf;
+    remoteCacheBase.baseKeyMarshall(k, kbuf);
+    remoteCacheBase.baseValueMarshall(v, vbuf);
     hrbytes keyBytes(kbuf.getBytes(), kbuf.getLength());
     hrbytes valueBytes(vbuf.getBytes(), vbuf.getLength());
     applyDefaultExpirationFlags(life, idle);
     hr_scoped_ptr<ReplaceOperation> op(operationsFactory->newReplaceOperation(keyBytes, valueBytes,life,idle));
     hrbytes bytes = op->execute();
     bytes.releaseTo(obuf);
+    return obuf.getBytes() ? remoteCacheBase.baseValueUnmarshall(obuf) : NULL;
 }
 
-void RemoteCacheImpl::remove(RemoteCacheBase& remoteCacheBase, const void* k, void* b) {
+void *RemoteCacheImpl::remove(RemoteCacheBase& remoteCacheBase, const void* k) {
     assertRemoteCacheManagerIsStarted();
-    ScopedBuffer kbuf;
-    ScopedBuffer& vbuf(*(ScopedBuffer *)b);
-    remoteCacheBase.baseKeyMarshall(k, &kbuf);
+    ScopedBuffer kbuf, obuf;
+    remoteCacheBase.baseKeyMarshall(k, kbuf);
     hrbytes keyBytes(kbuf.getBytes(), kbuf.getLength());
 
     hr_scoped_ptr<RemoveOperation> gco(operationsFactory->newRemoveOperation(keyBytes));
     hrbytes bytes = gco->execute();
-    bytes.releaseTo(vbuf);
+    bytes.releaseTo(obuf);
+    return obuf.getBytes() ? remoteCacheBase.baseValueUnmarshall(obuf) : NULL;
 }
 
-void RemoteCacheImpl::containsKey(RemoteCacheBase& remoteCacheBase, const void* k, bool* r) {
+bool RemoteCacheImpl::containsKey(RemoteCacheBase& remoteCacheBase, const void* k) {
     assertRemoteCacheManagerIsStarted();
     ScopedBuffer kbuf;
-    remoteCacheBase.baseKeyMarshall(k, &kbuf);
+    remoteCacheBase.baseKeyMarshall(k, kbuf);
     hrbytes keyBytes(kbuf.getBytes(), kbuf.getLength());
     hr_scoped_ptr<ContainsKeyOperation> gco(
         operationsFactory->newContainsKeyOperation(keyBytes));
-    *r = gco->execute();
+    return gco->execute();
 }
 
-void RemoteCacheImpl::replaceWithVersion(RemoteCacheBase& remoteCacheBase,
-    const void* k, const void* v, uint64_t version, uint64_t life, uint64_t idle, bool* res)
+bool RemoteCacheImpl::replaceWithVersion(RemoteCacheBase& remoteCacheBase,
+    const void* k, const void* v, uint64_t version, uint64_t life, uint64_t idle)
 {
     assertRemoteCacheManagerIsStarted();
     ScopedBuffer kbuf, vbuf;
-    remoteCacheBase.baseKeyMarshall(k, &kbuf);
-    remoteCacheBase.baseValueMarshall(v, &vbuf);
+    remoteCacheBase.baseKeyMarshall(k, kbuf);
+    remoteCacheBase.baseValueMarshall(v, vbuf);
     hrbytes keyBytes(kbuf.getBytes(), kbuf.getLength());
     hrbytes valueBytes(vbuf.getBytes(), vbuf.getLength());
 
     hr_scoped_ptr<ReplaceIfUnmodifiedOperation> op(operationsFactory->newReplaceIfUnmodifiedOperation(keyBytes, valueBytes,life,idle,version));
     VersionedOperationResponse response = op->execute();
-    *res = response.isUpdated();
+    return response.isUpdated();
 }
 
-void RemoteCacheImpl::removeWithVersion(RemoteCacheBase& remoteCacheBase, const void* k, uint64_t version, bool* res) {
+bool RemoteCacheImpl::removeWithVersion(RemoteCacheBase& remoteCacheBase, const void* k, uint64_t version) {
     assertRemoteCacheManagerIsStarted();
     ScopedBuffer kbuf;
-    remoteCacheBase.baseKeyMarshall(k, &kbuf);
+    remoteCacheBase.baseKeyMarshall(k, kbuf);
     hrbytes keyBytes(kbuf.getBytes(), kbuf.getLength());
 
     hr_scoped_ptr<RemoveIfUnmodifiedOperation> gco(operationsFactory->newRemoveIfUnmodifiedOperation(keyBytes, version));
     VersionedOperationResponse response = gco->execute();
-    *res = response.isUpdated();
+    return response.isUpdated();
 }
 
-void RemoteCacheImpl::getWithVersion(RemoteCacheBase& remoteCacheBase, const void *k, void* b, VersionedValue* version)
+void *RemoteCacheImpl::getWithVersion(RemoteCacheBase& remoteCacheBase, const void *k, VersionedValue* version)
 {
     assertRemoteCacheManagerIsStarted();
-    ScopedBuffer kbuf;
-    ScopedBuffer& vbuf(*(ScopedBuffer *)b);
-    remoteCacheBase.baseKeyMarshall(k, &kbuf);
+    ScopedBuffer kbuf, obuf;
+    remoteCacheBase.baseKeyMarshall(k, kbuf);
     hrbytes keyBytes(kbuf.getBytes(), kbuf.getLength());
     hr_scoped_ptr<GetWithVersionOperation> gco(operationsFactory->newGetWithVersionOperation(keyBytes));
     VersionedValueImpl<hrbytes> m = gco->execute();
-    m.getValue().releaseTo(vbuf);
+    m.getValue().releaseTo(obuf);
     version->version = m.version;
+    return obuf.getBytes() ? remoteCacheBase.baseValueUnmarshall(obuf) : NULL;
 }
 
-void RemoteCacheImpl::getWithMetadata(RemoteCacheBase& remoteCacheBase, const void *k, void* b, MetadataValue* metadata)
+void *RemoteCacheImpl::getWithMetadata(RemoteCacheBase& remoteCacheBase, const void *k, MetadataValue* metadata)
 {
     assertRemoteCacheManagerIsStarted();
-    ScopedBuffer kbuf;
-    ScopedBuffer& vbuf(*(ScopedBuffer *)b);
-    remoteCacheBase.baseKeyMarshall(k, &kbuf);
+    ScopedBuffer kbuf, obuf;
+    remoteCacheBase.baseKeyMarshall(k, kbuf);
     hrbytes keyBytes(kbuf.getBytes(), kbuf.getLength());
     hr_scoped_ptr<GetWithMetadataOperation> gco(operationsFactory->newGetWithMetadataOperation(keyBytes));
     MetadataValueImpl<hrbytes> m = gco->execute();
-    m.getValue().releaseTo(vbuf);
+    m.getValue().releaseTo(obuf);
     metadata->version = m.version;
     metadata->created = m.created;
     metadata->lifespan = m.lifespan;
     metadata->lastUsed = m.lastUsed;
     metadata->maxIdle = m.maxIdle;
+    return obuf.getBytes() ? remoteCacheBase.baseValueUnmarshall(obuf) : NULL;
 }
 
-void RemoteCacheImpl::getBulk(RemoteCacheBase& remoteCacheBase, std::map<void*, void*>* mbuf) {
-    getBulk(remoteCacheBase, 0, mbuf);
+void RemoteCacheImpl::getBulk(RemoteCacheBase& remoteCacheBase, portable::map<void*, void*> &map) {
+    getBulk(remoteCacheBase, 0, map);
 }
 
-void RemoteCacheImpl::getBulk(RemoteCacheBase& remoteCacheBase, int size, std::map<void*, void*>* mbuf) {
+void RemoteCacheImpl::getBulk(RemoteCacheBase& remoteCacheBase, int size, portable::map<void*, void*> &map) {
     assertRemoteCacheManagerIsStarted();
     hr_scoped_ptr<BulkGetOperation> gco(operationsFactory->newBulkGetOperation(size));
     std::map<hrbytes,hrbytes> res = gco->execute();
-    for(std::map<hrbytes,hrbytes>::iterator i = res.begin(); i != res.end(); i++) {
-    	ScopedBuffer kbuf, vbuf;
-        i->first.releaseTo(kbuf);
-        void* k = remoteCacheBase.baseKeyUnmarshall(&kbuf);
-        i->second.releaseTo(vbuf);
-        void* v = remoteCacheBase.baseValueUnmarshall(&vbuf);
-        mbuf->insert(std::make_pair(k,v));
-    }
+    portable::map<void *, void *> tmpMap(res, KeyUnmarshallerFtor(remoteCacheBase), ValueUnmarshallerFtor(remoteCacheBase));
+    map = tmpMap.move();
 }
 
-void RemoteCacheImpl::keySet(RemoteCacheBase& remoteCacheBase, int scope, std::set<void*>* result) {
+void RemoteCacheImpl::keySet(RemoteCacheBase& remoteCacheBase, int scope, portable::vector<void*> &result) {
     assertRemoteCacheManagerIsStarted();
     hr_scoped_ptr<BulkGetKeysOperation> gco(operationsFactory->newBulkGetKeysOperation(scope));
     std::set<hrbytes> res = gco->execute();
-    for(std::set<hrbytes>::const_iterator i = res.begin(); i != res.end(); i++) {
-    	ScopedBuffer kbuf;
-    	i->releaseTo(kbuf);
-        void* k = remoteCacheBase.baseKeyUnmarshall(&kbuf);
-        result->insert(k);
-    }
+    portable::vector<void *> tmpVector(res, KeyUnmarshallerFtor(remoteCacheBase));
+    result = tmpVector.move();
 }
 
-void RemoteCacheImpl::stats(std::map<std::string,std::string>* statistics) {
+void RemoteCacheImpl::stats(portable::map<portable::string,portable::string> &statistics) {
     assertRemoteCacheManagerIsStarted();
     hr_scoped_ptr<StatsOperation> gco(operationsFactory->newStatsOperation());
-    *statistics = gco->execute();
+    portable::map<portable::string,portable::string> tmpMap(gco->execute(), portable::string::convert(), portable::string::convert());
+    statistics = tmpMap.move();
 }
 
 void RemoteCacheImpl::clear() {
@@ -217,8 +208,8 @@ void RemoteCacheImpl::clear() {
     gco->execute();
 }
 
-const std::string& RemoteCacheImpl::getName() const {
-    return name;
+const char *RemoteCacheImpl::getName() const {
+    return name.c_str();
 }
 
 void RemoteCacheImpl::init(OperationsFactory* of) {

@@ -1,8 +1,4 @@
-
-
-#include "infinispan/hotrod/types.h"
 #include "hotrod/impl/operations/FaultTolerantPingOperation.h"
-#include "hotrod/impl/operations/PingOperation.h"
 
 namespace infinispan {
 namespace hotrod {

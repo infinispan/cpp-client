@@ -136,7 +136,7 @@ int main(int argc, char** argv) {
     std::cout << "PASS: simple replaceWithVersion" << std::endl;
 
     // size
-    int32_t size = cache.size();
+    uint64_t size = cache.size();
     if (size != 3) {
         std::cerr << "size fail got " << size << " expected 3 " << std::endl;
         return 1;
@@ -160,7 +160,7 @@ int main(int argc, char** argv) {
 
     // clear
     cache.clear();
-    int32_t size2 = cache.size();
+    uint64_t size2 = cache.size();
     if (size2 != 0) {
         std::cerr << "clear fail cache has size " << size2 << " expected 0 " << std::endl;
         return 1;
@@ -232,7 +232,7 @@ int main(int argc, char** argv) {
         cacheManager.getCache<std::string, std::string>("non-existing", false);
         std::cerr << "fail getCache for non-existing cache didn't throw exception" << std::endl;
         return 1;
-    } catch(const HotRodClientException& e) {
+    } catch (const HotRodClientException&) {
         std::cout << "PASS: get non-existing cache" << std::endl;
     } catch (const Exception& e) {
         std::cout << "is: " << typeid(e).name() << '\n';

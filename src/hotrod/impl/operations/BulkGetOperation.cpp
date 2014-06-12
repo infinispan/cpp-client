@@ -1,9 +1,4 @@
-
-
-#include "infinispan/hotrod/types.h"
 #include "hotrod/impl/operations/BulkGetOperation.h"
-
-#include <map>
 
 namespace infinispan {
 namespace hotrod {

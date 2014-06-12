@@ -1,9 +1,7 @@
 #ifndef ISPN_HOTROD_SYS_SOCKET_H
 #define ISPN_HOTROD_SYS_SOCKET_H
 
-
-
-#include "infinispan/hotrod/types.h"
+#include <string>
 
 namespace infinispan {
 namespace hotrod {

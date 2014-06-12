@@ -1,9 +1,4 @@
-
-
-#include "infinispan/hotrod/types.h"
 #include "hotrod/impl/operations/StatsOperation.h"
-
-#include <map>
 
 namespace infinispan {
 namespace hotrod {

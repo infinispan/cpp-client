@@ -13,27 +13,64 @@ using namespace infinispan::hotrod::sys;
 
 Log logger;
 
+#ifdef _MSC_VER
+#   define getenv_safe getenv_s
+#   define vsnprintf_safe vsnprintf_s
+#else
+static int getenv_safe(size_t *required_size, char *buffer, size_t numberOfElements, const char *variable) {
+    if (!required_size) return -1;
+    const char *value = getenv(variable);    
+    size_t i;
+    if (!value) {
+        *required_size = 0;
+        if (buffer && numberOfElements > 0) buffer[0] = '\0';
+        return 0;
+    } else if (buffer && numberOfElements) {        
+        for (i = 0; i < numberOfElements - 1 && value[i]; ++i) {
+            buffer[i] = value[i];
+        }        
+        buffer[i] = '\0';
+        *required_size = i;
+    } else {
+        for (i = 0; value[i]; ++i);
+        *required_size = i;       
+    }
+    return 0;
+}
+
+static int vsnprintf_safe(char *buffer, size_t sizeOfBuffer, size_t count, const char *format, va_list argptr) {
+    (void) count;
+    return vsnprintf(buffer, sizeOfBuffer, format, argptr);
+}
+#endif
+
+#define ENV_BUFFER_SIZE 256
+
 Log::Log() {
-    const char *level = getenv(ENV_HOTROD_LOG_LEVEL);        
-    if (level == 0) {
+    char buf[ENV_BUFFER_SIZE];
+    size_t sz;
+    getenv_safe(&sz, buf, ENV_BUFFER_SIZE, ENV_HOTROD_LOG_LEVEL);
+    if (sz == 0) {
         m_level = LEVEL_ERROR;
-    } else if (!strcmp(level, LOG_LEVEL_TRACE)) {
+    } else if (!strcmp(buf, LOG_LEVEL_TRACE)) {
         m_level = LEVEL_TRACE;
-    } else if (!strcmp(level, LOG_LEVEL_DEBUG)) {
+    } else if (!strcmp(buf, LOG_LEVEL_DEBUG)) {
         m_level = LEVEL_DEBUG;
-    } else if (!strcmp(level, LOG_LEVEL_INFO)) {
+    } else if (!strcmp(buf, LOG_LEVEL_INFO)) {
         m_level = LEVEL_INFO;
-    } else if (!strcmp(level, LOG_LEVEL_WARN)) {
+    } else if (!strcmp(buf, LOG_LEVEL_WARN)) {
         m_level = LEVEL_WARN;
-    } else if (!strcmp(level, LOG_LEVEL_ERROR)) {
+    } else if (!strcmp(buf, LOG_LEVEL_ERROR)) {
         m_level = LEVEL_ERROR;
     } else {
         throw std::runtime_error("Invalid " ENV_HOTROD_LOG_LEVEL " environment variable");
     }
-    m_logThread = (getenv(ENV_HOTROD_LOG_THREADS) != 0);
-    m_logTime = (getenv(ENV_HOTROD_LOG_TIME) != 0);
-    const char *tbm = getenv(ENV_HOTROD_LOG_TRACE_BYTES_MAX);
-    m_traceBytesMax = (size_t) (tbm == 0 ? 32 : atoi(tbm));
+    getenv_safe(&sz, NULL, 0, ENV_HOTROD_LOG_THREADS);
+    m_logThread = sz != 0;
+    getenv_safe(&sz, NULL, 0, ENV_HOTROD_LOG_TIME);
+    m_logTime = sz != 0;
+    getenv_safe(&sz, buf, ENV_BUFFER_SIZE, ENV_HOTROD_LOG_TRACE_BYTES_MAX);
+    m_traceBytesMax = sz == 0 ? 32 : atoi(buf);        
 }
 
 static const char *pfname(const char* fname) {
@@ -64,7 +101,7 @@ void Log::log(const char *level, const char *fname, const int lineno) {
 
 void Log::log(const char *level, const char *fname, const int lineno, const char *format, va_list vl) {
     char buf[2048];
-    vsnprintf(buf, 2048, format, vl);
+    vsnprintf_safe(buf, 2048, _TRUNCATE, format, vl);
     ScopedLock<Mutex> sl(lock);
 
     log(level, fname, lineno);

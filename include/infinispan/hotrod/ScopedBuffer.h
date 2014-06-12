@@ -15,7 +15,8 @@ namespace hotrod {
  * general use.  Intended for short lived serialized bytes passed
  * between a marshaller and Hot Rod.
  */
-
+// TODO: provide small internal buffer to reduce the need of heap allocation
+//       when it should be filled with little data
 class ScopedBuffer
 {
   public:

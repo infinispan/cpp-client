@@ -15,10 +15,10 @@ class ConnectionPoolConfigurationBuilder;
 class ServerConfigurationBuilder;
 class SslConfigurationBuilder;
 
-class HR_EXTERN ConfigurationChildBuilder
+class ConfigurationChildBuilder
 {
   public:
-    ConfigurationChildBuilder(ConfigurationBuilder& builder_);
+    ConfigurationChildBuilder(ConfigurationBuilder &builder): m_builder(&builder) {}
 
 	/**
 	 * Adds a new remote server
@@ -31,7 +31,7 @@ class HR_EXTERN ConfigurationChildBuilder
      *
      * \return ConfigurationBuilder for further configuration
      */
-    ConfigurationBuilder& addServers(std::string servers);
+    ConfigurationBuilder& addServers(const std::string &servers);
 
     /**
      * Configures the connection pool
@@ -46,14 +46,14 @@ class HR_EXTERN ConfigurationChildBuilder
      *
      * \return ConfigurationBuilder for further configuration
      */
-    ConfigurationBuilder& connectionTimeout(int connectionTimeout_);
+    ConfigurationBuilder& connectionTimeout(int connectionTimeout);
 
     /**
      * Whether or not to implicitly FORCE_RETURN_VALUE for all calls.
      *
      * \return ConfigurationBuilder for further configuration
      */
-    ConfigurationBuilder& forceReturnValues(bool forceReturnValues_);
+    ConfigurationBuilder& forceReturnValues(bool forceReturnValues);
 
     /**
      * This hint allows sizing of byte buffers when serializing and deserializing
@@ -61,14 +61,14 @@ class HR_EXTERN ConfigurationChildBuilder
      *
      * \return ConfigurationBuilder for further configuration
      */
-    ConfigurationBuilder& keySizeEstimate(int keySizeEstimate_);
+    ConfigurationBuilder& keySizeEstimate(int keySizeEstimate);
 
     /**
      * If true, a ping request is sent to a back end server in order to fetch cluster's topology.
      *
      * \return ConfigurationBuilder for further configuration
      */
-    ConfigurationBuilder& pingOnStartup(bool pingOnStartup_);
+    ConfigurationBuilder& pingOnStartup(bool pingOnStartup);
 
     /**
      * This property defines the protocol version that this client should use. Defaults to 1.2. Other
@@ -77,7 +77,7 @@ class HR_EXTERN ConfigurationChildBuilder
      * \return ConfigurationBuilder for further configuration
      * \sa Configuration::PROTOCOL_VERSION_10
      */
-    ConfigurationBuilder& protocolVersion(std::string protocolVersion_);
+    ConfigurationBuilder& protocolVersion(const std::string &protocolVersion);
 
     /**
      * This property defines the maximum socket read timeout in milliseconds before giving up waiting
@@ -85,7 +85,7 @@ class HR_EXTERN ConfigurationChildBuilder
      *
      * \return ConfigurationBuilder for further configuration
      */
-    ConfigurationBuilder& socketTimeout(int socketTimeout_);
+    ConfigurationBuilder& socketTimeout(int socketTimeout);
 
     /**
      * SSL Configuration
@@ -99,7 +99,7 @@ class HR_EXTERN ConfigurationChildBuilder
      *
      * \return ConfigurationBuilder for further configuration
      */
-    ConfigurationBuilder& tcpNoDelay(bool tcpNoDelay_);
+    ConfigurationBuilder& tcpNoDelay(bool tcpNoDelay);
 
     /**
      * This hint allows sizing of byte buffers when serializing and deserializing values, to minimize
@@ -107,11 +107,13 @@ class HR_EXTERN ConfigurationChildBuilder
      *
      * \return ConfigurationBuilder for further configuration
      */
-    ConfigurationBuilder& valueSizeEstimate(int valueSizeEstimate_);
+    ConfigurationBuilder& valueSizeEstimate(int valueSizeEstimate);
+
     Configuration build();
 
-  private:
-    ConfigurationBuilder& m_builder;
+private:
+    // in order to store this class in collections, operator= must work
+    ConfigurationBuilder *m_builder;
 };
 
 }} // namespace

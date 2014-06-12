@@ -60,7 +60,7 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      * \return the name of the cache
      */
     std::string getName() {
-        return base_getName();
+        return std::string(base_getName());
     }
 
     /**
@@ -69,7 +69,7 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      * \return a version string
      */
     std::string getVersion() {
-        return Version::getVersion();
+        return Version::getVersionCString();
     }
 
     /**
@@ -78,7 +78,7 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      * \return protocol version as string
      */
     std::string getProtocolVersion() {
-        return Version::getProtocolVersion();
+        return Version::getProtocolVersionCString();
     }
 
     /**
@@ -89,9 +89,7 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      *
      */
     V* get(const K& key) {
-        ScopedBuffer vbuf;
-        base_get(&key, &vbuf);
-        return vbuf.getBytes() ? valueMarshaller->unmarshall(vbuf) : NULL;
+        return (V *) base_get(&key);
     }
     /**
      * <p>Associates the specified value with the specified key in this cache.</p>
@@ -113,10 +111,8 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      * \return the previous value associated with key, or NULL if there was no mapping for key.
      *
      */
-    V* put(
-        const K& key, const V& val, uint64_t lifespan = 0, uint64_t maxIdle = 0)
-    {
-	return put(key, val, lifespan, SECONDS, maxIdle, SECONDS);
+    V* put(const K& key, const V& val, uint64_t lifespan = 0, uint64_t maxIdle = 0) {
+        return put(key, val, lifespan, SECONDS, maxIdle, SECONDS);
     }
     /**
      * <p>Associates the specified value with the specified key in this cache.</p>
@@ -137,8 +133,7 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      * \return the previous value associated with key, or NULL if there was no mapping for key.
      *
      */
-    V* put(const K& key, const V& val, uint64_t lifespan, TimeUnit lifespanUnit)
-    {
+    V* put(const K& key, const V& val, uint64_t lifespan, TimeUnit lifespanUnit) {
         return put(key, val, lifespan, lifespanUnit, 0, SECONDS);
     }
     /**
@@ -163,11 +158,8 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      * \return the previous value associated with key, or NULL if there was no mapping for key.
      *
      */
-    V* put(const K& key, const V& val, uint64_t lifespan, TimeUnit lifespanUnit, uint64_t maxIdle, TimeUnit maxIdleUnit)
-    {
-        ScopedBuffer vbuf;
-        base_put(&key, &val, toSeconds(lifespan, lifespanUnit), toSeconds(maxIdle, maxIdleUnit), &vbuf);
-        return vbuf.getBytes() ? valueMarshaller->unmarshall(vbuf) : NULL;
+    V* put(const K& key, const V& val, uint64_t lifespan, TimeUnit lifespanUnit, uint64_t maxIdle, TimeUnit maxIdleUnit) {
+        return (V *) base_put(&key, &val, toSeconds(lifespan, lifespanUnit), toSeconds(maxIdle, maxIdleUnit));
     }
     /**
      * Associates the specified value with the specified key in this cache if the specified key
@@ -180,9 +172,8 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      *                        expired
      * \return the previous value associated with the specified key, or NULL if there was no mapping for the key.
      */
-    V* putIfAbsent(const K& key, const V& val, uint64_t lifespan = 0, uint64_t maxIdle = 0)
-    {
-	return putIfAbsent(key, val, lifespan, SECONDS, maxIdle, SECONDS);
+    V* putIfAbsent(const K& key, const V& val, uint64_t lifespan = 0, uint64_t maxIdle = 0) {
+        return putIfAbsent(key, val, lifespan, SECONDS, maxIdle, SECONDS);
     }
     /**
      * Associates the specified value with the specified key in this cache if the specified key
@@ -194,8 +185,7 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      * \param lifespanUnit  unit of measurement for the lifespan
      * \return the previous value associated with the specified key, or NULL if there was no mapping for the key.
      */
-    V* putIfAbsent(const K& key, const V& val, uint64_t lifespan, TimeUnit lifespanUnit)
-    {
+    V* putIfAbsent(const K& key, const V& val, uint64_t lifespan, TimeUnit lifespanUnit) {
         return putIfAbsent(key, val, lifespan, lifespanUnit, 0, SECONDS);
     }
     /**
@@ -211,11 +201,8 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      * \param maxIdleUnit  time unit for max idle time
      * \return the previous value associated with the specified key, or NULL if there was no mapping for the key.
      */
-    V* putIfAbsent(const K& key, const V& val, uint64_t lifespan, TimeUnit lifespanUnit, uint64_t maxIdle, TimeUnit maxIdleUnit)
-    {
-        ScopedBuffer vbuf;
-        base_putIfAbsent(&key, &val, toSeconds(lifespan, lifespanUnit), toSeconds(maxIdle, maxIdleUnit), &vbuf);
-        return vbuf.getBytes() ? valueMarshaller->unmarshall(vbuf) : NULL;
+    V* putIfAbsent(const K& key, const V& val, uint64_t lifespan, TimeUnit lifespanUnit, uint64_t maxIdle, TimeUnit maxIdleUnit) {
+        return (V *)base_putIfAbsent(&key, &val, toSeconds(lifespan, lifespanUnit), toSeconds(maxIdle, maxIdleUnit));
     }
     /**
      * Copies all of the mappings from the specified map to this cache. The effect of this call is equivalent to that of
@@ -227,8 +214,7 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      * \param maxIdle  the maximum amount of time this key is allowed to be idle for before it is considered as
      *                        expired
      */
-    void putAll(const std::map<K, V>& map, uint64_t lifespan = 0, uint64_t maxIdle = 0)
-    {
+    void putAll(const std::map<K, V>& map, uint64_t lifespan = 0, uint64_t maxIdle = 0) {
         putAll(map, lifespan, SECONDS, maxIdle, SECONDS);
     }
     /**
@@ -241,8 +227,7 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      * \param lifespanUnit  unit of measurement for the lifespan
      *
      */
-    void putAll(const std::map<K, V>& map, uint64_t lifespan, TimeUnit lifespanUnit)
-    {
+    void putAll(const std::map<K, V>& map, uint64_t lifespan, TimeUnit lifespanUnit) {
         putAll(map, lifespan, lifespanUnit, 0, SECONDS);
     }
     /**
@@ -258,8 +243,7 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      * \param maxIdleUnit  time unit for max idle time
      *
      */
-    void putAll(const std::map<K, V>& map, uint64_t lifespan, TimeUnit lifespanUnit, uint64_t maxIdle, TimeUnit maxIdleUnit)
-    {
+    void putAll(const std::map<K, V>& map, uint64_t lifespan, TimeUnit lifespanUnit, uint64_t maxIdle, TimeUnit maxIdleUnit) {
         uint64_t lifespanMillis = toSeconds(lifespan, lifespanUnit);
         uint64_t maxIdleMillis = toSeconds(maxIdle, maxIdleUnit);
 
@@ -278,9 +262,8 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      *
      * \return the previous value associated with the specified key, or NULL if there was no mapping for the key.
      */
-    V* replace(const K& key, const V& val, uint64_t lifespan = 0, uint64_t maxIdle = 0)
-    {
-	return replace(key, val, lifespan, SECONDS, maxIdle, SECONDS);
+    V* replace(const K& key, const V& val, uint64_t lifespan = 0, uint64_t maxIdle = 0) {
+        return replace(key, val, lifespan, SECONDS, maxIdle, SECONDS);
     }
     /**
      * Replaces the entry for a key with a given new value.
@@ -293,8 +276,7 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      *
      * \return the previous value associated with the specified key, or NULL if there was no mapping for the key.
      */
-    V* replace(const K& key, const V& val, uint64_t lifespan, TimeUnit lifespanUnit)
-    {
+    V* replace(const K& key, const V& val, uint64_t lifespan, TimeUnit lifespanUnit) {
         return replace(key, val, lifespan, lifespanUnit, 0, SECONDS);
     }
     /**
@@ -310,11 +292,8 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      *
      * \return the previous value associated with the specified key, or NULL if there was no mapping for the key.
      */
-    V* replace(const K& key, const V& val, uint64_t lifespan, TimeUnit lifespanUnit, uint64_t maxIdle, TimeUnit maxIdleUnit)
-    {
-        ScopedBuffer vbuf;
-        base_replace(&key, &val, toSeconds(lifespan, lifespanUnit), toSeconds(maxIdle, maxIdleUnit), &vbuf);
-        return vbuf.getBytes() ? valueMarshaller->unmarshall(vbuf) : NULL;
+    V* replace(const K& key, const V& val, uint64_t lifespan, TimeUnit lifespanUnit, uint64_t maxIdle, TimeUnit maxIdleUnit) {
+        return (V *) base_replace(&key, &val, toSeconds(lifespan, lifespanUnit), toSeconds(maxIdle, maxIdleUnit));
     }
     /**
      * Replaces the entry for a key with a new value only if currently mapped to a given old value.
@@ -328,9 +307,8 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      *
      * \return the previous value associated with the specified key, or NULL if there was no mapping for the key.
      */
-    V* replace(const K& key, const V& oldVal, const V& val, uint64_t lifespan = 0, uint64_t maxIdle = 0)
-    {
-	return replace(key, oldVal, val, lifespan, SECONDS, maxIdle, SECONDS);
+    V* replace(const K& key, const V& oldVal, const V& val, uint64_t lifespan = 0, uint64_t maxIdle = 0) {
+        return replace(key, oldVal, val, lifespan, SECONDS, maxIdle, SECONDS);
     }
     /**
      * Replaces the entry for a key with a new value only if currently mapped to a given old value.
@@ -343,9 +321,8 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      *
      * \return the previous value associated with the specified key, or NULL if there was no mapping for the key.
      */
-    V* replace(const K& key, const V& oldVal, const V& val, uint64_t lifespan, TimeUnit lifespanUnit)
-    {
-	return replace(key, oldVal, val, lifespan, lifespanUnit, 0, SECONDS);
+    V* replace(const K& key, const V& oldVal, const V& val, uint64_t lifespan, TimeUnit lifespanUnit) {
+        return replace(key, oldVal, val, lifespan, lifespanUnit, 0, SECONDS);
     }
     /**
      * Replaces the entry for a key with a new value only if currently mapped to a given old value.
@@ -360,9 +337,8 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      * \param maxIdleUnit  time unit for max idle time
      * \return the previous value associated with the specified key, or NULL if there was no mapping for the key.
      */
-    V* replace(const K& key, const V& oldVal, const V& val, uint64_t lifespan, TimeUnit lifespanUnit, uint64_t maxIdle, TimeUnit maxIdleUnit)
-    {
-	throw UnsupportedOperationException();
+    V* replace(const K& key, const V& oldVal, const V& val, uint64_t lifespan, TimeUnit lifespanUnit, uint64_t maxIdle, TimeUnit maxIdleUnit) {
+        throw UnsupportedOperationException();
     }
 
     /**
@@ -372,20 +348,18 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
       *\return NULL or value stored under this key
       */
     V* remove(const K& key) {
-        ScopedBuffer vbuf;
-        base_remove(&key, &vbuf);
-        return vbuf.getBytes() ? valueMarshaller->unmarshall(vbuf) : NULL;
+        return (V *) base_remove(&key);
     }
+
     /**
      * Returns true if this cache contains a key/value pair where the key is equal to a specified key.
      *
      *\return true if such key is present in this cache
      */
     bool containsKey(const K& key) {
-        bool res;
-        base_containsKey(&key, &res);
-        return res;
+        return base_containsKey(&key);
     }
+
     /**
      * Unsupported operation in this release of Hot Rod client. UnsupportedOperationException is
      * thrown if his method is invoked.
@@ -409,11 +383,8 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      */
     bool replaceWithVersion(
         const K& key, const V& val,
-        uint64_t version, uint64_t lifespan = 0, uint64_t maxIdle = 0)
-    {
-        bool res;
-        base_replaceWithVersion(&key, &val, version, lifespan, maxIdle, &res);
-        return res;
+        uint64_t version, uint64_t lifespan = 0, uint64_t maxIdle = 0) {
+        return base_replaceWithVersion(&key, &val, version, lifespan, maxIdle);
     }
     /**
      * Removes the given entry only if its version matches the supplied version.
@@ -434,9 +405,7 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      *
      */
     bool removeWithVersion(const K& key, uint64_t version) {
-        bool res;
-        base_removeWithVersion(&key, version, &res);
-        return res;
+        return base_removeWithVersion(&key, version);
     }
     /**
      *  Returns the std::pair with value and VersionedValue associated with
@@ -449,12 +418,9 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      *
      */
     std::pair<HR_SHARED_PTR<V>, VersionedValue> getWithVersion(const K& key) {
-        ScopedBuffer vbuf;
         VersionedValue version;
-        base_getWithVersion(&key, &vbuf, &version);
-        return vbuf.getBytes() ?
-                    std::make_pair(HR_SHARED_PTR<V>(valueMarshaller->unmarshall(vbuf)), version) :
-                    std::make_pair(HR_SHARED_PTR<V>(), version);
+        void *value = base_getWithVersion(&key, &version);
+        return std::make_pair(HR_SHARED_PTR<V>((V *) value), version);
     }
     /**
      * Returns the std::pair with value and MetadataValue associated to the
@@ -467,12 +433,9 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      *
      */
     std::pair<HR_SHARED_PTR<V>, MetadataValue> getWithMetadata(const K& key) {
-        ScopedBuffer vbuf;
         MetadataValue metadata;
-        base_getWithMetadata(&key, &vbuf, &metadata);
-        return vbuf.getBytes() ?
-            std::make_pair(HR_SHARED_PTR<V>(valueMarshaller->unmarshall(vbuf)), metadata) :
-            std::make_pair(HR_SHARED_PTR<V>(), metadata);
+        void *value = base_getWithMetadata(&key, &metadata);
+        return std::make_pair(HR_SHARED_PTR<V>((V *) value), metadata);
     }
     /**
      * Unsupported operation in this release of Hot Rod client. UnsupportedOperationException is
@@ -486,13 +449,14 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      *TODO
      */
     std::map<HR_SHARED_PTR<K>, HR_SHARED_PTR<V> > getBulk(int nrOfEntries) {
-      std::map<void*, void*> mbuf;
-      base_getBulk(nrOfEntries, &mbuf);
+        portable::map<void*, void*> mbuf;
+        base_getBulk(nrOfEntries, mbuf);
 
-      std::map<HR_SHARED_PTR<K>, HR_SHARED_PTR<V> > result;
-        for(std::map<void*, void*>::const_iterator i = mbuf.begin(); i != mbuf.end(); i++) {
+        std::map<HR_SHARED_PTR<K>, HR_SHARED_PTR<V> > result;
+        const portable::pair<void*, void*> *data = mbuf.data();
+        for (size_t i = 0; i < mbuf.size(); i++) {
             result.insert(std::make_pair(
-                HR_SHARED_PTR<K>((K*)i->first), HR_SHARED_PTR<V>((V*)i->second)));
+                HR_SHARED_PTR<K>((K*)data[i].key), HR_SHARED_PTR<V>((V*)data[i].value)));
         }
         return result;
     }
@@ -511,14 +475,14 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      * \return a std::set of pointers to all keys in this given cache
      */
     std::set<HR_SHARED_PTR<K> > keySet() {
-      std::set<void*> p;
-      base_keySet(0,&p);
+        portable::vector<void*> p;
+        base_keySet(0, p);
 
         std::set<HR_SHARED_PTR<K> > result;
-        for(std::set<void*>::const_iterator i = p.begin(); i != p.end(); i++) {
-        result.insert(HR_SHARED_PTR<K>((K*)*i));
-      }
-      return result;
+        for (size_t i = 0; i < p.size(); ++i) {
+            result.insert(HR_SHARED_PTR<K>((K*)p.data()[i]));
+        }
+        return result;
     }
     /**
      *Returns an approximate number of key/value pairs in this cache.
@@ -526,14 +490,15 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      *\return number of entries in cache
      */
     uint64_t size() {
-        std::map<std::string,std::string> statistics;
-        base_stats(&statistics);
-        std::istringstream sizeAsStream;
-        sizeAsStream.str(statistics["currentNumberOfEntries"]);
-        int result;
-        sizeAsStream >> result;
-        // TODO: check errors
-        return result;
+        portable::map<portable::string,portable::string> statistics;
+        base_stats(statistics);
+        const portable::pair<portable::string,portable::string> *p
+            = statistics.get("currentNumberOfEntries", portable::string::cmp);        
+        if (p) {
+            return strtoull(p->value.c_string(), 0, 10);            
+        } else {
+            return -1;
+        }
     }
     /**
      *Returns true if and only if this cache has no entries.
@@ -541,14 +506,14 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      *\return true if cache is empty
      */
     bool isEmpty() {
-	return 0 == size();
+        return 0 == size();
     }
     /**
      * Unsupported operation in this release of Hot Rod client. UnsupportedOperationException is
      * thrown if his method is invoked.
      */
     std::vector<V> values() {
-	throw UnsupportedOperationException();
+        throw UnsupportedOperationException();
     }
     /**
      * Returns statistics for this cache.
@@ -557,9 +522,10 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      * while the matching value represents the value for that property
      */
     std::map<std::string, std::string> stats() {
-        std::map<std::string,std::string> statistics;
-        base_stats(&statistics);
-        return statistics;
+        portable::map<portable::string,portable::string> statistics;
+        base_stats(statistics);
+        return statistics.std_map<std::string, portable::string::convert, std::string, portable::string::convert>
+            (portable::string::convert(), portable::string::convert());
     }
     /**
      * Clears all entries in this cache
@@ -608,53 +574,57 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
     }
 
     uint64_t toSeconds(uint64_t time, TimeUnit unit) {
-	uint64_t result;
-	switch (unit) {
-	case NANOSECONDS:
-	    result = (uint64_t) ceil(time / 1000000000.0);
-	    break;
-	case MICROSECONDS:
-	    result = (uint64_t) ceil(time / 1000000.0);
-	    break;
-	case MILLISECONDS:
-	    result = (uint64_t) ceil(time / 1000.0);
-	    break;
-	case SECONDS:
-	    result = time;
-	    break;
-	case MINUTES:
-	    result = time * 60;
-	    break;
-	case HOURS:
-	    result = time * 3600;
-	    break;
-	case DAYS:
-	    result = time * 86400;
-	    break;
-	default:
-	    std::stringstream ss;
-	    ss << "Unhandled TimeUnit specified: " << unit << ".";
-	    throw std::invalid_argument(ss.str());
-	}
-	return result;
+        uint64_t result;
+        switch (unit) {
+        case NANOSECONDS:
+            result = (uint64_t) ceil(time / 1000000000.0);
+            break;
+        case MICROSECONDS:
+            result = (uint64_t) ceil(time / 1000000.0);
+            break;
+        case MILLISECONDS:
+            result = (uint64_t) ceil(time / 1000.0);
+            break;
+        case SECONDS:
+            result = time;
+            break;
+        case MINUTES:
+            result = time * 60;
+            break;
+        case HOURS:
+            result = time * 3600;
+            break;
+        case DAYS:
+            result = time * 86400;
+            break;
+        default:
+            std::stringstream ss;
+            ss << "Unhandled TimeUnit specified: " << unit << ".";
+            throw std::invalid_argument(ss.str());
+        }
+        return result;
     }
 
     // type-hiding and resurrecting support
-    static void keyMarshall(void *thisp, const void* key, void* buf) {
-        ((RemoteCache<K, V> *) thisp)->keyMarshaller->marshall(*(const K *) key, *(ScopedBuffer *) buf);
+    static void keyMarshall(void *thisp, const void* key, ScopedBuffer &buf) {
+        ((RemoteCache<K, V> *) thisp)->keyMarshaller->marshall(*(const K *) key, buf);
     }
-    static void valueMarshall(void* thisp, const void* val, void* buf) {
-        ((RemoteCache<K, V> *)thisp)->valueMarshaller->marshall(*(const V *) val, *(ScopedBuffer *) buf);
+    static void valueMarshall(void* thisp, const void* val, ScopedBuffer &buf) {
+        ((RemoteCache<K, V> *)thisp)->valueMarshaller->marshall(*(const V *) val, buf);
     }
-    static void* keyUnmarshall(void *thisp, const void* buf) {
-        return ((RemoteCache<K, V> *) thisp)->keyMarshaller->unmarshall(*(const ScopedBuffer *) buf);
+    static void* keyUnmarshall(void *thisp, const ScopedBuffer &buf) {
+        return ((RemoteCache<K, V> *) thisp)->keyMarshaller->unmarshall(buf);
     }
-    static void* valueUnmarshall(void* thisp, const void* buf) {
-        return ((RemoteCache<K, V> *)thisp)->valueMarshaller->unmarshall(*(const ScopedBuffer *) buf);
+    static void* valueUnmarshall(void* thisp, const ScopedBuffer &buf) {
+        return ((RemoteCache<K, V> *)thisp)->valueMarshaller->unmarshall(buf);
     }
 
-    HR_SHARED_PTR<Marshaller<K> > keyMarshaller;
-    HR_SHARED_PTR<Marshaller<V> > valueMarshaller;
+    portable::counting_ptr<Marshaller<K> > keyMarshaller;
+    portable::counting_ptr<Marshaller<V> > valueMarshaller;
+
+    // DEPRECATED: Library code must not use these fields
+    portable::counting_ptr<portable::counted_wrapper<HR_SHARED_PTR<Marshaller<K> > > > keyMarshallerPtr;
+    portable::counting_ptr<portable::counted_wrapper<HR_SHARED_PTR<Marshaller<V> > > > valueMarshallerPtr;
 
   friend class RemoteCacheManager;
 };

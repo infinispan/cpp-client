@@ -1,7 +1,7 @@
 #ifndef ISPN_HOTROD_VERSIONEDVALUE_H
 #define ISPN_HOTROD_VERSIONEDVALUE_H
 
-#include "infinispan/hotrod/types.h"
+#include "infinispan/hotrod/defs.h"
 
 namespace infinispan {
 namespace hotrod {

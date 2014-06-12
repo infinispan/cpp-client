@@ -1,8 +1,7 @@
 #ifndef ISPN_HOTROD_TRANSPORT_TRANSPORT_H
 #define ISPN_HOTROD_TRANSPORT_TRANSPORT_H
 
-#include "infinispan/hotrod/defs.h"
-#include "infinispan/hotrod/types.h"
+#include "hotrod/types.h"
 
 namespace infinispan {
 namespace hotrod {

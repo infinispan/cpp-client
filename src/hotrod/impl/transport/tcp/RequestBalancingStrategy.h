@@ -1,8 +1,6 @@
 #ifndef ISPN_HOTROD_TRANSPORT_REQUESTBALANCINGSTRATEGY_H
 #define ISPN_HOTROD_TRANSPORT_REQUESTBALANCINGSTRATEGY_H
 
-
-
 #include "hotrod/impl/transport/tcp/InetSocketAddress.h"
 
 #include <vector>

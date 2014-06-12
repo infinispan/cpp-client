@@ -7,7 +7,7 @@ namespace infinispan {
 namespace hotrod {
 namespace sys {
 
-class HR_EXTERN Runnable
+class Runnable
 {
   public:
     virtual ~Runnable();

@@ -23,25 +23,34 @@ namespace hotrod {
  * HotRod clients communicate with.
  *
  */
-class HR_EXTERN ServerConfigurationBuilder
+class ServerConfigurationBuilder
   : public Builder<ServerConfiguration>, public ConfigurationChildBuilder
 {
   public:
-    ServerConfigurationBuilder(ConfigurationBuilder& builder_);
+    ServerConfigurationBuilder(ConfigurationBuilder& builder_):
+        ConfigurationChildBuilder(builder_), m_host("localhost"), m_port(11222) {}
 
 	/***
 	 * Specifies host of remote HotRod server
 	 *
 	 * \return ServerConfigurationBuilder for further configuration
 	 */
-    ServerConfigurationBuilder& host(std::string hostParam);
+    ServerConfigurationBuilder& host(const std::string &host_)
+    {
+        m_host = host_;
+        return *this;
+    }
 
     /***
     	 * Specifies port of remote HotRod server
     	 *
     	 * \return ServerConfigurationBuilder for further configuration
     	 */
-    ServerConfigurationBuilder& port(int portParam);
+    ServerConfigurationBuilder& port(int port_)
+    {
+        m_port = port_;
+        return *this;
+    }
 
 	/***
 	 * Create ServerConfiguration instance from a given state of
@@ -49,7 +58,10 @@ class HR_EXTERN ServerConfigurationBuilder
 	 *
 	 * \return created ServerConfiguration instance
 	 */
-    virtual ServerConfiguration create();
+    virtual ServerConfiguration create()
+    {
+        return ServerConfiguration(m_host, m_port);
+    }
 
 	/***
 	 * Create ServerConfigurationBuilder from a given state of
@@ -57,7 +69,12 @@ class HR_EXTERN ServerConfigurationBuilder
 	 *
 	 * \return ServerConfigurationBuilder for further configuration
 	 */
-    virtual ServerConfigurationBuilder& read(ServerConfiguration& bean);
+    virtual ServerConfigurationBuilder& read(ServerConfiguration& configuration)
+    {
+        m_host = configuration.getHostCString();
+        m_port = configuration.getPort();
+        return *this;
+    }
 
   private:
     std::string m_host;

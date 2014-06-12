@@ -178,7 +178,7 @@ void Codec10::checkForErrorsInResponseStatus(Transport& transport, HeaderParams&
             throw InternalException("Unknown status: " + status);
         }
         }
-    } catch (const Exception &e) {
+    } catch (const Exception &) {
         // Some operations require invalidating the transport
         switch (status) {
         case HotRodConstants::INVALID_MAGIC_OR_MESSAGE_ID_STATUS:

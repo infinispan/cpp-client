@@ -1,9 +1,6 @@
 #ifndef ISPN_HOTROD_TRANSPORT_TCP_INPUTSTREAM_H
 #define ISPN_HOTROD_TRANSPORT_TCP_INPUTSTREAM_H
 
-
-
-#include "infinispan/hotrod/types.h"
 #include "hotrod/sys/Socket.h"
 
 #include <sstream>

@@ -3,6 +3,9 @@
 
 #include <string>
 #include <vector>
+#include <sstream>
+#include <fstream>
+#include <iostream>
 
 #include "infinispan/hotrod/defs.h"
 #include "infinispan/hotrod/ImportExport.h"
@@ -20,7 +23,8 @@ namespace hotrod {
  * used to configure RemoteCacheManager instances.
  *
  */
-class HR_EXTERN ConfigurationBuilder
+// Methods on this class cannot be invoked across library boundary, therefore, it can use STL.
+class ConfigurationBuilder
     : public Builder<Configuration>
 {
   public:
@@ -29,21 +33,25 @@ class HR_EXTERN ConfigurationBuilder
         m_forceReturnValue(false),
         m_keySizeEstimate(64),
         m_pingOnStartup(true),
-        m_protocolVersion(PROTOCOL_VERSION_12),
+        m_protocolVersion(Configuration::PROTOCOL_VERSION_12),
         m_socketTimeout(60000),
         m_tcpNoDelay(true),
-        m_valueSizeEstimate(512),
+        m_valueSizeEstimate(512),        
+        __pragma(warning(suppress:4355)) // passing uninitialized 'this'
         connectionPoolConfigurationBuilder(*this),
+        __pragma(warning(suppress:4355))
         sslConfigurationBuilder(*this)
-      { };
-
+        {}
     /**
      * Adds a server to this Configuration. ServerConfigurationBuilder is in turn used
      * to actually configure a server.
      *
      *\return ServerConfigurationBuilder instance to be used for server configuration
      */
-    ServerConfigurationBuilder& addServer();
+    ServerConfigurationBuilder& addServer() {
+        m_servers.push_back(ServerConfigurationBuilder(*this));
+        return m_servers[m_servers.size() - 1];
+    }
 
     /**
      * Adds multiple servers to this Configuration. ConfigurationBuilder is in turn used
@@ -51,21 +59,44 @@ class HR_EXTERN ConfigurationBuilder
      *
      *\return ConfigurationBuilder instance to be used for server configuration
      */
-    ConfigurationBuilder& addServers(std::string servers);
+    ConfigurationBuilder& addServers(std::string servers) {
+        std::istringstream originalStream(servers);
+        std::string stringHelper;
+        std::string hostHelper;
+        std::string portHelper;
+        int portInt;
+
+        // TODO: handle IPv6 addresses
+        while(std::getline(originalStream,stringHelper,';')) {
+            std::istringstream singleServerStream(stringHelper);
+            std::getline(singleServerStream,hostHelper,':');
+            std::getline(singleServerStream,portHelper,':');
+            std::istringstream portStream(portHelper);
+            portStream >> portInt;
+            addServer().host(hostHelper).port(portInt);
+        }
+
+        return *this;
+    }
 
     /**
      * Configures connection pool.
      *
      *\return ConnectionPoolConfigurationBuilder instance to be used for pool configuration
      */
-    ConnectionPoolConfigurationBuilder& connectionPool();
+    ConnectionPoolConfigurationBuilder& connectionPool() {
+        return connectionPoolConfigurationBuilder;
+    }
 
     /**
      * Configures underlying TCP connection timeout. Default is 60000 msec
      *
      *\return ConfigurationBuilder instance to be used for configuration
      */
-    ConfigurationBuilder& connectionTimeout(int connectionTimeout_);
+    ConfigurationBuilder& connectionTimeout(int connectionTimeout_) {
+        m_connectionTimeout = connectionTimeout_;
+        return *this;
+    }
 
     /**
      * Configures whether or not to force returning values on all cache operations
@@ -73,14 +104,20 @@ class HR_EXTERN ConfigurationBuilder
      *
      *\return ConfigurationBuilder instance to be used for configuration
      */
-    ConfigurationBuilder& forceReturnValues(bool forceReturnValues_);
+    ConfigurationBuilder& forceReturnValues(bool forceReturnValues_) {
+        m_forceReturnValue = forceReturnValues_;
+        return *this;
+    }
 
     /**
      * Sets the marshalled size estimate for keys in the remote cache. Default is 64 bytes.
      *
      *\return ConfigurationBuilder instance to be used for further configuration
      */
-    ConfigurationBuilder& keySizeEstimate(int keySizeEstimate_);
+    ConfigurationBuilder& keySizeEstimate(int keySizeEstimate_) {
+        m_keySizeEstimate = keySizeEstimate_;
+        return *this;
+    }
 
     /**
      * Sets whether to ping remote HotRod Infinispan servers before any cache
@@ -88,7 +125,10 @@ class HR_EXTERN ConfigurationBuilder
      *
      *\return ConfigurationBuilder instance to be used for further configuration
      */
-    ConfigurationBuilder& pingOnStartup(bool pingOnStartup_);
+    ConfigurationBuilder& pingOnStartup(bool pingOnStartup_) {
+        m_pingOnStartup = pingOnStartup_;
+        return *this;
+    }
 
     /**
      * Sets the protocol version for this ConfigurationBuilder. Protocol version is either:
@@ -97,7 +137,10 @@ class HR_EXTERN ConfigurationBuilder
      *
      *\return ConfigurationBuilder instance to be used for further configuration
      */
-    ConfigurationBuilder& protocolVersion(std::string protocolVersion_);
+    ConfigurationBuilder& protocolVersion(const std::string &protocolVersion_) {
+        m_protocolVersion = protocolVersion_;
+        return *this;
+    }
 
     /**
      * Sets the socket timeout for the underlying connections in this ConfigurationBuilder.
@@ -105,28 +148,39 @@ class HR_EXTERN ConfigurationBuilder
      *
      *\return ConfigurationBuilder instance to be used for further configuration
      */
-    ConfigurationBuilder& socketTimeout(int socketTimeout_);
+    ConfigurationBuilder& socketTimeout(int socketTimeout_) {
+        m_socketTimeout = socketTimeout_;
+        return *this;
+    }
 
     /**
      * Returns SslConfigurationBuilder for SSL configurations of the underlying sockets.
      *
      *\return SslConfigurationBuilder instance to be used for SSL configuration
      */
-    SslConfigurationBuilder& ssl();
+    SslConfigurationBuilder& ssl() {
+        return sslConfigurationBuilder;
+    }
 
     /**
      * Set tcpNoDelay for this ConfigurationBuilder. Default is true.
      *
      *\return ConfigurationBuilder instance to be used for further configuration
      */
-    ConfigurationBuilder& tcpNoDelay(bool tcpNoDelay_);
+    ConfigurationBuilder& tcpNoDelay(bool tcpNoDelay_) {
+        m_tcpNoDelay = tcpNoDelay_;
+        return *this;
+    }
 
     /**
      * Sets the marshalled estimate of the values in this cache. Default is 512 bytes.
      *
      *\return ConfigurationBuilder instance to be used for further configuration
      */
-    ConfigurationBuilder& valueSizeEstimate(int valueSizeEstimate_);
+    ConfigurationBuilder& valueSizeEstimate(int valueSizeEstimate_) {
+        m_valueSizeEstimate = valueSizeEstimate_;
+        return *this;
+    }
 
     /**
      * Build and returns an actual Configuration instance to be used for configuration of
@@ -134,7 +188,9 @@ class HR_EXTERN ConfigurationBuilder
      *
      *\return Configuration instance to be used for  RemoteCacheManager configuration
      */
-    Configuration build();
+    Configuration build() {
+        return create();
+    }
 
     /**
      * Same as build method create returns an actual Configuration instance to be used for
@@ -142,7 +198,29 @@ class HR_EXTERN ConfigurationBuilder
      *
      *\return Configuration instance to be used for  RemoteCacheManager configuration
      */
-    virtual Configuration create();
+    virtual Configuration create() {
+        std::vector<ServerConfiguration> servers;
+        if (m_servers.size() > 0) {
+            for (std::vector<ServerConfigurationBuilder>::iterator it = m_servers.begin(); it < m_servers.end(); it++) {
+                servers.push_back(it->create());
+            }
+        } else {
+            servers.push_back(ServerConfigurationBuilder(*this).create());
+        }
+
+        return Configuration(m_protocolVersion,
+            connectionPoolConfigurationBuilder.create(),
+            m_connectionTimeout,
+            m_forceReturnValue,
+            m_keySizeEstimate,
+            m_pingOnStartup,
+            servers,
+            m_socketTimeout,
+            sslConfigurationBuilder.create(),
+            m_tcpNoDelay,
+            m_valueSizeEstimate);
+
+    }
 
     /**
      * Reads the given Configuration objects and returns a ConfigurationBuilder
@@ -150,13 +228,21 @@ class HR_EXTERN ConfigurationBuilder
      *
      *\return ConfigurationBuilder instance to be used for further configuration
      */
-    virtual ConfigurationBuilder& read(Configuration& bean);
+    virtual ConfigurationBuilder& read(Configuration& configuration) {
+        // FIXME: read pool, ssl and server configs
+        m_protocolVersion = configuration.getProtocolVersionCString();
+        m_connectionTimeout = configuration.getConnectionTimeout();
+        m_forceReturnValue = configuration.isForceReturnValue();
+        m_pingOnStartup = configuration.isPingOnStartup();
+        m_socketTimeout = configuration.getSocketTimeout();
+        m_tcpNoDelay = configuration.isTcpNoDelay();
+        m_keySizeEstimate = configuration.getKeySizeEstimate();
+        m_valueSizeEstimate = configuration.getValueSizeEstimate();
+        return *this;
+    }
 
-    /**
-     * The default Hot Rod protocol version
-     */
-    static const char* PROTOCOL_VERSION_12;
-
+    // DEPRECATED: use Configuration::PROTOCOL_VERSION_12 instead
+    HR_EXTERN static const char *PROTOCOL_VERSION_12;
 
   private:
     int m_connectionTimeout;
@@ -164,7 +250,7 @@ class HR_EXTERN ConfigurationBuilder
     int m_keySizeEstimate;
     bool m_pingOnStartup;
     std::string m_protocolVersion;
-    std::vector<HR_SHARED_PTR<ServerConfigurationBuilder> > m_servers;
+    std::vector<ServerConfigurationBuilder> m_servers;
     int m_socketTimeout;
     bool m_tcpNoDelay;
     int m_valueSizeEstimate;
@@ -172,6 +258,59 @@ class HR_EXTERN ConfigurationBuilder
     ConnectionPoolConfigurationBuilder connectionPoolConfigurationBuilder;
     SslConfigurationBuilder sslConfigurationBuilder;
 };
+
+inline ServerConfigurationBuilder &ConfigurationChildBuilder::addServer() {
+    return m_builder->addServer();
+}
+
+inline ConfigurationBuilder &ConfigurationChildBuilder::addServers(const std::string &servers) {
+    return m_builder->addServers(servers);
+}
+
+inline ConnectionPoolConfigurationBuilder &ConfigurationChildBuilder::connectionPool() {
+    return m_builder->connectionPool();
+}
+
+inline ConfigurationBuilder &ConfigurationChildBuilder::connectionTimeout(int connectionTimeout_) {
+    return m_builder->connectionTimeout(connectionTimeout_);
+}
+
+inline ConfigurationBuilder &ConfigurationChildBuilder::forceReturnValues(bool forceReturnValues_) {
+    return m_builder->forceReturnValues(forceReturnValues_);
+}
+
+inline ConfigurationBuilder &ConfigurationChildBuilder::keySizeEstimate(int keySizeEstimate_) {
+    return m_builder->keySizeEstimate(keySizeEstimate_);
+}
+
+inline ConfigurationBuilder &ConfigurationChildBuilder::pingOnStartup(bool pingOnStartup_) {
+    return m_builder->pingOnStartup(pingOnStartup_);
+}
+
+inline ConfigurationBuilder &ConfigurationChildBuilder::protocolVersion(const std::string &protocolVersion_) {
+    return m_builder->protocolVersion(protocolVersion_);
+}
+
+inline ConfigurationBuilder &ConfigurationChildBuilder::socketTimeout(int socketTimeout_) {
+    return m_builder->socketTimeout(socketTimeout_);
+}
+
+inline SslConfigurationBuilder &ConfigurationChildBuilder::ssl() {
+    return m_builder->ssl();
+}
+
+inline ConfigurationBuilder &ConfigurationChildBuilder::tcpNoDelay(bool tcpNoDelay_) {
+    return m_builder->tcpNoDelay(tcpNoDelay_);
+}
+
+inline ConfigurationBuilder &ConfigurationChildBuilder::valueSizeEstimate(int valueSizeEstimate_) {
+    return m_builder->valueSizeEstimate(valueSizeEstimate_);
+}
+
+inline Configuration ConfigurationChildBuilder::build() {
+    return m_builder->build();
+}
+
 
 }} // namespace
 

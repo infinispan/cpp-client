@@ -1,8 +1,8 @@
 #ifndef ISPN_HOTROD_PROTOCOL_HEADERPARAMS_H
 #define ISPN_HOTROD_PROTOCOL_HEADERPARAMS_H
 
-#include "infinispan/hotrod/types.h"
 #include "infinispan/hotrod/Flag.h"
+#include "hotrod/types.h"
 #include "hotrod/impl/IntWrapper.h"
 
 #include <set>

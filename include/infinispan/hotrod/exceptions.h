@@ -4,6 +4,8 @@
 #include <exception>
 #include <string>
 #include <stdint.h>
+#include "infinispan/hotrod/defs.h"
+#include "infinispan/hotrod/portable.h"
 #include "infinispan/hotrod/ImportExport.h"
 
 namespace infinispan {
@@ -16,8 +18,8 @@ class HR_EXTERN Exception : public std::exception
     virtual ~Exception() throw();
     virtual const char* what() const throw();
 
-  private:
-    std::string message;
+  protected:
+    portable::string message;
 };
 
 /**
@@ -32,7 +34,6 @@ class HR_EXTERN HotRodClientException : public Exception
     virtual ~HotRodClientException() throw();
     virtual const char* what() const throw();
   private:
-    std::string message;
     uint64_t message_id;
     uint8_t status;
 };
@@ -48,11 +49,21 @@ class HR_EXTERN TransportException : public HotRodClientException
     TransportException(const std::string& host, int port, const std::string&);
     ~TransportException() throw();
 
-    const std::string& getHost() const;
+    const std::string &getHost() const {
+        if (hostPtr.get() == NULL) {
+            const_cast<TransportException *>(this)->hostPtr.set(new std::string(host.c_string()), &deleteString);
+        }
+        return *(hostPtr.get());
+    }
+    const char *getHostCString() const;
     int getPort() const;
   private:
-    const std::string host;
+    const portable::string host;
+    __pragma(warning(suppress:4251))
+    portable::local_ptr<std::string> hostPtr;
     int port;
+
+    static void deleteString(std::string *str) { delete str; }
 };
 
 /**

@@ -1,8 +1,9 @@
 #ifndef ISPN_HOTROD_CONSISTENT_HASH_H
 #define ISPN_HOTROD_CONSISTENT_HASH_H
 
-#include "infinispan/hotrod/types.h"
-#include "infinispan/hotrod/Hash.h"
+#include "infinispan/hotrod/defs.h"
+#include "hotrod/types.h"
+#include "hotrod/impl/hash/Hash.h"
 #include "hotrod/impl/transport/tcp/InetSocketAddress.h"
 #include <set>
 #include <map>

@@ -1,9 +1,7 @@
 #ifndef ISPN_HOTROD_PROTOCOL_HOTRODCONSTANTS_H
 #define ISPN_HOTROD_PROTOCOL_HOTRODCONSTANTS_H
 
-
-
-#include "infinispan/hotrod/types.h"
+#include "infinispan/hotrod/defs.h"
 
 namespace infinispan {
 namespace hotrod {

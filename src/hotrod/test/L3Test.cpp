@@ -1,3 +1,4 @@
+#include "infinispan/hotrod/ImportExport.h"
 #include "hotrod/impl/consistenthash/ConsistentHashFactory.h"
 #include "hotrod/impl/consistenthash/ConsistentHash.h"
 #include "hotrod/impl/consistenthash/ConsistentHashV1.h"
@@ -94,7 +95,7 @@ void consistentHashInitTest(uint32_t hashVersion, std::string* host) {
     delete hashFactory;
 }
 
-int main(int, char**) {
+HR_EXTERN void consistentHashFactoryTests() {
     consistentHashFactoryTest(HotRodConstants::CONSISTENT_HASH_V1);
     consistentHashFactoryTest(HotRodConstants::CONSISTENT_HASH_V2);
 
@@ -106,6 +107,5 @@ int main(int, char**) {
     h = new std::string("host0123456:6");
     consistentHashInitTest(HotRodConstants::CONSISTENT_HASH_V1, h);
     consistentHashInitTest(HotRodConstants::CONSISTENT_HASH_V2, h);
-    delete h;
-    return 0;
+    delete h;    
 }
