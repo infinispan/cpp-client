@@ -28,7 +28,7 @@ endif(WIN32 AND NOT CYGWIN)
 
 # Add options here called <whatever> they will turn into "ENABLE_<whatever" and can be
 # overridden on a platform specific basis above by NOENABLE_<whatever>
-set (OPTIONS WARNING_ERROR UNDEFINED_ERROR SWIG_TESTING VALGRIND)
+set (OPTIONS WARNING_ERROR UNDEFINED_ERROR SWIG_TESTING INTERNAL_TESTING VALGRIND)
 
 foreach (OPTION ${OPTIONS})
   if (NOT "NOENABLE_${OPTION}")
@@ -40,6 +40,7 @@ endforeach (OPTION)
 option(ENABLE_WARNING_ERROR "Consider compiler warnings to be errors" ${DEFAULT_WARNING_ERROR})
 option(ENABLE_UNDEFINED_ERROR "Check for unresolved library symbols" ${DEFAULT_UNDEFINED_ERROR})
 option(ENABLE_SWIG_TESTING "Create SWIG Java binding and test structure" ${DEFAULT_SWIG_TESTING})
+option(ENABLE_INTERNAL_TESTING "Compile the library with internal tests (unit tests)" ${DEFAULT_INTERNAL_TESTING})
 option(ENABLE_VALGRIND "Enable running the tests using Valgrind" ${DEFAULT_VALGRIND})
 
 if (CMAKE_COMPILER_IS_GNUCXX)
@@ -57,7 +58,7 @@ if (CMAKE_COMPILER_IS_GNUCXX)
 endif (CMAKE_COMPILER_IS_GNUCXX)
 
 if (MSVC)
-   set (COMPILER_FLAGS "/DNOMINMAX /EHsc /D_CRT_SECURE_NO_WARNINGS")
+   set (COMPILER_FLAGS "/DNOMINMAX /EHsc")
    set (WARNING_FLAGS "")
 endif (MSVC)
 
@@ -89,6 +90,14 @@ if (ENABLE_VALGRIND)
       CACHE STRING "Valgrind options" FORCE)
   configure_file ("${PROJECT_SOURCE_DIR}/CTestCustom.cmake" "${PROJECT_BINARY_DIR}/CTestCustom.cmake" COPYONLY)
 endif (ENABLE_VALGRIND)
+
+if (ENABLE_INTERNAL_TESTING)
+set (internal_test_sources
+  src/hotrod/test/Unit.cpp
+  src/hotrod/test/L3Test.cpp
+  src/hotrod/test/HashTest.cpp
+)
+endif (ENABLE_INTERNAL_TESTING)
 
 
 # Select driver
@@ -151,9 +160,7 @@ set (library_sources
   src/hotrod/sys/Log.cpp
   ${platform_sources}
   ${CMAKE_BINARY_DIR}/Version.cpp
-  src/hotrod/test/Unit.cpp
-  src/hotrod/test/L3Test.cpp
-  src/hotrod/test/HashTest.cpp
+  ${internal_test_sources}  
 )
 
 # Build a shared library
@@ -182,9 +189,11 @@ set_property(TARGET simple PROPERTY INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_
 set_target_properties (simple PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS}")
 target_link_libraries (simple hotrod)
 
-add_executable (unit_test test/Unit.cpp)
-set_target_properties (unit_test PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS}")
-target_link_libraries (unit_test hotrod)
+if (ENABLE_INTERNAL_TESTING)
+    add_executable (unit_test test/Unit.cpp)
+    set_target_properties (unit_test PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS}")
+    target_link_libraries (unit_test hotrod)
+endif (ENABLE_INTERNAL_TESTING)
 
 add_executable (itest test/InteractiveTest.cpp)
 set_target_properties (itest PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS}")
@@ -193,7 +202,9 @@ target_link_libraries (itest hotrod)
 # the CTest include must be after the MEMORYCHECK settings are processed
 include (CTest)
 
-add_test (unit_test unit_test)
+if (ENABLE_INTERNAL_TESTING)
+    add_test (unit_test unit_test)
+endif (ENABLE_INTERNAL_TESTING)    
 
 find_package(Java)
 
