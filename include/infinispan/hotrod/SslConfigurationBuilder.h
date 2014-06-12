@@ -10,13 +10,18 @@ namespace infinispan {
 namespace hotrod {
 
 
-class HR_EXTERN SslConfigurationBuilder
+class SslConfigurationBuilder
   : public infinispan::hotrod::Builder<SslConfiguration>, public ConfigurationChildBuilder
 {
   public:
-    SslConfigurationBuilder(ConfigurationBuilder& builder);
-    virtual SslConfiguration create();
-    virtual SslConfigurationBuilder& read(SslConfiguration& bean);
+    SslConfigurationBuilder(ConfigurationBuilder& builder): ConfigurationChildBuilder(builder) {}
+    virtual SslConfiguration create() {
+        return SslConfiguration();
+    }
+    virtual SslConfigurationBuilder& read(SslConfiguration& bean) {
+        (void) bean;
+        return *this;
+    }
 };
 
 }}

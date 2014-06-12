@@ -1,8 +1,4 @@
-
-
-#include "infinispan/hotrod/types.h"
 #include "hotrod/impl/operations/ContainsKeyOperation.h"
-#include <cstring>
 
 namespace infinispan {
 namespace hotrod {

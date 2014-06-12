@@ -105,4 +105,13 @@ typedef unsigned __int64 uint64_t;
 #endif
 #endif // PNI_DEFINE_SSIZE_T
 
+#ifdef _MSC_VER
+#   define strtoull _strtoui64
+#endif
+
+// warnings
+#ifndef _MSC_VER
+#   define __pragma(...)
+#endif
+
 #endif  /* ISPN_HOTROD_DEFS_H */

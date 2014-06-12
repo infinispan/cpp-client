@@ -1,4 +1,3 @@
-#include "infinispan/hotrod/types.h"
 #include "hotrod/impl/IntWrapper.h"
 #include "hotrod/impl/operations/OperationsFactory.h"
 #include "hotrod/impl/protocol/CodecFactory.h"

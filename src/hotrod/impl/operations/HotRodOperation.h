@@ -1,7 +1,6 @@
 #ifndef ISPN_HOTROD_OPERATIONS_HOTRODOPERATION_H
 #define ISPN_HOTROD_OPERATIONS_HOTRODOPERATION_H
 
-
 #include "hotrod/sys/Log.h"
 #include "hotrod/impl/protocol/HotRodConstants.h"
 #include "hotrod/impl/protocol/Codec.h"

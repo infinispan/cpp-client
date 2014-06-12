@@ -7,9 +7,9 @@ namespace hotrod {
 
 Exception::Exception(const std::string& msg) throw() : message(msg) {}
 Exception::~Exception() throw() {}
-const char* Exception::what() const throw() { return message.c_str(); }
+const char* Exception::what() const throw() { return message.c_string(); }
 
-HotRodClientException::HotRodClientException(const std::string& msg) : message(msg), message_id(0), status(0) {}
+HotRodClientException::HotRodClientException(const std::string& msg) : Exception(msg), message_id(0), status(0) {}
 
 HotRodClientException::HotRodClientException(const std::string& msg, uint64_t message_id_, uint8_t status_) : message_id(message_id_), status(status_) {
     std::stringstream s;
@@ -20,14 +20,13 @@ HotRodClientException::HotRodClientException(const std::string& msg, uint64_t me
         s << " returned " << status;
     }
     s << msg;
-    const std::string& str = s.str();
-    message = str;
+    message = s.str();
 }
 
 HotRodClientException::~HotRodClientException() throw() {}
 
 const char* HotRodClientException::what() const throw() {
-    return message.c_str();
+    return message.c_string();
 }
 
 TransportException::TransportException(const std::string& h, int p, const std::string& msg)
@@ -35,7 +34,7 @@ TransportException::TransportException(const std::string& h, int p, const std::s
 
 TransportException::~TransportException() throw() {}
 
-const std::string& TransportException::getHost() const { return host;}
+const char *TransportException::getHost() const { return host.c_string(); }
 int TransportException::getPort() const { return port;}
 
 InvalidResponseException::InvalidResponseException(const std::string& msg) : HotRodClientException(msg) {}

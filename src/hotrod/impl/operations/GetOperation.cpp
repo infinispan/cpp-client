@@ -1,8 +1,6 @@
 
 
-#include "infinispan/hotrod/types.h"
 #include "hotrod/impl/operations/GetOperation.h"
-#include <cstring>
 
 namespace infinispan {
 namespace hotrod {

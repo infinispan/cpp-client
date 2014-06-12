@@ -207,14 +207,10 @@ static uint32_t intMurmur3Hashes[] = {
 bool testHashString(const Hash& hash, const char input[][MAX_LENGTH], unsigned inputSize, const uint32_t expected[]) {
 	std::cout << "Testing " << std::dec << inputSize << " strings.\n";
 	for (unsigned i = 0; i < inputSize; ++i) {
-		// there's no version of hrbytes for constant strings
-		char buf[MAX_LENGTH];
-		::memcpy(buf, input[i], i + 1);
-		hrbytes bytes(buf, i + 1);
-		uint32_t h = hash.hash(bytes);
+		uint32_t h = hash.hash(input[i], i + 1);
 		if (h != expected[i]) {
 			std::cerr << "Test failed for string " << i << ": ";
-			for (unsigned j = 0; j <= i; ++j) std::cerr << (int) buf[j] << ", ";
+			for (unsigned j = 0; j <= i; ++j) std::cerr << (int) input[i][j] << ", ";
 			std::cerr << "\nexpected=" << std::hex << expected[i]
 			          << ", hashed=" << std::hex << h << "\n";
 			return false;
@@ -237,7 +233,7 @@ bool testHashInt(const Hash& hash, const int32_t input[], unsigned inputSize, co
 	return true;
 }
 
-bool murmurHash2StringTest() {
+HR_EXTERN bool murmurHash2StringTest() {
 	std::cout << "Running murmurHash2StringTest\n";
     MurmurHash2 murmur2;
     if (testHashString(murmur2, strings, sizeof(strings)/MAX_LENGTH, stringMurmur2Hashes)) {
@@ -247,7 +243,7 @@ bool murmurHash2StringTest() {
     return false;
 }
 
-bool murmurHash3StringTest() {
+HR_EXTERN bool murmurHash3StringTest() {
 	std::cout << "Running murmurHash3StringTest\n";
 	MurmurHash3 murmur3;
     if (testHashString(murmur3, strings, sizeof(strings)/MAX_LENGTH, stringMurmur3Hashes)) {
@@ -257,7 +253,7 @@ bool murmurHash3StringTest() {
     return false;
 }
 
-bool murmurHash2IntTest() {
+HR_EXTERN bool murmurHash2IntTest() {
 	std::cout << "Running murmurHash2IntTest\n";
     MurmurHash2 murmur2;
     if (testHashInt(murmur2, integers, sizeof(integers)/sizeof(int32_t), intMurmur2Hashes)) {
@@ -267,7 +263,7 @@ bool murmurHash2IntTest() {
     return false;
 }
 
-bool murmurHash3IntTest() {
+HR_EXTERN bool murmurHash3IntTest() {
 	std::cout << "Running murmurHash3IntTest\n";
     MurmurHash3 murmur3;
     if (testHashInt(murmur3, integers, sizeof(integers)/sizeof(int32_t), intMurmur3Hashes)) {
@@ -275,13 +271,4 @@ bool murmurHash3IntTest() {
     	return true;
     }
     return false;
-}
-
-
-int main() {
-    murmurHash2StringTest();
-    murmurHash3StringTest();
-    murmurHash2IntTest();
-    murmurHash3IntTest();
-    return 0;
 }

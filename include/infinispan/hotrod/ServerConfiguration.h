@@ -9,6 +9,7 @@
 #define SERVERCONFIGURATION_H_
 
 #include <string>
+#include "infinispan/hotrod/portable.h"
 #include "infinispan/hotrod/ImportExport.h"
 
 namespace infinispan {
@@ -22,26 +23,31 @@ namespace hotrod {
 class HR_EXTERN ServerConfiguration
 {
   public:
-
-    ServerConfiguration(std::string host,
-        int port);
+    ServerConfiguration(): host(""), port(0) {} // for use just in collections
+    ServerConfiguration(const std::string &_host, int _port): host(_host), port(_port) {}
 
 	/**
 	 * Returns host of this ServerConfiguration
 	 *
 	 * \return host as a string reference
 	 */
-    const std::string& getHost() const;
+    const char *getHost() const
+    {
+        return host.c_string();
+    }
 
     /**
-    	 * Returns port of this ServerConfiguration
-    	 *
-    	 * \return port as an in reference
-    	 */
-    const int& getPort() const;
+     * Returns port of this ServerConfiguration
+     *
+     * \return port as an in reference
+     */
+    const int& getPort() const
+    {
+        return port;
+    }
 
   private:
-    std::string host;
+    portable::string host;
     int port;
 };
 

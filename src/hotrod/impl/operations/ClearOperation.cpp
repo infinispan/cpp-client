@@ -1,6 +1,3 @@
-
-
-#include "infinispan/hotrod/types.h"
 #include "hotrod/impl/operations/ClearOperation.h"
 
 namespace infinispan {

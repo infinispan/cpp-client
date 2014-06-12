@@ -2,8 +2,8 @@
 #define ISPN_HOTROD_REMOTECACHEMANAGER_H
 
 #include "infinispan/hotrod/BasicMarshaller.h"
+#include "infinispan/hotrod/portable.h"
 #include "infinispan/hotrod/ImportExport.h"
-#include "infinispan/hotrod/Handle.h"
 #include "infinispan/hotrod/RemoteCache.h"
 #include "infinispan/hotrod/Configuration.h"
 
@@ -35,9 +35,9 @@ class RemoteCacheManagerImpl;
  * The cache manager is configured through a Configuration object passed to the constructor.
  *
  */
-class HR_EXTERN RemoteCacheManager : public Handle<RemoteCacheManagerImpl>
+class HR_EXTERN RemoteCacheManager
 {
-  public:
+public:
 
     /**
      * Creates a new instance of RemoteCacheManager using the default %Configuration
@@ -46,11 +46,14 @@ class HR_EXTERN RemoteCacheManager : public Handle<RemoteCacheManagerImpl>
      *
      *\param start optional boolean parameter indicating whether to start this RemoteCacheManager
      */
-    explicit RemoteCacheManager(bool start = true);
+    explicit RemoteCacheManager(bool start_ = true);
 
     explicit RemoteCacheManager(
             const std::map<std::string, std::string>& configuration,
-            bool start = true); // Deprecated, will go away soon
+            bool start_ = true) {
+        init(portable::map<portable::string, portable::string>(
+                configuration, portable::string::convert(), portable::string::convert()), start_);
+    }
 
     /**
      * Creates a new instance of RemoteCacheManager given an accompanying
@@ -64,6 +67,8 @@ class HR_EXTERN RemoteCacheManager : public Handle<RemoteCacheManagerImpl>
     explicit RemoteCacheManager(
         const Configuration& configuration,
         bool start = true);
+
+    ~RemoteCacheManager();
 
     /**
      * Starts this RemoteCacheManager if it already has not been started
@@ -114,8 +119,8 @@ class HR_EXTERN RemoteCacheManager : public Handle<RemoteCacheManagerImpl>
     {
         RemoteCache<K, V> rcache;
         initCache(rcache, forceReturnValue);
-        rcache.keyMarshaller.reset(new BasicMarshaller<K>());
-        rcache.valueMarshaller.reset(new BasicMarshaller<V>());
+        rcache.keyMarshaller.reset(new BasicMarshaller<K>(), &Marshaller<K>::destroy);
+        rcache.valueMarshaller.reset(new BasicMarshaller<V>(), &Marshaller<V>::destroy);
         return rcache;
     }
 
@@ -138,9 +143,9 @@ class HR_EXTERN RemoteCacheManager : public Handle<RemoteCacheManagerImpl>
         const std::string& name, bool forceReturnValue = false)
     {
         RemoteCache<K, V> rcache;
-        initCache(rcache, name, forceReturnValue);
-        rcache.keyMarshaller.reset(new BasicMarshaller<K>());
-        rcache.valueMarshaller.reset(new BasicMarshaller<V>());
+        initCache(rcache, name.c_str(), forceReturnValue);
+        rcache.keyMarshaller.reset(new BasicMarshaller<K>(), &Marshaller<K>::destroy);
+        rcache.valueMarshaller.reset(new BasicMarshaller<V>(), &Marshaller<V>::destroy);
         return rcache;
     }
 
@@ -155,20 +160,23 @@ class HR_EXTERN RemoteCacheManager : public Handle<RemoteCacheManagerImpl>
      * return a value set forceReturnValue parameter to true.
      *
      * \param km the key marshaller
+     * \param km function used as key marshaller destructor after this is no longer needed
      * \param vm the value marshaller
+     * \param vd function used as value marshaller destructor after this is no longer needed
      * \param forceReturnValue if true all cache %operations that optionally return a value
      * will indeed return a value.
      * \return the default RemoteCache to interact with on a remote Infinispan server
      *
      */
     template <class K, class V> RemoteCache<K, V> getCache(
-        HR_SHARED_PTR<Marshaller<K> > km, HR_SHARED_PTR<Marshaller<V> > vm,
+        Marshaller<K> *km, void (*kd)(Marshaller<K> *),
+        Marshaller<V> *vm, void (*vd)(Marshaller<V> *),
         bool forceReturnValue = false)
     {
         RemoteCache<K, V> rcache;
         initCache(rcache, forceReturnValue);
-        rcache.keyMarshaller = km;
-        rcache.valueMarshaller = vm;
+        rcache.keyMarshaller.reset(km, kd);
+        rcache.valueMarshaller.reset(vm, vd);
         return rcache;
     }
 
@@ -183,7 +191,9 @@ class HR_EXTERN RemoteCacheManager : public Handle<RemoteCacheManagerImpl>
      * that optionally return a value set forceReturnValue parameter to true.
      *
      * \param km the key marshaller
+     * \param km function used as key marshaller destructor after this is no longer needed
      * \param vm the value marshaller
+     * \param vd function used as value marshaller destructor after this is no longer needed
      * \param name the cache name to connect to on a remote Infinispan server
      * \param forceReturnValue if true all cache %operations that optionally return a value
      *  will indeed return a value.
@@ -191,19 +201,24 @@ class HR_EXTERN RemoteCacheManager : public Handle<RemoteCacheManagerImpl>
      *
      */
     template <class K, class V> RemoteCache<K, V> getCache(
-        HR_SHARED_PTR<Marshaller<K> > km, HR_SHARED_PTR<Marshaller<V> > vm,
+        Marshaller<K> *km, void (*kd)(Marshaller<K> *),
+        Marshaller<V> *vm, void (*vd)(Marshaller<V> *),
         const std::string& name, bool forceReturnValue = false)
     {
         RemoteCache<K, V> rcache;
-        initCache(rcache, name, forceReturnValue);
-        rcache.keyMarshaller = km;
-        rcache.valueMarshaller = vm;
+        initCache(rcache, name.c_str(), forceReturnValue);
+        rcache.keyMarshaller.reset(km, kd);
+        rcache.valueMarshaller.reset(vm, vd);
         return rcache;
     }
 
-  private:
+private:
+    void *impl;
+
+    void init(const portable::map<portable::string, portable::string>& configuration, bool start);
+
     void initCache(RemoteCacheBase& cache, bool forceReturnValue);
-    void initCache(RemoteCacheBase& cache, const std::string& name, bool forceReturnValue);
+    void initCache(RemoteCacheBase& cache, const char *name, bool forceReturnValue);
 
     // not implemented
     RemoteCacheManager(const RemoteCacheManager&);

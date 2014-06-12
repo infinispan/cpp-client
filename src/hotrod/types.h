@@ -20,7 +20,6 @@ namespace hotrod {
  *
  * Single use, non-copyable.
  */
-
 template <class T> class hr_scoped_ptr {
  public:
     hr_scoped_ptr (T* p) : px(p) {
@@ -38,7 +37,6 @@ template <class T> class hr_scoped_ptr {
 
     T* px;
 };
-
 
 /*
  * A Java byte[] substitute class.  Can be toggled smart or dumb.  Not
@@ -76,23 +74,23 @@ class hrbytes {
         bool disabled;
     };
 
-    unsigned int length() const { return len; }
+    size_t length() const { return len; }
     char* bytes() const { return dumbBytes ? dumbBytes : smartBytes.get(); }
 
     hrbytes() : dumbBytes(0), len(0) {}
-    hrbytes(char *b, unsigned int l) :  dumbBytes(b), len(l) {}
+    hrbytes(char *b, size_t l) :  dumbBytes(b), len(l) {}
 
-    void set(char *b, unsigned int l) {
+    void set(char *b, size_t l) {
         smartBytes.reset();
         len = l;
         dumbBytes = b;
     }
-    void setSmart(char *b, unsigned int l) {
+    void setSmart(char *b, size_t l) {
         smartBytes.reset(b, HrbDeleter());
         len = l;
         dumbBytes = 0;
     }
-    void reserve(unsigned int l) {
+    void reserve(size_t l) {
         dumbBytes = 0;
         len = l;
         smartBytes.reset(new char[len], HrbDeleter());
@@ -127,7 +125,7 @@ class hrbytes {
 
   private:
     mutable char* dumbBytes;
-    unsigned int len;
+    size_t len;
     HR_SHARED_PTR<char> smartBytes;
 };
 

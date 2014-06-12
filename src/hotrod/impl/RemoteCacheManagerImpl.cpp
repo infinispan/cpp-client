@@ -47,13 +47,13 @@ RemoteCacheManagerImpl::RemoteCacheManagerImpl(const Configuration& configuratio
 
 void RemoteCacheManagerImpl::start() {
     ScopedLock<Mutex> l(lock);
-    codec = CodecFactory::getCodec(configuration.getProtocolVersion().c_str());
+    codec = CodecFactory::getCodec(configuration.getProtocolVersion());
     if (!started) {
         transportFactory.reset(TransportFactory::newInstance(configuration));
         transportFactory->start(*codec);
 
        for(std::map<std::string, RemoteCacheHolder>::iterator iter = cacheName2RemoteCache.begin(); iter != cacheName2RemoteCache.end(); ++iter ) {
-           startRemoteCache(*iter->second.first, iter->second.second);
+           startRemoteCache(*iter->second.first.get(), iter->second.second);
        }
 
         started = true;
@@ -77,26 +77,26 @@ const Configuration& RemoteCacheManagerImpl::getConfiguration() {
     return configuration;
 }
 
-HR_SHARED_PTR<RemoteCacheImpl> RemoteCacheManagerImpl::createRemoteCache(
+RemoteCacheImpl *RemoteCacheManagerImpl::createRemoteCache(
     bool forceReturnValue)
 {
     return createRemoteCache(DefaultCacheName,forceReturnValue);
 }
 
-HR_SHARED_PTR<RemoteCacheImpl> RemoteCacheManagerImpl::createRemoteCache(
+RemoteCacheImpl *RemoteCacheManagerImpl::createRemoteCache(
     const std::string& name, bool forceReturnValue)
 {
     ScopedLock<Mutex> l(lock);
     std::map<std::string, RemoteCacheHolder>::iterator iter = cacheName2RemoteCache.find(name);
     if (iter == cacheName2RemoteCache.end()) {
-        HR_SHARED_PTR<RemoteCacheImpl> rcache(new RemoteCacheImpl(*this,name));
+        RemoteCacheImpl *rcache = new RemoteCacheImpl(*this, name);
         startRemoteCache(*rcache, forceReturnValue);
         if (configuration.isPingOnStartup()) {
             // If ping not successful assume that the cache does not exist
             // Default cache is always started, so don't do for it
-            if (rcache->getName() != DefaultCacheName && ping(*rcache) == CACHE_DOES_NOT_EXIST) {
-                rcache.reset();
-                return rcache;
+            if (name != DefaultCacheName && ping(*rcache) == CACHE_DOES_NOT_EXIST) {
+                delete rcache;
+                return NULL;
             }
         }
         // If ping on startup is disabled, or cache is defined in server
@@ -104,7 +104,7 @@ HR_SHARED_PTR<RemoteCacheImpl> RemoteCacheManagerImpl::createRemoteCache(
         return rcache;
     }
 
-    return iter->second.first;
+    return iter->second.first.get();
 }
 
 void RemoteCacheManagerImpl::startRemoteCache(RemoteCacheImpl& remoteCache, bool forceReturnValue)
@@ -113,7 +113,7 @@ void RemoteCacheManagerImpl::startRemoteCache(RemoteCacheImpl& remoteCache, bool
         transportFactory,
         remoteCache.getName(),
         forceReturnValue,
-        *CodecFactory::getCodec(configuration.getProtocolVersion().c_str()));
+        *CodecFactory::getCodec(configuration.getProtocolVersion()));
 
     remoteCache.init(operationsFactory);
 

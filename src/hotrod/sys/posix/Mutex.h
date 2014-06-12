@@ -17,7 +17,7 @@ class Condition;
  */
 class Mutex {
     friend class Condition;
-    static HR_EXTERN const pthread_mutexattr_t* getAttribute();
+    static const pthread_mutexattr_t* getAttribute();
 
 public:
     typedef ::infinispan::hotrod::sys::ScopedLock<Mutex> ScopedLock;

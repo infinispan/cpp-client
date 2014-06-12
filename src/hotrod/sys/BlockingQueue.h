@@ -71,7 +71,7 @@ public:
         return old_size != queue.size();
     }
 
-    int size() {
+    size_t size() {
         ScopedLock<Mutex> l(lock);
 
         return queue.size();

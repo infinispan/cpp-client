@@ -5,6 +5,7 @@
 
 #include <string>
 #include <vector>
+#include "infinispan/hotrod/portable.h"
 #include "infinispan/hotrod/ImportExport.h"
 #include "ConnectionPoolConfiguration.h"
 #include "ServerConfiguration.h"
@@ -18,24 +19,30 @@ namespace hotrod {
  * the preferred approach of configuring RemoteCacheManager.
  *
  */
-class HR_EXTERN Configuration
+// TODO: should we really return references?
+class Configuration
 {
   public:
-    static const char* PROTOCOL_VERSION_10;
-    static const char* PROTOCOL_VERSION_11;
-    static const char* PROTOCOL_VERSION_12;
+    HR_EXTERN static const char* PROTOCOL_VERSION_10;
+    HR_EXTERN static const char* PROTOCOL_VERSION_11;
+    HR_EXTERN static const char* PROTOCOL_VERSION_12;
 
-    Configuration(std::string protocolVersion,
-            const ConnectionPoolConfiguration& connectionPoolConfiguration,
-            int connectionTimeout,
-            bool forceReturnValue,
-            int keySizeEstimate,
-            bool pingOnStartup,
-            std::vector<ServerConfiguration> serversConfiguration,
-            int socketTimeout,
-            const SslConfiguration sslConfiguration,
-            bool tcpNoDelay,
-            int valueSizeEstimate);
+    Configuration(const std::string &_protocolVersion,
+            const ConnectionPoolConfiguration& _connectionPoolConfiguration,
+            int _connectionTimeout,
+            bool _forceReturnValue,
+            int _keySizeEstimate,
+            bool _pingOnStartup,
+            std::vector<ServerConfiguration> _serversConfiguration,
+            int _socketTimeout,
+            const SslConfiguration _sslConfiguration,
+            bool _tcpNoDelay,
+            int _valueSizeEstimate):
+                protocolVersion(_protocolVersion), connectionPoolConfiguration(_connectionPoolConfiguration),
+                connectionTimeout(_connectionTimeout), forceReturnValue(_forceReturnValue),
+                keySizeEstimate(_keySizeEstimate), pingOnStartup(_pingOnStartup), servers(_serversConfiguration),
+                socketTimeout(_socketTimeout), sslConfiguration(_sslConfiguration),tcpNoDelay(_tcpNoDelay),
+                valueSizeEstimate(_valueSizeEstimate) {}
 
     /**
      * Gets the protocol version for this Configuration. Protocol version is either:
@@ -44,22 +51,22 @@ class HR_EXTERN Configuration
      *
      *\return String representation of the protocol version
      */
-    const std::string& getProtocolVersion() const;
+    // TODO: direct const char * or copy std::string?
+    HR_EXTERN const char *getProtocolVersion() const;
 
     /**
      * Gets the ConnectionPoolConfiguration instance for this Configuration.
      *
      *\return ConnectionPoolConfiguration for further connection pool configuration
      */
-    const ConnectionPoolConfiguration& getConnectionPoolConfiguration() const;
+    HR_EXTERN const ConnectionPoolConfiguration& getConnectionPoolConfiguration() const;
 
     /**
      * Gets the connection timeout for this Configuration.
      *
      *\return connection timeout in milliseconds
      */
-
-    const int& getConnectionTimeout() const;
+    HR_EXTERN const int& getConnectionTimeout() const;
 
     /**
      * Returns whether to force returning values on all cache operations
@@ -68,14 +75,14 @@ class HR_EXTERN Configuration
      *\return true if forcing return value is turned on, false otherwise
      */
 
-    const bool& isForceReturnValue() const;
+    HR_EXTERN const bool& isForceReturnValue() const;
 
     /**
      * Returns the marshalled size estimate for keys in the remote cache.
      *
      *\return estimated size (bytes) of keys in remote cache
      */
-    const int& getKeySizeEstimate() const;
+    HR_EXTERN const int& getKeySizeEstimate() const;
 
     /**
      * Returns true if Hot Rod servers are going to pinged before any cache
@@ -83,7 +90,7 @@ class HR_EXTERN Configuration
      *
      *\return true if servers are going to be pinged, false otherwise
      */
-    const bool& isPingOnStartup() const;
+    HR_EXTERN const bool& isPingOnStartup() const;
 
     /**
      * Returns the vector of server configurations where each server configuration instance
@@ -91,44 +98,46 @@ class HR_EXTERN Configuration
      *
      *\return vector of server configurations
      */
-    const std::vector<ServerConfiguration>& getServersConfiguration() const;
+    std::vector<ServerConfiguration> getServersConfiguration() const {
+        return servers.std_vector();
+    }
 
     /**
      * Returns socket timeout of underlying TCP connection(s)
      *
      *\return socket timeout in milliseconds
      */
-    const int& getSocketTimeout() const;
+    HR_EXTERN const int& getSocketTimeout() const;
 
     /**
      *Returns SSL configuration for the underlying TCP connections
      *
      *\return SSL configuration
      */
-    const SslConfiguration& getSslConfiguration() const;
+    HR_EXTERN const SslConfiguration& getSslConfiguration() const;
 
     /**
      * Returns true if TCP no delay is turned on for underlying TCP connections
      *
      *\return true if TCP no delay is turned on
      */
-    const bool& isTcpNoDelay() const;
+    HR_EXTERN const bool& isTcpNoDelay() const;
 
     /**
      * Returns the marshalled size estimate for values in the remote cache.
      *
      *\return estimated size (bytes) of values in remote cache
      */
-    const int& getValueSizeEstimate() const;
+    HR_EXTERN const int& getValueSizeEstimate() const;
 
   private:
-    std::string protocolVersion;
+    portable::string protocolVersion;
     ConnectionPoolConfiguration connectionPoolConfiguration;
     int connectionTimeout;
     bool forceReturnValue;
     int keySizeEstimate;
     bool pingOnStartup;
-    std::vector<ServerConfiguration> servers;
+    portable::vector<ServerConfiguration> servers;
     int socketTimeout;
     SslConfiguration sslConfiguration;
     bool tcpNoDelay;

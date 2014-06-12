@@ -11,7 +11,7 @@ namespace infinispan {
 namespace hotrod {
 namespace transport {
 
-class HR_EXTERN InetSocketAddress
+class InetSocketAddress
 {
   public:
     InetSocketAddress(const std::string& host, int p);

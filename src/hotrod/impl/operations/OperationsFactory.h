@@ -2,6 +2,7 @@
 #define ISPN_HOTROD_OPERATIONS_OPERATIONSFACTORY_H
 
 #include "infinispan/hotrod/Flag.h"
+#include "hotrod/types.h"
 
 #include <set>
 

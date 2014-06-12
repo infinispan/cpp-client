@@ -202,9 +202,8 @@ int32_t MurmurHash3_x64_32(const void * key, const int32_t len, const int32_t se
 
 MurmurHash3::~MurmurHash3() {}
 
-uint32_t MurmurHash3::hash(const hrbytes& key) const {
-    hrbytes& k = const_cast<hrbytes&>(key);
-    return (uint32_t) MurmurHash3_x64_32(k.bytes(), k.length(), 9001);
+uint32_t MurmurHash3::hash(const void *key, size_t size) const {
+    return (uint32_t) MurmurHash3_x64_32(key, (int32_t)size, 9001);
 }
 
 uint32_t MurmurHash3::hash(int32_t key) const {
