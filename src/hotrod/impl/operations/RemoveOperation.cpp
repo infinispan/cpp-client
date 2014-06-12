@@ -20,7 +20,7 @@ RemoveOperation::RemoveOperation(
 
 hrbytes RemoveOperation::executeOperation(Transport& transport)
 {
-    TRACE("Execute Remove(flags=%u)");
+    TRACE("Execute Remove(flags=%u)", flags);
     TRACEBYTES("key = ", key);
     hrbytes result;
     sendKeyOperation(key,

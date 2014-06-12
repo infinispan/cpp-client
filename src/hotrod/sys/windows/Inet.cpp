@@ -20,8 +20,10 @@ void *get_in_addr(struct sockaddr *sa) {
 }
 
 int getPreferredIPStack() {
-    const char *stack = getenv("HOTROD_IPSTACK");
-    if (stack == 0) {
+    size_t sz;
+    char stack[256];
+    getenv_s(&sz, stack, 256, "HOTROD_IPSTACK");
+    if (sz == 0) {
         return AF_UNSPEC;
     }  else if (!_stricmp(stack, "IPV4")) {
         return AF_INET;

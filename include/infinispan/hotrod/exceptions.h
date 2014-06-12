@@ -4,6 +4,7 @@
 #include <exception>
 #include <string>
 #include <stdint.h>
+#include "infinispan/hotrod/defs.h"
 #include "infinispan/hotrod/portable.h"
 #include "infinispan/hotrod/ImportExport.h"
 
