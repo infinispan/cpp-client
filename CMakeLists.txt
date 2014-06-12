@@ -57,7 +57,7 @@ if (CMAKE_COMPILER_IS_GNUCXX)
 endif (CMAKE_COMPILER_IS_GNUCXX)
 
 if (MSVC)
-   set (COMPILER_FLAGS "/DNOMINMAX /EHsc")
+   set (COMPILER_FLAGS "/DNOMINMAX /EHsc /D_CRT_SECURE_NO_WARNINGS")
    set (WARNING_FLAGS "")
 endif (MSVC)
 
@@ -107,14 +107,7 @@ set (library_sources
   src/hotrod/api/RemoteCacheBase.cpp
   src/hotrod/api/exceptions.cpp
   src/hotrod/impl/configuration/Configuration.cpp
-  src/hotrod/impl/configuration/ServerConfiguration.cpp
-  src/hotrod/impl/configuration/ServerConfigurationBuilder.cpp
   src/hotrod/impl/configuration/ConnectionPoolConfiguration.cpp
-  src/hotrod/impl/configuration/ConnectionPoolConfigurationBuilder.cpp
-  src/hotrod/impl/configuration/ServerConfigurationBuilder.cpp
-  src/hotrod/impl/configuration/ConfigurationBuilder.cpp
-  src/hotrod/impl/configuration/ConfigurationChildBuilder.cpp
-  src/hotrod/impl/configuration/SslConfigurationBuilder.cpp
   src/hotrod/impl/RemoteCacheManagerImpl.cpp
   src/hotrod/impl/RemoteCacheImpl.cpp
   src/hotrod/impl/IntWrapper.cpp
@@ -157,6 +150,9 @@ set (library_sources
   src/hotrod/sys/Log.cpp
   ${platform_sources}
   ${CMAKE_BINARY_DIR}/Version.cpp
+  src/hotrod/test/Unit.cpp
+  src/hotrod/test/L3Test.cpp
+  src/hotrod/test/HashTest.cpp
 )
 
 # Build a shared library
@@ -189,14 +185,6 @@ add_executable (unit_test test/Unit.cpp)
 set_target_properties (unit_test PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS}")
 target_link_libraries (unit_test hotrod)
 
-add_executable (hash_test test/HashTest.cpp)
-set_target_properties (hash_test PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS}")
-target_link_libraries (hash_test hotrod)
-
-add_executable (l3_test test/L3Test.cpp)
-set_target_properties (l3_test PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS}")
-target_link_libraries (l3_test hotrod)
-
 add_executable (itest test/InteractiveTest.cpp)
 set_target_properties (itest PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS}")
 target_link_libraries (itest hotrod)
@@ -205,8 +193,6 @@ target_link_libraries (itest hotrod)
 include (CTest)
 
 add_test (unit_test unit_test)
-add_test (hash_test hash_test)
-add_test (l3_test l3_test)
 
 find_package(Java)
 

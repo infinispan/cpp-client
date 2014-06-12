@@ -18,7 +18,7 @@ TransportFactory& AbstractTransport::getTransportFactory(){
 void AbstractTransport::writeArray(const hrbytes& bytes)
 {
   hrbytes& not_const_bytes = const_cast<hrbytes&>(bytes);
-  writeVInt(not_const_bytes.length());
+  writeVInt((uint32_t) not_const_bytes.length());
   writeBytes(bytes);
 }
 

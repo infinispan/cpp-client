@@ -77,7 +77,7 @@ Socket::Socket() : fd(INVALID_SOCKET) {
 void Socket::connect(const std::string& h, int p, int timeout) {
     struct addrinfo *addr, *addr_list;
     char ip[INET6_ADDRSTRLEN];
-    int error, flags;
+    int error;
     u_long non_blocking;
     SOCKET sock;
 
@@ -117,7 +117,7 @@ void Socket::connect(const std::string& h, int p, int timeout) {
 
             // Connect
             DEBUG("Attempting connection to %s:%d", ip, port);
-            int s = ::connect(sock, addr->ai_addr, addr->ai_addrlen);
+            int s = ::connect(sock, addr->ai_addr, (int) addr->ai_addrlen);
             error = WSAGetLastError();
 
 
@@ -130,7 +130,7 @@ void Socket::connect(const std::string& h, int p, int timeout) {
                     FD_ZERO(&sock_set);
                     FD_SET(sock, &sock_set);
                     // Wait for the socket to become ready
-                    s = select(sock + 1, NULL, &sock_set, NULL, &tv);
+                    s = select((SOCKET)((int) sock + 1), NULL, &sock_set, NULL, &tv);
                     if (s > 0) {
                         int opt;
                         socklen_t optlen = sizeof(opt);
@@ -205,6 +205,7 @@ size_t Socket::read(char *p, size_t length) {
         throwIOErr(host, port, "timeout", 0);
     else
         throwIOErr(host, port, "read", WSAGetLastError());
+    throw std::exception("Never reached");
 }
 
 void Socket::write(const char *p, size_t length) {

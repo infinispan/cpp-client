@@ -1,9 +1,7 @@
 #ifndef ISPN_HOTROD_PROTOCOL_CODEC_H
 #define ISPN_HOTROD_PROTOCOL_CODEC_H
 
-
-
-#include "infinispan/hotrod/types.h"
+#include "infinispan/hotrod/defs.h"
 #include <set>
 #include <map>
 

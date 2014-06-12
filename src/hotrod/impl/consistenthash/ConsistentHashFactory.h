@@ -1,9 +1,7 @@
 #ifndef ISPN_HOTROD_CONSISTENT_HASH_FACTORY_H
 #define  ISPN_HOTROD_CONSISTENT_HASH_FACTORY_H
 
-#include "infinispan/hotrod/ImportExport.h"
-#include "infinispan/hotrod/types.h"
-#include <string>
+#include "infinispan/hotrod/defs.h"
 #include <map>
 
 namespace infinispan {
@@ -12,7 +10,7 @@ class Configuration;
 namespace consistenthash {
 class ConsistentHash;
 
-class HR_EXTERN ConsistentHashFactory
+class ConsistentHashFactory
 {
   public:
     /*

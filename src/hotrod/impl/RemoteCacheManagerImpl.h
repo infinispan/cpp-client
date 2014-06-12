@@ -20,8 +20,8 @@ class RemoteCacheManagerImpl
     RemoteCacheManagerImpl(const std::map<std::string,std::string>& properties, bool start_); // Deprecated
 	RemoteCacheManagerImpl(const Configuration& configuration, bool start = true);
 
-	HR_SHARED_PTR<RemoteCacheImpl> createRemoteCache(bool forceReturnValue);
-	HR_SHARED_PTR<RemoteCacheImpl> createRemoteCache(const std::string& name, bool forceReturnValue);
+	RemoteCacheImpl *createRemoteCache(bool forceReturnValue);
+	RemoteCacheImpl *createRemoteCache(const std::string& name, bool forceReturnValue);
 
 	void start();
     void stop();
@@ -34,7 +34,7 @@ class RemoteCacheManagerImpl
     Configuration configuration;
     protocol::Codec* codec;
 
-    typedef std::pair<HR_SHARED_PTR<RemoteCacheImpl>, bool> RemoteCacheHolder;
+    typedef std::pair<portable::counting_ptr<RemoteCacheImpl>, bool> RemoteCacheHolder;
     std::map<std::string, RemoteCacheHolder> cacheName2RemoteCache;
 
     operations::PingResult ping(RemoteCacheImpl& remoteCache);

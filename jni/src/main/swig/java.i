@@ -19,7 +19,6 @@
 //#define HR_SHARED_PTR std::tr1::shared_ptr
 
 %{
-#include <infinispan/hotrod/types.h>
 #include <infinispan/hotrod/defs.h>
 #include <infinispan/hotrod/ConnectionPoolConfiguration.h>
 #include <infinispan/hotrod/exceptions.h>
@@ -42,13 +41,8 @@
 
 %template(MapType) std::map<std::string, std::string>;
 
-%include "infinispan/hotrod/types.h"
 %include "infinispan/hotrod/defs.h"
 %include "infinispan/hotrod/ImportExport.h"
-%include "infinispan/hotrod/Handle.h"
-
-%template(HandleRemoteCacheManagerImpl) infinispan::hotrod::Handle<infinispan::hotrod::RemoteCacheManagerImpl>;
-
 %include "infinispan/hotrod/Builder.h"
 %include "infinispan/hotrod/ConnectionPoolConfiguration.h"
 %include "infinispan/hotrod/ServerConfiguration.h"
@@ -230,22 +224,18 @@ using infinispan::hotrod::RemoteCacheManager;
 class RelayCacheBlob {
   public:
      RelayCacheBlob(RemoteCacheManager &m, bool forceReturnValue) : 
-       keyMarshaller(new RelayMarshaller()),
-       valueMarshaller(new RelayMarshaller()),
-       cache(m.getCache<RelayBytes, RelayBytes>(keyMarshaller, valueMarshaller, forceReturnValue)) {}
+       cache(m.getCache<RelayBytes, RelayBytes>(new RelayMarshaller(), &Marshaller<RelayBytes>::destroy,
+                                                new RelayMarshaller(), &Marshaller<RelayBytes>::destroy, forceReturnValue)) {}
 
      RelayCacheBlob(RemoteCacheManager &m, std::string &name, bool forceReturnValue) : 
-       keyMarshaller(new RelayMarshaller()),
-       valueMarshaller(new RelayMarshaller()),
-       cache(m.getCache<RelayBytes, RelayBytes>(keyMarshaller, valueMarshaller, name, forceReturnValue)) {}
+       cache(m.getCache<RelayBytes, RelayBytes>(new RelayMarshaller(), &Marshaller<RelayBytes>::destroy,
+                                                new RelayMarshaller(), &Marshaller<RelayBytes>::destroy, name.c_str(), forceReturnValue)) {}
 
      RemoteCache<RelayBytes, RelayBytes> *getCache() {
        return &cache;
      }
 
   private:
-     HR_SHARED_PTR<Marshaller<RelayBytes> > keyMarshaller;
-     HR_SHARED_PTR<Marshaller<RelayBytes> > valueMarshaller;
      RemoteCache<RelayBytes, RelayBytes> cache;
 };
 

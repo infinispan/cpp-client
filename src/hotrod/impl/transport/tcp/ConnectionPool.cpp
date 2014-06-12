@@ -45,7 +45,7 @@ TcpTransport& ConnectionPool::borrowObject(const InetSocketAddress& key) {
             }
         }
         // See if we can create a new one
-        if (busyQ->size() < configuration.getMaxActive()) {
+        if (busyQ->size() < (size_t) configuration.getMaxActive()) {
             obj = &factory->makeObject(key);
         } else {
             // Wait for an object to become idle

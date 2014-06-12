@@ -7,7 +7,7 @@
 
 #include "hotrod/impl/transport/Transport.h"
 
-#include "infinispan/hotrod/types.h"
+#include "hotrod/types.h"
 #include "hotrod/sys/Socket.h"
 
 namespace infinispan {

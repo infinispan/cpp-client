@@ -1,6 +1,7 @@
 #ifndef ISPN_HOTROD_VERSION_H
 #define ISPN_HOTROD_VERSION_H
 
+#include "infinispan/hotrod/portable.h"
 #include "infinispan/hotrod/ImportExport.h"
 #include <string>
 
@@ -13,8 +14,8 @@ namespace hotrod {
  */
 class Version {
 private:
-    HR_EXTERN static const std::string PROTOCOL_VERSION;
-    HR_EXTERN static const std::string VERSION;
+    HR_EXTERN static const char *PROTOCOL_VERSION;
+    HR_EXTERN static const char *VERSION;
 
 public:
 
@@ -23,14 +24,14 @@ public:
 	 *
 	 *\sa RemoteCache::getProtocolVersion
 	 */
-    static const std::string& getProtocolVersion() { return PROTOCOL_VERSION; }
+    static const char *getProtocolVersion() { return PROTOCOL_VERSION; }
 
     /**
   	 * Returns version of the client.
   	 *
   	 *\sa RemoteCache::getVersion
   	 */
-    static const std::string& getVersion() { return VERSION; }
+    static const char *getVersion() { return VERSION; }
 };
 
 }}

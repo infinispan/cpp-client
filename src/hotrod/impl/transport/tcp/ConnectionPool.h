@@ -3,7 +3,7 @@
 
 #include <map>
 #include <iterator>
-#include "infinispan/hotrod/types.h"
+#include "infinispan/hotrod/defs.h"
 #include "hotrod/sys/BlockingQueue.h"
 #include "hotrod/sys/Mutex.h"
 #include "hotrod/sys/Runnable.h"

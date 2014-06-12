@@ -1,7 +1,7 @@
 #ifndef INTWRAPPER_H_
 #define INTWRAPPER_H_
 
-#include "infinispan/hotrod/types.h"
+#include "infinispan/hotrod/defs.h"
 
 namespace infinispan {
 namespace hotrod {

@@ -1,9 +1,6 @@
 #ifndef ISPN_HOTROD_OPERATIONS_REMOVEIFUNMODIFIEDOPERATION_H
 #define ISPN_HOTROD_OPERATIONS_REMOVEIFUNMODIFIEDOPERATION_H
 
-
-
-#include "infinispan/hotrod/types.h"
 #include "infinispan/hotrod/ScopedBuffer.h"
 #include "infinispan/hotrod/RemoteCacheBase.h"
 #include "hotrod/impl/operations/AbstractKeyOperation.h"

@@ -4,6 +4,7 @@
 #include <exception>
 #include <string>
 #include <stdint.h>
+#include "infinispan/hotrod/portable.h"
 #include "infinispan/hotrod/ImportExport.h"
 
 namespace infinispan {
@@ -16,8 +17,8 @@ class HR_EXTERN Exception : public std::exception
     virtual ~Exception() throw();
     virtual const char* what() const throw();
 
-  private:
-    std::string message;
+  protected:
+    portable::string message;
 };
 
 /**
@@ -32,7 +33,6 @@ class HR_EXTERN HotRodClientException : public Exception
     virtual ~HotRodClientException() throw();
     virtual const char* what() const throw();
   private:
-    std::string message;
     uint64_t message_id;
     uint8_t status;
 };
@@ -48,10 +48,10 @@ class HR_EXTERN TransportException : public HotRodClientException
     TransportException(const std::string& host, int port, const std::string&);
     ~TransportException() throw();
 
-    const std::string& getHost() const;
+    const char *getHost() const;
     int getPort() const;
   private:
-    const std::string host;
+    const portable::string host;
     int port;
 };
 

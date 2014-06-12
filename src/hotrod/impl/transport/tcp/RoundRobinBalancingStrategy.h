@@ -2,7 +2,6 @@
 #define ISPN_HOTROD_TRANSPORT_ROUNDROBINBALANCINGSTRATEGY_H
 
 #include "hotrod/impl/transport/tcp/RequestBalancingStrategy.h"
-#include "infinispan/hotrod/types.h"
 
 namespace infinispan {
 namespace hotrod {

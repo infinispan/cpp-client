@@ -1,7 +1,6 @@
 #ifndef ISPN_HOTROD_METADATAVALUE_H
 #define ISPN_HOTROD_METADATAVALUE_H
 
-#include "infinispan/hotrod/types.h"
 #include "infinispan/hotrod/VersionedValue.h"
 
 namespace infinispan {

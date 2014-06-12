@@ -30,8 +30,8 @@
 #  error "Dont know how to define HOTROD_TSS for this platform"
 #endif
 
-#include "infinispan/hotrod/ImportExport.h"
-#include "infinispan/hotrod/types.h"
+#include "infinispan/hotrod/defs.h"
+#include <string>
 
 namespace infinispan {
 namespace hotrod {
@@ -40,7 +40,7 @@ namespace sys {
 class Runnable;
 class ThreadPrivate;
 
-class HR_EXTERN Thread
+class Thread
 {
     HR_SHARED_PTR<ThreadPrivate> impl;
 

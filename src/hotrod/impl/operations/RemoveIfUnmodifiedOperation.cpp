@@ -1,8 +1,4 @@
-
-
-#include "infinispan/hotrod/types.h"
 #include "hotrod/impl/operations/RemoveIfUnmodifiedOperation.h"
-#include <cstring>
 
 namespace infinispan {
 namespace hotrod {

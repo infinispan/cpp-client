@@ -26,8 +26,9 @@ void TcpTransportFactory::start(
     Codec& codec)
 {
     ScopedLock<Mutex> l(lock);
-    for (std::vector<ServerConfiguration>::const_iterator iter=configuration.getServersConfiguration().begin();
-        iter!=configuration.getServersConfiguration().end(); iter++)
+    std::vector<ServerConfiguration> configuredServers = configuration.getServersConfiguration();
+    for (std::vector<ServerConfiguration>::const_iterator iter = configuredServers.begin();
+        iter != configuredServers.end(); iter++)
     {
         servers.push_back(InetSocketAddress(iter->getHost(), iter->getPort()));
     }
@@ -137,7 +138,7 @@ void TcpTransportFactory::pingServers() {
 void TcpTransportFactory::updateTransportCount() {
     ScopedLock<Mutex> l(lock);
     int maxActive = connectionPool->getConfiguration().getMaxActive();
-    int size = servers.size();
+    int size = (int) servers.size();
     if (maxActive > 0) {
         transportCount = (maxActive * size > maxActive) ?
             maxActive * size : maxActive;

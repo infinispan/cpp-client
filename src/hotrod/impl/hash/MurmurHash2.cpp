@@ -55,9 +55,8 @@ uint32_t MurmurHashNeutral2(const void * key, int len) {
 
 MurmurHash2::~MurmurHash2() {}
 
-uint32_t MurmurHash2::hash(const hrbytes& key) const {
-	hrbytes& k = const_cast<hrbytes&>(key);
-    return MurmurHashNeutral2(k.bytes(), k.length());
+uint32_t MurmurHash2::hash(const void *key, size_t size) const {
+    return MurmurHashNeutral2(key, (int32_t) size);
 }
 
 uint32_t MurmurHash2::hash(int32_t key) const {
