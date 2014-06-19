@@ -51,7 +51,7 @@ int64_t AbstractTransport::readLong()
 {
   hrbytes longBytes;
   readBytes(longBytes, 8);
-  long result = 0;
+  int64_t result = 0;
   for (int i = 0; i < 8 ; i++) {
     result <<= 8;
     result ^= (int64_t) *(longBytes.bytes()+i) & 0xFF;
@@ -63,7 +63,7 @@ int16_t AbstractTransport::readUnsignedShort()
 {
   hrbytes shortBytes;
   readBytes(shortBytes, 2);
-  short result = 0;
+  int16_t result = 0;
 
   for (int i = 0; i < 2 ; i++) {
     result <<= 8;
@@ -76,7 +76,7 @@ int32_t AbstractTransport::read4ByteInt()
 {
   hrbytes intBytes;
   readBytes(intBytes, 4);
-  int result = 0;
+  int32_t result = 0;
 
   for (int i = 0; i < 4 ; i++) {
       int shift = (4 - 1 - i) * 8;
