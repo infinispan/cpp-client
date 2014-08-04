@@ -143,7 +143,7 @@ void Socket::connect(const std::string& h, int p, int timeout) {
                     s = poll(fds, 1, timeout);
                     if (s > 0) {
                         if ((POLLOUT ^ fds[0].revents) != 0) {
-                            close();
+                            ::close(sock);
                             DEBUG("Failed to connect to %s:%d", ip, port);
                             continue;
                         }
@@ -151,7 +151,7 @@ void Socket::connect(const std::string& h, int p, int timeout) {
                         socklen_t optlen = sizeof(opt);
                         s = getsockopt(sock, SOL_SOCKET, SO_ERROR, (void*)(&opt), &optlen);
                     } else if (s == 0) {
-                        close();
+                        ::close(sock);
                         DEBUG("Timed out connecting to %s:%d", ip, port);
                         continue;
                     } else {
@@ -162,7 +162,7 @@ void Socket::connect(const std::string& h, int p, int timeout) {
                 }
             }
             if (s < 0) {
-                close();
+                ::close(sock);
             } else {
                 // We got a successful connection
                 found = true;
