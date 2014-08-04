@@ -136,7 +136,7 @@ void Socket::connect(const std::string& h, int p, int timeout) {
                         socklen_t optlen = sizeof(opt);
                         s = getsockopt(sock, SOL_SOCKET, SO_ERROR, (char *)(&opt), &optlen);
                     } else if (s == 0) {
-                        close();
+                        ::closesocket(sock);
                         DEBUG("Timed out connecting to %s:%d", ip, port);
                         continue;
                     } else {
@@ -147,7 +147,7 @@ void Socket::connect(const std::string& h, int p, int timeout) {
                 }
             }
             if (s < 0) {
-                close();
+                ::closesocket(sock);
             } else {
                 // We got a successful connection
                 found = true;
