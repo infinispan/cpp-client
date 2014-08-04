@@ -9,7 +9,6 @@ namespace hotrod {
 
 class IntWrapper {
 public:
-  IntWrapper();
   IntWrapper(uint32_t);
   virtual ~IntWrapper();
   uint32_t addAndGet(uint32_t delta);
