@@ -220,7 +220,7 @@ public:
         RemoteCache<K, V> rcache;
         initCache(rcache, forceReturnValue);
         rcache.keyMarshallerPtr.reset(new portable::counted_wrapper<HR_SHARED_PTR<Marshaller<K> > >(km), &genericDelete);
-        rcache.valueMarshallerPtr.reset(new portable::counted_wrapper<HR_SHARED_PTR<Marshaller<K> > >(vm), &genericDelete);
+        rcache.valueMarshallerPtr.reset(new portable::counted_wrapper<HR_SHARED_PTR<Marshaller<V> > >(vm), &genericDelete);
         rcache.keyMarshaller.reset(&*km, &genericNoDelete);
         rcache.valueMarshaller.reset(&*vm, &genericNoDelete);
         return rcache;
@@ -233,7 +233,7 @@ public:
         RemoteCache<K, V> rcache;
         initCache(rcache, name.c_str(), forceReturnValue);
         rcache.keyMarshallerPtr.reset(new portable::counted_wrapper<HR_SHARED_PTR<Marshaller<K> > >(km), &genericDelete);
-        rcache.valueMarshallerPtr.reset(new portable::counted_wrapper<HR_SHARED_PTR<Marshaller<K> > >(vm), &genericDelete);
+        rcache.valueMarshallerPtr.reset(new portable::counted_wrapper<HR_SHARED_PTR<Marshaller<V> > >(vm), &genericDelete);
         rcache.keyMarshaller.reset(&*km, &genericNoDelete);
         rcache.valueMarshaller.reset(&*vm, &genericNoDelete);
         return rcache;
