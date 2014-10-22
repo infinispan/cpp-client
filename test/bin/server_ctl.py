@@ -3,13 +3,20 @@
 #        python server_ctl stop
 
 import os
-import platform
+import re
 import sys
 import string
 import subprocess
 import time
 import pickle
 
+def is_compressed_oops_supported(java):
+    try:
+        subprocess.check_output([java, '-XX:+UseCompressedOops'], stderr=subprocess.STDOUT)
+    except subprocess.CalledProcessError as error:
+        # An exception will always be thrown as the cmdline is not complete.
+        return (re.search("Unrecognized VM option 'UseCompressedOops'", error.output) is None)
+    return true
 
 def static_java_args(java, jboss_home) :
     # No luck calling standalone.bat without hanging.
@@ -23,8 +30,10 @@ def static_java_args(java, jboss_home) :
             '-jaxpmodule', 'javax.xml.jaxp-provider', 'org.jboss.as.standalone', 
             '-Djboss.home.dir=' + jboss_home]
     # This option doesn't work on a 32-bit JVM
-    if platform.architecture(java)[0].find('32') != -1:
+
+    if not is_compressed_oops_supported(java):
         cmd.remove('-XX:+UseCompressedOops')
+
     return cmd
 
 def start(args):
