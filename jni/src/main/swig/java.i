@@ -275,16 +275,20 @@ SWIGEXPORT jlong JNICALL Java_org_infinispan_client_hotrod_jni_HotrodJNI2_new_1J
 SWIGEXPORT void JNICALL Java_org_infinispan_client_hotrod_jni_HotrodJNI2_setJvmBytes(JNIEnv *jenv, jclass jcls, jlong jarg1, jbyteArray jarg2) {
     (void) jcls;
     RelayBytes *arg1 = (RelayBytes *) jarg1;
+    jbyteArray jarray = (jbyteArray) jenv->NewGlobalRef(jarg2);
     arg1->setJvm((char *) jenv->GetByteArrayElements(jarg2, 0),
-		 (size_t) jenv->GetArrayLength(jarg2), jarg2);
+		 (size_t) jenv->GetArrayLength(jarg2), jarray);
 }
 
 
 SWIGEXPORT void JNICALL Java_org_infinispan_client_hotrod_jni_HotrodJNI2_releaseJvmBytes(JNIEnv *jenv, jclass jcls, jlong jarg1, jbyteArray jarg2) {
     (void) jcls;
     RelayBytes *arg1 = (RelayBytes *) jarg1;
-    if (arg1->getBytes())
-	jenv->ReleaseByteArrayElements(arg1->getJarray(), (jbyte *) arg1->getBytes(), 0);
+    if (arg1->getBytes()) {
+        jbyteArray jarray = arg1->getJarray();
+        jenv->ReleaseByteArrayElements(jarray, (jbyte *) arg1->getBytes(), 0);
+        jenv->DeleteGlobalRef(jarray);
+    }
 }
 
 
