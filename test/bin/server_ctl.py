@@ -13,7 +13,7 @@ import pickle
 def is_compressed_oops_supported(java):
     try:
         subprocess.check_output([java, '-XX:+UseCompressedOops'], stderr=subprocess.STDOUT)
-    except subprocess.CalledProcessError as error:
+    except subprocess.CalledProcessError, error:
         # An exception will always be thrown as the cmdline is not complete.
         return (re.search("Unrecognized VM option 'UseCompressedOops'", error.output) is None)
     return true
