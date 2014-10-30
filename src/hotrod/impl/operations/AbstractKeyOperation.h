@@ -34,9 +34,9 @@ template<class T> class AbstractKeyOperation : public RetryOnFailureOperation<T>
 
     transport::Transport& getTransport(int retryCount) {
         if (retryCount == 0) {
-            return RetryOnFailureOperation<T>::transportFactory->getTransport(key);
+            return this->transportFactory->getTransport(key);
         } else {
-            return RetryOnFailureOperation<T>::transportFactory->getTransport();
+            return this->transportFactory->getTransport();
         }
     }
 
@@ -46,17 +46,17 @@ template<class T> class AbstractKeyOperation : public RetryOnFailureOperation<T>
     {
         // 1) write [header][key length][key]
         hr_scoped_ptr<protocol::HeaderParams> params(
-            &(RetryOnFailureOperation<T>::writeHeader(transport, opCode)));
+            &(this->writeHeader(transport, opCode)));
         transport.writeArray(_key);
         transport.flush();
 
         // 2) now read the header
-        return RetryOnFailureOperation<T>::readHeaderAndValidate(transport, *params);
+        return this->readHeaderAndValidate(transport, *params);
     }
 
     hrbytes returnPossiblePrevValue(transport::Transport& transport) {
         hrbytes result;
-        if (hasForceReturn(RetryOnFailureOperation<T>::flags)) {
+        if (hasForceReturn(this->flags)) {
             TRACEBYTES("return value = ", result);
             result = transport.readArray();
         } else {
@@ -69,7 +69,7 @@ template<class T> class AbstractKeyOperation : public RetryOnFailureOperation<T>
         transport::Transport& transport, protocol::HeaderParams& params)
     {
         uint8_t status =
-            RetryOnFailureOperation<T>::readHeaderAndValidate(transport, params);
+            this->readHeaderAndValidate(transport, params);
         VersionedOperationResponse::RspCode code;
         if (status == protocol::HotRodConstants::NO_ERROR_STATUS) {
            	code = VersionedOperationResponse::SUCCESS;

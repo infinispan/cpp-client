@@ -42,10 +42,10 @@ template<class T> class AbstractKeyValueOperation : public AbstractKeyOperation<
             uint8_t                                       /*opRespCode*/)
         {
             // 1) write header
-            hr_scoped_ptr<protocol::HeaderParams> params(&(AbstractKeyOperation<T>::writeHeader(transport, opCode)));
+            hr_scoped_ptr<protocol::HeaderParams> params(&(this->writeHeader(transport, opCode)));
 
             // 2) write key and value
-            transport.writeArray(AbstractKeyOperation<T>::key);
+            transport.writeArray(this->key);
             transport.writeVInt(lifespan);
             transport.writeVInt(maxIdle);
             transport.writeArray(value);
@@ -54,7 +54,7 @@ template<class T> class AbstractKeyValueOperation : public AbstractKeyOperation<
             // 3) now read header
 
             //return status (not error status for sure)
-            return AbstractKeyOperation<T>::readHeaderAndValidate(transport, *params);
+            return this->readHeaderAndValidate(transport, *params);
         }
 };
 
