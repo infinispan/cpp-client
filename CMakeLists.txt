@@ -95,7 +95,7 @@ if (ENABLE_VALGRIND)
   set(MEMORYCHECK_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/valgrind CACHE FILEPATH
       "Hot Rod Valgrind preprocessor" FORCE)
   set(MEMORYCHECK_COMMAND_OPTIONS
-      "${VALGRIND} --leak-check=full --num-callers=25 --workaround-gcc296-bugs=yes --demangle=yes"
+      "${VALGRIND} --error-exitcode=1 --leak-check=full --num-callers=25 --workaround-gcc296-bugs=yes --demangle=yes"
       CACHE STRING "Valgrind options" FORCE)
   configure_file ("${PROJECT_SOURCE_DIR}/CTestCustom.cmake" "${PROJECT_BINARY_DIR}/CTestCustom.cmake" COPYONLY)
 endif (ENABLE_VALGRIND)

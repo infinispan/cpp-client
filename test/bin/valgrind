@@ -50,26 +50,8 @@ def main():
             break
     if disable:
         args = trim_valgrind(args)
-        p = subprocess.Popen(args)
-        return p.wait()
-    else:
-        # monitor stdout to observe valgrind summary
-        p = subprocess.Popen(args, stderr=subprocess.PIPE)
-        no_err = re.compile('ERROR SUMMARY: 0 errors')
-        vgerror = True
-        while True:
-            line = p.stderr.readline()
-            if line :
-                sys.stderr.write(line)
-                if no_err.search(line) :
-                    vgerror = False
-            else:
-                break
-        sys.stderr.flush()
-        status = p.wait()
-        if vgerror:
-            return 1
-        return status
+    p = subprocess.Popen(args)
+    return p.wait()
 
 
 if __name__ == "__main__":

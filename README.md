@@ -52,11 +52,10 @@ the same configuration to ctest and cpack using the -C flag).
 
 Please check the cmake/ctest/cpack documentation for details.
 
-Platforms with makefiles and Valgrind may have additional targets:
+Platforms with Valgrind may have additional targets:
 
-    make test
-    make memtest
-    make memtestv
+    cmake --build . --target memtest
+    cmake --build . --target memtestv
 
 ## Reporting Issues ##
 Infinispan uses JIRA for issue management, hosted on issues.jboss.org
