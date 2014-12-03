@@ -50,11 +50,12 @@ int main(int argc, char** args) {
 	builder.addServer().host(args[1]).port(atoi(args[2]));
 	try {
 		RemoteCacheManager manager(builder.build(), true);
+
 		StringCache cache = manager.getCache<std::string, std::string>(args[3], true);
 		bool printHelp = true;
 		for (;;) {
 			if (printHelp) {
-				std::cout << "Type command: [g]et | [p]ut | [r]emove | [q]uit\n";
+				std::cout << "Type command: [g]et | [p]ut | [r]emove | [c]hange cache (currently: " << cache.getName() << ") | [q]uit\n";
 			}
 			printHelp = true;
 			int c = getchar();
@@ -63,6 +64,17 @@ int main(int argc, char** args) {
 			case 'g': doGet(cache); break;
 			case 'p': doPut(cache); break;
 			case 'r': doRemove(cache); break;
+            case 'c': {
+                std::string cacheName;
+                std::cout << "Cache: ";
+                std::cin >> cacheName;
+                try {
+                    cache = manager.getCache<std::string, std::string>(cacheName, true);
+                } catch (Exception e) {
+                    std::cerr << "Failed: " << e.what() << std::endl;
+                }
+                break;
+            }
 			case '\n': printHelp = false; break;
 			default:
 				std::cerr << "Invalid command '" << (char) c << "'\n";
