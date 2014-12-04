@@ -49,7 +49,7 @@ void TcpTransportFactory::start(
     }
  }
 
-Transport& TcpTransportFactory::getTransport() {
+Transport& TcpTransportFactory::getTransport(const hrbytes& /*cacheName*/) {
     const InetSocketAddress* server = NULL;
     {
         ScopedLock<Mutex> l(lock);
@@ -58,10 +58,18 @@ Transport& TcpTransportFactory::getTransport() {
     return borrowTransportFromPool(*server);
 }
 
-Transport& TcpTransportFactory::getTransport(const hrbytes& key) {
+Transport& TcpTransportFactory::getTransport(const hrbytes& key, const hrbytes& cacheName) {
     const InetSocketAddress* server = NULL;
     {
         ScopedLock<Mutex> l(lock);
+
+        HR_SHARED_PTR<infinispan::hotrod::consistenthash::ConsistentHash> consistentHash;
+
+        std::map<hrbytes, HR_SHARED_PTR<infinispan::hotrod::consistenthash::ConsistentHash> >::iterator element = consistentHashByCacheName.find(cacheName);
+        if (element != consistentHashByCacheName.end()) {
+            consistentHash = element->second;
+        }
+
         if (consistentHash != NULL) {
             server = &consistentHash->getServer(key);
         } else {
@@ -167,7 +175,6 @@ ConnectionPool* TcpTransportFactory::getConnectionPool()
 }
 
 void TcpTransportFactory::updateServers(std::vector<InetSocketAddress>& newServers) {
-
     ScopedLock<Mutex> l(lock);
     std::vector<InetSocketAddress> addedServers;
     std::sort(newServers.begin(), newServers.end());
@@ -211,20 +218,20 @@ void TcpTransportFactory::updateServers(std::vector<InetSocketAddress>& newServe
 
 void TcpTransportFactory::updateHashFunction(
         std::map<InetSocketAddress, std::set<int32_t> >& servers2Hash,
-        int32_t numKeyOwners, uint8_t hashFunctionVersion, int32_t hashSpace) {
+        int32_t numKeyOwners, uint8_t hashFunctionVersion, int32_t hashSpace, const hrbytes& cacheName) {
     ScopedLock<Mutex> l(lock);
-    ConsistentHash* hash = hashFactory->newConsistentHash(hashFunctionVersion);
+    HR_SHARED_PTR<ConsistentHash> hash = hashFactory->newConsistentHash(hashFunctionVersion);
     if (hash == NULL) {
         std::cout << "updateHashFunction with hash version "
             << hashFunctionVersion << " failed!" << std::endl;
     } else {
         hash->init(servers2Hash, numKeyOwners, hashSpace);
     }
-    consistentHash = hash;
+    consistentHashByCacheName[cacheName] = hash;
 }
 
-void TcpTransportFactory::clearHashFunction() {
-    consistentHash = NULL;
+void TcpTransportFactory::clearHashFunction(const hrbytes& cacheName) {
+    consistentHashByCacheName.erase(cacheName);
 }
 
 ConsistentHashFactory& TcpTransportFactory::getConsistentHashFactory(){

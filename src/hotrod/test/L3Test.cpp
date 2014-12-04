@@ -26,7 +26,7 @@ using namespace infinispan::hotrod::transport;
 void consistentHashFactoryTest(uint32_t hashVersion) {
     HR_SHARED_PTR<ConsistentHashFactory> hashFactory;
     hashFactory.reset(new ConsistentHashFactory());
-    ConsistentHash* hash = hashFactory->newConsistentHash(hashVersion);
+    HR_SHARED_PTR<ConsistentHash> hash = hashFactory->newConsistentHash(hashVersion);
     hrbytes data(const_cast<char*> ("acbde"), 5);
     uint32_t i1 = hash->getNormalizedHash(data);
     uint32_t i2 = hash->getNormalizedHash(data);
@@ -80,7 +80,7 @@ void consistentHashInitTest(uint32_t hashVersion, std::string* host) {
     int32_t hSpace = 100000;
 
     ConsistentHashFactory* hashFactory = new ConsistentHashFactory();
-    ConsistentHash* hash = hashFactory->newConsistentHash(hashVersion);
+    HR_SHARED_PTR<ConsistentHash> hash = hashFactory->newConsistentHash(hashVersion);
 
     //init hash with server map
     hash->init(servers2Hash, nKeyOwners, hSpace);

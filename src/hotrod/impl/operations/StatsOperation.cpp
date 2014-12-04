@@ -19,7 +19,7 @@ StatsOperation::StatsOperation(
 
 Transport& StatsOperation::getTransport(int /*retryCount*/)
 {
-        return RetryOnFailureOperation<std::map<std::string, std::string> >::transportFactory->getTransport();
+        return RetryOnFailureOperation<std::map<std::string, std::string> >::transportFactory->getTransport(cacheName);
 }
 
 std::map<std::string, std::string> StatsOperation::executeOperation(Transport& transport)

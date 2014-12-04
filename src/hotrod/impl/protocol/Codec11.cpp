@@ -35,11 +35,10 @@ std::map<InetSocketAddress, std::set<int32_t> > Codec11::computeNewHashes(
     uint32_t numVirtualNodes = transport.readVInt();
     std::map<InetSocketAddress, std::set<int32_t> > servers2Hash;
 
-    ConsistentHash* ch;
+    HR_SHARED_PTR<ConsistentHash> ch;
     if (hashFunctionVersion != 0) {
         ch = transport.getTransportFactory().getConsistentHashFactory().newConsistentHash(hashFunctionVersion);
     } else {
-        ch = 0;
         WARN("Could not obtain a consistent hash for version %d", hashFunctionVersion);
     }
 
@@ -61,7 +60,7 @@ std::map<InetSocketAddress, std::set<int32_t> > Codec11::computeNewHashes(
     return servers2Hash;
 }
 
-int32_t Codec11::getNormalizedHash(int32_t baseHashCode, ConsistentHash* ch) const {
+int32_t Codec11::getNormalizedHash(int32_t baseHashCode, HR_SHARED_PTR<ConsistentHash> ch) const {
     if (ch != NULL) {
         return ch->getNormalizedHash(baseHashCode);
     } else {
@@ -73,13 +72,13 @@ int32_t Codec11::getNormalizedHash(int32_t baseHashCode, ConsistentHash* ch) con
 void Codec11::calcVirtualHashCodes(int32_t addrHashCode,
         uint32_t numVirtualNodes,
         std::map<InetSocketAddress, std::set<int32_t> >& servers2Hash,
-        std::string host, int16_t port, ConsistentHash* ch) const {
+        std::string host, int16_t port,
+        HR_SHARED_PTR<ConsistentHash> ch) const {
 
     for (uint32_t j = 1; j < numVirtualNodes; j++) {
         int32_t hashCode = calcVNodeHashCode(addrHashCode, j);
         cacheHashCode(servers2Hash, host, port, getNormalizedHash(hashCode, ch));
     }
-
 }
 
 void Codec11::cacheHashCode(

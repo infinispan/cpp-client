@@ -30,7 +30,6 @@ void ConsistentHashV1::init(
     }
 
     int32_t hashWheelSize = (int32_t) positions.size();
-    //log.tracef("Positions (%d entries) are: %s", hashWheelSize, positions);
 
     hashes.clear();
     hashes.reserve(hashWheelSize);
@@ -53,11 +52,11 @@ void ConsistentHashV1::init(
     this->numKeyOwners = nKeyOwners;
 }
 
-const InetSocketAddress& ConsistentHashV1::getServer(const hrbytes& key){
+const InetSocketAddress& ConsistentHashV1::getServer(const hrbytes& key) {
     int32_t normalisedHashForKey;
     if (hashSpaceIsMaxInt) {
         normalisedHashForKey = getNormalizedHash(key);
-        if (normalisedHashForKey == std::numeric_limits<int32_t>::max()){
+        if (normalisedHashForKey == std::numeric_limits<int32_t>::max()) {
             normalisedHashForKey = 0;
         }
     } else {

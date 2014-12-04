@@ -19,7 +19,7 @@ ClearOperation::ClearOperation(
 
 Transport& ClearOperation::getTransport(int /*retryCount*/)
 {
-        return RetryOnFailureOperation<hrbytes>::transportFactory->getTransport();
+        return RetryOnFailureOperation<hrbytes>::transportFactory->getTransport(cacheName);
 }
 
 hrbytes ClearOperation::executeOperation(infinispan::hotrod::transport::Transport& transport)

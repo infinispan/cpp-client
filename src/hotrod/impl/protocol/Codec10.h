@@ -1,8 +1,7 @@
 #ifndef ISPN_HOTROD_PROTOCOL_CODEC10_H
 #define ISPN_HOTROD_PROTOCOL_CODEC10_H
 
-
-
+#include "hotrod/types.h"
 #include "hotrod/impl/protocol/Codec.h"
 
 namespace infinispan {
@@ -52,7 +51,8 @@ class Codec10 : public Codec
 
     void readNewTopologyAndHash(
         infinispan::hotrod::transport::Transport& transport,
-        IntWrapper& topologyId) const;
+        IntWrapper& topologyId,
+        const hrbytes& cacheName) const;
 
     void checkForErrorsInResponseStatus(
         infinispan::hotrod::transport::Transport& transport,

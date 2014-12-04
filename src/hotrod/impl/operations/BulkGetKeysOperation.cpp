@@ -24,7 +24,7 @@ BulkGetKeysOperation::BulkGetKeysOperation(
 
 Transport& BulkGetKeysOperation::getTransport(int /*retryCount*/)
 {
-        return RetryOnFailureOperation<std::set<hrbytes> >::transportFactory->getTransport();
+        return RetryOnFailureOperation<std::set<hrbytes> >::transportFactory->getTransport(cacheName);
 }
 
 std::set<hrbytes> BulkGetKeysOperation::executeOperation(Transport& transport)

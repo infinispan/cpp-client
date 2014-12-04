@@ -27,7 +27,7 @@ private:
 
     int32_t
     getNormalizedHash(int32_t baseHashCode,
-            infinispan::hotrod::consistenthash::ConsistentHash* ch) const;
+            HR_SHARED_PTR<infinispan::hotrod::consistenthash::ConsistentHash> ch) const;
 
     void calcVirtualHashCodes(
             int32_t addrHashCode,
@@ -35,7 +35,7 @@ private:
             std::map<infinispan::hotrod::transport::InetSocketAddress,
                     std::set<int32_t> >& servers2Hash, std::string host,
             int16_t port,
-            infinispan::hotrod::consistenthash::ConsistentHash* ch) const;
+            HR_SHARED_PTR<infinispan::hotrod::consistenthash::ConsistentHash> ch) const;
 
     void cacheHashCode(
             std::map<infinispan::hotrod::transport::InetSocketAddress,

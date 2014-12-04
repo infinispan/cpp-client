@@ -1,5 +1,3 @@
-
-
 #include "hotrod/impl/protocol/Codec10.h"
 #include "hotrod/impl/protocol/HotRodConstants.h"
 #include "hotrod/impl/protocol/HeaderParams.h"
@@ -99,33 +97,38 @@ void Codec10::readNewTopologyIfPresent(
 {
     uint8_t topologyChangeByte = transport.readByte();
     if (topologyChangeByte == 1)
-        readNewTopologyAndHash(transport, params.topologyId);
+        readNewTopologyAndHash(transport, params.topologyId, params.cacheName);
 }
 
-void Codec10::readNewTopologyAndHash(Transport& transport, IntWrapper& topologyId) const{
+void Codec10::readNewTopologyAndHash(Transport& transport, IntWrapper& topologyId, const hrbytes& cacheName) const{
     uint32_t newTopologyId = transport.readVInt();
     topologyId.set(newTopologyId); //update topologyId reference
     int16_t numKeyOwners = transport.readUnsignedShort();
     uint8_t hashFunctionVersion = transport.readByte();
     uint32_t hashSpace = transport.readVInt();
     uint32_t clusterSize = transport.readVInt();
+
     std::map<InetSocketAddress, std::set<int32_t> > m = computeNewHashes(
             transport, newTopologyId, numKeyOwners, hashFunctionVersion, hashSpace,
             clusterSize);
 
     std::vector<InetSocketAddress> socketAddresses;
-    for (std::map<InetSocketAddress, std::set<int32_t> >::iterator it =
-            m.begin(); it != m.end(); ++it) {
+    for (std::map<InetSocketAddress, std::set<int32_t> >::iterator it = m.begin(); it != m.end(); ++it) {
         socketAddresses.push_back(it->first);
     }
     transport.getTransportFactory().updateServers(socketAddresses);
 
     if (hashFunctionVersion == 0) {
-        DEBUG("No hash function present.");
-        transport.getTransportFactory().clearHashFunction();
+        TRACE("No hash function present.");
+        transport.getTransportFactory().clearHashFunction(cacheName);
     } else {
+        TRACE("Updating Hash version: %u owners: %d hash_space: %u cluster_size: %u",
+                hashFunctionVersion,
+                numKeyOwners,
+                hashSpace,
+                clusterSize);
         transport.getTransportFactory().updateHashFunction(m, numKeyOwners,
-                hashFunctionVersion, hashSpace);
+                hashFunctionVersion, hashSpace, cacheName);
     }
 }
 

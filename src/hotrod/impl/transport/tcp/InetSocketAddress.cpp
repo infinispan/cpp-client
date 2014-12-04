@@ -65,5 +65,4 @@ std::ostream& operator<<(std::ostream& os, const InetSocketAddress& isa) {
     os << "]";
     return os;
 }
-
 }}} // namespace

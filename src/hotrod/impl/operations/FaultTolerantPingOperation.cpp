@@ -19,7 +19,7 @@ FaultTolerantPingOperation::FaultTolerantPingOperation(
 
 Transport& FaultTolerantPingOperation::getTransport(int /*retryCount*/)
 {
-        return RetryOnFailureOperation<PingResult>::transportFactory->getTransport();
+        return RetryOnFailureOperation<PingResult>::transportFactory->getTransport(cacheName);
 }
 
 PingResult FaultTolerantPingOperation::executeOperation(transport::Transport& transport)

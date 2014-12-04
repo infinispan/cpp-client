@@ -11,22 +11,18 @@ namespace hotrod {
 namespace consistenthash {
 using infinispan::hotrod::protocol::HotRodConstants;
 
-ConsistentHashFactory::ConsistentHashFactory() {
-    int8_t key  = HotRodConstants::CONSISTENT_HASH_V1;
-    consistentHashMap[key] = new ConsistentHashV1();
-    key = HotRodConstants::CONSISTENT_HASH_V2;
-    consistentHashMap[key] = new ConsistentHashV2();
-}
-
-ConsistentHashFactory::~ConsistentHashFactory() {
-    for (std::map<uint8_t, ConsistentHash*>::iterator it =
-            consistentHashMap.begin(); it != consistentHashMap.end(); ++it) {
-        delete it->second;
+HR_SHARED_PTR<ConsistentHash> ConsistentHashFactory::newConsistentHash(uint8_t version) {
+    HR_SHARED_PTR<ConsistentHash> result;
+    switch (version) {
+        case HotRodConstants::CONSISTENT_HASH_V1:
+            result.reset(new ConsistentHashV1());
+            break;
+        case HotRodConstants::CONSISTENT_HASH_V2:
+            result.reset(new ConsistentHashV2());
+            break;
+        default:
+            break;
     }
-}
-
-ConsistentHash* ConsistentHashFactory::newConsistentHash(uint8_t version) {
-    ConsistentHash* result = ConsistentHashFactory::consistentHashMap[version];
     return result;
 }
 

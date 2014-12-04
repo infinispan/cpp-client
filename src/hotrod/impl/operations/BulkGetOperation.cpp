@@ -20,7 +20,7 @@ BulkGetOperation::BulkGetOperation(
 
 Transport& BulkGetOperation::getTransport(int /*retryCount*/)
 {
-        return RetryOnFailureOperation<std::map<hrbytes, hrbytes> >::transportFactory->getTransport();
+        return RetryOnFailureOperation<std::map<hrbytes, hrbytes> >::transportFactory->getTransport(cacheName);
 }
 
 std::map<hrbytes,hrbytes> BulkGetOperation::executeOperation(infinispan::hotrod::transport::Transport& transport)

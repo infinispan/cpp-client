@@ -23,12 +23,13 @@ class InetSocketAddress;
 class TcpTransportFactory : public TransportFactory
 {
   public:
-    TcpTransportFactory(const Configuration& config) : configuration(config),consistentHash(0) {};
+    TcpTransportFactory(const Configuration& config) : configuration(config),transportCount(0) {};
     void start(protocol::Codec& codec);
     void destroy();
 
-    Transport& getTransport();
-    Transport& getTransport(const hrbytes& key);
+    Transport& getTransport(const hrbytes& cacheName);
+    Transport& getTransport(const hrbytes& key, const hrbytes& cacheName);
+
     void releaseTransport(Transport& transport);
     void invalidateTransport(
         const InetSocketAddress& address, Transport* transport);
@@ -42,8 +43,9 @@ class TcpTransportFactory : public TransportFactory
     void updateHashFunction(
                 std::map<InetSocketAddress, std::set<int32_t> >& servers2Hash,
                 int32_t numKeyOwners, uint8_t hashFunctionVersion,
-                int32_t hashSpace);
-    void clearHashFunction();
+                int32_t hashSpace,
+                const hrbytes& cacheName);
+    void clearHashFunction(const hrbytes& cacheName);
     infinispan::hotrod::consistenthash::ConsistentHashFactory
             & getConsistentHashFactory();
 
@@ -60,7 +62,8 @@ class TcpTransportFactory : public TransportFactory
     void createAndPreparePool();
 
     HR_SHARED_PTR<infinispan::hotrod::consistenthash::ConsistentHashFactory> hashFactory;
-    infinispan::hotrod::consistenthash::ConsistentHash* consistentHash;
+
+    std::map<hrbytes, HR_SHARED_PTR<infinispan::hotrod::consistenthash::ConsistentHash> > consistentHashByCacheName;
     void updateTransportCount();
     void pingServers();
     Transport& borrowTransportFromPool(const InetSocketAddress& server);

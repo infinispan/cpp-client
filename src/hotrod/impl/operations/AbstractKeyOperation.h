@@ -34,9 +34,9 @@ template<class T> class AbstractKeyOperation : public RetryOnFailureOperation<T>
 
     transport::Transport& getTransport(int retryCount) {
         if (retryCount == 0) {
-            return this->transportFactory->getTransport(key);
+            return this->transportFactory->getTransport(key, this->cacheName);
         } else {
-            return this->transportFactory->getTransport();
+            return this->transportFactory->getTransport(this->cacheName);
         }
     }
 
