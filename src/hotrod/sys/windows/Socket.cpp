@@ -126,15 +126,26 @@ void Socket::connect(const std::string& h, int p, int timeout) {
                     struct timeval tv;
                     tv.tv_sec = timeout / 1000;
                     tv.tv_usec = timeout % 1000;
-                    fd_set sock_set;
-                    FD_ZERO(&sock_set);
-                    FD_SET(sock, &sock_set);
+                    fd_set sock_set_w;
+                    fd_set sock_set_e;
+                    FD_ZERO(&sock_set_w);
+                    FD_SET(sock, &sock_set_w);
+                    FD_ZERO(&sock_set_e);
+                    FD_SET(sock, &sock_set_e);
                     // Wait for the socket to become ready
-                    s = select((SOCKET)((int) sock + 1), NULL, &sock_set, NULL, &tv);
+                    s = select((SOCKET)((int) sock + 1), NULL, &sock_set_w, &sock_set_e, &tv);
                     if (s > 0) {
-                        int opt;
-                        socklen_t optlen = sizeof(opt);
-                        s = getsockopt(sock, SOL_SOCKET, SO_ERROR, (char *)(&opt), &optlen);
+                        if (FD_ISSET(sock, &sock_set_e)) {
+                            //Socket in exceptfds set. Connection failed.
+                            s = -1;
+
+                            int so_error_value;
+                            socklen_t optlen = sizeof(so_error_value);
+                            int rcode = getsockopt(sock, SOL_SOCKET, SO_ERROR, (char *)(&so_error_value), &optlen);
+                            if (SOCKET_ERROR != rcode) {
+                                error = so_error_value;
+                            }
+                        }
                     } else if (s == 0) {
                         ::closesocket(sock);
                         DEBUG("Timed out connecting to %s:%d", ip, port);
