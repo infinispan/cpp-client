@@ -179,7 +179,7 @@ class RelayBytes {
 // our mechanism for RemoteCache<byte[], byte[]> from the java side
 %template(RemoteCache_jb_jb) infinispan::hotrod::RemoteCache<RelayBytes, RelayBytes>;
 
-# create a do-nothing marshaller works with the pre-marshalled data
+// create a do-nothing marshaller works with the pre-marshalled data
 
 %{
 using infinispan::hotrod::ScopedBuffer;
