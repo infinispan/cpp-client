@@ -2,19 +2,13 @@ cmake_minimum_required (VERSION 2.6)
 
 project (infinispan-hotrod-cpp C CXX)
 
-if (NOT DEFINED CPACK_PACKAGE_VERSION_MAJOR)
-  set (CPACK_PACKAGE_VERSION_MAJOR "7")
-endif (NOT DEFINED CPACK_PACKAGE_VERSION_MAJOR)
-
-if (NOT DEFINED CPACK_PACKAGE_VERSION_MINOR)
-  set (CPACK_PACKAGE_VERSION_MINOR "0")
-endif (NOT DEFINED CPACK_PACKAGE_VERSION_MINOR)
-
-if (NOT DEFINED CPACK_PACKAGE_VERSION_PATCH)
-  set (CPACK_PACKAGE_VERSION_PATCH "0-SNAPSHOT")
-endif (NOT DEFINED CPACK_PACKAGE_VERSION_PATCH)
-
+set (CPACK_PACKAGE_VERSION_MAJOR "6")
+set (CPACK_PACKAGE_VERSION_MINOR "3")
+set (CPACK_PACKAGE_VERSION_PATCH "0-SNAPSHOT")
 set (HOTROD_VERSION "${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}")
+
+# BZ1201477 - Excluding "build" directory from the distribution
+set (CPACK_SOURCE_IGNORE_FILES ".git/;.gitignore;build/")
 
 if ("${CMAKE_BINARY_DIR}" STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}")
   message (FATAL_ERROR "You are calling cmake from the source directory. Please create a separate build directory and call cmake from there. See README.md for details.")
@@ -95,7 +89,7 @@ if (ENABLE_VALGRIND)
   set(MEMORYCHECK_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/valgrind CACHE FILEPATH
       "Hot Rod Valgrind preprocessor" FORCE)
   set(MEMORYCHECK_COMMAND_OPTIONS
-      "${VALGRIND} --error-exitcode=1 --leak-check=full --num-callers=25 --workaround-gcc296-bugs=yes --demangle=yes"
+      "${VALGRIND} --leak-check=full --num-callers=25 --workaround-gcc296-bugs=yes --demangle=yes"
       CACHE STRING "Valgrind options" FORCE)
   configure_file ("${PROJECT_SOURCE_DIR}/CTestCustom.cmake" "${PROJECT_BINARY_DIR}/CTestCustom.cmake" COPYONLY)
 endif (ENABLE_VALGRIND)
@@ -198,21 +192,40 @@ set_property(TARGET simple PROPERTY INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_
 set_target_properties (simple PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS}")
 target_link_libraries (simple hotrod)
 
+add_executable (simple_static test/Simple.cpp)
+set_property(TARGET simple_static PROPERTY INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/include")
+if(HOTROD_WINAPI)
+    set( CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} /FORCE:MULTIPLE" )
+endif(HOTROD_WINAPI)    
+set_target_properties (simple_static PROPERTIES COMPILE_FLAGS "-DHOTROD_DECLARE_STATIC ${COMPILER_FLAGS} ${WARNING_FLAGS}")
+target_link_libraries (simple_static hotrod-static ${platform_libs})
+
 if (ENABLE_INTERNAL_TESTING)
     add_executable (unit_test test/Unit.cpp)
     set_target_properties (unit_test PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS}")
     target_link_libraries (unit_test hotrod)
+
+    add_executable (unit_test_static test/Unit.cpp)
+    if(HOTROD_WINAPI)
+        set( CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} /FORCE:MULTIPLE" )
+    endif(HOTROD_WINAPI)    
+    set_target_properties (unit_test_static PROPERTIES COMPILE_FLAGS "-DHOTROD_DECLARE_STATIC ${COMPILER_FLAGS} ${WARNING_FLAGS}")
+    target_link_libraries (unit_test_static hotrod-static ${platform_libs})
 endif (ENABLE_INTERNAL_TESTING)
 
 add_executable (itest test/InteractiveTest.cpp)
-set_target_properties (itest PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS}")
-target_link_libraries (itest hotrod)
+if(HOTROD_WINAPI)
+    set( CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} /FORCE:MULTIPLE" )
+endif(HOTROD_WINAPI)    
+set_target_properties (itest PROPERTIES COMPILE_FLAGS "-DHOTROD_DECLARE_STATIC ${COMPILER_FLAGS} ${WARNING_FLAGS}")
+target_link_libraries (itest hotrod-static ${platform_libs})
 
 # the CTest include must be after the MEMORYCHECK settings are processed
 include (CTest)
 
 if (ENABLE_INTERNAL_TESTING)
     add_test (unit_test unit_test)
+    add_test (unit_test_static unit_test_static)
 endif (ENABLE_INTERNAL_TESTING)    
 
 find_package(Java)
@@ -235,6 +248,7 @@ else (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.sh") AND (EXISTS "${HOTR
     add_test (start_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py start ${JAVA_RUNTIME} ${HOTROD_JBOSS_HOME} single)
     add_test (probe_port ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/probe_port.py localhost 11222 60)
     add_test (simple simple)
+    add_test (simple_static simple_static)
     add_test (stop_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py stop)
 endif (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.sh") AND (EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.bat")))
 
@@ -276,9 +290,13 @@ else (WIN32)
 endif(WIN32)
 message (STATUS "Build ${CMAKE_BUILD_TYPE} for ${PLATFORM} on ${PACKAGE_ARCH}")
 set (CPACK_SYSTEM_NAME "${PLATFORM}-${PACKAGE_ARCH}")
-set (CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
-set (CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/License.txt")
-set (DOCDIR .)
+#set (CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
+#set (CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/License.txt")
+if(WIN32)
+    set (DOCDIR .)
+else(WIN32)
+    set (DOCDIR ${SHARE_INSTALL_PREFIX}/doc/${CMAKE_PROJECT_NAME})
+endif(WIN32)
 
 file (GLOB includes "${CMAKE_CURRENT_SOURCE_DIR}/include/infinispan/hotrod/*.h")
 install (FILES ${includes} DESTINATION include/infinispan/hotrod)
@@ -304,4 +322,3 @@ if (DOXYGEN_FOUND)
   #Include the API docs in the package.
   install (FILES ${CMAKE_BINARY_DIR}/api_docs/html/ DESTINATION ${DOCDIR}/api)
 endif (DOXYGEN_FOUND)
-
