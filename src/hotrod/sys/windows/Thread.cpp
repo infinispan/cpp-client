@@ -72,7 +72,7 @@ private:
 namespace {
 
 
-#ifdef _DLL
+#ifndef HOTROD_DECLARE_STATIC
 class ScopedCriticalSection
 {
   public:
@@ -132,7 +132,7 @@ unsigned __stdcall runThreadPrivate(void* p)
     SetEvent (threadPrivate->hrThreadDone); // allow join()
     threadPrivate->keepAlive.reset();         // may run ThreadPrivate destructor
 
-#ifdef _DLL
+#ifndef HOTROD_DECLARE_STATIC
     {
         ScopedCriticalSection l(threadLock);
         if (--runningThreads == 0)
@@ -157,7 +157,7 @@ void ThreadPrivate::start(ThreadPrivate::shared_ptr& tp) {
     hrThreadDone = CreateEvent (NULL, TRUE, FALSE, NULL);
     HOTROD_WINDOWS_CHECK_CRT_NZ(hrThreadDone);
 
-#ifdef _DLL
+#ifndef HOTROD_DECLARE_STATIC
     {
         ScopedCriticalSection l(threadLock);
         if (terminating)
@@ -173,7 +173,7 @@ void ThreadPrivate::start(ThreadPrivate::shared_ptr& tp) {
                                   0,
                                   &threadId);
 
-#ifdef _DLL
+#ifndef HOTROD_DECLARE_STATIC
     if (h == NULL) {
         ScopedCriticalSection l(threadLock);
         if (--runningThreads == 0)
@@ -262,7 +262,7 @@ void Thread::sleep(long millis) {
 }}}  // namespace
 
 
-#ifdef _DLL
+#ifndef HOTROD_DECLARE_STATIC
 
 namespace infinispan {
 namespace hotrod {

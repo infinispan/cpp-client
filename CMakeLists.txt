@@ -66,6 +66,7 @@ if (CMAKE_COMPILER_IS_GNUCXX)
 
 endif (CMAKE_COMPILER_IS_GNUCXX)
 
+set (STATIC_FLAGS "-DHOTROD_DECLARE_STATIC")
 if (MSVC)
    set (COMPILER_FLAGS "/DNOMINMAX /EHsc")
    set (WARNING_FLAGS "")
@@ -189,7 +190,7 @@ set_target_properties (hotrod PROPERTIES SOVERSION "1.0")
 
 # Build a static library
 add_library (hotrod-static STATIC ${library_sources})
-set_target_properties(hotrod-static PROPERTIES COMPILE_FLAGS "-DHOTROD_DECLARE_STATIC ${COMPILER_FLAGS} ${WARNING_FLAGS}")
+set_target_properties(hotrod-static PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS} ${STATIC_FLAGS}")
 
 # TESTS
 
@@ -198,10 +199,19 @@ set_property(TARGET simple PROPERTY INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_
 set_target_properties (simple PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS}")
 target_link_libraries (simple hotrod)
 
+add_executable (simple-static test/Simple.cpp)
+set_property(TARGET simple-static PROPERTY INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/include")
+set_target_properties (simple-static PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS} ${STATIC_FLAGS}")
+target_link_libraries (simple-static hotrod-static ${platform_libs})
+
 if (ENABLE_INTERNAL_TESTING)
-    add_executable (unit_test test/Unit.cpp)
-    set_target_properties (unit_test PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS}")
-    target_link_libraries (unit_test hotrod)
+    add_executable (unittest test/Unit.cpp)
+    set_target_properties (unittest PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS}")
+    target_link_libraries (unittest hotrod)
+
+    add_executable (unittest-static test/Unit.cpp)
+    set_target_properties (unittest-static PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS} ${STATIC_FLAGS}")
+    target_link_libraries (unittest-static hotrod-static ${platform_libs})
 endif (ENABLE_INTERNAL_TESTING)
 
 add_executable (itest test/InteractiveTest.cpp)
@@ -212,7 +222,8 @@ target_link_libraries (itest hotrod)
 include (CTest)
 
 if (ENABLE_INTERNAL_TESTING)
-    add_test (unit_test unit_test)
+    add_test (unittest unittest)
+    add_test (unittest-static unittest-static)
 endif (ENABLE_INTERNAL_TESTING)    
 
 find_package(Java)
@@ -235,6 +246,7 @@ else (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.sh") AND (EXISTS "${HOTR
     add_test (start_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py start ${JAVA_RUNTIME} ${HOTROD_JBOSS_HOME} single)
     add_test (probe_port ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/probe_port.py localhost 11222 60)
     add_test (simple simple)
+    add_test (simple-static simple-static)
     add_test (stop_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py stop)
 endif (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.sh") AND (EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.bat")))
 
