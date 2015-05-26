@@ -15,5 +15,4 @@ cd ${BUILD_DIR} &&
 cmake .. &&
 cmake --build . &&
 ctest -V &&
-cmake --build . --target memtestv &&
 cpack -G RPM
