@@ -55,8 +55,8 @@ well.
 using namespace infinispan::hotrod;
 
 int main(int argc, char** argv) {
-    ConfigurationBuilder b;
-    b.addServer().host(argc>1?argv[1]:"127.0.0.1").port(argc>2?atoi(argv[2]):11222);
+    ConfigurationBuilder builder;
+    builder.addServer().host(argc>1?argv[1]:"127.0.0.1").port(argc>2?atoi(argv[2]):11222);
     RemoteCacheManager cm(builder.build(), false);
     RemoteCache<std::string, std::string> cache = cm.getCache<std::string, std::string>();
     cm.start();
