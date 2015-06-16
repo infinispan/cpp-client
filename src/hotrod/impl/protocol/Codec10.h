@@ -27,6 +27,8 @@ class Codec10 : public Codec
         infinispan::hotrod::transport::Transport& transport,
         HeaderParams& params) const;
 
+    long getMessageId();
+
   protected:
     HeaderParams& writeHeader(
         infinispan::hotrod::transport::Transport& transport,
@@ -35,9 +37,6 @@ class Codec10 : public Codec
     std::map<infinispan::hotrod::transport::InetSocketAddress, std::set<int32_t> > computeNewHashes(
         infinispan::hotrod::transport::Transport& transport, uint32_t newTopologyId, int16_t numKeyOwners,
         uint8_t hashFunctionVersion, uint32_t hashSpace, uint32_t clusterSize) const;
-
-    // TODO : multithread management
-    static long msgId;
 
     Codec10() {}
 

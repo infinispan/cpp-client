@@ -109,7 +109,6 @@ set (internal_test_sources
 )
 endif (ENABLE_INTERNAL_TESTING)
 
-
 # Select driver
 if(HOTROD_WINAPI)
   set (platform_sources src/hotrod/sys/windows/Socket.cpp src/hotrod/sys/windows/Thread.cpp

@@ -5,6 +5,7 @@
 #include "hotrod/impl/transport/TransportFactory.h"
 #include "hotrod/impl/transport/tcp/InetSocketAddress.h"
 #include "hotrod/sys/Log.h"
+#include "hotrod/sys/Mutex.h"
 
 #include <iostream>
 #include <iomanip>
@@ -19,11 +20,21 @@ namespace hotrod {
 using transport::Transport;
 using transport::InetSocketAddress;
 using transport::TransportFactory;
+using infinispan::hotrod::sys::Mutex;
+using infinispan::hotrod::sys::ScopedLock;
+using infinispan::hotrod::sys::ScopedUnlock;
 
 namespace protocol {
 
-// TODO : multithread management
-long Codec10::msgId = 0;
+long msgId(0);
+Mutex lock;
+
+long Codec10::getMessageId() {
+    ScopedLock<Mutex> l(lock);
+    long msgIdToBeReturned = msgId;
+    ScopedUnlock<Mutex> ul(lock);
+    return msgIdToBeReturned;
+}
 
 HeaderParams& Codec10::writeHeader(
     Transport& transport, HeaderParams& params) const
@@ -35,8 +46,9 @@ HeaderParams& Codec10::writeHeader(
     Transport& transport, HeaderParams& params, uint8_t version) const
 {
     transport.writeByte(HotRodConstants::REQUEST_MAGIC);
-    // TODO : multithread management
+    ScopedLock<Mutex> l(lock);
     transport.writeVLong(params.setMessageId(++msgId).messageId);
+    ScopedUnlock<Mutex> ul(lock);
     transport.writeByte(version);
     transport.writeByte(params.opCode);
     transport.writeArray(params.cacheName);
