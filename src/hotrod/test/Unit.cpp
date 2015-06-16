@@ -10,6 +10,12 @@
 #include "hotrod/sys/Log.h"
 #include "hotrod/impl/transport/tcp/InetSocketAddress.h"
 
+#include "hotrod/impl/transport/AbstractTransport.h"
+#include "hotrod/impl/protocol/CodecFactory.h"
+#include "hotrod/impl/protocol/Codec10.h"
+#include "infinispan/hotrod/Configuration.h"
+#include "hotrod/impl/protocol/HeaderParams.h"
+
 #include <iostream>
 #include <iterator>
 #include <sstream>
@@ -23,8 +29,100 @@ volatile int passFail = 0;
 volatile int available = 0;
 volatile bool waitersDone = false;
 
+#define UNUSED(x) (void)(x)
+const int CODEC_TEST_NUMBER_OF_TESTS = 123;
+const int CODEC_TEST_NUMBER_OF_ITERATIONS_PER_TEST = 1023;
+
+using namespace infinispan::hotrod;
+using namespace infinispan::hotrod::protocol;
 using namespace infinispan::hotrod::sys;
 using namespace infinispan::hotrod::transport;
+
+class TestTransport : public AbstractTransport {
+
+public:
+    TestTransport() : AbstractTransport(*(TransportFactory*)NULL) {
+    }
+
+    void flush() {
+
+    }
+
+    void writeByte(uint8_t var) {
+        UNUSED(var);
+    }
+
+    void writeVInt(uint32_t var) {
+        UNUSED(var);
+    }
+
+    void writeVLong(uint64_t var) {
+        UNUSED(var);
+    }
+
+    uint8_t readByte() {
+        return 0;
+    }
+
+    uint32_t readVInt() {
+        return 0;
+    }
+
+    uint64_t readVLong() {
+        return 0;
+    }
+
+    void release() {
+
+    }
+
+    void invalidate() {
+
+    }
+
+protected:
+    void writeBytes(const hrbytes &bytes) {
+        UNUSED(bytes);
+    }
+
+    void readBytes(hrbytes &bytes, uint32_t size) {
+        UNUSED(bytes);
+        UNUSED(size);
+    }
+};
+
+class CodecInvoker : public Runnable {
+
+public:
+
+    CodecInvoker(Codec10 *testedCodecPassedIn) : testedCodec(testedCodecPassedIn) {
+        testedIntWrapper = new IntWrapper(0);
+        testedTransport = new TestTransport();
+        testedHeaderParams = new HeaderParams(*testedIntWrapper);
+    }
+
+
+    virtual ~CodecInvoker() {
+        delete testedHeaderParams;
+        testedHeaderParams = NULL;
+
+        delete testedIntWrapper;
+        testedIntWrapper = NULL;
+
+        delete testedTransport;
+        testedTransport = NULL;
+    }
+
+    void run() {
+        testedCodec->writeHeader(*testedTransport, *testedHeaderParams);
+    }
+
+private:
+    IntWrapper *testedIntWrapper;
+    TestTransport *testedTransport;
+    HeaderParams *testedHeaderParams;
+    Codec10 *testedCodec;
+};
 
 class Sleeper : public Runnable {
   public:
@@ -359,4 +457,38 @@ HR_EXPORT void updateServersTest() {
     if (passFail == 0) {
         INFO("updateServers passed");
     }
+}
+
+HR_EXPORT void runConcurrentCodecWritesTest() {
+    Codec10 *testedCodec = NULL;
+    Thread** threads = new Thread*[CODEC_TEST_NUMBER_OF_ITERATIONS_PER_TEST];
+    testedCodec = (Codec10*)CodecFactory::getCodec(Configuration::PROTOCOL_VERSION_10);
+
+    for(int testIterationCounter = 0; testIterationCounter < CODEC_TEST_NUMBER_OF_TESTS; ++testIterationCounter) {
+        int expectedIterations = CODEC_TEST_NUMBER_OF_ITERATIONS_PER_TEST * (testIterationCounter + 1);
+
+        for(int i = 0; i < CODEC_TEST_NUMBER_OF_ITERATIONS_PER_TEST; ++i) {
+            threads[i] = new Thread(new CodecInvoker(testedCodec));
+        }
+
+        //make sure all thread are done
+        for(int i = 0; i < CODEC_TEST_NUMBER_OF_ITERATIONS_PER_TEST; ++i) {
+            threads[i]->join();
+        }
+
+        if(testedCodec->getMessageId() != expectedIterations) {
+            passFail = 1;
+            ERROR("runConcurrentCodecWritesTest fail, expected %i iterations but got %ld", expectedIterations, testedCodec->getMessageId());
+        }
+
+        for(int i = 0; i < CODEC_TEST_NUMBER_OF_ITERATIONS_PER_TEST; ++i) {
+            delete threads[i];
+            threads[i] = NULL;
+        }
+    }
+
+    delete threads;
+    //The factory controls the lifecycle.
+    testedCodec = NULL;
+    INFO("runConcurrentCodecWritesTest test passed");
 }
