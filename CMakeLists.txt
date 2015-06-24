@@ -120,76 +120,98 @@ endif(HOTROD_WINAPI)
 
 configure_file(src/hotrod/impl/Version.cpp.in ${CMAKE_BINARY_DIR}/Version.cpp @ONLY)
 
-set (library_sources
-  src/hotrod/api/RemoteCacheManager.cpp
-  src/hotrod/api/RemoteCacheBase.cpp
-  src/hotrod/api/exceptions.cpp
-  src/hotrod/impl/configuration/Configuration.cpp
-  src/hotrod/impl/configuration/ConfigurationBuilder.cpp
-  src/hotrod/impl/configuration/ConnectionPoolConfiguration.cpp
-  src/hotrod/impl/RemoteCacheManagerImpl.cpp
-  src/hotrod/impl/RemoteCacheImpl.cpp
-  src/hotrod/impl/IntWrapper.cpp
-  src/hotrod/impl/hash/MurmurHash2.cpp
-  src/hotrod/impl/hash/MurmurHash3.cpp
-  src/hotrod/impl/consistenthash/ConsistentHashFactory.cpp
-  src/hotrod/impl/consistenthash/ConsistentHashV1.cpp
-  src/hotrod/impl/consistenthash/ConsistentHashV2.cpp
-  src/hotrod/impl/operations/OperationsFactory.cpp
-  src/hotrod/impl/operations/PingOperation.cpp
-  src/hotrod/impl/operations/GetOperation.cpp
-  src/hotrod/impl/operations/PutOperation.cpp
-  src/hotrod/impl/operations/PutIfAbsentOperation.cpp
-  src/hotrod/impl/operations/ReplaceOperation.cpp
-  src/hotrod/impl/operations/RemoveOperation.cpp
-  src/hotrod/impl/operations/ContainsKeyOperation.cpp
-  src/hotrod/impl/operations/ReplaceIfUnmodifiedOperation.cpp
-  src/hotrod/impl/operations/RemoveIfUnmodifiedOperation.cpp
-  src/hotrod/impl/operations/GetWithMetadataOperation.cpp
-  src/hotrod/impl/operations/GetWithVersionOperation.cpp
-  src/hotrod/impl/operations/BulkGetOperation.cpp
-  src/hotrod/impl/operations/BulkGetKeysOperation.cpp
-  src/hotrod/impl/operations/StatsOperation.cpp
-  src/hotrod/impl/operations/ClearOperation.cpp
-  src/hotrod/impl/operations/FaultTolerantPingOperation.cpp
-  src/hotrod/impl/protocol/HeaderParams.cpp
-  src/hotrod/impl/protocol/Codec10.cpp
-  src/hotrod/impl/protocol/Codec11.cpp
-  src/hotrod/impl/protocol/Codec12.cpp
-  src/hotrod/impl/protocol/CodecFactory.cpp
-  src/hotrod/impl/transport/AbstractTransport.cpp
-  src/hotrod/impl/transport/tcp/ConnectionPool.cpp
-  src/hotrod/impl/transport/tcp/InetSocketAddress.cpp
-  src/hotrod/impl/transport/tcp/Socket.cpp
-  src/hotrod/impl/transport/tcp/TcpTransport.cpp
-  src/hotrod/impl/transport/tcp/TcpTransportFactory.cpp
-  src/hotrod/impl/transport/tcp/TransportObjectFactory.cpp
-  src/hotrod/impl/transport/tcp/RoundRobinBalancingStrategy.cpp
-  src/hotrod/sys/Runnable.cpp
-  src/hotrod/sys/Log.cpp
-  ${platform_sources}
-  ${CMAKE_BINARY_DIR}/Version.cpp
-  ${internal_test_sources}  
-)
+if(DEFINED HOTROD_PREBUILT_LIB_DIR)
 
-# Build a shared library
-add_library (hotrod SHARED ${library_sources})
-target_link_libraries (hotrod ${platform_libs})
+    find_library(HOTROD_LIBRARY NAMES hotrod PATHS ${HOTROD_PREBUILT_LIB_DIR})
+    if("${HOTROD_LIBRARY}" STREQUAL "HOTROD_LIBRARY-NOTFOUND")
+        message(FATAL_ERROR "Cannot find HotRod dynamic library in directory '${HOTROD_PREBUILT_LIB_DIR}'.")
+    else("${HOTROD_LIBRARY}" STREQUAL "HOTROD_LIBRARY-NOTFOUND")
+        add_library(hotrod SHARED IMPORTED GLOBAL)
+        set_target_properties(hotrod PROPERTIES IMPORTED_LOCATION ${HOTROD_LIBRARY})
+        set_target_properties(hotrod PROPERTIES IMPORTED_IMPLIB ${HOTROD_LIBRARY})
+    endif("${HOTROD_LIBRARY}" STREQUAL "HOTROD_LIBRARY-NOTFOUND")
+    find_library(HOTROD_STATIC_LIBRARY NAMES hotrod-static PATHS ${HOTROD_PREBUILT_LIB_DIR})
+    if("${HOTROD_STATIC_LIBRARY}" STREQUAL "HOTROD_STATIC_LIBRARY-NOTFOUND")
+        message(FATAL_ERROR "Cannot find HotRod static library in directory '${HOTROD_PREBUILT_LIB_DIR}'.")
+    else("${HOTROD_STATIC_LIBRARY}" STREQUAL "HOTROD_STATIC_LIBRARY-NOTFOUND")
+        add_library(hotrod-static STATIC IMPORTED GLOBAL)
+        set_target_properties(hotrod-static PROPERTIES IMPORTED_LOCATION ${HOTROD_STATIC_LIBRARY})
+    endif("${HOTROD_STATIC_LIBRARY}" STREQUAL "HOTROD_STATIC_LIBRARY-NOTFOUND")
 
-if (WIN32 AND NOT CMAKE_SIZEOF_VOID_P MATCHES "8")
-    set (OUTPUT_NAME_SUFFIX "32")
-else (WIN32 AND NOT CMAKE_SIZEOF_VOID_P MATCHES "8")
-    set (OUTPUT_NAME_SUFFIX "")
-endif (WIN32 AND NOT CMAKE_SIZEOF_VOID_P MATCHES "8")
+else(DEFINED HOTROD_PREBUILT_LIB_DIR)
 
-set_target_properties (hotrod PROPERTIES OUTPUT_NAME "hotrod${OUTPUT_NAME_SUFFIX}")
-set_target_properties (hotrod PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS}")
-set_target_properties (hotrod PROPERTIES LINK_FLAGS "${CATCH_UNDEFINED}")
-set_target_properties (hotrod PROPERTIES SOVERSION "1.0")
+    set (library_sources
+      src/hotrod/api/RemoteCacheManager.cpp
+      src/hotrod/api/RemoteCacheBase.cpp
+      src/hotrod/api/exceptions.cpp
+      src/hotrod/impl/configuration/Configuration.cpp
+      src/hotrod/impl/configuration/ConfigurationBuilder.cpp
+      src/hotrod/impl/configuration/ConnectionPoolConfiguration.cpp
+      src/hotrod/impl/RemoteCacheManagerImpl.cpp
+      src/hotrod/impl/RemoteCacheImpl.cpp
+      src/hotrod/impl/IntWrapper.cpp
+      src/hotrod/impl/hash/MurmurHash2.cpp
+      src/hotrod/impl/hash/MurmurHash3.cpp
+      src/hotrod/impl/consistenthash/ConsistentHashFactory.cpp
+      src/hotrod/impl/consistenthash/ConsistentHashV1.cpp
+      src/hotrod/impl/consistenthash/ConsistentHashV2.cpp
+      src/hotrod/impl/operations/OperationsFactory.cpp
+      src/hotrod/impl/operations/PingOperation.cpp
+      src/hotrod/impl/operations/GetOperation.cpp
+      src/hotrod/impl/operations/PutOperation.cpp
+      src/hotrod/impl/operations/PutIfAbsentOperation.cpp
+      src/hotrod/impl/operations/ReplaceOperation.cpp
+      src/hotrod/impl/operations/RemoveOperation.cpp
+      src/hotrod/impl/operations/ContainsKeyOperation.cpp
+      src/hotrod/impl/operations/ReplaceIfUnmodifiedOperation.cpp
+      src/hotrod/impl/operations/RemoveIfUnmodifiedOperation.cpp
+      src/hotrod/impl/operations/GetWithMetadataOperation.cpp
+      src/hotrod/impl/operations/GetWithVersionOperation.cpp
+      src/hotrod/impl/operations/BulkGetOperation.cpp
+      src/hotrod/impl/operations/BulkGetKeysOperation.cpp
+      src/hotrod/impl/operations/StatsOperation.cpp
+      src/hotrod/impl/operations/ClearOperation.cpp
+      src/hotrod/impl/operations/FaultTolerantPingOperation.cpp
+      src/hotrod/impl/protocol/HeaderParams.cpp
+      src/hotrod/impl/protocol/Codec10.cpp
+      src/hotrod/impl/protocol/Codec11.cpp
+      src/hotrod/impl/protocol/Codec12.cpp
+      src/hotrod/impl/protocol/CodecFactory.cpp
+      src/hotrod/impl/transport/AbstractTransport.cpp
+      src/hotrod/impl/transport/tcp/ConnectionPool.cpp
+      src/hotrod/impl/transport/tcp/InetSocketAddress.cpp
+      src/hotrod/impl/transport/tcp/Socket.cpp
+      src/hotrod/impl/transport/tcp/TcpTransport.cpp
+      src/hotrod/impl/transport/tcp/TcpTransportFactory.cpp
+      src/hotrod/impl/transport/tcp/TransportObjectFactory.cpp
+      src/hotrod/impl/transport/tcp/RoundRobinBalancingStrategy.cpp
+      src/hotrod/sys/Runnable.cpp
+      src/hotrod/sys/Log.cpp
+      ${platform_sources}
+      ${CMAKE_BINARY_DIR}/Version.cpp
+      ${internal_test_sources}  
+    )
+    
+    # Build a shared library
+    add_library (hotrod SHARED ${library_sources})
+    target_link_libraries (hotrod ${platform_libs})
+    
+    if (WIN32 AND NOT CMAKE_SIZEOF_VOID_P MATCHES "8")
+        set (OUTPUT_NAME_SUFFIX "32")
+    else (WIN32 AND NOT CMAKE_SIZEOF_VOID_P MATCHES "8")
+        set (OUTPUT_NAME_SUFFIX "")
+    endif (WIN32 AND NOT CMAKE_SIZEOF_VOID_P MATCHES "8")
+    
+    set_target_properties (hotrod PROPERTIES OUTPUT_NAME "hotrod${OUTPUT_NAME_SUFFIX}")
+    set_target_properties (hotrod PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS}")
+    set_target_properties (hotrod PROPERTIES LINK_FLAGS "${CATCH_UNDEFINED}")
+    set_target_properties (hotrod PROPERTIES SOVERSION "1.0")
+    
+    # Build a static library
+    add_library (hotrod-static STATIC ${library_sources})
+    set_target_properties(hotrod-static PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS} ${STATIC_FLAGS}")
 
-# Build a static library
-add_library (hotrod-static STATIC ${library_sources})
-set_target_properties(hotrod-static PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS} ${STATIC_FLAGS}")
+endif(DEFINED HOTROD_PREBUILT_LIB_DIR)
 
 # TESTS
 
@@ -294,7 +316,10 @@ set (DOCDIR .)
 file (GLOB includes "${CMAKE_CURRENT_SOURCE_DIR}/include/infinispan/hotrod/*.h")
 install (FILES ${includes} DESTINATION include/infinispan/hotrod)
 install (FILES "${CMAKE_CURRENT_SOURCE_DIR}/License.txt" "${CMAKE_CURRENT_SOURCE_DIR}/dist/README.md" DESTINATION ${DOCDIR})
-install (TARGETS hotrod hotrod-static DESTINATION lib${LIB_SUFFIX})
+
+if(NOT DEFINED HOTROD_PREBUILT_LIB_DIR)
+    install (TARGETS hotrod hotrod-static DESTINATION lib${LIB_SUFFIX})
+endif(NOT DEFINED HOTROD_PREBUILT_LIB_DIR)
 
 include (CPack)
 
@@ -315,4 +340,3 @@ if (DOXYGEN_FOUND)
   #Include the API docs in the package.
   install (FILES ${CMAKE_BINARY_DIR}/api_docs/html/ DESTINATION ${DOCDIR}/api)
 endif (DOXYGEN_FOUND)
-
