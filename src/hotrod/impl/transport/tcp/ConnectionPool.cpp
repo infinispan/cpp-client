@@ -68,12 +68,6 @@ void ConnectionPool::invalidateObject(const InetSocketAddress& key, TcpTransport
 		busyIt->second->remove(val);
 		// Destroy object
 		factory->destroyObject(key, *val);
-		// Add new transport to idle queue
-		std::map<InetSocketAddress, TransportQueuePtr>::iterator idleIt = idle.find(key);
-		if (idleIt == idle.end()) {
-			throw HotRodClientException("No idle queue for address!");
-		}
-		idleIt->second->push(&factory->makeObject(key));
     }
 }
 
