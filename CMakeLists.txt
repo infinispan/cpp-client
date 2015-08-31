@@ -129,6 +129,8 @@ if(DEFINED HOTROD_PREBUILT_LIB_DIR)
         add_library(hotrod SHARED IMPORTED GLOBAL)
         set_target_properties(hotrod PROPERTIES IMPORTED_LOCATION ${HOTROD_LIBRARY})
         set_target_properties(hotrod PROPERTIES IMPORTED_IMPLIB ${HOTROD_LIBRARY})
+        # Copy pre-built libraries to the build directory
+        add_custom_target(copyhrlibs ALL COMMAND ${CMAKE_COMMAND} -E copy_directory ${HOTROD_PREBUILT_LIB_DIR} ${CMAKE_CFG_INTDIR})
     endif("${HOTROD_LIBRARY}" STREQUAL "HOTROD_LIBRARY-NOTFOUND")
     find_library(HOTROD_STATIC_LIBRARY NAMES hotrod-static PATHS ${HOTROD_PREBUILT_LIB_DIR})
     if("${HOTROD_STATIC_LIBRARY}" STREQUAL "HOTROD_STATIC_LIBRARY-NOTFOUND")
