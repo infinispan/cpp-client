@@ -23,7 +23,7 @@ class InetSocketAddress;
 class TcpTransportFactory : public TransportFactory
 {
   public:
-    TcpTransportFactory(const Configuration& config) : configuration(config),transportCount(0) {};
+    TcpTransportFactory(const Configuration& config) : configuration(config), maxRetries(config.getMaxRetries()) {};
     void start(protocol::Codec& codec);
     void destroy();
 
@@ -35,7 +35,7 @@ class TcpTransportFactory : public TransportFactory
         const InetSocketAddress& address, Transport* transport);
 
     bool isTcpNoDelay();
-    int getTransportCount();
+    int getMaxRetries();
     int getSoTimeout();
     int getConnectTimeout();
 
@@ -54,7 +54,7 @@ class TcpTransportFactory : public TransportFactory
     sys::Mutex lock;
     std::vector<InetSocketAddress> servers;
     const Configuration& configuration;
-    int transportCount;
+    int maxRetries;
     HR_SHARED_PTR<TransportObjectFactory> transportFactory;
     HR_SHARED_PTR<ConnectionPool> connectionPool;
     HR_SHARED_PTR<RequestBalancingStrategy> balancer;

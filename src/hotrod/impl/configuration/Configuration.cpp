@@ -57,4 +57,9 @@ const int& Configuration::getValueSizeEstimate() const
   return Configuration::valueSizeEstimate;
 }
 
+const int& Configuration::getMaxRetries() const
+{
+  return Configuration::maxRetries;
+}
+
 }} /* namespace */

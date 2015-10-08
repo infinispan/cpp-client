@@ -49,10 +49,10 @@ public class Configuration {
    Configuration(ExecutorFactoryConfiguration asyncExecutorFactory, Class<? extends RequestBalancingStrategy> balancingStrategy, ClassLoader classLoader,
          ConnectionPoolConfiguration connectionPool, int connectionTimeout, Class<? extends ConsistentHash>[] consistentHashImpl, boolean forceReturnValues, int keySizeEstimate, Class<? extends Marshaller> marshallerClass,
          boolean pingOnStartup, String protocolVersion, List<ServerConfiguration> servers, int socketTimeout, SslConfiguration ssl, boolean tcpNoDelay,
-         Class<? extends TransportFactory> transportFactory, int valueSizeEstimate) {
+         Class<? extends TransportFactory> transportFactory, int valueSizeEstimate, int maxRetries) {
       this.jniConfiguration = new org.infinispan.client.hotrod.jni.Configuration(protocolVersion, connectionPool.getJniConnectionPoolConfiguration(),
             connectionTimeout, forceReturnValues, keySizeEstimate, pingOnStartup, null, socketTimeout, ssl.getJniSslConfiguration(), tcpNoDelay,
-            valueSizeEstimate);
+            valueSizeEstimate, maxRetries);
       this.asyncExecutorFactory = asyncExecutorFactory;
       this.balancingStrategy = balancingStrategy;
       this.classLoader = new WeakReference<ClassLoader>(classLoader);
@@ -66,10 +66,10 @@ public class Configuration {
    Configuration(ExecutorFactoryConfiguration asyncExecutorFactory, Class<? extends RequestBalancingStrategy> balancingStrategy, ClassLoader classLoader,
          ConnectionPoolConfiguration connectionPool, int connectionTimeout, Class<? extends ConsistentHash>[] consistentHashImpl, boolean forceReturnValues, int keySizeEstimate, Marshaller marshaller,
          boolean pingOnStartup, String protocolVersion, List<ServerConfiguration> servers, int socketTimeout, SslConfiguration ssl, boolean tcpNoDelay,
-         Class<? extends TransportFactory> transportFactory, int valueSizeEstimate) {
+         Class<? extends TransportFactory> transportFactory, int valueSizeEstimate, int maxRetries) {
       this.jniConfiguration = new org.infinispan.client.hotrod.jni.Configuration(protocolVersion, connectionPool.getJniConnectionPoolConfiguration(),
             connectionTimeout, forceReturnValues, keySizeEstimate, pingOnStartup, null, socketTimeout, ssl.getJniSslConfiguration(), tcpNoDelay,
-            valueSizeEstimate);
+            valueSizeEstimate, maxRetries);
       this.asyncExecutorFactory = asyncExecutorFactory;
       this.balancingStrategy = balancingStrategy;
       this.classLoader = new WeakReference<ClassLoader>(classLoader);
@@ -159,6 +159,10 @@ public class Configuration {
    public int valueSizeEstimate() {
       return this.jniConfiguration.getValueSizeEstimate();
    }
+   
+   public int maxRetries() {
+      return this.jniConfiguration.getMaxRetries();
+   }
 
    @Override
    public String toString() {
@@ -166,6 +170,6 @@ public class Configuration {
             + connectionPool() + ", connectionTimeout=" + connectionTimeout() + ", consistentHashImpl=" + Arrays.toString(consistentHashImpl) + ", forceReturnValues="
             + forceReturnValues() + ", keySizeEstimate=" + keySizeEstimate() + ", marshallerClass=" + marshallerClass + ", marshaller=" + marshaller + ", pingOnStartup="
             + pingOnStartup() + ", protocolVersion=" + protocolVersion() + ", servers=" + servers + ", socketTimeout=" + socketTimeout() + ", ssl=" + ssl() + ", tcpNoDelay=" + tcpNoDelay()
-            + ", transportFactory=" + transportFactory + ", valueSizeEstimate=" + valueSizeEstimate() + "]";
+            + ", transportFactory=" + transportFactory + ", valueSizeEstimate=" + valueSizeEstimate() +  ", maxRetries=" + maxRetries() +"]";
    }
 }

@@ -52,7 +52,7 @@ template<class T> class RetryOnFailureOperation : public HotRodOperation<T>
             transportFactory(_transportFactory) {}
 
     bool shouldRetry(int retryCount) {
-       return retryCount < transportFactory->getTransportCount();
+       return retryCount < transportFactory->getMaxRetries();
     }
 
     void releaseTransport(transport::Transport* transport) {
@@ -62,14 +62,14 @@ template<class T> class RetryOnFailureOperation : public HotRodOperation<T>
     }
 
     void logErrorAndThrowExceptionIfNeeded(int i, const HotRodClientException& e) {
-        if (i >= transportFactory->getTransportCount() - 1
-            || transportFactory->getTransportCount() < 0) {
+        if (i >= transportFactory->getMaxRetries() - 1
+            || transportFactory->getMaxRetries() < 0) {
             ERROR("Exception encountered, retry %d of %d: %s",
-                i, transportFactory->getTransportCount(), e.what());
+                i, transportFactory->getMaxRetries(), e.what());
             throw; // Rethrow. The exception is rethrown as const!
         } else {
             TRACE("Exception encountered, retry %d of %d: %s",
-                i, transportFactory->getTransportCount(), e.what());
+                i, transportFactory->getMaxRetries(), e.what());
         }
     }
 

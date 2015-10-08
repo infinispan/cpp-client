@@ -134,6 +134,12 @@ public abstract class AbstractConfigurationChildBuilder implements Configuration
    public ConfigurationBuilder valueSizeEstimate(int valueSizeEstimate) {
       return builder.valueSizeEstimate(valueSizeEstimate);
    }
+   
+   @Override
+   public ConfigurationBuilder maxRetries(int maxRetries) {
+      return builder.maxRetries(maxRetries);
+   }
+
 
    @Override
    public ConfigurationBuilder withProperties(Properties properties) {

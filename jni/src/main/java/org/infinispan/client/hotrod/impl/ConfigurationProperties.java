@@ -40,6 +40,7 @@ public class ConfigurationProperties {
    public static final String KEY_STORE_PASSWORD = "infinispan.client.hotrod.key_store_password";
    public static final String TRUST_STORE_FILE_NAME = "infinispan.client.hotrod.trust_store_file_name";
    public static final String TRUST_STORE_PASSWORD = "infinispan.client.hotrod.trust_store_password";
+   public static final String MAX_RETRIES = "infinispan.client.hotrod.max_retries";
 
    // defaults
 
@@ -48,6 +49,7 @@ public class ConfigurationProperties {
    public static final int DEFAULT_HOTROD_PORT = 11222;
    public static final int DEFAULT_SO_TIMEOUT = 60000;
    public static final int DEFAULT_CONNECT_TIMEOUT = 60000;
+   public static final int DEFAULT_MAX_RETRIES = 10;
    public static final String PROTOCOL_VERSION_12 = "1.2";
    public static final String PROTOCOL_VERSION_11 = "1.1";
    public static final String PROTOCOL_VERSION_10 = "1.0";

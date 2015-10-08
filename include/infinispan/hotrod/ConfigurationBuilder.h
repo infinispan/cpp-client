@@ -36,7 +36,8 @@ class ConfigurationBuilder
         m_protocolVersion(Configuration::PROTOCOL_VERSION_12),
         m_socketTimeout(60000),
         m_tcpNoDelay(true),
-        m_valueSizeEstimate(512),        
+        m_valueSizeEstimate(512),
+        m_maxRetries(10),
         __pragma(warning(suppress:4355)) // passing uninitialized 'this'
         connectionPoolConfigurationBuilder(*this),
         __pragma(warning(suppress:4355))
@@ -183,6 +184,17 @@ class ConfigurationBuilder
     }
 
     /**
+     * Sets the maximum number of retries for each request. A valid value should be greater or equals than 0 (zero).
+     * Zero means no retry will made in case of a network failure. It defaults to 10.
+     *
+     *\return ConfigurationBuilder instance to be used for further configuration
+     */
+    ConfigurationBuilder& maxRetries(int maxRetries_) {
+    	m_maxRetries = maxRetries_;
+    	return *this;
+    }
+
+    /**
      * Build and returns an actual Configuration instance to be used for configuration of
      * RemoteCacheManager.
      *
@@ -218,7 +230,8 @@ class ConfigurationBuilder
             m_socketTimeout,
             sslConfigurationBuilder.create(),
             m_tcpNoDelay,
-            m_valueSizeEstimate);
+            m_valueSizeEstimate,
+            m_maxRetries);
 
     }
 
@@ -238,6 +251,7 @@ class ConfigurationBuilder
         m_tcpNoDelay = configuration.isTcpNoDelay();
         m_keySizeEstimate = configuration.getKeySizeEstimate();
         m_valueSizeEstimate = configuration.getValueSizeEstimate();
+        m_maxRetries = configuration.getMaxRetries();
         return *this;
     }
 
@@ -254,6 +268,7 @@ class ConfigurationBuilder
     int m_socketTimeout;
     bool m_tcpNoDelay;
     int m_valueSizeEstimate;
+    int m_maxRetries;
 
     ConnectionPoolConfigurationBuilder connectionPoolConfigurationBuilder;
     SslConfigurationBuilder sslConfigurationBuilder;
@@ -305,6 +320,10 @@ inline ConfigurationBuilder &ConfigurationChildBuilder::tcpNoDelay(bool tcpNoDel
 
 inline ConfigurationBuilder &ConfigurationChildBuilder::valueSizeEstimate(int valueSizeEstimate_) {
     return m_builder->valueSizeEstimate(valueSizeEstimate_);
+}
+
+inline ConfigurationBuilder &ConfigurationChildBuilder::maxRetries(int maxRetries_) {
+    return m_builder->maxRetries(maxRetries_);
 }
 
 inline Configuration ConfigurationChildBuilder::build() {

@@ -37,13 +37,14 @@ class Configuration
             int _socketTimeout,
             const SslConfiguration _sslConfiguration,
             bool _tcpNoDelay,
-            int _valueSizeEstimate):
+            int _valueSizeEstimate,
+            int _maxRetries):
                 protocolVersion(_protocolVersion), protocolVersionPtr(),
                 connectionPoolConfiguration(_connectionPoolConfiguration),
                 connectionTimeout(_connectionTimeout), forceReturnValue(_forceReturnValue),
                 keySizeEstimate(_keySizeEstimate), pingOnStartup(_pingOnStartup), servers(_serversConfiguration),
                 socketTimeout(_socketTimeout), sslConfiguration(_sslConfiguration),tcpNoDelay(_tcpNoDelay),
-                valueSizeEstimate(_valueSizeEstimate) {}
+                valueSizeEstimate(_valueSizeEstimate), maxRetries(_maxRetries) {}
 
     /**
      * DEPRECATED. Use getProtocolVersionCString().
@@ -142,6 +143,13 @@ class Configuration
      */
     HR_EXTERN const int& getValueSizeEstimate() const;
 
+    /**
+     * Returns the maximum number of retries for each request.
+     *
+     *\return the maximum number of retries for each request.
+     */
+    HR_EXTERN const int& getMaxRetries() const;
+
 private:
     portable::string protocolVersion;
     portable::local_ptr<std::string> protocolVersionPtr;
@@ -155,6 +163,7 @@ private:
     SslConfiguration sslConfiguration;
     bool tcpNoDelay;
     int valueSizeEstimate;
+    int maxRetries;
 
     static void deleteString(std::string *str) { delete str; }
 };

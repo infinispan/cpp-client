@@ -109,6 +109,14 @@ class ConfigurationChildBuilder
      */
     ConfigurationBuilder& valueSizeEstimate(int valueSizeEstimate);
 
+    /**
+     * Sets the maximum number of retries for each request. A valid value should be greater or equals than 0 (zero).
+     * Zero means no retry will made in case of a network failure. It defaults to 10.
+     *
+     *\return ConfigurationBuilder instance to be used for further configuration
+     */
+    ConfigurationBuilder& maxRetries(int maxRetries_);
+
     Configuration build();
 
 private:

@@ -42,7 +42,6 @@ void TcpTransportFactory::start(
 
     createAndPreparePool();
     balancer->setServers(servers);
-    updateTransportCount();
 
     if (configuration.isPingOnStartup()) {
        pingServers();
@@ -100,9 +99,9 @@ bool TcpTransportFactory::isTcpNoDelay() {
     return configuration.isTcpNoDelay();
 }
 
-int TcpTransportFactory::getTransportCount() {
+int TcpTransportFactory::getMaxRetries() {
     ScopedLock<Mutex> l(lock);
-    return transportCount;
+    return maxRetries;
 }
 
 int TcpTransportFactory::getSoTimeout() {
@@ -140,18 +139,6 @@ void TcpTransportFactory::pingServers() {
             // version of the Hot Rod cluster topology, so ignore
             // exceptions from nodes that might not be up any more.
         }
-    }
-}
-
-void TcpTransportFactory::updateTransportCount() {
-    ScopedLock<Mutex> l(lock);
-    int maxActive = connectionPool->getConfiguration().getMaxActive();
-    int size = (int) servers.size();
-    if (maxActive > 0) {
-        transportCount = (maxActive * size > maxActive) ?
-            maxActive * size : maxActive;
-    } else {
-        transportCount = 10 * size;
     }
 }
 
@@ -213,7 +200,6 @@ void TcpTransportFactory::updateServers(std::vector<InetSocketAddress>& newServe
 
     servers.clear();
     servers = newServers;
-    updateTransportCount();
 }
 
 void TcpTransportFactory::updateHashFunction(
