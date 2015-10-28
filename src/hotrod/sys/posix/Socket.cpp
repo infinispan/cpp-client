@@ -204,7 +204,7 @@ void Socket::setTcpNoDelay(bool tcpNoDelay) {
 void Socket::setTimeout(int timeout) {
     struct timeval tv;
     tv.tv_sec = timeout / 1000;
-    tv.tv_usec = timeout % 1000;
+    tv.tv_usec = (timeout % 1000) * 1000;
 
     if (setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (void *) &tv, sizeof(tv)) < 0) {
         throwIOErr(host, port, "Failure setting receive socket timeout", errno);
