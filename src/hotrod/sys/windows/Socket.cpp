@@ -125,7 +125,7 @@ void Socket::connect(const std::string& h, int p, int timeout) {
                 if (error == WSAEWOULDBLOCK) {
                     struct timeval tv;
                     tv.tv_sec = timeout / 1000;
-                    tv.tv_usec = timeout % 1000;
+                    tv.tv_usec = (timeout % 1000) * 1000;
                     fd_set sock_set_w;
                     fd_set sock_set_e;
                     FD_ZERO(&sock_set_w);
