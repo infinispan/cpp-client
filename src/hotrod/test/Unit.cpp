@@ -487,7 +487,7 @@ HR_EXPORT void runConcurrentCodecWritesTest() {
         }
     }
 
-    delete threads;
+    delete[] threads;
     //The factory controls the lifecycle.
     testedCodec = NULL;
     INFO("runConcurrentCodecWritesTest test passed");

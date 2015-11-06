@@ -18,14 +18,14 @@ class TransportObjectFactory
         protocol::Codec& codec,
         TcpTransportFactory& tcpTransportFactory);
 
-    TcpTransport& makeObject(const InetSocketAddress& address);
+    virtual TcpTransport& makeObject(const InetSocketAddress& address);
     bool validateObject(const InetSocketAddress& address, TcpTransport& transport);
-    void destroyObject(const InetSocketAddress& address, TcpTransport& transport);
+    virtual void destroyObject(const InetSocketAddress& address, TcpTransport& transport);
 
     void activateObject(const InetSocketAddress& address, TcpTransport& transport);
     void passivateObject(const InetSocketAddress& address, TcpTransport& transport);
 
-    operations::PingResult ping(TcpTransport& tcpTransport);
+    virtual operations::PingResult ping(TcpTransport& tcpTransport);
   private:
     TcpTransportFactory& tcpTransportFactory;
     infinispan::hotrod::protocol::Codec& codec;

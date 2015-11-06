@@ -8,16 +8,81 @@ namespace transport {
 void ConnectionPool::addObject(const InetSocketAddress& key) {
     sys::ScopedLock<sys::Mutex> l(lock);
 
+    if (idle.find(key) != idle.end()) {
+        return; //key already existed.
+    }
     TransportQueuePtr idleQ(new BlockingQueue<TcpTransport *>()); // = TransportQueue(BlockingQueue<TcpTransport *>* idleQ = new BlockingQueue<TcpTransport *>();
     idle.insert(std::pair<InetSocketAddress, TransportQueuePtr>(key, idleQ));
-    for (int i = 0; i < configuration.getMinIdle(); i++) {
-        idleQ->push(&factory->makeObject(key));
-    }
-    TransportQueuePtr busyQ(new BlockingQueue<TcpTransport *>()); //BlockingQueue<TcpTransport *>* busyQ = new BlockingQueue<TcpTransport *>();
+    TransportQueuePtr busyQ(new BlockingQueue<TcpTransport *>()); // = TransportQueue(BlockingQueue<TcpTransport *>* idleQ = new BlockingQueue<TcpTransport *>();
     busy.insert(std::pair<InetSocketAddress, TransportQueuePtr>(key, busyQ));
+    ensureMinIdle(key);
+}
+
+void ConnectionPool::ensureMinIdle(const InetSocketAddress& key) {
+	int grown = calculateMinIdleGrow(key);
+	while (grown > 0) {
+		idle[key]->push(&factory->makeObject(key));
+		grown--;
+		totalIdle++;
+	}
+}
+
+int ConnectionPool::calculateMinIdleGrow(const InetSocketAddress& key) {
+	TransportQueuePtr idleQ = idle[key];
+	int grown = configuration.getMinIdle() - idleQ->size();
+	//Note: if we need to check maxActive, uncomment the code above
+	/*if (configuration.getMaxActive() > 0) {
+		int growLimit = std::max(0, configuration.getMaxActive() - (int) busy[key]->size() - (int) idleQ->size());
+		grown = std::min(grown, growLimit);
+	}*/
+	if (configuration.getMaxTotal() > 0) {
+		int growLimit = std::max(0, configuration.getMaxTotal() - totalIdle - totalActive);
+		grown = std::min(grown, growLimit);
+	}
+	return grown;
+}
+
+bool ConnectionPool::hasReachedMaxTotal() {
+	int maxTotal = configuration.getMaxTotal();
+	return maxTotal > 0 && (maxTotal <= totalActive + totalIdle);
+}
+
+bool ConnectionPool::tryRemoveIdle() {
+	//first, if we find an idle queue with more the minIdle connection, we destroy one of them.
+	//otherwise, we try to destroy and connection from the longer idle queue.
+	const int minIdle = configuration.getMinIdle();
+
+	do {
+		const InetSocketAddress* keyToRemove = NULL;
+		int longerQueueSize = 0;
+
+		for (std::map<InetSocketAddress, TransportQueuePtr>::iterator it = idle.begin(); it != idle.end(); ++it) {
+			TransportQueuePtr idleQ = it->second;
+			if (minIdle > 0 && (int) idleQ->size() > minIdle) {
+				keyToRemove = &it->first;
+				break;
+			} else if ((int) idleQ->size() > longerQueueSize) {
+				keyToRemove = &it->first;
+				longerQueueSize = idleQ->size();
+			}
+		}
+
+		if (keyToRemove != NULL) {
+			TcpTransport* t = NULL;
+			if (idle[*keyToRemove]->poll(t)) { //in case of concurrent removal, avoid blocking
+				factory->destroyObject(*keyToRemove, *t);
+				totalIdle--;
+				return true;
+			}
+		} else {
+			return false;
+		}
+	} while (true);
 }
 
 TcpTransport& ConnectionPool::borrowObject(const InetSocketAddress& key) {
+	sys::ScopedLock<sys::Mutex> l(lock);
+
     if (closed) {
         throw HotRodClientException("Pool is closed");
     }
@@ -28,8 +93,11 @@ TcpTransport& ConnectionPool::borrowObject(const InetSocketAddress& key) {
     TransportQueuePtr busyQ = busy[key];
 
     // See if an object is readily available
-    TcpTransport* obj = 0;
+    TcpTransport* obj = NULL;
     bool ok = idleQ->poll(obj);
+    if (ok) {
+        totalIdle--;
+    }
 
     for (;;) {
         if (ok) {
@@ -41,17 +109,36 @@ TcpTransport& ConnectionPool::borrowObject(const InetSocketAddress& key) {
             // We have a valid object
             if (ok) {
                 busyQ->push(obj);
+                totalActive++;
                 break;
             }
         }
         // See if we can create a new one
-        if (busyQ->size() < (size_t) configuration.getMaxActive()) {
+        if (idleQ->size() == 0 && //the idle queue is empty
+                (configuration.getMaxActive() < 0 || busyQ->size() < (size_t) configuration.getMaxActive()) && //max active not reached!
+				!hasReachedMaxTotal()) {
             obj = &factory->makeObject(key);
-        } else {
-            // Wait for an object to become idle
-            obj = idleQ->pop();
-        }
-        ok = true;
+		} else if (hasReachedMaxTotal()) {
+			//max total reached. try to destroy a existing idle connection. if not possible, wait until some other connection is available.
+			if (tryRemoveIdle()) { //removal successful.
+				obj = &factory->makeObject(key);
+			} else {
+				allocationQueue.push(key);
+				{
+					sys::ScopedUnlock<sys::Mutex> u(lock);
+					obj = idleQ->pop();
+				}
+				totalIdle--;
+			}
+		} else {
+			// Wait for an object to become idle
+			{
+				sys::ScopedUnlock<sys::Mutex> u(lock);
+				obj = idleQ->pop();
+			}
+			totalIdle--;
+		}
+		ok = true;
     }
     factory->activateObject(key, *obj);
     return *obj;
@@ -59,13 +146,25 @@ TcpTransport& ConnectionPool::borrowObject(const InetSocketAddress& key) {
 
 void ConnectionPool::invalidateObject(const InetSocketAddress& key, TcpTransport* val) {
     sys::ScopedLock<sys::Mutex> l(lock);
-    if (val != NULL) {        
+    bool maxTotalReached = hasReachedMaxTotal();
+    if (val != NULL) {
 		// Remove from busy queue
 		std::map<InetSocketAddress, TransportQueuePtr>::iterator busyIt = busy.find(key);
 		if (busyIt == busy.end()) {
 			throw HotRodClientException("No busy queue for address!");
 		}
+
 		busyIt->second->remove(val);
+		totalActive--;
+
+		if (maxTotalReached && !allocationQueue.empty()) {
+			InetSocketAddress keyToAllocate = allocationQueue.front();
+			allocationQueue.pop(); //front does not remove it...
+			//we need to allocate a new connection for other key.
+			idle[keyToAllocate]->push(&factory->makeObject(keyToAllocate));
+			totalIdle++;
+		}
+
 		// Destroy object
 		factory->destroyObject(key, *val);
     }
@@ -74,10 +173,12 @@ void ConnectionPool::invalidateObject(const InetSocketAddress& key, TcpTransport
 void ConnectionPool::returnObject(const InetSocketAddress& key, TcpTransport& val) {
     sys::ScopedLock<sys::Mutex> l(lock);
     bool ok = true;
+    bool maxTotalReached = hasReachedMaxTotal();
 
     // Remove the object from the busy queue
     if (busy.count(key)) {
         busy[key]->remove(&val);
+        totalActive--;
     }
 
     // If necessary validate the object, then passivate it
@@ -87,10 +188,21 @@ void ConnectionPool::returnObject(const InetSocketAddress& key, TcpTransport& va
         factory->passivateObject(key, val);
     }
 
+    if (maxTotalReached && !allocationQueue.empty()) {
+        InetSocketAddress keyToAllocate = allocationQueue.front();
+        allocationQueue.pop(); //front does not remove it...
+        //we need to allocate a new connection for other key.
+        idle[keyToAllocate]->push(&factory->makeObject(keyToAllocate));
+        totalIdle++;
+        ok = false; //we need to destroy the object
+    }
+
     if (ok) {
         // The object is still valid, see if the idle queue wants it
         if (idle.count(key)) {
-            ok = idle[key]->offer(&val);
+            if ((ok = idle[key]->offer(&val))) {
+                totalIdle++;
+            }
         } else {
             ok = false;
         }
@@ -106,6 +218,8 @@ void ConnectionPool::clear() {
     sys::ScopedLock<sys::Mutex> l(lock);
     clear(idle);
     clear(busy);
+    totalIdle = 0;
+    totalActive = 0;
 }
 
 void ConnectionPool::clear(std::map<InetSocketAddress, TransportQueuePtr>& queue) {
@@ -118,6 +232,7 @@ void ConnectionPool::clear(std::map<InetSocketAddress, TransportQueuePtr>& queue
 void ConnectionPool::clear(const InetSocketAddress& key) {
     sys::ScopedLock<sys::Mutex> l(lock);
     TransportQueuePtr idleQ = idle[key];
+    totalIdle -= idleQ->size();
     clear(key, idleQ);
     idle.erase(key);
 }

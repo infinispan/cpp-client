@@ -3,6 +3,7 @@
 
 #include <map>
 #include <iterator>
+#include <queue>
 #include "infinispan/hotrod/defs.h"
 #include "hotrod/sys/BlockingQueue.h"
 #include "hotrod/sys/Mutex.h"
@@ -44,7 +45,8 @@ class ConnectionPool
     ConnectionPool(
       HR_SHARED_PTR<TransportObjectFactory> factory_,
       const ConnectionPoolConfiguration& configuration_)
-      : factory(factory_), configuration(configuration_), closed(false)
+      : factory(factory_), configuration(configuration_), closed(false),
+		totalIdle(0), totalActive(0)
     {
         poolWorker.setPool(this);
         poolWorkerThread = new sys::Thread(poolWorker);
@@ -61,10 +63,31 @@ class ConnectionPool
         return configuration;
     }
 
-    int getNumActive() { return 0; }
-    int getNumActive(const InetSocketAddress& /*key*/) { return 0; }
-    int getNumIdle() { return 0; }
-    int getNumIdle(const InetSocketAddress& /*key*/) { return 0; }
+    int getNumActive() {
+        sys::ScopedLock<sys::Mutex> l(lock);
+        return totalActive;
+    }
+
+    int getNumActive(const InetSocketAddress& key) {
+        sys::ScopedLock<sys::Mutex> l(lock);
+        if (busy.find(key) != busy.end()) {
+            return busy[key]->size();
+        }
+        return 0;
+    }
+
+    int getNumIdle() {
+        sys::ScopedLock<sys::Mutex> l(lock);
+        return totalIdle;
+    }
+
+    int getNumIdle(const InetSocketAddress& key) {
+        sys::ScopedLock<sys::Mutex> l(lock);
+        if (idle.find(key) != idle.end()) {
+            return idle[key]->size();
+        }
+        return 0;
+    }
 
     void addObject(const InetSocketAddress& key);
     void returnObject(const InetSocketAddress& key, TcpTransport& val);
@@ -83,13 +106,20 @@ class ConnectionPool
   private:
     void clear(std::map<InetSocketAddress, TransportQueuePtr>& queue);
     void clear(const InetSocketAddress& key, TransportQueuePtr queue);
+    void ensureMinIdle(const InetSocketAddress& key);
+    int calculateMinIdleGrow(const InetSocketAddress& key);
+    bool hasReachedMaxTotal();
+    bool tryRemoveIdle();
 
     HR_SHARED_PTR<TransportObjectFactory> factory;
     const ConnectionPoolConfiguration& configuration;
     sys::Mutex lock;
     std::map<InetSocketAddress, TransportQueuePtr > busy;
     std::map<InetSocketAddress, TransportQueuePtr > idle;
+    std::queue<InetSocketAddress> allocationQueue;
     bool closed;
+    int totalIdle;
+    int totalActive;
     PoolWorker poolWorker;
     sys::Thread *poolWorkerThread;
 
