@@ -23,6 +23,10 @@ TcpTransport::TcpTransport(
     socket.setTcpNoDelay(factory.isTcpNoDelay());
 }
 
+//Testing purpose only!
+TcpTransport::TcpTransport()
+: AbstractTransport(*(TransportFactory*)NULL), socket(), /*inStr(*socket),*/ invalid(false), serverAddress(){}
+
 void TcpTransport::flush() {
     socket.getOutputStream().flush();
 

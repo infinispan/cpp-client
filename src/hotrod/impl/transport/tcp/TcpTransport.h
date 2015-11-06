@@ -38,8 +38,11 @@ class TcpTransport : public AbstractTransport
 
     const InetSocketAddress& getServerAddress();
 
-  private:
+  protected:
+    //Testing only!
     TcpTransport();
+
+  private:
     Socket socket;
     bool invalid;
     InetSocketAddress* serverAddress;
