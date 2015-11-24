@@ -2,8 +2,27 @@ cmake_minimum_required (VERSION 2.6)
 
 project (infinispan-hotrod-cpp C CXX)
 
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    # require at least gcc 4.8
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.8)
+        message(FATAL_ERROR "GCC version must be at least 4.8!")
+    endif()
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    # require at least clang 3.2
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 3.2)
+        message(FATAL_ERROR "Clang version must be at least 3.2!")
+    endif()
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MVSC")
+    # require at least MS Visual Studio  2013
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 18.0)
+        message(FATAL_ERROR "Microsoft Visual Studio version must be at least 2013!")
+    endif()
+else()
+    message(WARNING "You are using an unsupported compiler! Compilation has only been tested with Clang, MVSC and GCC.")
+endif()
+
 if (NOT DEFINED CPACK_PACKAGE_VERSION_MAJOR)
-  set (CPACK_PACKAGE_VERSION_MAJOR "7")
+  set (CPACK_PACKAGE_VERSION_MAJOR "8")
 endif (NOT DEFINED CPACK_PACKAGE_VERSION_MAJOR)
 
 if (NOT DEFINED CPACK_PACKAGE_VERSION_MINOR)
@@ -52,19 +71,25 @@ option(ENABLE_SWIG_TESTING "Create SWIG Java binding and test structure" ${DEFAU
 option(ENABLE_INTERNAL_TESTING "Compile the library with internal tests (unit tests)" ${DEFAULT_INTERNAL_TESTING})
 option(ENABLE_VALGRIND "Enable running the tests using Valgrind" ${DEFAULT_VALGRIND})
 
-if (CMAKE_COMPILER_IS_GNUCXX)
+if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   if (ENABLE_WARNING_ERROR)
     set (WERROR "-Werror")
   endif (ENABLE_WARNING_ERROR)
 
-  set (COMPILER_FLAGS "-fvisibility=hidden -fvisibility-inlines-hidden")
+  set (COMPILER_FLAGS "-fvisibility=hidden -fvisibility-inlines-hidden -std=c++11")
+  if (CMAKE_COMPILER_IS_GNUCXX)
   set (WARNING_FLAGS
         "${WERROR} -pedantic -Wall -Wextra -Wno-shadow -Wpointer-arith -Wcast-qual -Wcast-align -Wno-long-long -Wvolatile-register-var -Winvalid-pch -Wno-system-headers -Woverloaded-virtual -Wshadow -Wno-variadic-macros")
+  endif (CMAKE_COMPILER_IS_GNUCXX)
+  if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  set (WARNING_FLAGS
+        "${WERROR} -pedantic -Wall -Wextra -Wno-shadow -Wpointer-arith -Wcast-qual -Wcast-align -Wno-long-long -Wvolatile-register-var -Winvalid-pch -Wno-system-headers -Woverloaded-virtual -Wshadow -Wno-variadic-macros -Wno-error-unused-parameter -Wno-error-cast-align -Wno-error-string-plus-int")
+  endif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   if (ENABLE_UNDEFINED_ERROR)
     set (CATCH_UNDEFINED "-Wl,--no-undefined")
   endif (ENABLE_UNDEFINED_ERROR)
 
-endif (CMAKE_COMPILER_IS_GNUCXX)
+endif (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 
 set (STATIC_FLAGS "-DHOTROD_DECLARE_STATIC")
 if (MSVC)
@@ -219,11 +244,15 @@ endif(DEFINED HOTROD_PREBUILT_LIB_DIR)
 # TESTS
 
 add_executable (simple test/Simple.cpp)
+set_property(TARGET simple PROPERTY CXX_STANDARD 11)
+set_property(TARGET simple PROPERTY CXX_STANDARD_REQUIRED ON)
 set_property(TARGET simple PROPERTY INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/include")
 set_target_properties (simple PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS}")
 target_link_libraries (simple hotrod)
 
 add_executable (simple-static test/Simple.cpp)
+set_property(TARGET simple-static PROPERTY CXX_STANDARD 11)
+set_property(TARGET simple-static PROPERTY CXX_STANDARD_REQUIRED ON)
 set_property(TARGET simple-static PROPERTY INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/include")
 set_target_properties (simple-static PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS} ${STATIC_FLAGS}")
 target_link_libraries (simple-static hotrod-static ${platform_libs})
@@ -321,6 +350,10 @@ install (FILES ${includes} DESTINATION include/infinispan/hotrod)
 install (FILES "${CMAKE_CURRENT_SOURCE_DIR}/License.txt" "${CMAKE_CURRENT_SOURCE_DIR}/dist/README.md" DESTINATION ${DOCDIR})
 
 if(NOT DEFINED HOTROD_PREBUILT_LIB_DIR)
+    set_property(TARGET hotrod PROPERTY CXX_STANDARD 11)
+    set_property(TARGET hotrod PROPERTY CXX_STANDARD_REQUIRED ON)
+    set_property(TARGET hotrod-static PROPERTY CXX_STANDARD 11)
+    set_property(TARGET hotrod-static PROPERTY CXX_STANDARD_REQUIRED ON)
     install (TARGETS hotrod hotrod-static DESTINATION lib${LIB_SUFFIX})
 endif(NOT DEFINED HOTROD_PREBUILT_LIB_DIR)
 

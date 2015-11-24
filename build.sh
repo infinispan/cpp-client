@@ -1,6 +1,6 @@
 #!/bin/bash
 
-INFINISPAN_VERSION=7.2.1.Final
+INFINISPAN_VERSION=8.0.1.Final
 BUILD_DIR=build
 
 wget -N http://downloads.jboss.org/infinispan/${INFINISPAN_VERSION}/infinispan-server-${INFINISPAN_VERSION}-bin.zip 

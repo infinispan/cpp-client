@@ -55,9 +55,9 @@ set_target_properties(hotrod-swig
     OUTPUT_NAME "hotrod-jni"
     PREFIX "${CMAKE_SHARED_LIBRARY_PREFIX}")
 
-if (CMAKE_COMPILER_IS_GNUCXX)
-    set_source_files_properties("${JNI_DIR}/src/main/swig/javaJAVA_wrap.cxx" PROPERTIES COMPILE_FLAGS "-w")
-endif (CMAKE_COMPILER_IS_GNUCXX)
+if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    set_source_files_properties("${JNI_DIR}/src/main/swig/javaJAVA_wrap.cxx" PROPERTIES COMPILE_FLAGS "-w -std=c++11")
+endif (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 
 file(GLOB_RECURSE JAVA_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/jni *.java)
 
@@ -91,4 +91,6 @@ add_test(swig ${JAVA_RUNTIME}
 )
 
 install (FILES "${CMAKE_CURRENT_BINARY_DIR}/jni/target/hotrod-jni.jar" DESTINATION jni)
+set_property(TARGET hotrod-swig PROPERTY CXX_STANDARD 11)
+set_property(TARGET hotrod-swig PROPERTY CXX_STANDARD_REQUIRED ON)
 install (TARGETS hotrod-swig LIBRARY DESTINATION jni)
