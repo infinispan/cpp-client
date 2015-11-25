@@ -214,26 +214,26 @@ public:
 
     // DEPRECATED
     template <class K, class V> RemoteCache<K, V> getCache(
-        HR_SHARED_PTR<Marshaller<K> > km, HR_SHARED_PTR<Marshaller<V> > vm,
+        std::shared_ptr<Marshaller<K> > km, std::shared_ptr<Marshaller<V> > vm,
         bool forceReturnValue = false)
     {
         RemoteCache<K, V> rcache;
         initCache(rcache, forceReturnValue);
-        rcache.keyMarshallerPtr.reset(new portable::counted_wrapper<HR_SHARED_PTR<Marshaller<K> > >(km), &genericDelete);
-        rcache.valueMarshallerPtr.reset(new portable::counted_wrapper<HR_SHARED_PTR<Marshaller<V> > >(vm), &genericDelete);
+        rcache.keyMarshallerPtr.reset(new portable::counted_wrapper<std::shared_ptr<Marshaller<K> > >(km), &genericDelete);
+        rcache.valueMarshallerPtr.reset(new portable::counted_wrapper<std::shared_ptr<Marshaller<V> > >(vm), &genericDelete);
         rcache.keyMarshaller.reset(&*km, &genericNoDelete);
         rcache.valueMarshaller.reset(&*vm, &genericNoDelete);
         return rcache;
     }
 
     template <class K, class V> RemoteCache<K, V> getCache(
-        HR_SHARED_PTR<Marshaller<K> > km, HR_SHARED_PTR<Marshaller<V> > vm,
+        std::shared_ptr<Marshaller<K> > km, std::shared_ptr<Marshaller<V> > vm,
         const std::string& name, bool forceReturnValue = false)
     {
         RemoteCache<K, V> rcache;
         initCache(rcache, name.c_str(), forceReturnValue);
-        rcache.keyMarshallerPtr.reset(new portable::counted_wrapper<HR_SHARED_PTR<Marshaller<K> > >(km), &genericDelete);
-        rcache.valueMarshallerPtr.reset(new portable::counted_wrapper<HR_SHARED_PTR<Marshaller<V> > >(vm), &genericDelete);
+        rcache.keyMarshallerPtr.reset(new portable::counted_wrapper<std::shared_ptr<Marshaller<K> > >(km), &genericDelete);
+        rcache.valueMarshallerPtr.reset(new portable::counted_wrapper<std::shared_ptr<Marshaller<V> > >(vm), &genericDelete);
         rcache.keyMarshaller.reset(&*km, &genericNoDelete);
         rcache.valueMarshaller.reset(&*vm, &genericNoDelete);
         return rcache;

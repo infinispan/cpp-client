@@ -21,7 +21,7 @@ class BulkGetOperation : public RetryOnFailureOperation<std::map<hrbytes, hrbyte
     protected:
         BulkGetOperation(
             const infinispan::hotrod::protocol::Codec&       codec_,
-            HR_SHARED_PTR<transport::TransportFactory> transportFactory,
+            std::shared_ptr<transport::TransportFactory> transportFactory,
             const hrbytes&                                   cacheName_,
             IntWrapper&                                 topologyId_,
             uint32_t                                   flags_,

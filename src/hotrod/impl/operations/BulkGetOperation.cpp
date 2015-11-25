@@ -9,7 +9,7 @@ using namespace infinispan::hotrod::transport;
 
 BulkGetOperation::BulkGetOperation(
     const Codec&      codec_,
-    HR_SHARED_PTR<TransportFactory> transportFactory_,
+    std::shared_ptr<TransportFactory> transportFactory_,
     const hrbytes&    cacheName_,
     IntWrapper&  topologyId_,
     uint32_t    flags_,

@@ -9,7 +9,7 @@ using namespace infinispan::hotrod::transport;
 
 GetWithVersionOperation::GetWithVersionOperation(
     const Codec&      codec_,
-    HR_SHARED_PTR<TransportFactory> transportFactory_,
+    std::shared_ptr<TransportFactory> transportFactory_,
     const hrbytes&    key_,
     const hrbytes&    cacheName_,
     IntWrapper&          topologyId_,

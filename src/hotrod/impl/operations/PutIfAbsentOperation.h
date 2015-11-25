@@ -21,7 +21,7 @@ class PutIfAbsentOperation : public AbstractKeyValueOperation<hrbytes>
     private:
         PutIfAbsentOperation(
             const infinispan::hotrod::protocol::Codec& codec,
-            HR_SHARED_PTR<transport::TransportFactory> transportFactory_,
+            std::shared_ptr<transport::TransportFactory> transportFactory_,
             const hrbytes& key,
             const hrbytes& cacheName,
             IntWrapper& topologyId,

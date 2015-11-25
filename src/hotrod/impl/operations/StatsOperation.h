@@ -22,7 +22,7 @@ class StatsOperation : public RetryOnFailureOperation<std::map<std::string, std:
     protected:
         StatsOperation(
             const infinispan::hotrod::protocol::Codec&       codec_,
-            HR_SHARED_PTR<transport::TransportFactory> transportFactory_,
+            std::shared_ptr<transport::TransportFactory> transportFactory_,
             const hrbytes&                                   cacheName_,
             IntWrapper&                                 topologyId_,
             uint32_t                                   flags_);

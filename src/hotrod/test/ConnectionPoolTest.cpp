@@ -139,7 +139,7 @@ HR_EXPORT void testMinIdle() {
 	const int numberOfKeys = 3;
 	const int borrowSize = 4;
 
-	HR_SHARED_PTR<TestTransportFactory> factory = HR_SHARED_PTR<TestTransportFactory>(new TestTransportFactory);
+	std::shared_ptr<TestTransportFactory> factory = std::shared_ptr<TestTransportFactory>(new TestTransportFactory);
 	Configuration config = createConfiguration(minIdle, UNLIMITED, UNLIMITED);
 	ConnectionPool* pool = new ConnectionPool(factory,
 			config.getConnectionPoolConfiguration());
@@ -199,7 +199,7 @@ HR_EXPORT void testMaxActive() {
 	const int maxActive = 3;
 	const int numberOfKeys = 3;
 
-	HR_SHARED_PTR<TestTransportFactory> factory = HR_SHARED_PTR<TestTransportFactory>(new TestTransportFactory);
+	std::shared_ptr<TestTransportFactory> factory = std::shared_ptr<TestTransportFactory>(new TestTransportFactory);
 	Configuration config = createConfiguration(minIdle, maxActive, UNLIMITED);
 	ConnectionPool* pool = new ConnectionPool(factory,
 			config.getConnectionPoolConfiguration());
@@ -265,7 +265,7 @@ HR_EXPORT void testMaxTotal() {
 	const int maxTotal = 1;
 	const int numberOfKeys = 3;
 
-	HR_SHARED_PTR<TestTransportFactory> factory = HR_SHARED_PTR<TestTransportFactory>(new TestTransportFactory);
+	std::shared_ptr<TestTransportFactory> factory = std::shared_ptr<TestTransportFactory>(new TestTransportFactory);
 	Configuration config = createConfiguration(minIdle, maxActive, maxTotal);
 	ConnectionPool* pool = new ConnectionPool(factory,
 			config.getConnectionPoolConfiguration());
@@ -455,7 +455,7 @@ HR_EXPORT void testMaxTotal2() {
 	const int maxTotal = 6;
 	const int numberOfKeys = 3;
 
-	HR_SHARED_PTR<TestTransportFactory> factory = HR_SHARED_PTR<TestTransportFactory>(new TestTransportFactory);
+	std::shared_ptr<TestTransportFactory> factory = std::shared_ptr<TestTransportFactory>(new TestTransportFactory);
 	Configuration config = createConfiguration(minIdle, maxActive, maxTotal);
 	ConnectionPool* pool = new ConnectionPool(factory,
 			config.getConnectionPoolConfiguration());
@@ -522,7 +522,7 @@ HR_EXPORT void testMaxTotal3() {
 	const int maxTotal = minIdle;
 	const int numberOfKeys = 3;
 
-	HR_SHARED_PTR<TestTransportFactory> factory = HR_SHARED_PTR<TestTransportFactory>(new TestTransportFactory);
+	std::shared_ptr<TestTransportFactory> factory = std::shared_ptr<TestTransportFactory>(new TestTransportFactory);
 	Configuration config = createConfiguration(minIdle, maxActive, maxTotal);
 	ConnectionPool* pool = new ConnectionPool(factory,
 			config.getConnectionPoolConfiguration());
@@ -579,7 +579,7 @@ HR_EXPORT void testMaxTotal4() {
 	const int maxTotal = 1;
 	const int numberOfKeys = 2;
 
-	HR_SHARED_PTR<TestTransportFactory> factory = HR_SHARED_PTR<TestTransportFactory>(new TestTransportFactory);
+	std::shared_ptr<TestTransportFactory> factory = std::shared_ptr<TestTransportFactory>(new TestTransportFactory);
 	Configuration config = createConfiguration(minIdle, maxActive, maxTotal);
 	ConnectionPool* pool = new ConnectionPool(factory,
 			config.getConnectionPoolConfiguration());

@@ -9,7 +9,7 @@ using namespace infinispan::hotrod::transport;
 
 RemoveOperation::RemoveOperation(
     const Codec&      codec_,
-    HR_SHARED_PTR<transport::TransportFactory> transportFactory_,
+    std::shared_ptr<transport::TransportFactory> transportFactory_,
     const hrbytes&    key_,
     const hrbytes&    cacheName_,
     IntWrapper&  topologyId_,

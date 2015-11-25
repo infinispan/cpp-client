@@ -38,7 +38,7 @@ class RemoteCacheManagerImpl
     std::map<std::string, RemoteCacheHolder> cacheName2RemoteCache;
 
     operations::PingResult ping(RemoteCacheImpl& remoteCache);
-    HR_SHARED_PTR<transport::TransportFactory> transportFactory;
+    std::shared_ptr<transport::TransportFactory> transportFactory;
 
     void startRemoteCache(RemoteCacheImpl& remoteCache, bool forceReturnValue);
 };

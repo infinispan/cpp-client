@@ -55,15 +55,15 @@ class TcpTransportFactory : public TransportFactory
     std::vector<InetSocketAddress> servers;
     const Configuration& configuration;
     int maxRetries;
-    HR_SHARED_PTR<TransportObjectFactory> transportFactory;
-    HR_SHARED_PTR<ConnectionPool> connectionPool;
-    HR_SHARED_PTR<RequestBalancingStrategy> balancer;
+    std::shared_ptr<TransportObjectFactory> transportFactory;
+    std::shared_ptr<ConnectionPool> connectionPool;
+    std::shared_ptr<RequestBalancingStrategy> balancer;
 
     void createAndPreparePool();
 
-    HR_SHARED_PTR<infinispan::hotrod::consistenthash::ConsistentHashFactory> hashFactory;
+    std::shared_ptr<infinispan::hotrod::consistenthash::ConsistentHashFactory> hashFactory;
 
-    std::map<hrbytes, HR_SHARED_PTR<infinispan::hotrod::consistenthash::ConsistentHash> > consistentHashByCacheName;
+    std::map<hrbytes, std::shared_ptr<infinispan::hotrod::consistenthash::ConsistentHash> > consistentHashByCacheName;
     void updateTransportCount();
     void pingServers();
     Transport& borrowTransportFromPool(const InetSocketAddress& server);

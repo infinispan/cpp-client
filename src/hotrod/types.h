@@ -13,7 +13,7 @@ namespace hotrod {
 
 /*
  * A limited functionality scoped_ptr.  Defined here because auto_ptr
- * deprecated, unique_ptr too new, shared_ptr too heavy, and boost not
+ * deprecated, unique_ptr too new, std::shared_ptr too heavy, and boost not
  * available.  Main use is to allow C++ code to resemble the original
  * Java code in program flow for short lived objects.  Replace with
  * another solution if it instead promotes contorted code.
@@ -117,7 +117,7 @@ class hrbytes {
         // TODO: assert smartBytes.unique()
 	if (smartBytes) {
             buf.set(smartBytes.get(), len, &delayedDelete);
-            (*std::tr1::get_deleter<HrbDeleter>(smartBytes))(0);
+            (*std::get_deleter<HrbDeleter>(smartBytes))(0);
 	}
 	else 
 	    buf.set(dumbBytes, len);
@@ -126,7 +126,7 @@ class hrbytes {
   private:
     mutable char* dumbBytes;
     size_t len;
-    HR_SHARED_PTR<char> smartBytes;
+    std::shared_ptr<char> smartBytes;
 };
 
 }} // namespace infinispan::hotrod

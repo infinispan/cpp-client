@@ -62,9 +62,9 @@ Transport& TcpTransportFactory::getTransport(const hrbytes& key, const hrbytes& 
     {
         ScopedLock<Mutex> l(lock);
 
-        HR_SHARED_PTR<infinispan::hotrod::consistenthash::ConsistentHash> consistentHash;
+        std::shared_ptr<infinispan::hotrod::consistenthash::ConsistentHash> consistentHash;
 
-        std::map<hrbytes, HR_SHARED_PTR<infinispan::hotrod::consistenthash::ConsistentHash> >::iterator element = consistentHashByCacheName.find(cacheName);
+        std::map<hrbytes, std::shared_ptr<infinispan::hotrod::consistenthash::ConsistentHash> >::iterator element = consistentHashByCacheName.find(cacheName);
         if (element != consistentHashByCacheName.end()) {
             consistentHash = element->second;
         }
@@ -206,7 +206,7 @@ void TcpTransportFactory::updateHashFunction(
         std::map<InetSocketAddress, std::set<int32_t> >& servers2Hash,
         int32_t numKeyOwners, uint8_t hashFunctionVersion, int32_t hashSpace, const hrbytes& cacheName) {
     ScopedLock<Mutex> l(lock);
-    HR_SHARED_PTR<ConsistentHash> hash = hashFactory->newConsistentHash(hashFunctionVersion);
+    std::shared_ptr<ConsistentHash> hash = hashFactory->newConsistentHash(hashFunctionVersion);
     if (hash == NULL) {
         std::cout << "updateHashFunction with hash version "
             << hashFunctionVersion << " failed!" << std::endl;

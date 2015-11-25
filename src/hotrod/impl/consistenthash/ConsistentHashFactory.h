@@ -19,7 +19,7 @@ class ConsistentHashFactory
      *
     void init(Configuration& config); */
 
-    HR_SHARED_PTR<ConsistentHash> newConsistentHash(uint8_t version);
+    std::shared_ptr<ConsistentHash> newConsistentHash(uint8_t version);
 };
 }}} // namespace infinispan::hotrod::consistenthash
 

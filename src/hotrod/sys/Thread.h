@@ -42,7 +42,7 @@ class ThreadPrivate;
 
 class Thread
 {
-    HR_SHARED_PTR<ThreadPrivate> impl;
+    std::shared_ptr<ThreadPrivate> impl;
 
   public:
     Thread();

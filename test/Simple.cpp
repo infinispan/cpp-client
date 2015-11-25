@@ -14,7 +14,7 @@
 using namespace infinispan::hotrod;
 
 template <class T>
-void assert_not_null(const std::string& message, int line,  const std::auto_ptr<T>& pointer) {
+void assert_not_null(const std::string& message, int line,  const std::unique_ptr<T>& pointer) {
   if (pointer.get() == 0) {
     std::cerr << message << ":" << line << std::endl;
     std::cerr.flush();
@@ -41,7 +41,7 @@ int main(int argc, char** argv) {
 
     // put
     cache.put(k1, v1);
-    std::auto_ptr<std::string> rv(cache.get(k1));
+    std::unique_ptr<std::string> rv(cache.get(k1));
     assert_not_null("get returned null!", __LINE__, rv);
     if (rv->compare(v1)) {
         std::cerr << "get/put fail for " << k1 << " got " << *rv << " expected " << v1 << std::endl;
@@ -49,14 +49,14 @@ int main(int argc, char** argv) {
     }
 
     cache.put(k2, v2);
-    std::auto_ptr<std::string> rv2(cache.get(k2));
+    std::unique_ptr<std::string> rv2(cache.get(k2));
     assert_not_null("get returned null!", __LINE__, rv2);
     if (rv2->compare(v2)) {
         std::cerr << "get/put fail for " << k2 << " got " << *rv2 << " expected " << v2 << std::endl;
         return 1;
     }
  
-    std::auto_ptr<std::string> badValue(cache.get(std::string("no such key in the cache")));
+    std::unique_ptr<std::string> badValue(cache.get(std::string("no such key in the cache")));
     if (badValue.get()) {
         std::cout << "non-existent key failure, got " << *badValue << std::endl;
         return 1;
@@ -70,7 +70,7 @@ int main(int argc, char** argv) {
 
     // putIfAbsent
     cache.putIfAbsent(k3, v3);
-    std::auto_ptr<std::string> rv3(cache.get(k3));
+    std::unique_ptr<std::string> rv3(cache.get(k3));
     assert_not_null("get returned null!", __LINE__, rv3);
     if (rv3->compare(v3)) {
         std::cerr << "putIfAbsent fail for " << k3 << " got " << *rv3 << " expected " << v3 << std::endl;
@@ -78,7 +78,7 @@ int main(int argc, char** argv) {
     }
 
     cache.putIfAbsent(k3, v4);
-    std::auto_ptr<std::string> rv4(cache.get(k3));
+    std::unique_ptr<std::string> rv4(cache.get(k3));
     assert_not_null("get returned null!", __LINE__, rv4);
     if (rv4->compare(v3)) {
         std::cerr << "putIfAbsent fail for " << k3 << " got " << *rv4 << " expected " << v3 << std::endl;
@@ -89,7 +89,7 @@ int main(int argc, char** argv) {
 
     cache.put(k3, v3, 10, SECONDS);
     // getWithMetadata
-    std::pair<HR_SHARED_PTR<std::string>, MetadataValue> rv5 = cache.getWithMetadata(k3);
+    std::pair<std::shared_ptr<std::string>, MetadataValue> rv5 = cache.getWithMetadata(k3);
     if (!rv5.first.get() || rv5.second.lifespan != 10) {
         std::cerr << "getWithMetadata with mortal entry fail for " << k3 << " not found" << std::endl;
         return 1;
@@ -108,7 +108,7 @@ int main(int argc, char** argv) {
     std::cout << "PASS: simple getWithMetadata with immortal entry"  << std::endl;
 
     // getWithVersion
-    std::pair<HR_SHARED_PTR<std::string>, VersionedValue> rv5a = cache.getWithVersion(k3);
+    std::pair<std::shared_ptr<std::string>, VersionedValue> rv5a = cache.getWithVersion(k3);
     if (!rv5a.first.get()) {
         std::cerr << "getWithVersion fail for " << k3 << " not found" << std::endl;
         return 1;
@@ -118,7 +118,7 @@ int main(int argc, char** argv) {
 
     // replaceWithVersion
     cache.replaceWithVersion(k3, v4, rv5.second.version);
-    std::auto_ptr<std::string> rv6(cache.get(k3));
+    std::unique_ptr<std::string> rv6(cache.get(k3));
     assert_not_null("get returned null!", __LINE__, rv6);
     if (rv6->compare(v4)) {
         std::cerr << "putIfAbsent fail for " << k3 << " got " << *rv6 << " expected " << v4 << std::endl;
@@ -126,7 +126,7 @@ int main(int argc, char** argv) {
     }
 
     cache.replaceWithVersion(k3, v3, rv5.second.version);
-    std::auto_ptr<std::string> rv7(cache.get(k3));
+    std::unique_ptr<std::string> rv7(cache.get(k3));
     assert_not_null("get returned null!", __LINE__, rv7);
     if (rv7->compare(v4)) {
         std::cerr << "putIfAbsent fail for " << k3 << " got " << *rv7 << " expected " << v4 << std::endl;
@@ -173,13 +173,13 @@ int main(int argc, char** argv) {
     std::string v6("barcelona");
 
     // put with FORCE_RETURN_VALUE flag
-    std::auto_ptr<std::string> rv8(cache.withFlags(FORCE_RETURN_VALUE).put(k4,v5));
+    std::unique_ptr<std::string> rv8(cache.withFlags(FORCE_RETURN_VALUE).put(k4,v5));
     if (rv8.get()) {
         std::cerr << "put with FORCE_RETURN_FLAG fail for " << k4 << " got " << *rv8 << " expected null pointer" << std::endl;
         return 1;
     }
 
-    std::auto_ptr<std::string> rv9(cache.withFlags(FORCE_RETURN_VALUE).put(k4,v6));
+    std::unique_ptr<std::string> rv9(cache.withFlags(FORCE_RETURN_VALUE).put(k4,v6));
     assert_not_null("get returned null!", __LINE__, rv9);
     if (rv9->compare(v5)) {
         std::cerr << "put with FORCE_RETURN_FLAG fail for " << k4 << " got " << *rv9 << " expected " << v5 << std::endl;
@@ -189,28 +189,28 @@ int main(int argc, char** argv) {
     std::cout << "PASS: simple put with FORCE_RETURN_FLAG" << std::endl;
 
     // keySet
-    std::set<HR_SHARED_PTR<std::string> > keySet = cache.keySet();
+    std::set<std::shared_ptr<std::string> > keySet = cache.keySet();
     if (keySet.size()!=1) {
         std::cerr << "keySet fail got " << keySet.size() << " entries expected 1" << std::endl;
         return 1;
     }
 
     std::cout << "  keySet result is:" << std::endl;
-    for(std::set<HR_SHARED_PTR<std::string> >::const_iterator i=keySet.begin(); i!=keySet.end(); i++) {
+    for(std::set<std::shared_ptr<std::string> >::const_iterator i=keySet.begin(); i!=keySet.end(); i++) {
         std::cout << "    key: " << *i->get() << std::endl;
     }
 
     std::cout << "PASS: simple keySet" << std::endl;
 
     // getBulk
-    std::map<HR_SHARED_PTR<std::string>,HR_SHARED_PTR<std::string> > map = cache.getBulk();
+    std::map<std::shared_ptr<std::string>,std::shared_ptr<std::string> > map = cache.getBulk();
     if (map.size()!=1) {
         std::cerr << "getBulk fail got" << map.size() << " entries expected 1" << std::endl;
         return 1;
     }
 
     std::cout << "  getBulk result is:" << std::endl;
-    for(std::map<HR_SHARED_PTR<std::string>,HR_SHARED_PTR<std::string> >::const_iterator i=map.begin(); i!=map.end(); i++) {
+    for(std::map<std::shared_ptr<std::string>,std::shared_ptr<std::string> >::const_iterator i=map.begin(); i!=map.end(); i++) {
         std::cout << "    key: " << *i->first.get() << ", value: " << *i->second.get() << std::endl;
     }
 
@@ -218,7 +218,7 @@ int main(int argc, char** argv) {
 
     // replace
     cache.replace(k4,v5);
-    std::auto_ptr<std::string> rv10(cache.get(k4));
+    std::unique_ptr<std::string> rv10(cache.get(k4));
     assert_not_null("get returned null!", __LINE__, rv10);
     if (rv10->compare(v5)) {
         std::cerr << "replace fail for " << k4 << " got " << *rv10 << " expected " << v5 << std::endl;

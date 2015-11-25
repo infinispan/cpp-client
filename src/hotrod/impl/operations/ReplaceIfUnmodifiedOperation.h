@@ -20,7 +20,7 @@ class ReplaceIfUnmodifiedOperation
   private:
     ReplaceIfUnmodifiedOperation(
         const protocol::Codec& codec,
-        HR_SHARED_PTR<transport::TransportFactory> transportFactory,
+        std::shared_ptr<transport::TransportFactory> transportFactory,
         const hrbytes& key,
         const hrbytes& cacheName,
         IntWrapper& topologyId,

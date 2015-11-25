@@ -53,7 +53,7 @@ public:
 private:
     RemoteCacheManagerImpl& remoteCacheManager;
 
-    HR_SHARED_PTR<operations::OperationsFactory> operationsFactory;
+    std::shared_ptr<operations::OperationsFactory> operationsFactory;
     std::string name;
 
     void applyDefaultExpirationFlags(uint64_t lifespan, uint64_t maxIdle);

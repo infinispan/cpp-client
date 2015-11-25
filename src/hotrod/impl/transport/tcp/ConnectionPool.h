@@ -37,13 +37,13 @@ class PoolWorker: public sys::Runnable {
 
 };
 
-typedef HR_SHARED_PTR<BlockingQueue<TcpTransport *> > TransportQueuePtr;
+typedef std::shared_ptr<BlockingQueue<TcpTransport *> > TransportQueuePtr;
 
 class ConnectionPool
 {
   public:
     ConnectionPool(
-      HR_SHARED_PTR<TransportObjectFactory> factory_,
+      std::shared_ptr<TransportObjectFactory> factory_,
       const ConnectionPoolConfiguration& configuration_)
       : factory(factory_), configuration(configuration_), closed(false),
 		totalIdle(0), totalActive(0)
@@ -111,7 +111,7 @@ class ConnectionPool
     bool hasReachedMaxTotal();
     bool tryRemoveIdle();
 
-    HR_SHARED_PTR<TransportObjectFactory> factory;
+    std::shared_ptr<TransportObjectFactory> factory;
     const ConnectionPoolConfiguration& configuration;
     sys::Mutex lock;
     std::map<InetSocketAddress, TransportQueuePtr > busy;

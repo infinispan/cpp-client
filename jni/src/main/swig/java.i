@@ -16,7 +16,7 @@
 
 %include "std_pair.i"
 
-//#define HR_SHARED_PTR std::tr1::shared_ptr
+//#define std::shared_ptr std::shared_ptr
 
 %{
 #include <infinispan/hotrod/defs.h>
@@ -137,33 +137,33 @@ class RelayBytes {
 
 %}
 
-//%template(RelayShrPointer) HR_SHARED_PTR<RelayBytes>;
-%template(MetadataPairReturn) std::pair<HR_SHARED_PTR<RelayBytes>, infinispan::hotrod::MetadataValue>;
-%template(VersionPairReturn) std::pair<HR_SHARED_PTR<RelayBytes>, infinispan::hotrod::VersionedValue>;
-%template(MapReturn) std::map<HR_SHARED_PTR<RelayBytes>, HR_SHARED_PTR<RelayBytes> >;
-%template(SetReturn) std::set<HR_SHARED_PTR<RelayBytes> >;
-%template(VectorReturn) std::vector<HR_SHARED_PTR<RelayBytes> >;
+//%template(RelayShrPointer) std::shared_ptr<RelayBytes>;
+%template(MetadataPairReturn) std::pair<std::shared_ptr<RelayBytes>, infinispan::hotrod::MetadataValue>;
+%template(VersionPairReturn) std::pair<std::shared_ptr<RelayBytes>, infinispan::hotrod::VersionedValue>;
+%template(MapReturn) std::map<std::shared_ptr<RelayBytes>, std::shared_ptr<RelayBytes> >;
+%template(SetReturn) std::set<std::shared_ptr<RelayBytes> >;
+%template(VectorReturn) std::vector<std::shared_ptr<RelayBytes> >;
 %template(StringVectorReturn) std::vector<std::string>;
 
 %inline %{
- bool isNull(HR_SHARED_PTR<RelayBytes> ptr) {
+ bool isNull(std::shared_ptr<RelayBytes> ptr) {
      return !ptr;
  }
 
- RelayBytes dereference(HR_SHARED_PTR<RelayBytes> ptr) {
+ RelayBytes dereference(std::shared_ptr<RelayBytes> ptr) {
      return *ptr;
  }
  
- std::vector<HR_SHARED_PTR<RelayBytes> > keySet(std::map<HR_SHARED_PTR<RelayBytes>, HR_SHARED_PTR<RelayBytes> > map) {
-     std::vector<HR_SHARED_PTR<RelayBytes> > result;
-     for (std::map<HR_SHARED_PTR<RelayBytes>, HR_SHARED_PTR<RelayBytes> >::iterator it = map.begin(); it != map.end(); ++it)
+ std::vector<std::shared_ptr<RelayBytes> > keySet(std::map<std::shared_ptr<RelayBytes>, std::shared_ptr<RelayBytes> > map) {
+     std::vector<std::shared_ptr<RelayBytes> > result;
+     for (std::map<std::shared_ptr<RelayBytes>, std::shared_ptr<RelayBytes> >::iterator it = map.begin(); it != map.end(); ++it)
          result.push_back(it->first);
      return result;
  }
  
- std::vector<HR_SHARED_PTR<RelayBytes> > keys(std::set<HR_SHARED_PTR<RelayBytes> > set) {
-     std::vector<HR_SHARED_PTR<RelayBytes> > result;
-     for (std::set<HR_SHARED_PTR<RelayBytes> >::iterator it = set.begin(); it != set.end(); ++it)
+ std::vector<std::shared_ptr<RelayBytes> > keys(std::set<std::shared_ptr<RelayBytes> > set) {
+     std::vector<std::shared_ptr<RelayBytes> > result;
+     for (std::set<std::shared_ptr<RelayBytes> >::iterator it = set.begin(); it != set.end(); ++it)
          result.push_back(*it);
      return result;
  }

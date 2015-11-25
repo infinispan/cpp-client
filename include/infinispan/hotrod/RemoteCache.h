@@ -391,7 +391,7 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      *
      * A typical use case looks like this:
      * <pre>
-     * std::pair<HR_SHARED_PTR<std::string>, VersionedValue> rv = remoteCache.getWithVersioned(key);
+     * std::pair<std::shared_ptr<std::string>, VersionedValue> rv = remoteCache.getWithVersioned(key);
      * //some processing...
      * remoteCache.removeWithVersion(key, rv.second().version);
      * </pre>
@@ -417,10 +417,10 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      *  second pair entry is an accompanying VersionedValue
      *
      */
-    std::pair<HR_SHARED_PTR<V>, VersionedValue> getWithVersion(const K& key) {
+    std::pair<std::shared_ptr<V>, VersionedValue> getWithVersion(const K& key) {
         VersionedValue version;
         void *value = base_getWithVersion(&key, &version);
-        return std::make_pair(HR_SHARED_PTR<V>((V *) value), version);
+        return std::make_pair(std::shared_ptr<V>((V *) value), version);
     }
     /**
      * Returns the std::pair with value and MetadataValue associated to the
@@ -432,31 +432,31 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      *  second pair entry is an accompanying MetadataValue
      *
      */
-    std::pair<HR_SHARED_PTR<V>, MetadataValue> getWithMetadata(const K& key) {
+    std::pair<std::shared_ptr<V>, MetadataValue> getWithMetadata(const K& key) {
         MetadataValue metadata;
         void *value = base_getWithMetadata(&key, &metadata);
-        return std::make_pair(HR_SHARED_PTR<V>((V *) value), metadata);
+        return std::make_pair(std::shared_ptr<V>((V *) value), metadata);
     }
     /**
      * Unsupported operation in this release of Hot Rod client. UnsupportedOperationException is
      * thrown if his method is invoked.
      */
-    std::map<HR_SHARED_PTR<K>, HR_SHARED_PTR<V> > getBulk() {
+    std::map<std::shared_ptr<K>, std::shared_ptr<V> > getBulk() {
         return getBulk(0);
     }
     /**
      * Returns nrOfEntries from a remote cache in map.
      *TODO
      */
-    std::map<HR_SHARED_PTR<K>, HR_SHARED_PTR<V> > getBulk(int nrOfEntries) {
+    std::map<std::shared_ptr<K>, std::shared_ptr<V> > getBulk(int nrOfEntries) {
         portable::map<void*, void*> mbuf;
         base_getBulk(nrOfEntries, mbuf);
 
-        std::map<HR_SHARED_PTR<K>, HR_SHARED_PTR<V> > result;
+        std::map<std::shared_ptr<K>, std::shared_ptr<V> > result;
         const portable::pair<void*, void*> *data = mbuf.data();
         for (size_t i = 0; i < mbuf.size(); i++) {
             result.insert(std::make_pair(
-                HR_SHARED_PTR<K>((K*)data[i].key), HR_SHARED_PTR<V>((V*)data[i].value)));
+                std::shared_ptr<K>((K*)data[i].key), std::shared_ptr<V>((V*)data[i].value)));
         }
         return result;
     }
@@ -474,13 +474,13 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      *
      * \return a std::set of pointers to all keys in this given cache
      */
-    std::set<HR_SHARED_PTR<K> > keySet() {
+    std::set<std::shared_ptr<K> > keySet() {
         portable::vector<void*> p;
         base_keySet(0, p);
 
-        std::set<HR_SHARED_PTR<K> > result;
+        std::set<std::shared_ptr<K> > result;
         for (size_t i = 0; i < p.size(); ++i) {
-            result.insert(HR_SHARED_PTR<K>((K*)p.data()[i]));
+            result.insert(std::shared_ptr<K>((K*)p.data()[i]));
         }
         return result;
     }
@@ -623,8 +623,8 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
     portable::counting_ptr<Marshaller<V> > valueMarshaller;
 
     // DEPRECATED: Library code must not use these fields
-    portable::counting_ptr<portable::counted_wrapper<HR_SHARED_PTR<Marshaller<K> > > > keyMarshallerPtr;
-    portable::counting_ptr<portable::counted_wrapper<HR_SHARED_PTR<Marshaller<V> > > > valueMarshallerPtr;
+    portable::counting_ptr<portable::counted_wrapper<std::shared_ptr<Marshaller<K> > > > keyMarshallerPtr;
+    portable::counting_ptr<portable::counted_wrapper<std::shared_ptr<Marshaller<V> > > > valueMarshallerPtr;
 
   friend class RemoteCacheManager;
 };

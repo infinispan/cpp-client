@@ -89,7 +89,7 @@ class OperationsFactory
     void setFlags(uint32_t flags);
 
   private:
-    HR_SHARED_PTR<infinispan::hotrod::transport::TransportFactory> transportFactory;
+    std::shared_ptr<infinispan::hotrod::transport::TransportFactory> transportFactory;
     IntWrapper topologyId;
     const infinispan::hotrod::protocol::Codec& codec;
     hrbytes cacheNameBytes;
@@ -99,7 +99,7 @@ class OperationsFactory
     uint32_t getFlags();
 
     OperationsFactory(
-      HR_SHARED_PTR<infinispan::hotrod::transport::TransportFactory> transportFactory,
+      std::shared_ptr<infinispan::hotrod::transport::TransportFactory> transportFactory,
       const std::string& cacheName, bool forceReturnValue,
       const infinispan::hotrod::protocol::Codec& codec);
 

@@ -24,7 +24,7 @@ template<class T> class AbstractKeyOperation : public RetryOnFailureOperation<T>
 
     AbstractKeyOperation(
         const protocol::Codec& _codec,
-        HR_SHARED_PTR<transport::TransportFactory> _transportFactory,
+        std::shared_ptr<transport::TransportFactory> _transportFactory,
         const hrbytes& _key, const hrbytes& _cacheName,
         IntWrapper& _topologyId, uint32_t  _flags) :
             RetryOnFailureOperation<T>(

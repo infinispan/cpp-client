@@ -21,7 +21,7 @@
  * System thread identifiers are unique per Windows thread; thread
  * handles are not.  Thread identifiers can be recycled, but keeping a
  * handle open against the thread prevents recycling as long as
- * shared_ptr references to a ThreadPrivate structure remain.
+ * std::shared_ptr references to a ThreadPrivate structure remain.
  *
  * There is a 1-1 relationship between Hotrod threads and their
  * ThreadPrivate structure.  Non-Hotrod threads do not need to find the
@@ -42,7 +42,7 @@ class ThreadPrivate {
 public:
     friend class Thread;
     friend unsigned __stdcall runThreadPrivate(void*);
-    typedef HR_SHARED_PTR<ThreadPrivate> shared_ptr;
+    typedef std::shared_ptr<ThreadPrivate> std::shared_ptr;
     ~ThreadPrivate();
 
 private:
@@ -51,7 +51,7 @@ private:
     HANDLE initCompleted;
     HANDLE hrThreadDone;
     Runnable* runnable;
-    shared_ptr keepAlive;
+    std::shared_ptr keepAlive;
 
     ThreadPrivate() : threadId(GetCurrentThreadId()), initCompleted(NULL),
                       hrThreadDone(NULL), runnable(NULL) {
@@ -62,8 +62,8 @@ private:
     ThreadPrivate(Runnable* r) : threadHandle(NULL), initCompleted(NULL),
                                  hrThreadDone(NULL), runnable(r) {}
 
-    void start(shared_ptr& p);
-    static shared_ptr createThread(Runnable* r);
+    void start(std::shared_ptr& p);
+    static std::shared_ptr createThread(Runnable* r);
 };
 
 }}}  // namespace
@@ -143,13 +143,13 @@ unsigned __stdcall runThreadPrivate(void* p)
 }
 
 
-ThreadPrivate::shared_ptr ThreadPrivate::createThread(Runnable* runnable) {
-    ThreadPrivate::shared_ptr tp(new ThreadPrivate(runnable));
+ThreadPrivate::std::shared_ptr ThreadPrivate::createThread(Runnable* runnable) {
+    ThreadPrivate::std::shared_ptr tp(new ThreadPrivate(runnable));
     tp->start(tp);
     return tp;
 }
 
-void ThreadPrivate::start(ThreadPrivate::shared_ptr& tp) {
+void ThreadPrivate::start(ThreadPrivate::std::shared_ptr& tp) {
     getTlsIndex();              // fail here if OS problem, not in new thread
 
     initCompleted = CreateEvent (NULL, TRUE, FALSE, NULL);
