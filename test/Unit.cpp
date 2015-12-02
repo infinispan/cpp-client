@@ -10,9 +10,7 @@ HR_EXTERN void runOnceTest();
 HR_EXTERN void testTopologyChangeResponse();
 HR_EXTERN void updateServersTest();
 HR_EXTERN void consistentHashFactoryTests();
-HR_EXTERN bool murmurHash2StringTest();
 HR_EXTERN bool murmurHash3StringTest();
-HR_EXTERN bool murmurHash2IntTest();
 HR_EXTERN bool murmurHash3IntTest();
 HR_EXTERN void runConcurrentCodecWritesTest();
 HR_EXTERN void testMinIdle();
@@ -30,9 +28,7 @@ int main(int, char**) {
     testTopologyChangeResponse();
     updateServersTest();
     consistentHashFactoryTests();
-    murmurHash2StringTest();
     murmurHash3StringTest();
-    murmurHash2IntTest();
     murmurHash3IntTest();
     //ConnectionPool unit tests
     testMinIdle();

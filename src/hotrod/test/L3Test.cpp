@@ -1,7 +1,6 @@
 #include "infinispan/hotrod/ImportExport.h"
 #include "hotrod/impl/consistenthash/ConsistentHashFactory.h"
 #include "hotrod/impl/consistenthash/ConsistentHash.h"
-#include "hotrod/impl/consistenthash/ConsistentHashV1.h"
 #include "hotrod/impl/consistenthash/ConsistentHashV2.h"
 #include "hotrod/impl/transport/tcp/InetSocketAddress.h"
 #include "hotrod/impl/protocol/HotRodConstants.h"
@@ -96,16 +95,13 @@ void consistentHashInitTest(uint32_t hashVersion, std::string* host) {
 }
 
 HR_EXTERN void consistentHashFactoryTests() {
-    consistentHashFactoryTest(HotRodConstants::CONSISTENT_HASH_V1);
     consistentHashFactoryTest(HotRodConstants::CONSISTENT_HASH_V2);
 
     std::string* h = new std::string("host01234:4");
-    consistentHashInitTest(HotRodConstants::CONSISTENT_HASH_V1, h);
     consistentHashInitTest(HotRodConstants::CONSISTENT_HASH_V2, h);
     delete h;
 
     h = new std::string("host0123456:6");
-    consistentHashInitTest(HotRodConstants::CONSISTENT_HASH_V1, h);
     consistentHashInitTest(HotRodConstants::CONSISTENT_HASH_V2, h);
     delete h;    
 }
