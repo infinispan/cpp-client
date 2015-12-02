@@ -1,4 +1,3 @@
-#include "hotrod/impl/hash/MurmurHash2.h"
 #include "hotrod/impl/hash/MurmurHash3.h"
 
 #include <iostream>
@@ -109,25 +108,6 @@ static const char strings[][MAX_LENGTH] = {
 	{  100,   -6,  -19,  -37,  -25,  114,  -72,  108,   22,  125,  -74,   69,  -35,   37,   84,   79,  124,  -38,  -24,  -39,  -47,  102,   89,  -40,   21,  -94,  -47,   75,  -67,   -9,   53,   65,   23,  102,   29,   75,  -70,   23,  -68,  -79,  -62,   72, -104,  -32,   78,   13,  -10,   53,  111, -119,  -80,  -12,   27,  -64, -123,   12,   25,  102,   36,  -11,   45,  -21,   97, -108,   20, -125,   70,  -42,   10,   45, -107,  102,   -4,   82,  110,   85,   -2,    9,   58,  122,   52,   25,   68, -127, -100,  -38,  -44,   98,  114,  -95,  -52,   12,   73,  -26,  -25, -111 }
 };
 
-static uint32_t stringMurmur2Hashes[] = {
-	0x82DA8AD1, 0x00C71BCB, 0xFC1268F0, 0x3BEA1BCD, 0x29A1A7D2, 0x3751907F,
-	0x68CF8840, 0xD8E390C1, 0xFAADDC76, 0x4E42D466, 0x98A40FD6, 0xD7236C94,
-	0xB03A785F, 0xB465FDC9, 0xD81B7740, 0xA9411122, 0x55585DCB, 0x363D473F,
-	0x0D633D44, 0x26E3B10A, 0x51226877, 0xC2A979CE, 0x4AFFD0B0, 0xF0E670BA,
-	0x83397CD2, 0xE2ED2F3A, 0x588261F0, 0x0D3F7068, 0x3AB22FF7, 0x47B8B774,
-	0x6E1A65A1, 0xB922FF07, 0x26CF8AAB, 0x79C8A440, 0x6458F379, 0xCAAE3E63,
-	0x26EE19A1, 0x3D45763D, 0x10F28A7F, 0x3D91404C, 0x09618864, 0xFC02A9E3,
-	0xE55709C2, 0x08CD0263, 0x050509DB, 0x295D2378, 0x592E4DA5, 0x216F5484,
-	0xD2527AC0, 0x5E2A0323, 0xF566801C, 0xE35FB6C7, 0x77DBBF25, 0xF8E0C41F,
-	0xAAC50BE7, 0x3E5A0DE4, 0x340F0790, 0xB88C7B9A, 0x5BE0FA0C, 0x5B6BFC44,
-	0xE7085DF7, 0x1267DEFC, 0x55467CF8, 0xA642C763, 0x0565A274, 0xCC02EB7D,
-	0x9D9833B5, 0x43B338F2, 0x8C33748A, 0xDCBA6C67, 0x0E1FDFBC, 0xADDA9A1C,
-	0x7C95B2AC, 0xDA3348AC, 0x91D05DFD, 0x60223093, 0x81009EF0, 0xA4FA68A1,
-	0xFDA5514A, 0xE82ABF93, 0x2C1864C4, 0xDFC4FAE6, 0xA2C28BF7, 0x7FEB874A,
-	0x3612A71B, 0xDAD893FF, 0x37A7CA54, 0xB1B08F6A, 0x86F849E8, 0x67424FE6,
-	0x9172149B, 0x355D7CB1, 0x24C9EC0D, 0x7A69DA33, 0x0A91EAD0, 0x020D61B4
-};
-
 static uint32_t stringMurmur3Hashes[] = {
 	0x7C968B75, 0x66349ADC, 0xC29925E0, 0x1ADDB01E, 0x0A853868, 0x069DB0FA,
 	0x1AC80763, 0xB26FE53F, 0x121068A0, 0x3EB93516, 0xEA3408EB, 0xFD08CD6B,
@@ -164,25 +144,6 @@ static int32_t integers[] = {
 	0x3003F635, 0x3CB68FC3, 0x304E0CE6, 0x6EAC4159, 0x2E6DF911, 0x777ED684,
 	0x0CC3DA4D, 0x416F74DA, 0x72B85419, 0x7576578F, 0x19A5906A, 0x04ACE05E,
 	0x7990110F, 0x4CC774AA, 0x30A46BE9, 0x53A4A6CF, 0x2B6B6467, 0x4EBAF62A,
-};
-
-static uint32_t intMurmur2Hashes[] = {
-	0x79F7D33F, 0x129A8803, 0x231834EA, 0x92CD5D67, 0xCC48412A, 0x100A4B6B,
-	0x4BB93A7C, 0xB5346B08, 0x5A17A6CA, 0x103756BA, 0xF3AA8CEE, 0x286BE7B5,
-	0x021130ED, 0x379520CB, 0x735F4A18, 0x378A1319, 0x33127CC9, 0xC2242E47,
-	0x3479DCB3, 0xFB199DE2, 0x50B4CC14, 0x1C80B3A1, 0x41D1F5D8, 0x01D139FE,
-	0xC76A677D, 0xD7E59F3F, 0x6B93BC64, 0xEFC46533, 0xD4AFD1CE, 0xA6017100,
-	0xD3C4AB00, 0x6B93BC64, 0x4FAAA16D, 0xF97ACFD0, 0x5CB0E510, 0xE36F1EDC,
-	0x33127CC9, 0xF61829FC, 0xB0ACBD8C, 0xCCF48974, 0xFA449C0E, 0x131404BF,
-	0xDAA6E3F6, 0xEE971CB2, 0xD1C2FC43, 0xF60955A4, 0x12AE4FAF, 0x3CC79D2E,
-	0x860BCB58, 0x6C98EF31, 0x3C045214, 0x9FFF18D4, 0xF4740E97, 0x75E3853A,
-	0x03BD2A6A, 0x1310C51E, 0x4BB93A7C, 0x438AB134, 0xE244F617, 0x1B97F6FE,
-	0x6510431A, 0x94DD56B3, 0x0344EA19, 0xF8B09285, 0xF60955A4, 0x5C45BD07,
-	0x091BC181, 0x5A17A6CA, 0xEE63BF08, 0xEECD8CEF, 0x2FB95EDF, 0x510C5086,
-	0x750CA5F3, 0x00F238D1, 0x7A0701F7, 0x84942932, 0xC2242E47, 0x2B20429D,
-	0x536E4BFA, 0x750CA5F3, 0x7E510220, 0xD0B760B4, 0xC690C6D8, 0xFC8059C4,
-	0x25478534, 0x04929EE8, 0x0F617AF3, 0x6A83817D, 0xB7379DDD, 0x1E6CC41F,
-	0x2ED9A9F3, 0x6C98EF31, 0xF2C5A8CE, 0x438AB134, 0x7FACB52B, 0x18B6E650,
 };
 
 static uint32_t intMurmur3Hashes[] = {
@@ -233,31 +194,11 @@ bool testHashInt(const Hash& hash, const int32_t input[], unsigned inputSize, co
 	return true;
 }
 
-HR_EXTERN bool murmurHash2StringTest() {
-	std::cout << "Running murmurHash2StringTest\n";
-    MurmurHash2 murmur2;
-    if (testHashString(murmur2, strings, sizeof(strings)/MAX_LENGTH, stringMurmur2Hashes)) {
-    	std::cout << "MurmurHash2 passed consistency test for strings" << std::endl;
-    	return true;
-    }
-    return false;
-}
-
 HR_EXTERN bool murmurHash3StringTest() {
 	std::cout << "Running murmurHash3StringTest\n";
 	MurmurHash3 murmur3;
     if (testHashString(murmur3, strings, sizeof(strings)/MAX_LENGTH, stringMurmur3Hashes)) {
     	std::cout << "MurmurHash3 passed consistency test for strings" << std::endl;
-    	return true;
-    }
-    return false;
-}
-
-HR_EXTERN bool murmurHash2IntTest() {
-	std::cout << "Running murmurHash2IntTest\n";
-    MurmurHash2 murmur2;
-    if (testHashInt(murmur2, integers, sizeof(integers)/sizeof(int32_t), intMurmur2Hashes)) {
-    	std::cout << "MurmurHash2 passed consistency test for integers" << std::endl;
     	return true;
     }
     return false;

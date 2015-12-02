@@ -178,10 +178,8 @@ else(DEFINED HOTROD_PREBUILT_LIB_DIR)
       src/hotrod/impl/RemoteCacheManagerImpl.cpp
       src/hotrod/impl/RemoteCacheImpl.cpp
       src/hotrod/impl/IntWrapper.cpp
-      src/hotrod/impl/hash/MurmurHash2.cpp
       src/hotrod/impl/hash/MurmurHash3.cpp
       src/hotrod/impl/consistenthash/ConsistentHashFactory.cpp
-      src/hotrod/impl/consistenthash/ConsistentHashV1.cpp
       src/hotrod/impl/consistenthash/ConsistentHashV2.cpp
       src/hotrod/impl/operations/OperationsFactory.cpp
       src/hotrod/impl/operations/PingOperation.cpp
