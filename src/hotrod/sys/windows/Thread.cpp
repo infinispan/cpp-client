@@ -9,6 +9,7 @@
 
 #include <process.h>
 #include <windows.h>
+#include <memory>
 #include <iostream>
 #include <iomanip>
 
@@ -42,7 +43,6 @@ class ThreadPrivate {
 public:
     friend class Thread;
     friend unsigned __stdcall runThreadPrivate(void*);
-    typedef std::shared_ptr<ThreadPrivate> std::shared_ptr;
     ~ThreadPrivate();
 
 private:
@@ -51,7 +51,7 @@ private:
     HANDLE initCompleted;
     HANDLE hrThreadDone;
     Runnable* runnable;
-    std::shared_ptr keepAlive;
+    std::shared_ptr<ThreadPrivate> keepAlive;
 
     ThreadPrivate() : threadId(GetCurrentThreadId()), initCompleted(NULL),
                       hrThreadDone(NULL), runnable(NULL) {
@@ -62,8 +62,8 @@ private:
     ThreadPrivate(Runnable* r) : threadHandle(NULL), initCompleted(NULL),
                                  hrThreadDone(NULL), runnable(r) {}
 
-    void start(std::shared_ptr& p);
-    static std::shared_ptr createThread(Runnable* r);
+    void start(std::shared_ptr<ThreadPrivate>& p);
+    static std::shared_ptr<ThreadPrivate> createThread(Runnable* r);
 };
 
 }}}  // namespace
@@ -143,13 +143,13 @@ unsigned __stdcall runThreadPrivate(void* p)
 }
 
 
-ThreadPrivate::std::shared_ptr ThreadPrivate::createThread(Runnable* runnable) {
-    ThreadPrivate::std::shared_ptr tp(new ThreadPrivate(runnable));
+std::shared_ptr<ThreadPrivate> ThreadPrivate::createThread(Runnable* runnable) {
+    std::shared_ptr<ThreadPrivate> tp(new ThreadPrivate(runnable));
     tp->start(tp);
     return tp;
 }
 
-void ThreadPrivate::start(ThreadPrivate::std::shared_ptr& tp) {
+void ThreadPrivate::start(std::shared_ptr<ThreadPrivate>& tp) {
     getTlsIndex();              // fail here if OS problem, not in new thread
 
     initCompleted = CreateEvent (NULL, TRUE, FALSE, NULL);
