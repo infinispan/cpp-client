@@ -2,6 +2,7 @@
 #include "hotrod/impl/consistenthash/ConsistentHashFactory.h"
 #include "hotrod/impl/consistenthash/ConsistentHashV2.h"
 #include "infinispan/hotrod/Configuration.h"
+#include "infinispan/hotrod/exceptions.h"
 
 #include <iostream>
 
@@ -17,6 +18,7 @@ std::shared_ptr<ConsistentHash> ConsistentHashFactory::newConsistentHash(uint8_t
             result.reset(new ConsistentHashV2());
             break;
         default:
+		throw UnsupportedOperationException();
             break;
     }
     return result;
