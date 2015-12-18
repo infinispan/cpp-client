@@ -8,6 +8,9 @@
 #include <iostream>
 #include <memory>
 #include <typeinfo>
+#include <thread>
+#include <future>
+#include <chrono>
 
 // For CTest: return 0 if all tests pass, non-zero otherwise.
 
@@ -66,7 +69,7 @@ void assert_not_null(const std::string& message, int line,  const std::unique_pt
   }
 }
 
-template <class K, class V>
+template <typename K, typename V>
 int basicTest(RemoteCacheManager &cacheManager, RemoteCache<K,V> &cache) {
 
     std::cout << "HotRod C++ Library version " << cache.getVersion() << std::endl;
@@ -291,6 +294,100 @@ int basicTest(RemoteCacheManager &cacheManager, RemoteCache<K,V> &cache) {
             return 1;
         }
 
+    // Async test
+    std::string ak1("asyncK1");
+    std::string av1("sun");
+
+    std::string ak2("asyncK2");
+    std::string av2("mercury");
+
+    cache.clear();
+
+/*    // Put ak1,av1 in async thread A
+    std::future<std::string*> future_put= cache.putAsync(ak1,av1);
+    // Get the value in this thread
+    std::string* arv1= cache.get(ak1);
+    if (future_put.wait_for(std::chrono::seconds(0))!=std::future_status::ready)
+    {
+    	// get happens before put completes, arv1 must be null
+    	if (arv1)
+    	{
+    		std::cerr << "fail: expected null got value" << std::endl;
+    		return 1;
+    	}
+    }
+    // Now wait for put completion
+    future_put.wait();
+
+    // All is synch now
+    std::string* arv11= cache.get(ak1);
+    if (!arv11 || arv11->compare(av1))
+    {
+    	std::cout << "fail: expected " << av1 << "got " << (arv11 ? *arv11 : "null") << std::endl;
+    	return 1;
+    }
+
+    // Read ak1 again, but in async way and test that the result is the same
+    std::future<std::string*> future_ga= cache.getAsync(ak1);
+    std::string* arv2= future_ga.get();
+    if (!arv2 || arv2->compare(av1))
+    {
+    	std::cerr << "fail: expected " << av1 << " got " << (arv2 ? *arv2 : "null") << std::endl;
+    	return 1;
+    }
+*/
+    bool flag=false;
+    // Now user pass a lambda func that will be executed in the async thread after the put completion
+    std::future<std::string*> future_put1= cache.putAsync(ak2,av2,0,0,[&] (std::string *v){flag=true; return v;});
+    {
+    	// If the async put is not completed flag must be false
+    	if (future_put1.wait_for(std::chrono::seconds(0))!=std::future_status::ready)
+    	{
+    		if (flag)
+    		{
+    			std::cerr << "fail: expected false got true" << std::endl;
+    			return 1;
+    		}
+    	}
+    }
+    // Now wait for put completion
+    future_put1.wait();
+    {
+    	// The user lambda must be executed so flag must be true
+    	if (!flag)
+    	{
+    		std::cerr << "fail: expected true got false" << std::endl;
+    		return 1;
+    	}
+    }
+    // Same test for get
+    flag=false;
+    std::future<std::string*> future_get1= cache.getAsync(ak2,[&] (std::string *v){flag=true; return v;});
+
+    if (future_get1.wait_for(std::chrono::seconds(0))!=std::future_status::ready)
+    {
+    	if (flag)
+    	{
+    		std::cerr << "fail: expected false got true" << std::endl;
+    		return 1;
+    	}
+    }
+    future_get1.wait();
+    {
+    	if (!flag)
+    	{
+    		std::cerr << "fail: expected true got false" << std::endl;
+    		return 1;
+    	}
+    }
+    std::string* arv3= future_get1.get();
+
+    if (!arv3 || arv3->compare(av2))
+    {
+    	std::cerr << "fail: expected " << av2 << " got " << (arv3 ? *arv3 : "null") << std::endl;
+    	return 1;
+    }
+    std::cout << "PASS: Async test" << std::endl;
     return 0;
 }
 

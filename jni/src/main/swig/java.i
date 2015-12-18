@@ -127,6 +127,12 @@
 %ignore RelayBytes::getBytes;
 %ignore RelayBytes::getJarray;
 
+%ignore getAsync;
+%ignore putAsync;
+%ignore goAsync;
+%ignore putAllAsync;
+%ignore replaceWithVersionAsync;
+
 //%shared_ptr(RelayShrPointer)
 
 %inline %{
