@@ -18,11 +18,17 @@ class HotRodConstants
     static const uint8_t VERSION_10 = 10;
     static const uint8_t VERSION_11 = 11;
     static const uint8_t VERSION_12 = 12;
+    static const uint8_t VERSION_13 = 13;
+    static const uint8_t VERSION_20 = 20;
+    static const uint8_t VERSION_21 = 21;
+    static const uint8_t VERSION_22 = 22;
+    static const uint8_t VERSION_23 = 23;
+    static const uint8_t VERSION_24 = 24;
 
     //hotrod consistenthash version
     static const uint8_t CONSISTENT_HASH_V2 = 2;
 
-    // request operation code
+    //requests
     static const uint8_t PUT_REQUEST                    = 0x01;
     static const uint8_t GET_REQUEST                    = 0x03;
     static const uint8_t PUT_IF_ABSENT_REQUEST          = 0x05;
@@ -38,7 +44,20 @@ class HotRodConstants
     static const uint8_t BULK_GET_REQUEST               = 0x19;
     static const uint8_t GET_WITH_METADATA_REQUEST      = 0x1B;
     static const uint8_t BULK_GET_KEYS_REQUEST          = 0x1D;
-    // response operation code
+    static const uint8_t QUERY_REQUEST                  = 0x1F;
+    static const uint8_t AUTH_MECH_LIST_REQUEST         = 0x21;
+    static const uint8_t AUTH_REQUEST                   = 0x23;
+    static const uint8_t ADD_CLIENT_LISTENER_REQUEST    = 0x25;
+    static const uint8_t REMOVE_CLIENT_LISTENER_REQUEST = 0x27;
+    static const uint8_t SIZE_REQUEST                   = 0x29;
+    static const uint8_t EXEC_REQUEST                   = 0x2B;
+    static const uint8_t PUT_ALL_REQUEST                = 0x2D;
+    static const uint8_t GET_ALL_REQUEST                = 0x2F;
+    static const uint8_t ITERATION_START_REQUEST        = 0x31;
+    static const uint8_t ITERATION_NEXT_REQUEST         = 0x33;
+    static const uint8_t ITERATION_END_REQUEST          = 0x35;
+
+    //responses
     static const uint8_t PUT_RESPONSE                   = 0x02;
     static const uint8_t GET_RESPONSE                   = 0x04;
     static const uint8_t PUT_IF_ABSENT_RESPONSE         = 0x06;
@@ -54,19 +73,43 @@ class HotRodConstants
     static const uint8_t BULK_GET_RESPONSE              = 0x1A;
     static const uint8_t GET_WITH_METADATA_RESPONSE     = 0x1C;
     static const uint8_t BULK_GET_KEYS_RESPONSE         = 0x1E;
-    // response error
+    static const uint8_t QUERY_RESPONSE                 = 0x20;
+    static const uint8_t AUTH_MECH_LIST_RESPONSE        = 0x22;
+    static const uint8_t AUTH_RESPONSE                  = 0x24;
+    static const uint8_t ADD_CLIENT_LISTENER_RESPONSE   = 0x26;
+    static const uint8_t REMOVE_CLIENT_LISTENER_RESPONSE = 0x28;
+    static const uint8_t SIZE_RESPONSE                  = 0x2A;
+    static const uint8_t EXEC_RESPONSE                  = 0x2C;
+    static const uint8_t PUT_ALL_RESPONSE               = 0x2E;
+    static const uint8_t GET_ALL_RESPONSE               = 0x30;
+    static const uint8_t ITERATION_START_RESPONSE       = 0x32;
+    static const uint8_t ITERATION_NEXT_RESPONSE        = 0x34;
+    static const uint8_t ITERATION_END_RESPONSE         = 0x36;
     static const uint8_t ERROR_RESPONSE                 = 0x50;
+    static const uint8_t CACHE_ENTRY_CREATED_EVENT_RESPONSE = 0x60;
+    static const uint8_t CACHE_ENTRY_MODIFIED_EVENT_RESPONSE = 0x61;
+    static const uint8_t CACHE_ENTRY_REMOVED_EVENT_RESPONSE = 0x62;
+    static const uint8_t CACHE_ENTRY_EXPIRED_EVENT_RESPONSE = 0x63;
 
-    // response status
+    //response status
     static const uint8_t NO_ERROR_STATUS                    = 0x00;
+    static const uint8_t NOT_PUT_REMOVED_REPLACED_STATUS = 0x01;
+    static const uint8_t KEY_DOES_NOT_EXIST_STATUS = 0x02;
+    static const uint8_t SUCCESS_WITH_PREVIOUS = 0x03;
+    static const uint8_t NOT_EXECUTED_WITH_PREVIOUS = 0x04;
+    static const uint8_t INVALID_ITERATION = 0x05;
+    static const uint8_t NO_ERROR_STATUS_COMPAT = 0x06;
+    static const uint8_t SUCCESS_WITH_PREVIOUS_COMPAT = 0x07;
+    static const uint8_t NOT_EXECUTED_WITH_PREVIOUS_COMPAT = 0x08;
+
     static const uint8_t INVALID_MAGIC_OR_MESSAGE_ID_STATUS = 0x81;
     static const uint8_t REQUEST_PARSING_ERROR_STATUS       = 0x84;
-    static const uint8_t NOT_PUT_REMOVED_REPLACED_STATUS    = 0x01;
     static const uint8_t UNKNOWN_COMMAND_STATUS             = 0x82;
     static const uint8_t SERVER_ERROR_STATUS                = 0x85;
-    static const uint8_t KEY_DOES_NOT_EXIST_STATUS          = 0x02;
     static const uint8_t UNKNOWN_VERSION_STATUS             = 0x83;
     static const uint8_t COMMAND_TIMEOUT_STATUS             = 0x86;
+    static const uint8_t NODE_SUSPECTED                     = 0x87;
+    static const uint8_t ILLEGAL_LIFECYCLE_STATE            = 0x88;
 
     static const uint8_t CLIENT_INTELLIGENCE_BASIC                   = 0x01;
     static const uint8_t CLIENT_INTELLIGENCE_TOPOLOGY_AWARE          = 0x02;
@@ -74,7 +117,40 @@ class HotRodConstants
 
     static const uint8_t INFINITE_LIFESPAN = 0x01;
     static const uint8_t INFINITE_MAXIDLE  = 0x02;
-};
+
+    static bool isSuccess(short status) {
+       return status == NO_ERROR_STATUS
+          || status == NO_ERROR_STATUS_COMPAT
+          || status == SUCCESS_WITH_PREVIOUS
+          || status == SUCCESS_WITH_PREVIOUS_COMPAT;
+    }
+
+    static bool isNotExecuted(short status) {
+       return status == NOT_PUT_REMOVED_REPLACED_STATUS
+          || status == NOT_EXECUTED_WITH_PREVIOUS
+          || status == NOT_EXECUTED_WITH_PREVIOUS_COMPAT;
+    }
+
+    static bool isNotExist(short status) {
+       return status == KEY_DOES_NOT_EXIST_STATUS;
+    }
+
+    static bool hasPrevious(short status) {
+       return status == SUCCESS_WITH_PREVIOUS
+          || status == SUCCESS_WITH_PREVIOUS_COMPAT
+          || status == NOT_EXECUTED_WITH_PREVIOUS
+          || status == NOT_EXECUTED_WITH_PREVIOUS_COMPAT;
+    }
+
+    static bool hasCompatibility(short status) {
+       return status == NO_ERROR_STATUS_COMPAT
+          || status == SUCCESS_WITH_PREVIOUS_COMPAT
+          || status == NOT_EXECUTED_WITH_PREVIOUS_COMPAT;
+    }
+
+    static bool isInvalidIteration(short status) {
+       return status == INVALID_ITERATION;
+    }};
 
 }}} // namespace infinispan::hotrod::protocol
 
