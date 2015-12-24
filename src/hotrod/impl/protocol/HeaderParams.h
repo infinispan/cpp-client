@@ -37,6 +37,12 @@ class HeaderParams
     friend class Codec10;
     friend class Codec11;
     friend class Codec12;
+    friend class Codec13;
+    friend class Codec20;
+    friend class Codec21;
+    friend class Codec22;
+    friend class Codec23;
+    friend class Codec24;
 };
 
 }}} // namespace infinispan::hotrod::protocol
