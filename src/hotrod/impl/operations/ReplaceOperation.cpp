@@ -26,7 +26,7 @@ hrbytes ReplaceOperation::executeOperation(Transport& transport)
         transport, REPLACE_REQUEST, REPLACE_RESPONSE);
     if (status == NO_ERROR_STATUS || status == NOT_PUT_REMOVED_REPLACED_STATUS) {
         previousValue =
-            AbstractKeyValueOperation<hrbytes>::returnPossiblePrevValue(transport);
+            AbstractKeyValueOperation<hrbytes>::returnPossiblePrevValue(transport,status);
     } else {
         TRACE("Error status %u", status);
     }

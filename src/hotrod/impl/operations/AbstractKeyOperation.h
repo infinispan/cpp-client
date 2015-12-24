@@ -54,15 +54,8 @@ template<class T> class AbstractKeyOperation : public RetryOnFailureOperation<T>
         return this->readHeaderAndValidate(transport, *params);
     }
 
-    hrbytes returnPossiblePrevValue(transport::Transport& transport) {
-        hrbytes result;
-        if (hasForceReturn(this->flags)) {
-            TRACEBYTES("return value = ", result);
-            result = transport.readArray();
-        } else {
-            TRACE("No return value");
-        }
-        return result;
+    hrbytes returnPossiblePrevValue(transport::Transport& transport, uint8_t status) {
+    	return this->codec.returnPossiblePrevValue(transport, status, this->flags);
     }
 
     VersionedOperationResponse returnVersionedOperationResponse(
@@ -86,18 +79,12 @@ template<class T> class AbstractKeyOperation : public RetryOnFailureOperation<T>
             // TODO: check exception type
             throw InvalidResponseException(message.str());
         }
-        hrbytes prevValue = returnPossiblePrevValue(transport);
+        hrbytes prevValue = returnPossiblePrevValue(transport,status);
         return VersionedOperationResponse(prevValue, code);
     }
 
 
   private:
-    bool hasForceReturn(uint32_t _flags) {
-        if ((_flags & FORCE_RETURN_VALUE) != FORCE_RETURN_VALUE) {
-            return false;
-        }
-        return true;
-    }
 };
 
 }}} // namespace infinispan::hotrod::operations

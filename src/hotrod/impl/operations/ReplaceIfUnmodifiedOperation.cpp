@@ -29,8 +29,7 @@ VersionedOperationResponse ReplaceIfUnmodifiedOperation::executeOperation(
 
     //2) write message body
     transport.writeArray(key);
-    transport.writeVInt(lifespan);
-    transport.writeVInt(maxIdle);
+    codec.writeExpirationParams(transport, lifespan, maxIdle);
     transport.writeLong(version);
     transport.writeArray(value);
     transport.flush();

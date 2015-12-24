@@ -23,9 +23,9 @@ hrbytes RemoveOperation::executeOperation(Transport& transport)
     TRACE("Execute Remove(flags=%u)", flags);
     TRACEBYTES("key = ", key);
     hrbytes result;
-    sendKeyOperation(key,
+    uint8_t status=sendKeyOperation(key,
         transport, REMOVE_REQUEST, REMOVE_RESPONSE);
-    return AbstractKeyOperation<hrbytes>::returnPossiblePrevValue(transport);
+    return AbstractKeyOperation<hrbytes>::returnPossiblePrevValue(transport, status);
 }
 
 }}} /// namespace infinispan::hotrod::operations
