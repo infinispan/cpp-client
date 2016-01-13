@@ -34,7 +34,7 @@ if (NOT DEFINED CPACK_PACKAGE_VERSION_PATCH)
 endif (NOT DEFINED CPACK_PACKAGE_VERSION_PATCH)
 
 set (HOTROD_VERSION "${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}")
-set (PROTOCOL_VERSION "HotRod C++ client, protocol version: 2.0-topology_change")
+set (PROTOCOL_VERSION "HotRod C++ client, protocol version: 2.0-topology_change-event")
 
 if ("${CMAKE_BINARY_DIR}" STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}")
   message (FATAL_ERROR "You are calling cmake from the source directory. Please create a separate build directory and call cmake from there. See README.md for details.")
@@ -205,6 +205,10 @@ else(DEFINED HOTROD_PREBUILT_LIB_DIR)
       src/hotrod/impl/protocol/Codec12.cpp
       src/hotrod/impl/protocol/Codec13.cpp
       src/hotrod/impl/protocol/Codec20.cpp
+      src/hotrod/impl/protocol/Codec21.cpp
+      src/hotrod/impl/protocol/Codec22.cpp
+      src/hotrod/impl/protocol/Codec23.cpp
+      src/hotrod/impl/protocol/Codec24.cpp
       src/hotrod/impl/protocol/CodecFactory.cpp
       src/hotrod/impl/transport/AbstractTransport.cpp
       src/hotrod/impl/transport/tcp/ConnectionPool.cpp

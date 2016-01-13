@@ -33,7 +33,7 @@ hrbytes PutOperation::executeOperation(Transport& transport) {
         message << "Unexpected response status: " << status;
         throw InvalidResponseException(message.str());
     }
-    return AbstractKeyValueOperation<hrbytes>::returnPossiblePrevValue(transport);
+    return AbstractKeyValueOperation<hrbytes>::returnPossiblePrevValue(transport,status);
 }
 
 

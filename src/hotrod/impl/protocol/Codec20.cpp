@@ -233,5 +233,26 @@ void Codec20::checkForErrorsInResponseStatus(Transport& transport, HeaderParams&
         throw;
     }
 }
+hrbytes Codec20::returnPossiblePrevValue(transport::Transport& t, uint8_t status, uint32_t /*flags*/) const{
+	hrbytes result;
+	if (HotRodConstants::hasPrevious(status)) {
+		TRACEBYTES("return value = ", result);
+		result = t.readArray();
+	} else {
+		TRACE("No return value");
+	}
+return result;
+}
+
+void Codec20::writeExpirationParams(transport::Transport& t,uint64_t lifespan, uint64_t maxIdle) const {
+	uint32_t lInt= (uint32_t) lifespan;
+	uint32_t mInt= (uint32_t) maxIdle;
+	if ( lInt != lifespan)
+		throw HotRodClientException("lifespan exceed 32bit integer");
+	if ( mInt != maxIdle)
+		throw HotRodClientException("maxIdle exceed 32bit integer");
+	t.writeVInt(lInt);
+    t.writeVInt(mInt);
+}
 
 }}} // namespace infinispan::hotrod::protocol
