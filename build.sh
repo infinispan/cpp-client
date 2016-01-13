@@ -8,11 +8,20 @@ wget -N http://downloads.jboss.org/infinispan/${INFINISPAN_VERSION}/infinispan-s
 rm -rf infinispan-server-${INFINISPAN_VERSION}
 unzip infinispan-server-${INFINISPAN_VERSION}-bin.zip
 export JBOSS_HOME=`pwd`/infinispan-server-${INFINISPAN_VERSION}
-
-rm -rf ${BUILD_DIR} &&
-mkdir ${BUILD_DIR} &&
-cd ${BUILD_DIR} &&
-cmake .. &&
-cmake --build . &&
-ctest -V &&
-cpack -G RPM
+echo $1
+if [  $1 == DEBUG ]
+then
+  rm -rf ${BUILD_DIR} &&
+  mkdir ${BUILD_DIR} &&
+  cd ${BUILD_DIR} &&
+  cmake -DCMAKE_BUILD_TYPE=Debug .. &&
+  cmake --build .
+else
+  rm -rf ${BUILD_DIR} &&
+  mkdir ${BUILD_DIR} &&
+  cd ${BUILD_DIR} &&
+  cmake .. &&
+  cmake --build . &&
+  ctest -V &&
+  cpack -G RPM
+fi

@@ -28,12 +28,12 @@ hrbytes PutOperation::executeOperation(Transport& transport) {
     TRACEBYTES("key = ", key);
     TRACEBYTES("value = ", value);
     uint8_t status = sendPutOperation(transport, PUT_REQUEST, PUT_RESPONSE);
-    if (status != NO_ERROR_STATUS) {
+    if (!HotRodConstants::isSuccess(status)) {
         std::ostringstream message;
         message << "Unexpected response status: " << status;
         throw InvalidResponseException(message.str());
     }
-    return AbstractKeyValueOperation<hrbytes>::returnPossiblePrevValue(transport);
+    return AbstractKeyValueOperation<hrbytes>::returnPossiblePrevValue(transport,status);
 }
 
 

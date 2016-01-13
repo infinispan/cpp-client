@@ -1,5 +1,5 @@
-#ifndef ISPN_HOTROD_PROTOCOL_CODEC10_H
-#define ISPN_HOTROD_PROTOCOL_CODEC10_H
+#ifndef ISPN_HOTROD_PROTOCOL_CODEC20_H
+#define ISPN_HOTROD_PROTOCOL_CODEC20_H
 
 #include "hotrod/types.h"
 #include "hotrod/impl/protocol/Codec.h"
@@ -16,7 +16,7 @@ namespace protocol {
 
 class HeaderParams;
 
-class Codec10 : public Codec
+class Codec20 : public Codec
 {
   public:
     HeaderParams& writeHeader(
@@ -28,8 +28,10 @@ class Codec10 : public Codec
         HeaderParams& params) const;
 
     long getMessageId();
+
     hrbytes returnPossiblePrevValue(transport::Transport& t, uint8_t status, uint32_t flags) const;
     void writeExpirationParams(transport::Transport& t,uint64_t lifespan, uint64_t maxIdle) const;
+
 
   protected:
     HeaderParams& writeHeader(
@@ -40,7 +42,7 @@ class Codec10 : public Codec
         infinispan::hotrod::transport::Transport& transport, uint32_t newTopologyId, int16_t numKeyOwners,
         uint8_t hashFunctionVersion, uint32_t hashSpace, uint32_t clusterSize) const;
 
-    Codec10() {}
+    Codec20() {}
 
   friend class CodecFactory;
 
@@ -62,4 +64,4 @@ class Codec10 : public Codec
 
 }}} // namespace infinispan::hotrod::protocol
 
-#endif // ISPN_HOTROD_PROTOCOL_CODEC12_H
+#endif // ISPN_HOTROD_PROTOCOL_CODEC20_H

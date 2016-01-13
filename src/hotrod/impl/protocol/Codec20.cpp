@@ -1,4 +1,4 @@
-#include "hotrod/impl/protocol/Codec10.h"
+#include "hotrod/impl/protocol/Codec20.h"
 #include "hotrod/impl/protocol/HotRodConstants.h"
 #include "hotrod/impl/protocol/HeaderParams.h"
 #include "hotrod/impl/transport/Transport.h"
@@ -26,23 +26,23 @@ using infinispan::hotrod::sys::ScopedUnlock;
 
 namespace protocol {
 
-long msgId(0);
-Mutex lock;
+extern long msgId;
+extern Mutex lock;
 
-long Codec10::getMessageId() {
+long Codec20::getMessageId() {
     ScopedLock<Mutex> l(lock);
     long msgIdToBeReturned = msgId;
     ScopedUnlock<Mutex> ul(lock);
     return msgIdToBeReturned;
 }
 
-HeaderParams& Codec10::writeHeader(
+HeaderParams& Codec20::writeHeader(
     Transport& transport, HeaderParams& params) const
 {
-    return writeHeader(transport, params, HotRodConstants::VERSION_10);
+    return writeHeader(transport, params, HotRodConstants::VERSION_20);
 }
 
-HeaderParams& Codec10::writeHeader(
+HeaderParams& Codec20::writeHeader(
     Transport& transport, HeaderParams& params, uint8_t version) const
 {
     transport.writeByte(HotRodConstants::REQUEST_MAGIC);
@@ -55,11 +55,10 @@ HeaderParams& Codec10::writeHeader(
     transport.writeVInt(params.flags);
     transport.writeByte(params.clientIntel);
     transport.writeVInt(params.topologyId.get());
-    transport.writeByte(params.txMarker);
     return params;
 }
 
-uint8_t Codec10::readHeader(
+uint8_t Codec20::readHeader(
     Transport& transport, HeaderParams& params) const
 {
     uint8_t magic = transport.readByte();
@@ -104,7 +103,7 @@ uint8_t Codec10::readHeader(
     return status;
 }
 
-void Codec10::readNewTopologyIfPresent(
+void Codec20::readNewTopologyIfPresent(
     Transport& transport, HeaderParams& params) const
 {
     uint8_t topologyChangeByte = transport.readByte();
@@ -112,39 +111,67 @@ void Codec10::readNewTopologyIfPresent(
         readNewTopologyAndHash(transport, params.topologyId, params.cacheName);
 }
 
-void Codec10::readNewTopologyAndHash(Transport& transport, IntWrapper& topologyId, const hrbytes& cacheName) const{
-    uint32_t newTopologyId = transport.readVInt();
+void Codec20::readNewTopologyAndHash(Transport& transport, IntWrapper& topologyId, const hrbytes& /*cacheName*/) const{
+    // Just consume the header's byte
+	// Do not evaluate new topology right now
+	uint32_t newTopologyId = transport.readVInt();
     topologyId.set(newTopologyId); //update topologyId reference
-    int16_t numKeyOwners = transport.readUnsignedShort();
-    uint8_t hashFunctionVersion = transport.readByte();
-    uint32_t hashSpace = transport.readVInt();
+//    uint32_t numKeyOwners = transport.readVInt();
+
+//    uint8_t hashFunctionVersion = transport.readByte();
+//    uint32_t hashSpace = transport.readVInt();
     uint32_t clusterSize = transport.readVInt();
 
-    std::map<InetSocketAddress, std::set<int32_t> > m = computeNewHashes(
-            transport, newTopologyId, numKeyOwners, hashFunctionVersion, hashSpace,
-            clusterSize);
-
-    std::vector<InetSocketAddress> socketAddresses;
-    for (std::map<InetSocketAddress, std::set<int32_t> >::iterator it = m.begin(); it != m.end(); ++it) {
-        socketAddresses.push_back(it->first);
+//    std::vector<InetSocketAddress> addresses(clusterSize);
+    for (uint32_t i = 0; i < clusterSize; i++) {
+       /*std::string host*/transport.readString();
+       /*int16_t port = */transport.readUnsignedShort();
+//       addresses[i] = InetSocketAddress(host, port);
     }
-    transport.getTransportFactory().updateServers(socketAddresses);
 
-    if (hashFunctionVersion == 0) {
-        TRACE("No hash function present.");
-        transport.getTransportFactory().clearHashFunction(cacheName);
-    } else {
-        TRACE("Updating Hash version: %u owners: %d hash_space: %u cluster_size: %u",
-                hashFunctionVersion,
-                numKeyOwners,
-                hashSpace,
-                clusterSize);
-        transport.getTransportFactory().updateHashFunction(m, numKeyOwners,
-                hashFunctionVersion, hashSpace, cacheName);
+    uint8_t hashFunctionVersion = transport.readByte();
+    uint32_t numSegments = transport.readVInt();
+
+//    std::vector<std::vector<InetSocketAddress>> segmentOwners(numSegments);
+
+    if (hashFunctionVersion > 0) {
+       for (uint32_t i = 0; i < numSegments; i++) {
+          uint8_t numOwners = transport.readByte();
+          for (uint8_t j = 0; j < numOwners; j++) {
+             /*uint32_t memberIndex = */transport.readVInt();
+//             segmentOwners[i][j] = addresses[memberIndex];
+          }
+       }
     }
+    // TODO: topology evaluation
+
+//    TransportFactory tf = transport.getTransportFactory();
+//    int currentTopology = tf.getTopologyId(cacheName);
+//    std::map<InetSocketAddress, std::set<int32_t> > m = computeNewHashes(
+//            transport, newTopologyId, numKeyOwners, hashFunctionVersion, hashSpace,
+//            clusterSize);
+//
+//    std::vector<InetSocketAddress> socketAddresses;
+//    for (std::map<InetSocketAddress, std::set<int32_t> >::iterator it = m.begin(); it != m.end(); ++it) {
+//        socketAddresses.push_back(it->first);
+//    }
+//    transport.getTransportFactory().updateServers(socketAddresses);
+//
+//    if (hashFunctionVersion == 0) {
+//        TRACE("No hash function present.");
+//        transport.getTransportFactory().clearHashFunction(cacheName);
+//    } else {
+//        TRACE("Updating Hash version: %u owners: %d hash_space: %u cluster_size: %u",
+//                hashFunctionVersion,
+//                numKeyOwners,
+//                hashSpace,
+//                clusterSize);
+//        transport.getTransportFactory().updateHashFunction(m, numKeyOwners,
+//                hashFunctionVersion, hashSpace, cacheName);
+//    }
 }
 
-std::map<InetSocketAddress, std::set<int32_t> > Codec10::computeNewHashes(
+std::map<InetSocketAddress, std::set<int32_t> > Codec20::computeNewHashes(
         Transport& transport, uint32_t /*newTopologyId*/, int16_t /*numKeyOwners*/,
         uint8_t /*hashFunctionVersion*/, uint32_t /*hashSpace*/, uint32_t clusterSize) const {
 
@@ -170,7 +197,7 @@ std::map<InetSocketAddress, std::set<int32_t> > Codec10::computeNewHashes(
     return map;
 }
 
-void Codec10::checkForErrorsInResponseStatus(Transport& transport, HeaderParams& params, uint8_t status) const {
+void Codec20::checkForErrorsInResponseStatus(Transport& transport, HeaderParams& params, uint8_t status) const {
     try {
         switch (status) {
         case HotRodConstants::INVALID_MAGIC_OR_MESSAGE_ID_STATUS:
@@ -206,17 +233,9 @@ void Codec10::checkForErrorsInResponseStatus(Transport& transport, HeaderParams&
         throw;
     }
 }
-
-bool hasForceReturn(uint32_t _flags) {
-    if ((_flags & FORCE_RETURN_VALUE) != FORCE_RETURN_VALUE) {
-        return false;
-    }
-    return true;
-}
-
-hrbytes Codec10::returnPossiblePrevValue(transport::Transport& t, uint8_t /*status*/, uint32_t flags) const{
+hrbytes Codec20::returnPossiblePrevValue(transport::Transport& t, uint8_t status, uint32_t /*flags*/) const{
 	hrbytes result;
-	if (hasForceReturn(flags)) {
+	if (HotRodConstants::hasPrevious(status)) {
 		TRACEBYTES("return value = ", result);
 		result = t.readArray();
 	} else {
@@ -225,7 +244,7 @@ hrbytes Codec10::returnPossiblePrevValue(transport::Transport& t, uint8_t /*stat
 return result;
 }
 
-void Codec10::writeExpirationParams(transport::Transport& t,uint64_t lifespan, uint64_t maxIdle) const {
+void Codec20::writeExpirationParams(transport::Transport& t,uint64_t lifespan, uint64_t maxIdle) const {
 	uint32_t lInt= (uint32_t) lifespan;
 	uint32_t mInt= (uint32_t) maxIdle;
 	if ( lInt != lifespan)
@@ -235,6 +254,5 @@ void Codec10::writeExpirationParams(transport::Transport& t,uint64_t lifespan, u
 	t.writeVInt(lInt);
     t.writeVInt(mInt);
 }
-
 
 }}} // namespace infinispan::hotrod::protocol
