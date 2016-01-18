@@ -53,7 +53,7 @@ class BasicMarshaller<int> : public infinispan::hotrod::Marshaller<int> {
     int* unmarshall(const ScopedBuffer& b) {
     	int result = 0;
     	for (int i = 0; i < 4 ; i++) {
-    	    result <<= 4;
+    	    result <<= 8;
     	    result ^= (int) *(b.getBytes()+i) & 0xFF;
     	}
         int* s = new int(result);
