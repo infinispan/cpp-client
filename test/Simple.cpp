@@ -4,6 +4,7 @@
 #include "infinispan/hotrod/ScopedBuffer.h"
 #include "infinispan/hotrod/Version.h"
 
+#include "infinispan/hotrod/JBasicMarshaller.h"
 #include <stdlib.h>
 #include <iostream>
 #include <memory>
@@ -22,11 +23,14 @@ void assert_not_null(const std::string& message, int line,  const std::unique_pt
   }
 }
 
-int main(int argc, char** argv) {
+template <class K, class V>
+int basicTest(int argc, char** argv, const char* protocolVersion, Marshaller<K> *km, void (*kd)(Marshaller<K> *),
+        Marshaller<V> *vm, void (*vd)(Marshaller<V> *))
+{
     ConfigurationBuilder builder;
-    builder.addServer().host(argc > 1 ? argv[1] : "127.0.0.1").port(argc > 2 ? atoi(argv[2]) : 11222);
+    builder.addServer().host(argc > 1 ? argv[1] : "127.0.0.1").port(argc > 2 ? atoi(argv[2]) : 11222).protocolVersion(protocolVersion);
     RemoteCacheManager cacheManager(builder.build(), false);
-    RemoteCache<std::string, std::string> cache = cacheManager.getCache<std::string, std::string>();
+    RemoteCache<std::string, std::string> cache = cacheManager.getCache<std::string, std::string>(km,kd,vm,vd);
     cacheManager.start();
 
     std::cout << "HotRod C++ Library version " << cache.getVersion() << std::endl;
@@ -243,4 +247,24 @@ int main(int argc, char** argv) {
     cacheManager.stop();
 
     return 0;
+
 }
+
+int main(int argc, char** argv) {
+    // Call basic test for every marshaller and every codec
+
+    std::cout << "Basic Test with BasicMarshaller" << std::endl;
+    int result=basicTest<std::string,std::string>(argc, argv, Configuration::PROTOCOL_VERSION_12,
+                                                new BasicMarshaller<std::string>(), &Marshaller<std::string>::destroy,
+                                                new BasicMarshaller<std::string>(), &Marshaller<std::string>::destroy);
+    if (result!=0)
+        return result;
+
+    std::cout << "Basic Test with JBasicMarshaller" << std::endl;
+    result=basicTest<std::string,std::string>(argc, argv, Configuration::PROTOCOL_VERSION_12,
+                                                new JBasicMarshaller<std::string>(), &Marshaller<std::string>::destroy,
+                                                new JBasicMarshaller<std::string>(), &Marshaller<std::string>::destroy);
+    return result;
+
+}
+
