@@ -25,7 +25,7 @@ PingOperation::PingOperation(const Codec& c, IntWrapper& id,
 PingResult PingOperation::execute() {
     //HeaderParams params;
 	TRACE("Executing Ping");
-	hr_scoped_ptr<infinispan::hotrod::protocol::HeaderParams> params(&writeHeader(transport, HotRodConstants::PING_REQUEST));
+	std::unique_ptr<infinispan::hotrod::protocol::HeaderParams> params(&writeHeader(transport, HotRodConstants::PING_REQUEST));
 	transport.flush();
 
     uint8_t respStatus = readHeaderAndValidate(transport, *params);

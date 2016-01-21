@@ -25,7 +25,7 @@ Transport& ClearOperation::getTransport(int /*retryCount*/)
 std::vector<char> ClearOperation::executeOperation(infinispan::hotrod::transport::Transport& transport)
 {
     TRACE("Executing Clear(flags=%u)", flags);
-    hr_scoped_ptr<HeaderParams> params(&(RetryOnFailureOperation<std::vector<char>>::writeHeader(transport, CLEAR_REQUEST)));
+    std::unique_ptr<HeaderParams> params(&(RetryOnFailureOperation<std::vector<char>>::writeHeader(transport, CLEAR_REQUEST)));
     transport.flush();
     RetryOnFailureOperation<std::vector<char>>::readHeaderAndValidate(transport, *params);
     TRACE("Finished Clear");

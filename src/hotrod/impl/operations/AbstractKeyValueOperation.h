@@ -42,7 +42,7 @@ template<class T> class AbstractKeyValueOperation : public AbstractKeyOperation<
             uint8_t                                       /*opRespCode*/)
         {
             // 1) write header
-            hr_scoped_ptr<protocol::HeaderParams> params(&(this->writeHeader(transport, opCode)));
+            std::unique_ptr<protocol::HeaderParams> params(&(this->writeHeader(transport, opCode)));
 
             // 2) write key and value
             transport.writeArray(this->key);

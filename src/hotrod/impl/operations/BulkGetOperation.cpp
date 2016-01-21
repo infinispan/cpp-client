@@ -26,7 +26,7 @@ Transport& BulkGetOperation::getTransport(int /*retryCount*/)
 std::map<std::vector<char>,std::vector<char>> BulkGetOperation::executeOperation(infinispan::hotrod::transport::Transport& transport)
 {
     TRACE("Execute BulkGet(flags=%u, entryCount=%d)", flags, entryCount);
-    hr_scoped_ptr<HeaderParams> params(&(RetryOnFailureOperation<std::map<std::vector<char>, std::vector<char>> >::writeHeader(transport, BULK_GET_REQUEST)));
+    std::unique_ptr<HeaderParams> params(&(RetryOnFailureOperation<std::map<std::vector<char>, std::vector<char>> >::writeHeader(transport, BULK_GET_REQUEST)));
     transport.writeVInt(entryCount);
     transport.flush();
     RetryOnFailureOperation<std::map<std::vector<char>, std::vector<char>> >::readHeaderAndValidate(transport, *params);
