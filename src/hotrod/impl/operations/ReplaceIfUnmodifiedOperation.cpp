@@ -23,7 +23,7 @@ VersionedOperationResponse ReplaceIfUnmodifiedOperation::executeOperation(
     TRACEBYTES("key = ", key);
     TRACEBYTES("value = ", value);
     // 1) write header
-    hr_scoped_ptr<infinispan::hotrod::protocol::HeaderParams> params(
+    std::unique_ptr<infinispan::hotrod::protocol::HeaderParams> params(
         &(AbstractKeyOperation<VersionedOperationResponse>::writeHeader(
             transport, REPLACE_IF_UNMODIFIED_REQUEST)));
 

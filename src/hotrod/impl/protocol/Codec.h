@@ -4,7 +4,7 @@
 #include "infinispan/hotrod/defs.h"
 #include <set>
 #include <map>
-
+#include <vector>
 namespace infinispan {
 namespace hotrod {
 

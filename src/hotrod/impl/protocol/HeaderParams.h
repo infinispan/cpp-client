@@ -2,11 +2,10 @@
 #define ISPN_HOTROD_PROTOCOL_HEADERPARAMS_H
 
 #include "infinispan/hotrod/Flag.h"
-#include "hotrod/types.h"
 #include "hotrod/impl/IntWrapper.h"
 
 #include <set>
-
+#include <vector>
 namespace infinispan {
 namespace hotrod {
 namespace protocol {

@@ -3,7 +3,6 @@
 
 #include "infinispan/hotrod/portable.h"
 #include "infinispan/hotrod/RemoteCacheBase.h"
-#include "hotrod/types.h"
 #include "hotrod/impl/MetadataValueImpl.h"
 #include "hotrod/impl/VersionedValueImpl.h"
 #include "hotrod/impl/operations/PingOperation.h"

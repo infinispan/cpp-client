@@ -2,7 +2,6 @@
 #define ISPN_HOTROD_LOG_H
 
 #include "infinispan/hotrod/ImportExport.h"
-#include "hotrod/types.h"
 #include "hotrod/sys/Mutex.h"
 #include <stdexcept>
 #include <stdarg.h>

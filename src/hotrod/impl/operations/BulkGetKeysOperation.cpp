@@ -30,7 +30,7 @@ Transport& BulkGetKeysOperation::getTransport(int /*retryCount*/)
 std::set<std::vector<char>> BulkGetKeysOperation::executeOperation(Transport& transport)
 {
     TRACE("Execute BulkGetKeys(flags=%u,scope=%d)", flags, scope);
-    hr_scoped_ptr<HeaderParams> params(&(RetryOnFailureOperation<std::set<std::vector<char>> >::writeHeader(transport, BULK_GET_KEYS_REQUEST)));
+    std::unique_ptr<HeaderParams> params(&(RetryOnFailureOperation<std::set<std::vector<char>> >::writeHeader(transport, BULK_GET_KEYS_REQUEST)));
     transport.writeVInt(scope);
     transport.flush();
     RetryOnFailureOperation<std::set<std::vector<char>> >::readHeaderAndValidate(transport, *params);

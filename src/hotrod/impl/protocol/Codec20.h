@@ -1,7 +1,6 @@
 #ifndef ISPN_HOTROD_PROTOCOL_CODEC20_H
 #define ISPN_HOTROD_PROTOCOL_CODEC20_H
 
-#include "hotrod/types.h"
 #include "hotrod/impl/protocol/Codec.h"
 
 namespace infinispan {
