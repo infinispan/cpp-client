@@ -45,9 +45,7 @@ include_directories ("${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_SOUR
 # MacOS has a bunch of differences in build tools and process and so we have to turn some things
 # off there by default (for GCC; LLVM will need flags re-evaluated)
 if (APPLE)
-  set (NOENABLE_WARNING_ERROR ON)
   set (NOENABLE_UNDEFINED_ERROR ON)
-  set (NOENABLE_SWIG_TESTING ON)
 endif (APPLE)
 
 if(WIN32 AND NOT CYGWIN)

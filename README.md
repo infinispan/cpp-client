@@ -25,6 +25,11 @@ On Linux, use the package manager for your distribution to install the
 necessary packages.  You may have to point to a special repository,
 such as EPEL, to get CMake 2.8.
 
+On Mac OS X, use Brew or another package manager to install gcc and swig.
+The compilation will not currently work with Apple's LLVM-based compilers.
+
+* http://brew.sh/
+
 On Windows, Visual Studio 2008 + SP1, or any newer version, is
 required.  You can obtain Windows installable distributions of other
 needed software from:
