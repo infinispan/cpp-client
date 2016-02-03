@@ -26,15 +26,19 @@ if (NOT DEFINED CPACK_PACKAGE_VERSION_MAJOR)
 endif (NOT DEFINED CPACK_PACKAGE_VERSION_MAJOR)
 
 if (NOT DEFINED CPACK_PACKAGE_VERSION_MINOR)
-  set (CPACK_PACKAGE_VERSION_MINOR "0")
+  set (CPACK_PACKAGE_VERSION_MINOR "3")
 endif (NOT DEFINED CPACK_PACKAGE_VERSION_MINOR)
 
 if (NOT DEFINED CPACK_PACKAGE_VERSION_PATCH)
   set (CPACK_PACKAGE_VERSION_PATCH "0-SNAPSHOT")
 endif (NOT DEFINED CPACK_PACKAGE_VERSION_PATCH)
-
 set (HOTROD_VERSION "${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}")
 set (PROTOCOL_VERSION "HotRod C++ client, protocol version: 2.0-topology_change-event")
+
+set (PRODUCT_VERSION "7.0.0")
+
+# BZ1201477 - Excluding "build" directory from the distribution
+set (CPACK_SOURCE_IGNORE_FILES ".git/;.gitignore;build/")
 
 if ("${CMAKE_BINARY_DIR}" STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}")
   message (FATAL_ERROR "You are calling cmake from the source directory. Please create a separate build directory and call cmake from there. See README.md for details.")
@@ -346,9 +350,13 @@ else (WIN32)
 endif(WIN32)
 message (STATUS "Build ${CMAKE_BUILD_TYPE} for ${PLATFORM} on ${PACKAGE_ARCH}")
 set (CPACK_SYSTEM_NAME "${PLATFORM}-${PACKAGE_ARCH}")
-set (CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
-set (CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/License.txt")
-set (DOCDIR .)
+#set (CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
+#set (CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/License.txt")
+if(WIN32)
+    set (DOCDIR .)
+else(WIN32)
+    set (DOCDIR ${SHARE_INSTALL_PREFIX}/doc/${CMAKE_PROJECT_NAME})
+endif(WIN32)
 
 file (GLOB includes "${CMAKE_CURRENT_SOURCE_DIR}/include/infinispan/hotrod/*.h")
 install (FILES ${includes} DESTINATION include/infinispan/hotrod)

@@ -62,7 +62,8 @@ endif (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 file(GLOB_RECURSE JAVA_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/jni *.java)
 
 add_custom_command(OUTPUT ${JNI_DIR}/target/org/infinispan/client/jni/hotrod/JniTest.class
-    COMMAND ${MVN_PROGRAM} ARGS "package"
+    COMMAND ${MVN_PROGRAM}
+    ARGS "-s" "${JNI_DIR}/maven-settings.xml" "package"
     DEPENDS ${JAVA_SOURCES} 
     WORKING_DIRECTORY "${JNI_DIR}" 
 )
@@ -71,7 +72,7 @@ add_custom_target(JniTest ALL DEPENDS ${JNI_DIR}/target/org/infinispan/client/jn
 
 #Target for deploying the jar to the maven repo. Usage: cmake --build . --target JniDeploy
 add_custom_target(JniDeploy
-  ${MVN_PROGRAM} "deploy"
+  ${MVN_PROGRAM} "-s" "${JNI_DIR}/maven-settings.xml" "deploy"
   DEPENDS ${JNI_DIR}/target/org/infinispan/client/jni/hotrod/JniTest.class hotrod-swig
   WORKING_DIRECTORY "${JNI_DIR}")
 
