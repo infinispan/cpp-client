@@ -24,13 +24,7 @@ void assert_not_null(const std::string& message, int line,  const std::unique_pt
 }
 
 template <class K, class V>
-int basicTest(int argc, char** argv, const char* protocolVersion, Marshaller<K> *km, void (*kd)(Marshaller<K> *),
-              Marshaller<V> *vm, void (*vd)(Marshaller<V> *)) {
-    ConfigurationBuilder builder;
-    builder.addServer().host(argc > 1 ? argv[1] : "127.0.0.1").port(argc > 2 ? atoi(argv[2]) : 11222).protocolVersion(protocolVersion);
-    RemoteCacheManager cacheManager(builder.build(), false);
-    RemoteCache<std::string, std::string> cache = cacheManager.getCache<std::string, std::string>(km,kd,vm,vd);
-    cacheManager.start();
+int basicTest(RemoteCacheManager &cacheManager, RemoteCache<K,V> &cache) {
 
     std::cout << "HotRod C++ Library version " << cache.getVersion() << std::endl;
     std::cout << "Protocol " << cache.getProtocolVersion() << std::endl;
@@ -243,7 +237,6 @@ int basicTest(int argc, char** argv, const char* protocolVersion, Marshaller<K> 
         return 1;
     }
 
-    cacheManager.stop();
 
     return 0;
 }
@@ -251,17 +244,110 @@ int basicTest(int argc, char** argv, const char* protocolVersion, Marshaller<K> 
 int main(int argc, char** argv) {
     // Call basic test for every marshaller and every codec
 
+    int result;
     std::cout << "Basic Test with BasicMarshaller" << std::endl;
-    int result=basicTest<std::string,std::string>(argc, argv, Configuration::PROTOCOL_VERSION_12,
-                                                new BasicMarshaller<std::string>(), &Marshaller<std::string>::destroy,
-                                                new BasicMarshaller<std::string>(), &Marshaller<std::string>::destroy);
+    {
+        ConfigurationBuilder builder;
+        builder.addServer().host(argc > 1 ? argv[1] : "127.0.0.1").port(argc > 2 ? atoi(argv[2]) : 11222).protocolVersion(Configuration::PROTOCOL_VERSION_20);
+        RemoteCacheManager cacheManager(builder.build(), false);
+        BasicMarshaller<std::string> *km = new BasicMarshaller<std::string>();
+        BasicMarshaller<std::string> *vm = new BasicMarshaller<std::string>();
+        RemoteCache<std::string, std::string> cache = cacheManager.getCache<std::string, std::string>(km,
+                &Marshaller<std::string>::destroy,
+                vm,
+                &Marshaller<std::string>::destroy);
+        cacheManager.start();
+        result = basicTest<std::string, std::string>(cacheManager, cache);
+
+        try
+        {
+            std::map<std::string,std::string> s;
+            std::string argName = std::string("a");
+            std::string argValue = std::string("b");
+            // execute() operation wants JBossMarshalling format sometimes
+            s.insert(std::pair<std::string, std::string>(argName,JBasicMarshaller<std::string>::addPreamble(argValue)));
+            std::string script ("// mode=local,language=javascript\n "
+            "var cache = cacheManager.getCache();\n"
+            "cache.put(\"a\", \"abc\");\n"
+            "cache.put(\"b\", \"b\");\n"
+            "cache.get(\"a\");\n");
+            std::string script_name("script.js");
+            cacheManager.getCache<std::string,std::string>("___script_cache",false).put(JBasicMarshaller<std::string>::addPreamble(script_name), JBasicMarshaller<std::string>::addPreamble(script));
+            char* execResult = cache.execute(script_name,s);
+
+
+            // We know the remote script returns a string and
+            // we use the helper to unmarshall
+            std::string res(JBasicMarshallerHelper::unmarshall<std::string>(execResult));
+            if (res.compare("abc")!=0)
+            {
+                std::cerr << "fail: cache.exec() returned unexpected result"<< std::endl;
+                return 1;
+            }
+            delete(execResult);
+        } catch (const Exception& e) {
+            std::cout << "is: " << typeid(e).name() << '\n';
+            std::cerr << "fail unexpected exception: " << e.what() << std::endl;
+            return 1;
+        }
+        std::cout << "PASS: script execution on server" << std::endl;
+
+        cacheManager.stop();
+
+    }
     if (result!=0)
         return result;
 
     std::cout << "Basic Test with JBasicMarshaller" << std::endl;
-    result=basicTest<std::string,std::string>(argc, argv, Configuration::PROTOCOL_VERSION_12,
-                                                new JBasicMarshaller<std::string>(), &Marshaller<std::string>::destroy,
-                                                new JBasicMarshaller<std::string>(), &Marshaller<std::string>::destroy);
+    {
+        ConfigurationBuilder builder;
+        builder.addServer().host(argc > 1 ? argv[1] : "127.0.0.1").port(argc > 2 ? atoi(argv[2]) : 11222).protocolVersion(Configuration::PROTOCOL_VERSION_20);
+        RemoteCacheManager cacheManager(builder.build(), false);
+        JBasicMarshaller<std::string> *km = new JBasicMarshaller<std::string>();
+        JBasicMarshaller<std::string> *vm = new JBasicMarshaller<std::string>();
+        RemoteCache<std::string, std::string> cache = cacheManager.getCache<std::string, std::string>(km,
+                &Marshaller<std::string>::destroy,
+                vm,
+                &Marshaller<std::string>::destroy);
+        cacheManager.start();
+        result = basicTest<std::string, std::string>(cacheManager, cache);
+        try
+        {
+            std::map<std::string,std::string> s;
+            std::string argName = std::string("a");
+            std::string argValue = std::string("b");
+            s.insert(std::pair<std::string, std::string>(argName,argValue));
+            std::string script ("// mode=local,language=javascript\n "
+            "var cache = cacheManager.getCache();\n"
+            "cache.put(\"a\", \"abc\");\n"
+            "cache.put(\"b\", \"b\");\n"
+            "cache.get(\"a\");\n");
+            std::string script_name("script.js");
+            cacheManager.getCache<std::string,std::string>(km,
+                    &Marshaller<std::string>::destroy,
+                    vm,
+                    &Marshaller<std::string>::destroy,"___script_cache").put(script_name, script);
+            char* execResult = cache.execute(script_name,s);
+
+            // We know the remote script returns a string and
+            // we use the helper to unmarshall
+            std::string res(JBasicMarshallerHelper::unmarshall<std::string>(execResult));
+            if (res.compare("abc")!=0)
+            {
+                std::cerr << "fail: cache.exec() returned unexpected result"<< std::endl;
+                return 1;
+            }
+            delete(execResult);
+        } catch (const Exception& e) {
+            std::cout << "is: " << typeid(e).name() << '\n';
+            std::cerr << "fail unexpected exception: " << e.what() << std::endl;
+            return 1;
+        }
+        std::cout << "PASS: script execution on server" << std::endl;
+        cacheManager.stop();
+
+    }
+
     return result;
 }
 

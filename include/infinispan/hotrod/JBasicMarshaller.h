@@ -5,6 +5,7 @@
 #include <string>
 #include <iostream>
 #include "infinispan/hotrod/Marshaller.h"
+#include "infinispan/hotrod/exceptions.h"
 
 namespace infinispan {
 namespace hotrod {
@@ -24,7 +25,30 @@ public:
     static void release(ScopedBuffer *buf) {
         delete buf->getBytes();
     }
+    template <class T> static T unmarshall(char *);
 };
+
+    template <> std::string JBasicMarshallerHelper::unmarshall(char *b) {
+        if (b[0]!=JBasicMarshallerHelper::MARSHALL_VERSION)
+            throw Exception("JBasicMarshallerHelper: bad version");
+        if (b[1]!=JBasicMarshallerHelper::SMALL_STRING)
+            throw Exception("JBasicMarshallerHelper: not a string");
+        return std::string(b+3,b[2]);
+    }
+
+    template <> int JBasicMarshallerHelper::unmarshall(char *b) {
+        if (b[0]!=JBasicMarshallerHelper::MARSHALL_VERSION)
+            throw Exception("JBasicMarshallerHelper: bad version");
+        if (b[1]!=JBasicMarshallerHelper::INTEGER)
+            throw Exception("JBasicMarshallerHelper: not a integer");
+        int result = 0;
+        for (int i = 0; i < 4 ; i++) {
+            result <<= 8;
+            result ^= (int) *(b+i+2) & 0xFF;
+        }
+        return result;
+    }
+
 
 
 // Specialization for std::string:
