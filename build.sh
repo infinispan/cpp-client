@@ -8,8 +8,7 @@ wget -N http://downloads.jboss.org/infinispan/${INFINISPAN_VERSION}/infinispan-s
 rm -rf infinispan-server-${INFINISPAN_VERSION}
 unzip infinispan-server-${INFINISPAN_VERSION}-bin.zip
 export JBOSS_HOME=`pwd`/infinispan-server-${INFINISPAN_VERSION}
-echo $1
-if [  $1 == DEBUG ]
+if [  "$1" == "DEBUG" ]
 then
   rm -rf ${BUILD_DIR} &&
   mkdir ${BUILD_DIR} &&

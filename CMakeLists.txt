@@ -13,9 +13,9 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
         message(FATAL_ERROR "Clang version must be at least 3.2!")
     endif()
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-    # require at least MS Visual Studio  2013
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 18.0)
-        message(FATAL_ERROR "Microsoft Visual Studio version must be at least 2013!")
+    # require at least MS Visual Studio  2012
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 17.0)
+        message(FATAL_ERROR "Microsoft Visual Studio version must be at least 2012!")
     endif()
 else()
     message(WARNING "You are using an unsupported compiler! Compilation has only been tested with Clang, MSVC and GCC.")
