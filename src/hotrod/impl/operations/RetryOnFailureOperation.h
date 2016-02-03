@@ -52,7 +52,7 @@ template<class T> class RetryOnFailureOperation : public HotRodOperation<T>
             transportFactory(_transportFactory) {}
 
     bool shouldRetry(int retryCount) {
-       return retryCount < transportFactory->getMaxRetries();
+       return retryCount <= transportFactory->getMaxRetries();
     }
 
     void releaseTransport(transport::Transport* transport) {
