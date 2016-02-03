@@ -18,6 +18,7 @@
 #include "hotrod/impl/operations/StatsOperation.h"
 #include "hotrod/impl/operations/ClearOperation.h"
 #include "hotrod/impl/operations/FaultTolerantPingOperation.h"
+#include "hotrod/impl/operations/ExecuteCmdOperation.h"
 #include "infinispan/hotrod/Flag.h"
 
 #include <cstring>
@@ -136,6 +137,15 @@ FaultTolerantPingOperation* OperationsFactory::newFaultTolerantPingOperation() {
     return new FaultTolerantPingOperation(
         codec, transportFactory, cacheNameBytes, topologyId, getFlags());
 }
+
+ExecuteCmdOperation* OperationsFactory::newExecuteCmdOperation(
+    const hrbytes& cmdName, const portable::map<hrbytes,hrbytes>& values)
+{
+    return new ExecuteCmdOperation(
+        codec, transportFactory, cacheNameBytes,
+        topologyId, getFlags(), cmdName, values);
+}
+
 
 uint32_t OperationsFactory::getFlags() {
     uint32_t result = flags;
