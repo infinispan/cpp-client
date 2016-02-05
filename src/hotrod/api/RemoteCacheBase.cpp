@@ -19,19 +19,19 @@ void RemoteCacheBase::setMarshallers(void* rc, MarshallHelperFn kf, MarshallHelp
     baseValueUnmarshallFn = uvf;
 }
     
-void RemoteCacheBase::baseKeyMarshall(const void* k, ScopedBuffer &buf) {
+void RemoteCacheBase::baseKeyMarshall(const void* k, std::vector<char> &buf) {
     baseKeyMarshallFn(remoteCachePtr, k, buf);
 }
 
-void RemoteCacheBase::baseValueMarshall(const void* v, ScopedBuffer &buf) {
+void RemoteCacheBase::baseValueMarshall(const void* v, std::vector<char> &buf) {
     baseValueMarshallFn(remoteCachePtr, v, buf);
 }
 
-void* RemoteCacheBase::baseKeyUnmarshall(const ScopedBuffer &buf) {
+void* RemoteCacheBase::baseKeyUnmarshall(const std::vector<char> &buf) {
     return baseKeyUnmarshallFn(remoteCachePtr, buf);
 }
 
-void* RemoteCacheBase::baseValueUnmarshall(const ScopedBuffer &buf) {
+void* RemoteCacheBase::baseValueUnmarshall(const std::vector<char> &buf) {
     return baseValueUnmarshallFn(remoteCachePtr, buf);
 }
 

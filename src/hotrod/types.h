@@ -2,12 +2,11 @@
 #define ISPN_HOTROD_TYPES_H
 
 #include "infinispan/hotrod/defs.h"
-#include "infinispan/hotrod/ScopedBuffer.h"
 
 #include <exception>
 #include <memory>
 #include <iostream>
-
+#include <vector>
 namespace infinispan {
 namespace hotrod {
 
@@ -110,17 +109,18 @@ class hrbytes {
         return *this;
     }
         
-    static void delayedDelete (ScopedBuffer *buf) {
-        delete[] buf->getBytes();
+    static void delayedDelete (std::vector<char> *buf) {
+        delete[] buf->data();
     }
-    void releaseTo(ScopedBuffer& buf) const {
+    void releaseTo(std::vector<char>& buf) const {
         // TODO: assert smartBytes.unique()
 	if (smartBytes) {
-            buf.set(smartBytes.get(), len, &delayedDelete);
+            buf.assign(smartBytes.get(), smartBytes.get()+len);
             (*std::get_deleter<HrbDeleter>(smartBytes))(0);
 	}
-	else 
-	    buf.set(dumbBytes, len);
+	else {
+        buf.assign(dumbBytes, dumbBytes+len);
+    }
     }
 
   private:

@@ -20,9 +20,9 @@ class JBasicMarshallerHelper {
 public:
 	// Type managed: SMALL_STRING, INTEGER
     enum  {MARSHALL_VERSION = 0x03, SMALL_STRING = 0x3e, INTEGER=0x4b};
-    static void noRelease(ScopedBuffer*) { /* nothing allocated, nothing to release */ }
-    static void release(ScopedBuffer *buf) {
-        delete buf->getBytes();
+    static void noRelease(std::vector<char>*) { /* nothing allocated, nothing to release */ }
+    static void release(std::vector<char> *buf) {
+        delete buf->data();
     }
 };
 
@@ -32,18 +32,18 @@ public:
 template <>
 class JBasicMarshaller<std::string> : public infinispan::hotrod::Marshaller<std::string> {
   public:
-    void marshall(const std::string& s, ScopedBuffer& b) {
+    void marshall(const std::string& s, std::vector<char>& b) {
     	char* buf = new char[s.size()+3];
     	// JBoss preamble
     	buf[0] = JBasicMarshallerHelper::MARSHALL_VERSION;
     	buf[1] = JBasicMarshallerHelper::SMALL_STRING;
     	buf[2]=s.size();
     	memcpy(buf+3,s.data(),s.size());
-        b.set(buf, s.size()+3, &JBasicMarshallerHelper::release);
+        b.assign(buf, buf+s.size()+3);
     }
 
-    std::string* unmarshall(const ScopedBuffer& b) {
-        std::string* s = new std::string(b.getBytes()+3, b.getLength()-3);
+    std::string* unmarshall(const std::vector<char>& b) {
+        std::string* s = new std::string(b.data()+3, b.size()-3);
         return s;
     }
 
@@ -58,7 +58,7 @@ class JBasicMarshaller<std::string> : public infinispan::hotrod::Marshaller<std:
 template <>
 class JBasicMarshaller<int> : public infinispan::hotrod::Marshaller<int> {
   public:
-    void marshall(const int& s, ScopedBuffer& b) {
+    void marshall(const int& s, std::vector<char>& b) {
         char *buf = new char[6];
         // JBoss preamble
         buf[0] = JBasicMarshallerHelper::MARSHALL_VERSION;
@@ -66,13 +66,13 @@ class JBasicMarshaller<int> : public infinispan::hotrod::Marshaller<int> {
         for (int i = 0 ; i < 4 ; i++) {
             buf[5-i] = (char) ((s) >> (8*i));
         }
-        b.set(buf, 6, &JBasicMarshallerHelper::release);
+        b.assign(buf, buf+6);
     }
-    int* unmarshall(const ScopedBuffer& b) {
+    int* unmarshall(const std::vector<char>& b) {
       int result = 0;
       for (int i = 0; i < 4 ; i++) {
         result <<= 8;
-        result ^= (int) *(b.getBytes()+i+2) & 0xFF;
+        result ^= (int) *(b.data()+i+2) & 0xFF;
       }
       int* s = new int(result);
       return s;

@@ -2,6 +2,7 @@
 
 #include "hotrod/impl/protocol/HeaderParams.h"
 #include "hotrod/impl/protocol/HotRodConstants.h"
+#include "infinispan/hotrod/exceptions.h"
 
 #include <sstream>
 
