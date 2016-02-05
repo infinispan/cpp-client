@@ -1,7 +1,6 @@
 #ifndef ISPN_HOTROD_OPERATIONS_GETOPERATION_H
 #define ISPN_HOTROD_OPERATIONS_GETOPERATION_H
 
-#include "infinispan/hotrod/ScopedBuffer.h"
 #include "infinispan/hotrod/RemoteCacheBase.h"
 #include "hotrod/types.h"
 #include "hotrod/impl/operations/AbstractKeyOperation.h"

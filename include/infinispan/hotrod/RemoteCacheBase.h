@@ -6,10 +6,11 @@
 #include "infinispan/hotrod/ImportExport.h"
 #include "infinispan/hotrod/Flag.h"
 #include "infinispan/hotrod/MetadataValue.h"
-#include "infinispan/hotrod/ScopedBuffer.h"
+#include "infinispan/hotrod/portable.h"
 
 #include <map>
 #include <set>
+#include <vector>
 
 namespace infinispan {
 namespace hotrod {
@@ -18,8 +19,8 @@ namespace operations {
 class OperationsFactory;
 }
 
-typedef void (*MarshallHelperFn) (void*, const void*, ScopedBuffer &);
-typedef void* (*UnmarshallHelperFn) (void*, const ScopedBuffer &);
+typedef void (*MarshallHelperFn) (void*, const void*, std::vector<char> &);
+typedef void* (*UnmarshallHelperFn) (void*, const std::vector<char> &);
 
 class KeyUnmarshallerFtor;
 class ValueUnmarshallerFtor;
@@ -53,13 +54,13 @@ private:
     void *remoteCachePtr; // TODO: pointer to self, is it really necessary?
     MarshallHelperFn baseKeyMarshallFn;
     MarshallHelperFn baseValueMarshallFn;
-    HR_EXTERN void baseKeyMarshall(const void* k, ScopedBuffer &buf);
-    HR_EXTERN void baseValueMarshall(const void* v, ScopedBuffer &buf);
+    HR_EXTERN void baseKeyMarshall(const void* k, std::vector<char> &buf);
+    HR_EXTERN void baseValueMarshall(const void* v, std::vector<char> &buf);
 
     UnmarshallHelperFn baseKeyUnmarshallFn;
     UnmarshallHelperFn baseValueUnmarshallFn;
-    HR_EXTERN void* baseKeyUnmarshall(const ScopedBuffer &buf);
-    HR_EXTERN void* baseValueUnmarshall(const ScopedBuffer &buf);
+    HR_EXTERN void* baseKeyUnmarshall(const std::vector<char> &buf);
+    HR_EXTERN void* baseValueUnmarshall(const std::vector<char> &buf);
 
 friend class RemoteCacheManager;
 friend class RemoteCacheImpl;

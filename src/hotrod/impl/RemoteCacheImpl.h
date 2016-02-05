@@ -2,7 +2,6 @@
 #define ISPN_HOTROD_REMOTECACHEIMPL_H
 
 #include "infinispan/hotrod/portable.h"
-#include "infinispan/hotrod/ScopedBuffer.h"
 #include "infinispan/hotrod/RemoteCacheBase.h"
 #include "hotrod/types.h"
 #include "hotrod/impl/MetadataValueImpl.h"
@@ -66,7 +65,7 @@ private:
 public:
     KeyUnmarshallerFtor(RemoteCacheBase &b): base(b) {}
     void *operator()(const hrbytes &bytes) {
-        ScopedBuffer buf;
+        std::vector<char> buf;
         bytes.releaseTo(buf);
         return base.baseKeyUnmarshall(buf);
     }
@@ -78,7 +77,7 @@ private:
 public:
     ValueUnmarshallerFtor(RemoteCacheBase &b): base(b) {}
     void *operator()(const hrbytes &bytes) {
-        ScopedBuffer buf;
+        std::vector<char> buf;
         bytes.releaseTo(buf);
         return base.baseKeyUnmarshall(buf);
     }
