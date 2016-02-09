@@ -222,21 +222,32 @@ int basicTest(RemoteCacheManager &cacheManager, RemoteCache<K,V> &cache) {
     }
 
     std::cout << "PASS: simple replace" << std::endl;
-
-    // get non-existing cache
     try {
-        cacheManager.getCache<std::string, std::string>("non-existing", false);
-        std::cerr << "fail getCache for non-existing cache didn't throw exception" << std::endl;
-        return 1;
-    } catch (const HotRodClientException&) {
-        std::cout << "PASS: get non-existing cache" << std::endl;
-    } catch (const Exception& e) {
-        std::cout << "is: " << typeid(e).name() << '\n';
-        std::cerr << "fail unexpected exception: " << e.what() << std::endl;
+        RemoteCache<std::string, std::string> namedCache =
+                cacheManager.getCache<std::string, std::string>("namedCache", false);
+        std::unique_ptr<std::string> namedCacheV1(namedCache.get("k1"));
+    }
+    catch (...)
+    {
         return 1;
     }
+    std::cout << "PASS: get for namedCache" << std::endl;
 
+    // get non-existing cache
+        try {
+            RemoteCache<std::string, std::string> non_existing =
+                    cacheManager.getCache<std::string, std::string>("non-existing", false);
+            std::cerr << "fail getCache for non-existing cache didn't throw exception" << std::endl;
+            return 1;
+        } catch (const HotRodClientException &ex) {
+            std::cout << "PASS: get non-existing cache" << std::endl;
+        } catch (const Exception &e) {
+            std::cout << "is: " << typeid(e).name() << '\n';
+            std::cerr << "fail unexpected exception: " << e.what() << std::endl;
+            return 1;
+        }
 
+    cacheManager.stop();
     return 0;
 }
 
@@ -343,7 +354,6 @@ int main(int argc, char** argv) {
             return 1;
         }
         std::cout << "PASS: script execution on server" << std::endl;
-        cacheManager.stop();
 
     }
 

@@ -93,13 +93,15 @@ class OperationsFactory
     void addFlags(uint32_t flags);
     void setFlags(uint32_t flags);
 
-  private:
+    virtual ~OperationsFactory() { }
+
+private:
     std::shared_ptr<infinispan::hotrod::transport::TransportFactory> transportFactory;
     IntWrapper topologyId;
     const infinispan::hotrod::protocol::Codec& codec;
-    hrbytes cacheNameBytes;
     bool forceReturnValue;
     uint32_t flags;
+    hrbytes cacheNameBytes;
 
     uint32_t getFlags();
 

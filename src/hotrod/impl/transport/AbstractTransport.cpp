@@ -24,33 +24,30 @@ void AbstractTransport::writeArray(const hrbytes& bytes)
 
 void AbstractTransport::writeLong(int64_t longValue)
 {
-  hrbytes bytes;
-  bytes.reserve(8);
   /*
   for (char* ptr = bytes.bytes() + 8 ; ptr > bytes.bytes() ; --ptr) {
        // TODO: verificare operatore java >>>
        *ptr = (char) longValue >> ( (bytes.bytes() + 8 - ptr)* 8);
   }
   */
-  char * ptr = bytes.bytes();
+  char ptr[8];
   for (int i = 0 ; i < 8 ; i++) {
     ptr[7-i] = (char) ((longValue) >> (8*i));
   }
+  hrbytes bytes(ptr,8);
   writeBytes(bytes);
 }
 
 hrbytes AbstractTransport::readArray()
 {
   uint32_t size = readVInt();
-  hrbytes result;
-  readBytes(result, size);
+  hrbytes result(readBytes(size));
   return result;
 }
 
 int64_t AbstractTransport::readLong()
 {
-  hrbytes longBytes;
-  readBytes(longBytes, 8);
+  hrbytes longBytes= readBytes(8);
   int64_t result = 0;
   for (int i = 0; i < 8 ; i++) {
     result <<= 8;
@@ -61,8 +58,7 @@ int64_t AbstractTransport::readLong()
 
 int16_t AbstractTransport::readUnsignedShort()
 {
-  hrbytes shortBytes;
-  readBytes(shortBytes, 2);
+  hrbytes shortBytes= readBytes(2);
   int16_t result = 0;
 
   for (int i = 0; i < 2 ; i++) {
@@ -74,8 +70,7 @@ int16_t AbstractTransport::readUnsignedShort()
 
 int32_t AbstractTransport::read4ByteInt()
 {
-  hrbytes intBytes;
-  readBytes(intBytes, 4);
+  hrbytes intBytes= readBytes(4);
   int32_t result = 0;
 
   for (int i = 0; i < 4 ; i++) {

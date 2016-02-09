@@ -33,10 +33,8 @@ using namespace transport;
 OperationsFactory::OperationsFactory(
     std::shared_ptr<infinispan::hotrod::transport::TransportFactory> tf, const std::string& cn,
     bool frv, const Codec& c) :
-        transportFactory(tf), topologyId(0), codec(c), forceReturnValue(frv), flags()
+        transportFactory(tf), topologyId(0), codec(c), forceReturnValue(frv), flags(), cacheNameBytes(cn)
 {
-    cacheNameBytes.reserve(cn.length());
-    memcpy(cacheNameBytes.bytes(), cn.c_str(), cn.length());
 }
 
 PingOperation* OperationsFactory::newPingOperation(Transport& transport)
