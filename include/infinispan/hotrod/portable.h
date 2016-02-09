@@ -31,7 +31,7 @@ static int strncpy_safe(char *dest, size_t numberOfElements, const char *src, si
     size_t end = count != _TRUNCATE && count < numberOfElements ? count : numberOfElements - 1;
     size_t i = 0;
     for (; i < end && src[i]; ++i) {
-        dest[i] = src[i];        
+        dest[i] = src[i];
     }
     if (!src[i] || end == count || count == _TRUNCATE) {
         dest[i] = '\0';

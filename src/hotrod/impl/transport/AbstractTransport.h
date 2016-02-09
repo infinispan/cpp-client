@@ -32,7 +32,7 @@ class AbstractTransport : public Transport
 
   protected:
     virtual void writeBytes(const hrbytes& bytes) = 0;
-    virtual void readBytes(hrbytes& bytes, uint32_t size) = 0;
+    virtual hrbytes readBytes(uint32_t size) = 0;
 
   private:
     TransportFactory& transportFactory;

@@ -85,9 +85,9 @@ protected:
         UNUSED(bytes);
     }
 
-    void readBytes(hrbytes &bytes, uint32_t size) {
-        UNUSED(bytes);
+    hrbytes readBytes(uint32_t size) {
         UNUSED(size);
+        return hrbytes();
     }
 };
 

@@ -109,14 +109,15 @@ uint64_t TcpTransport::readVLong() {
     return i;
 }
 
-void TcpTransport::readBytes(hrbytes& bytes, uint32_t size) {
+hrbytes TcpTransport::readBytes(uint32_t size) {
 	if (size) {
-	    bytes.reserve(size);
+        char* b = new char[size];
 	    //inStr.read(bytes.bytes(), size);
-	    socket.getInputStream().read(bytes.bytes(), size);
+	    socket.getInputStream().read(b, size);
+        hrbytes hrb(b,size);
+        return hrb;
 	}
-
-    return;
+    return hrbytes();
 }
 
 void TcpTransport::release() {
