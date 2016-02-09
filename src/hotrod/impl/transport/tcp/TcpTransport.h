@@ -30,7 +30,7 @@ class TcpTransport : public AbstractTransport
     uint8_t readByte();
     uint32_t readVInt();
     uint64_t readVLong();
-    void readBytes(hrbytes& bytes, uint32_t size);
+    hrbytes readBytes(uint32_t size);
 
     void release();
     void invalidate();

@@ -170,42 +170,45 @@ std::map<InetSocketAddress, std::set<int32_t> > Codec10::computeNewHashes(
     return map;
 }
 
-void Codec10::checkForErrorsInResponseStatus(Transport& transport, HeaderParams& params, uint8_t status) const {
-    try {
+    void Codec10::checkForErrorsInResponseStatus(Transport &transport, HeaderParams &params, uint8_t status) const {
+        bool invalidate;
+        // Some status needs to invalidate the transport
         switch (status) {
-        case HotRodConstants::INVALID_MAGIC_OR_MESSAGE_ID_STATUS:
-        case HotRodConstants::REQUEST_PARSING_ERROR_STATUS:
-        case HotRodConstants::UNKNOWN_COMMAND_STATUS:
-        case HotRodConstants::SERVER_ERROR_STATUS:
-        case HotRodConstants::COMMAND_TIMEOUT_STATUS:
-        case HotRodConstants::UNKNOWN_VERSION_STATUS: {
-            // If error, the body of the message just contains a message
-            std::string msgFromServer = transport.readString();
-            if (msgFromServer.find("SuspectException") != std::string::npos || msgFromServer.find("SuspectedException") != std::string::npos) {
-                // Handle both Infinispan's and JGroups' suspicions
-                // TODO: This will be better handled with its own status id in version 2 of protocol
-                throw RemoteNodeSuspectException(msgFromServer, params.messageId, status);
-            } else {
-                throw HotRodClientException(msgFromServer); //, params.messageId, status);
+            case HotRodConstants::INVALID_MAGIC_OR_MESSAGE_ID_STATUS:
+            case HotRodConstants::REQUEST_PARSING_ERROR_STATUS:
+            case HotRodConstants::UNKNOWN_COMMAND_STATUS:
+                invalidate = true;
+                break;
+            default:
+                invalidate = false;
+        }
+        switch (status) {
+            case HotRodConstants::INVALID_MAGIC_OR_MESSAGE_ID_STATUS:
+            case HotRodConstants::REQUEST_PARSING_ERROR_STATUS:
+            case HotRodConstants::UNKNOWN_COMMAND_STATUS:
+            case HotRodConstants::UNKNOWN_VERSION_STATUS:
+            case HotRodConstants::SERVER_ERROR_STATUS:
+            case HotRodConstants::COMMAND_TIMEOUT_STATUS: {
+                // If error, the body of the message just contains a message
+                std::string msgFromServer = transport.readString();
+                if (invalidate) {
+                    transport.invalidate();
+                }
+                if (msgFromServer.find("SuspectException") != std::string::npos ||
+                    msgFromServer.find("SuspectedException") != std::string::npos) {
+                    // Handle both Infinispan's and JGroups' suspicions
+                    // TODO: This will be better handled with its own status id in version 2 of protocol
+                    throw RemoteNodeSuspectException(msgFromServer, params.messageId, status);
+                } else {
+                    throw HotRodClientException(msgFromServer); //, params.messageId, status);
+                }
+            }
+                break;
+            default: {
+                throw InternalException("Unknown status: " + status);
             }
         }
-        default: {
-            throw InternalException("Unknown status: " + status);
-        }
-        }
-    } catch (const Exception &) {
-        // Some operations require invalidating the transport
-        switch (status) {
-        case HotRodConstants::INVALID_MAGIC_OR_MESSAGE_ID_STATUS:
-        case HotRodConstants::REQUEST_PARSING_ERROR_STATUS:
-        case HotRodConstants::UNKNOWN_COMMAND_STATUS:
-        case HotRodConstants::UNKNOWN_VERSION_STATUS: {
-            transport.invalidate();
-        }
-        }
-        throw;
     }
-}
 
 bool hasForceReturn(uint32_t _flags) {
     if ((_flags & FORCE_RETURN_VALUE) != FORCE_RETURN_VALUE) {
@@ -215,14 +218,14 @@ bool hasForceReturn(uint32_t _flags) {
 }
 
 hrbytes Codec10::returnPossiblePrevValue(transport::Transport& t, uint8_t /*status*/, uint32_t flags) const{
-	hrbytes result;
+    hrbytes result;
 	if (hasForceReturn(flags)) {
+        result = t.readArray();
 		TRACEBYTES("return value = ", result);
-		result = t.readArray();
 	} else {
 		TRACE("No return value");
 	}
-return result;
+    return result;
 }
 
 void Codec10::writeExpirationParams(transport::Transport& t,uint64_t lifespan, uint64_t maxIdle) const {

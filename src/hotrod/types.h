@@ -58,69 +58,32 @@ template <class T> class hr_scoped_ptr {
 
 class hrbytes {
  public:
-    struct HrbDeleter {
-        void operator()(char* p) {
-            if (p == 0) {
-                // called via get_deleter from below
-                disabled = true;
-                return;
-            }
-                
-            if (!disabled) {
-                delete[] p;
-            }
-        }
-        bool disabled;
-    };
-
     size_t length() const { return len; }
-    char* bytes() const { return dumbBytes ? dumbBytes : smartBytes.get(); }
+    char* bytes() const { return const_cast<char*>(smartBytes.data()); }
 
-    hrbytes() : dumbBytes(0), len(0) {}
-    hrbytes(char *b, size_t l) :  dumbBytes(b), len(l) {}
+    hrbytes() :  len(0) {}
+    hrbytes(char *b, size_t l) :  smartBytes(b,b+l), len(l) {}
+    hrbytes(std::string s) : smartBytes(s.begin(),s.end()), len(s.length()) {}
 
     void set(char *b, size_t l) {
-        smartBytes.reset();
+        smartBytes.assign(b,b+l);
         len = l;
-        dumbBytes = b;
-    }
-    void setSmart(char *b, size_t l) {
-        smartBytes.reset(b, HrbDeleter());
-        len = l;
-        dumbBytes = 0;
-    }
-    void reserve(size_t l) {
-        dumbBytes = 0;
-        len = l;
-        smartBytes.reset(new char[len], HrbDeleter());
     }
 
     hrbytes(hrbytes const &other) {
         len = other.len;
-        dumbBytes = other.dumbBytes;
         smartBytes = other.smartBytes;
-        if (!dumbBytes) other.dumbBytes = smartBytes.get();
     }
     hrbytes& operator=(hrbytes const &other) {
         len = other.len;
-        dumbBytes = other.dumbBytes;
         smartBytes = other.smartBytes;
-        if (!dumbBytes) other.dumbBytes = smartBytes.get();
         return *this;
     }
         
-    static void delayedDelete (std::vector<char> *buf) {
-        delete[] buf->data();
-    }
     void releaseTo(std::vector<char>& buf) const {
         // TODO: assert smartBytes.unique()
-	if (smartBytes) {
-            buf.assign(smartBytes.get(), smartBytes.get()+len);
-            (*std::get_deleter<HrbDeleter>(smartBytes))(0);
-	}
-	else {
-        buf.assign(dumbBytes, dumbBytes+len);
-    }
+            if (len>0)
+              buf.assign(smartBytes.data(), smartBytes.data()+len);
     }
     void releaseTo(char* &buf)
     {
@@ -134,9 +97,8 @@ class hrbytes {
     }
 
   private:
-    mutable char* dumbBytes;
+    std::vector<char> smartBytes;
     size_t len;
-    std::shared_ptr<char> smartBytes;
 };
 
 }} // namespace infinispan::hotrod

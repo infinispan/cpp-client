@@ -88,28 +88,32 @@ RemoteCacheImpl *RemoteCacheManagerImpl::createRemoteCache(
 {
     ScopedLock<Mutex> l(lock);
     std::map<std::string, RemoteCacheHolder>::iterator iter = cacheName2RemoteCache.find(name);
-    if (iter == cacheName2RemoteCache.end()) {
-        RemoteCacheImpl *rcache = new RemoteCacheImpl(*this, name);
-        try {
-            startRemoteCache(*rcache, forceReturnValue);
-            if ((name != DefaultCacheName) && configuration.isPingOnStartup()) {
-                // If ping not successful assume that the cache does not exist
-                // Default cache is always started, so don't do for it
-                if (ping(*rcache) == CACHE_DOES_NOT_EXIST) {
-                    delete rcache;
-                    return NULL;
-                }
-            }
-            // If ping on startup is disabled, or cache is defined in server
-            cacheName2RemoteCache[name] = RemoteCacheHolder(rcache, forceReturnValue);
-        } catch (...) {
-            delete rcache;
-            throw;
+    // Cache found
+    if (iter != cacheName2RemoteCache.end()) {
+        return iter->second.first.get();
+    }
+    // Cache not found, creating...
+    RemoteCacheImpl *rcache = new RemoteCacheImpl(*this, name);
+    try {
+        startRemoteCache(*rcache, forceReturnValue);
+        if ((name != DefaultCacheName) && configuration.isPingOnStartup()) {
+           // If ping not successful assume that the cache does not exist
+           // Default cache is always started, so don't do for it
+           if (ping(*rcache) == CACHE_DOES_NOT_EXIST) {
+               delete rcache;
+               return NULL;
+           }
         }
+        // If ping on startup is disabled, or cache is defined in server
+        cacheName2RemoteCache[name] = RemoteCacheHolder(rcache, forceReturnValue);
         return rcache;
     }
-
-    return iter->second.first.get();
+    catch (...)
+    {
+        std::cout << "Deleting rcache" << std::endl;
+        delete rcache;
+        throw;
+    }
 }
 
 void RemoteCacheManagerImpl::startRemoteCache(RemoteCacheImpl& remoteCache, bool forceReturnValue)
