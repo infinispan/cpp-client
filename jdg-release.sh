@@ -8,9 +8,8 @@ VERSION=8.3.0
 
 # dist-git setup
 DIST_GIT_REPO=infinispan-cpp-client
-DIST_GIT_RHEL6_BRANCH=jb-dg-7-rhel-6
 DIST_GIT_RHEL7_BRANCH=jb-dg-7-rhel-7
-BRANCHES="$DIST_GIT_RHEL6_BRANCH $DIST_GIT_RHEL7_BRANCH"
+BRANCHES="$DIST_GIT_RHEL7_BRANCH"
 
 USERNAME=`whoami`
 FULLNAME=`getent passwd "$USERNAME" | cut -d ':' -f 5`
