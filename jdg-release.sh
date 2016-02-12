@@ -4,7 +4,7 @@ JDG_REMOTE=jdg
 REDHAT_REMOTE=redhat
 JDG_BRANCH=jdg-7.0.x
 TEMP_BRANCH=__tmp
-VERSION=8.3.0
+VERSION=8.3.0-SNAPSHOT
 
 # dist-git setup
 DIST_GIT_REPO=infinispan-cpp-client
