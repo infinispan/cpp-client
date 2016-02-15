@@ -39,6 +39,7 @@ class BulkGetKeysOperation;
 class StatsOperation;
 class ClearOperation;
 class FaultTolerantPingOperation;
+class ExecuteCmdOperation;
 
 class OperationsFactory
 {
@@ -82,6 +83,9 @@ class OperationsFactory
     StatsOperation* newStatsOperation();
 
     ClearOperation* newClearOperation();
+
+    ExecuteCmdOperation* newExecuteCmdOperation(
+        const hrbytes& cmdName, const portable::map<hrbytes,hrbytes>& values);
 
     FaultTolerantPingOperation* newFaultTolerantPingOperation();
 

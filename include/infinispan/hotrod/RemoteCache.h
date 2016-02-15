@@ -462,6 +462,16 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
         return result;
     }
     /**
+     * Execute script on server
+     * \param cmdName name of the script
+     * \param args maps of (name,value) arguments
+     * \return byte[] result in dark matter shape
+     */
+    char* execute(const std::string& name, const std::map<std::string,std::string>& args)
+    {
+    	return base_execute(*this,name,args);
+    }
+    /**
      * Unsupported operation in this release of Hot Rod client. UnsupportedOperationException is
      * thrown if his method is invoked.
      */

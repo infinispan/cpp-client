@@ -23,6 +23,7 @@
 #include "hotrod/impl/protocol/CodecFactory.h"
 #include "hotrod/impl/VersionedOperationResponse.h"
 #include "hotrod/impl/MetadataValueImpl.h"
+#include "hotrod/impl/operations/ExecuteCmdOperation.h"
 
 #include <iostream>
 
@@ -237,5 +238,14 @@ void RemoteCacheImpl::assertRemoteCacheManagerIsStarted() {
                  << "Use RemoteCacheManager.start before using the remote cache.");
    }
 }
+hrbytes RemoteCacheImpl::execute(RemoteCacheBase& /*remoteCacheBase*/, hrbytes cmdNameBytes, const portable::map<hrbytes,hrbytes>& args) {
+	assertRemoteCacheManagerIsStarted();
+
+    hr_scoped_ptr<ExecuteCmdOperation> op(operationsFactory->newExecuteCmdOperation(cmdNameBytes, args));
+    return op->execute();
+
+}
+
+
 
 }} /* namespace */
