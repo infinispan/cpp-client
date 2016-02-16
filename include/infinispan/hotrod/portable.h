@@ -143,6 +143,7 @@ template<typename A, typename B> class converter {
 };
 
 template<typename T> class identity {
+public:
     T operator()(const T &x) {
         return x;
     }
