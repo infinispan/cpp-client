@@ -9,7 +9,7 @@ For more information, please refer to [the documentation of this client library]
 ## Build ##
 Build prerequisites: 
 
-* CMake 2.8 (3.x if Visual Studio 2013 or newer)
+* CMake 2.8 (3.x if Visual Studio 2012 or newer)
 * C++11
 * Infinispan server distribution (located via JBOSS_HOME or cmake directive)
 * Java (any version compatible with the Infinispan distribution)

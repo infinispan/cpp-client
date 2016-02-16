@@ -111,5 +111,22 @@ void RemoteCacheBase::base_ping() {
 void RemoteCacheBase::base_withFlags(Flag flags) {
     IMPL->withFlags(flags);
 }
+char *RemoteCacheBase::base_execute(RemoteCacheBase& remoteCacheBase, std::string cmdName, const std::map<std::string,std::string>& args){
+	std::map<hrbytes,hrbytes> m;
+    std::vector<char> cmdNameBuf;
+    std::vector<char> argNameBuf, argValueBuf;
+	for (std::map<std::string,std::string>::const_iterator it=args.begin(); it!=args.end(); ++it)
+	{
+        baseValueMarshall(&(it->second), argValueBuf);
+        hrbytes argNameBytes(const_cast<char*>(it->first.data()),it->first.size());
+        hrbytes argValueBytes(argValueBuf.data(),argValueBuf.size());
+        m.insert(std::pair<hrbytes,hrbytes>(argNameBytes, argValueBytes));
+	}
+	portable::map<hrbytes,hrbytes> pm(m);
+    const hrbytes cmdNameBytes(const_cast<char*>(cmdName.data()), cmdName.size());
+	char *result;
+	IMPL->execute(remoteCacheBase, cmdNameBytes, pm).releaseTo(result);
+	return result;
+}
 
 }} /* namespace */
