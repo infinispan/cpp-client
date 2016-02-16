@@ -45,6 +45,7 @@ hrbytes ExecuteCmdOperation::sendExecuteOperation(
     	transport.writeArray(this->cmdArgs.data()[i].value);
     }
     transport.flush();
+
     // 3) now read header
     RetryOnFailureOperation<hrbytes>::readHeaderAndValidate(transport, *params);
        return transport.readArray();

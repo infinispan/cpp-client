@@ -132,6 +132,16 @@ class hrbytes {
 	else
 	    buf=dumbBytes;
     }
+    void releaseTo(char* &buf)
+    {
+        // TODO: assert smartBytes.unique()
+	if (smartBytes) {
+            buf=smartBytes.get();
+            (*std::get_deleter<HrbDeleter>(smartBytes))(0);
+	}
+	else
+	    buf=dumbBytes;
+    }
 
   private:
     mutable char* dumbBytes;
