@@ -5,6 +5,7 @@
 #include "hotrod/types.h"
 
 #include <set>
+#include <infinispan/hotrod/portable.h>
 
 namespace infinispan {
 namespace hotrod {

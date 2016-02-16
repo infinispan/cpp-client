@@ -40,12 +40,11 @@ hrbytes ExecuteCmdOperation::sendExecuteOperation(
 
     for (int i=this->cmdArgs.size()-1; i>=0; i--)
     {
-    	ScopedBuffer nameBuf, valBuf;
+        std::vector<char> nameBuf, valBuf;
     	transport.writeArray(this->cmdArgs.data()[i].key);
     	transport.writeArray(this->cmdArgs.data()[i].value);
     }
     transport.flush();
-
     // 3) now read header
     RetryOnFailureOperation<hrbytes>::readHeaderAndValidate(transport, *params);
        return transport.readArray();
