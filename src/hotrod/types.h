@@ -58,47 +58,39 @@ template <class T> class hr_scoped_ptr {
 
 class hrbytes {
  public:
-    size_t length() const { return len; }
-    char* bytes() const { return const_cast<char*>(smartBytes.data()); }
+    size_t size() const { return smartBytes.size(); }
+    char* data() const { return const_cast<char*>(smartBytes.data()); }
 
-    hrbytes() :  len(0) {}
-    hrbytes(char *b, size_t l) :  smartBytes(b,b+l), len(l) {}
-    hrbytes(std::string s) : smartBytes(s.begin(),s.end()), len(s.length()) {}
-
-    void set(char *b, size_t l) {
-        smartBytes.assign(b,b+l);
-        len = l;
-    }
+    hrbytes()  {}
+    hrbytes(char *b, size_t l) :  smartBytes(b,b+l) {}
+    hrbytes(std::string s) : smartBytes(s.begin(),s.end()) {}
 
     hrbytes(hrbytes const &other) {
-        len = other.len;
         smartBytes = other.smartBytes;
     }
     hrbytes& operator=(hrbytes const &other) {
-        len = other.len;
         smartBytes = other.smartBytes;
         return *this;
     }
-        
-    void releaseTo(std::vector<char>& buf) const {
-        // TODO: assert smartBytes.unique()
-            if (len>0)
-              buf.assign(smartBytes.data(), smartBytes.data()+len);
-    }
-    void releaseTo(char* &buf)
+    operator const std::vector<char>& () const
     {
-        // TODO: assert smartBytes.unique()
-	if (smartBytes) {
-            buf=smartBytes.get();
-            (*std::get_deleter<HrbDeleter>(smartBytes))(0);
-	}
-	else
-	    buf=dumbBytes;
+        return smartBytes;
+    }
+    std::vector<char> getVecto() const
+    {
+        return smartBytes;
+    }
+    std::vector<char>::const_iterator begin()
+    {
+        return smartBytes.begin();
+    }
+    std::vector<char>::const_iterator end()
+    {
+        return smartBytes.end();
     }
 
   private:
     std::vector<char> smartBytes;
-    size_t len;
 };
 
 }} // namespace infinispan::hotrod
@@ -114,7 +106,7 @@ template<> struct less<infinispan::hotrod::hrbytes>
         const infinispan::hotrod::hrbytes& b1,
         const infinispan::hotrod::hrbytes& b2) const
     {
-        return b1.bytes() < b2.bytes();
+        return b1.data() < b2.data();
     }
 };
 
