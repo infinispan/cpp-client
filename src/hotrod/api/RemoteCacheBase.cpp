@@ -124,8 +124,9 @@ char *RemoteCacheBase::base_execute(RemoteCacheBase& remoteCacheBase, std::strin
 	}
 	portable::map<hrbytes,hrbytes> pm(m);
     const hrbytes cmdNameBytes(const_cast<char*>(cmdName.data()), cmdName.size());
-	char *result;
-	IMPL->execute(remoteCacheBase, cmdNameBytes, pm).releaseTo(result);
+	hrbytes resBytes= IMPL->execute(remoteCacheBase, cmdNameBytes, pm);
+    char *result = new char[resBytes.size()];
+    std::copy(resBytes.begin(),resBytes.end(),result);
 	return result;
 }
 
