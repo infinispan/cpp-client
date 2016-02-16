@@ -247,7 +247,6 @@ int basicTest(RemoteCacheManager &cacheManager, RemoteCache<K,V> &cache) {
             return 1;
         }
 
-    cacheManager.stop();
     return 0;
 }
 
@@ -282,7 +281,10 @@ int main(int argc, char** argv) {
             "cache.put(\"b\", \"b\");\n"
             "cache.get(\"a\");\n");
             std::string script_name("script.js");
-            cacheManager.getCache<std::string,std::string>("___script_cache",false).put(JBasicMarshaller<std::string>::addPreamble(script_name), JBasicMarshaller<std::string>::addPreamble(script));
+            std::string p_script_name=JBasicMarshaller<std::string>::addPreamble(script_name);
+            std::string p_script=JBasicMarshaller<std::string>::addPreamble(script);
+            RemoteCache<std::string, std::string> scriptCache=cacheManager.getCache<std::string,std::string>("___script_cache",false);
+            scriptCache.put(p_script_name, p_script);
             char* execResult = cache.execute(script_name,s);
 
 
@@ -303,7 +305,6 @@ int main(int argc, char** argv) {
         std::cout << "PASS: script execution on server" << std::endl;
 
         cacheManager.stop();
-
     }
     if (result!=0)
         return result;
@@ -355,8 +356,8 @@ int main(int argc, char** argv) {
         }
         std::cout << "PASS: script execution on server" << std::endl;
 
+        cacheManager.stop();
     }
-
     return result;
 }
 

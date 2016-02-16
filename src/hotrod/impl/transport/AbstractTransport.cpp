@@ -18,7 +18,7 @@ TransportFactory& AbstractTransport::getTransportFactory(){
 void AbstractTransport::writeArray(const hrbytes& bytes)
 {
   hrbytes& not_const_bytes = const_cast<hrbytes&>(bytes);
-  writeVInt((uint32_t) not_const_bytes.length());
+  writeVInt((uint32_t) not_const_bytes.size());
   writeBytes(bytes);
 }
 
@@ -51,7 +51,7 @@ int64_t AbstractTransport::readLong()
   int64_t result = 0;
   for (int i = 0; i < 8 ; i++) {
     result <<= 8;
-    result ^= (int64_t) *(longBytes.bytes()+i) & 0xFF;
+    result ^= (int64_t) *(longBytes.data() + i) & 0xFF;
   }
   return result;
 }
@@ -63,7 +63,7 @@ int16_t AbstractTransport::readUnsignedShort()
 
   for (int i = 0; i < 2 ; i++) {
     result <<= 8;
-    result ^= (int16_t) *(shortBytes.bytes()+i) & 0xFF;
+    result ^= (int16_t) *(shortBytes.data() + i) & 0xFF;
   }
   return result;
 }
@@ -75,7 +75,7 @@ int32_t AbstractTransport::read4ByteInt()
 
   for (int i = 0; i < 4 ; i++) {
       int shift = (4 - 1 - i) * 8;
-      result += (*(intBytes.bytes()+i) & 0x000000FF) << shift;
+      result += (*(intBytes.data() + i) & 0x000000FF) << shift;
   }
   return result;
 }
@@ -83,7 +83,7 @@ int32_t AbstractTransport::read4ByteInt()
 // TODO
 std::string AbstractTransport::readString() {
 	hrbytes result = readArray();
-	return std::string(result.bytes(),result.length());
+	return std::string(result.data(), result.size());
 }
 
 }}} // namespace infinispan::hotrod::transport

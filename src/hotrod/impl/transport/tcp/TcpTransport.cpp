@@ -64,7 +64,7 @@ void TcpTransport::writeVLong(uint64_t ulong) {
 void TcpTransport::writeBytes(const hrbytes& bytes) {
 	hrbytes& not_const_bytes = const_cast<hrbytes&>(bytes);
     //out.write(not_const_bytes.bytes(),not_const_bytes.length());
-	socket.getOutputStream().write(not_const_bytes.bytes(),not_const_bytes.length());
+	socket.getOutputStream().write(not_const_bytes.data(), not_const_bytes.size());
 }
 
 uint8_t TcpTransport::readByte() {

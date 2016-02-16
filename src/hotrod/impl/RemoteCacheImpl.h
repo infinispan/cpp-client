@@ -66,9 +66,7 @@ private:
 public:
     KeyUnmarshallerFtor(RemoteCacheBase &b): base(b) {}
     void *operator()(const hrbytes &bytes) {
-        std::vector<char> buf;
-        bytes.releaseTo(buf);
-        return base.baseKeyUnmarshall(buf);
+        return base.baseKeyUnmarshall(bytes);
     }
 };
 
@@ -78,9 +76,7 @@ private:
 public:
     ValueUnmarshallerFtor(RemoteCacheBase &b): base(b) {}
     void *operator()(const hrbytes &bytes) {
-        std::vector<char> buf;
-        bytes.releaseTo(buf);
-        return base.baseKeyUnmarshall(buf);
+        return base.baseKeyUnmarshall(bytes);
     }
 };
 
