@@ -12,17 +12,17 @@ class IntWrapper;
 namespace operations {
 
 class GetWithMetadataOperation
-   : public AbstractKeyOperation<MetadataValueImpl<hrbytes> >
+   : public AbstractKeyOperation<MetadataValueImpl<std::vector<char>> >
 {
     protected:
-        MetadataValueImpl<hrbytes> executeOperation(
+        MetadataValueImpl<std::vector<char>> executeOperation(
             infinispan::hotrod::transport::Transport& transport);
 
     private:
         GetWithMetadataOperation(
             const infinispan::hotrod::protocol::Codec& codec,
             std::shared_ptr<transport::TransportFactory> transportFactory,
-            const hrbytes& key, const hrbytes& cacheName,
+            const std::vector<char>& key, const std::vector<char>& cacheName,
             IntWrapper& topologyId, uint32_t flags);
 
     friend class OperationsFactory;

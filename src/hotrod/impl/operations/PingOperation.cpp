@@ -13,13 +13,13 @@ using transport::Transport;
 namespace operations {
 
 PingOperation::PingOperation(const Codec& c, IntWrapper& id,
-		Transport& t, const hrbytes& n)
+		Transport& t, const std::vector<char>& n)
     : HotRodOperation<PingResult>(c, 0, n, id), transport(t)
 {}
 
 PingOperation::PingOperation(const Codec& c, IntWrapper& id,
 		Transport& t)
-    : HotRodOperation<PingResult>(c, 0, hrbytes(), id), transport(t)
+    : HotRodOperation<PingResult>(c, 0, std::vector<char>(), id), transport(t)
 {}
 
 PingResult PingOperation::execute() {

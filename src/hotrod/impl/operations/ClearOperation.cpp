@@ -10,26 +10,26 @@ using namespace infinispan::hotrod::transport;
 ClearOperation::ClearOperation(
     const Codec&      codec_,
     std::shared_ptr<TransportFactory> transportFactory_,
-    const hrbytes&    cacheName_,
+    const std::vector<char>&    cacheName_,
     IntWrapper&  topologyId_,
     uint32_t    flags_)
-    : RetryOnFailureOperation<hrbytes>(
+    : RetryOnFailureOperation<std::vector<char>>(
         codec_, transportFactory_, cacheName_, topologyId_, flags_)
 {}
 
 Transport& ClearOperation::getTransport(int /*retryCount*/)
 {
-        return RetryOnFailureOperation<hrbytes>::transportFactory->getTransport(cacheName);
+        return RetryOnFailureOperation<std::vector<char>>::transportFactory->getTransport(cacheName);
 }
 
-hrbytes ClearOperation::executeOperation(infinispan::hotrod::transport::Transport& transport)
+std::vector<char> ClearOperation::executeOperation(infinispan::hotrod::transport::Transport& transport)
 {
     TRACE("Executing Clear(flags=%u)", flags);
-    hr_scoped_ptr<HeaderParams> params(&(RetryOnFailureOperation<hrbytes>::writeHeader(transport, CLEAR_REQUEST)));
+    hr_scoped_ptr<HeaderParams> params(&(RetryOnFailureOperation<std::vector<char>>::writeHeader(transport, CLEAR_REQUEST)));
     transport.flush();
-    RetryOnFailureOperation<hrbytes>::readHeaderAndValidate(transport, *params);
+    RetryOnFailureOperation<std::vector<char>>::readHeaderAndValidate(transport, *params);
     TRACE("Finished Clear");
-    return hrbytes();
+    return std::vector<char>();
 }
 
 }}} /// namespace infinispan::hotrod::operations

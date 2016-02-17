@@ -111,7 +111,7 @@ void Codec20::readNewTopologyIfPresent(
         readNewTopologyAndHash(transport, params.topologyId, params.cacheName);
 }
 
-void Codec20::readNewTopologyAndHash(Transport& transport, IntWrapper& topologyId, const hrbytes& /*cacheName*/) const{
+void Codec20::readNewTopologyAndHash(Transport& transport, IntWrapper& topologyId, const std::vector<char>& /*cacheName*/) const{
     // Just consume the header's byte
 	// Do not evaluate new topology right now
 	uint32_t newTopologyId = transport.readVInt();
@@ -233,8 +233,8 @@ void Codec20::checkForErrorsInResponseStatus(Transport& transport, HeaderParams&
         throw;
     }
 }
-hrbytes Codec20::returnPossiblePrevValue(transport::Transport& t, uint8_t status, uint32_t /*flags*/) const{
-	hrbytes result;
+std::vector<char> Codec20::returnPossiblePrevValue(transport::Transport& t, uint8_t status, uint32_t /*flags*/) const{
+	std::vector<char> result;
 	if (HotRodConstants::hasPrevious(status)) {
 		TRACEBYTES("return value = ", result);
 		result = t.readArray();

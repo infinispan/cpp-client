@@ -12,18 +12,18 @@ using namespace infinispan::hotrod::transport;
 PutOperation::PutOperation(
     const Codec&      codec_,
     std::shared_ptr<transport::TransportFactory> transportFactory_,
-    const hrbytes&    key_,
-    const hrbytes&    cacheName_,
+    const std::vector<char>&    key_,
+    const std::vector<char>&    cacheName_,
     IntWrapper&  topologyId_,
     uint32_t          flags_,
-    const hrbytes&    value_,
+    const std::vector<char>&    value_,
     uint32_t          lifespan_,
     uint32_t          maxIdle_)
-    : AbstractKeyValueOperation<hrbytes>(codec_, transportFactory_, key_,
+    : AbstractKeyValueOperation<std::vector<char>>(codec_, transportFactory_, key_,
         cacheName_, topologyId_, flags_, value_, lifespan_, maxIdle_)
 {}
 
-hrbytes PutOperation::executeOperation(Transport& transport) {
+std::vector<char> PutOperation::executeOperation(Transport& transport) {
     TRACE("Executing Put(flags=%u, lifespan=%u, maxIdle=%u)", flags, lifespan, maxIdle);
     TRACEBYTES("key = ", key);
     TRACEBYTES("value = ", value);
@@ -33,7 +33,7 @@ hrbytes PutOperation::executeOperation(Transport& transport) {
         message << "Unexpected response status: " << status;
         throw InvalidResponseException(message.str());
     }
-    return AbstractKeyValueOperation<hrbytes>::returnPossiblePrevValue(transport, status);
+    return AbstractKeyValueOperation<std::vector<char>>::returnPossiblePrevValue(transport, status);
 }
 
 

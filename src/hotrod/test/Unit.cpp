@@ -81,13 +81,13 @@ public:
     }
 
 protected:
-    void writeBytes(const hrbytes &bytes) {
+    void writeBytes(const std::vector<char> &bytes) {
         UNUSED(bytes);
     }
 
-    hrbytes readBytes(uint32_t size) {
+    std::vector<char> readBytes(uint32_t size) {
         UNUSED(size);
-        return hrbytes();
+        return std::vector<char>();
     }
 };
 

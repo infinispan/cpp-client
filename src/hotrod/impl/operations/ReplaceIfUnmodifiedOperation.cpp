@@ -8,9 +8,9 @@ using infinispan::hotrod::protocol::Codec;
 using namespace infinispan::hotrod::transport;
 
 ReplaceIfUnmodifiedOperation::ReplaceIfUnmodifiedOperation(
-    const Codec& _codec, std::shared_ptr<TransportFactory> _transportFactory, const hrbytes& _key,
-    const hrbytes& _cacheName, IntWrapper& _topologyId, uint32_t _flags,
-    const hrbytes& _value, uint32_t _lifespan, uint32_t _maxIdle, int64_t _version) :
+    const Codec& _codec, std::shared_ptr<TransportFactory> _transportFactory, const std::vector<char>& _key,
+    const std::vector<char>& _cacheName, IntWrapper& _topologyId, uint32_t _flags,
+    const std::vector<char>& _value, uint32_t _lifespan, uint32_t _maxIdle, int64_t _version) :
         AbstractKeyValueOperation<VersionedOperationResponse>(
             _codec, _transportFactory, _key, _cacheName, _topologyId,
             _flags, _value, _lifespan, _maxIdle), version(_version)

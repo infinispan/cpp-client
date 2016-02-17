@@ -19,7 +19,7 @@ HeaderParams& HeaderParams::setOpCode(uint8_t code) {
     return *this;
 }
 
-HeaderParams& HeaderParams::setCacheName(const hrbytes& c) {
+HeaderParams& HeaderParams::setCacheName(const std::vector<char>& c) {
     cacheName = c;
     return *this;
 }

@@ -15,9 +15,9 @@ TransportFactory& AbstractTransport::getTransportFactory(){
     return transportFactory;
 }
 
-void AbstractTransport::writeArray(const hrbytes& bytes)
+void AbstractTransport::writeArray(const std::vector<char>& bytes)
 {
-  hrbytes& not_const_bytes = const_cast<hrbytes&>(bytes);
+  std::vector<char>& not_const_bytes = const_cast<std::vector<char>&>(bytes);
   writeVInt((uint32_t) not_const_bytes.size());
   writeBytes(bytes);
 }
@@ -34,20 +34,20 @@ void AbstractTransport::writeLong(int64_t longValue)
   for (int i = 0 ; i < 8 ; i++) {
     ptr[7-i] = (char) ((longValue) >> (8*i));
   }
-  hrbytes bytes(ptr,8);
+  std::vector<char> bytes(ptr,ptr+8);
   writeBytes(bytes);
 }
 
-hrbytes AbstractTransport::readArray()
+std::vector<char> AbstractTransport::readArray()
 {
   uint32_t size = readVInt();
-  hrbytes result(readBytes(size));
+  std::vector<char> result(readBytes(size));
   return result;
 }
 
 int64_t AbstractTransport::readLong()
 {
-  hrbytes longBytes= readBytes(8);
+  std::vector<char> longBytes= readBytes(8);
   int64_t result = 0;
   for (int i = 0; i < 8 ; i++) {
     result <<= 8;
@@ -58,7 +58,7 @@ int64_t AbstractTransport::readLong()
 
 int16_t AbstractTransport::readUnsignedShort()
 {
-  hrbytes shortBytes= readBytes(2);
+  std::vector<char> shortBytes= readBytes(2);
   int16_t result = 0;
 
   for (int i = 0; i < 2 ; i++) {
@@ -70,7 +70,7 @@ int16_t AbstractTransport::readUnsignedShort()
 
 int32_t AbstractTransport::read4ByteInt()
 {
-  hrbytes intBytes= readBytes(4);
+  std::vector<char> intBytes= readBytes(4);
   int32_t result = 0;
 
   for (int i = 0; i < 4 ; i++) {
@@ -82,7 +82,7 @@ int32_t AbstractTransport::read4ByteInt()
 
 // TODO
 std::string AbstractTransport::readString() {
-	hrbytes result = readArray();
+	std::vector<char> result = readArray();
 	return std::string(result.data(), result.size());
 }
 

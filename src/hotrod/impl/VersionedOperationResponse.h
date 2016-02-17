@@ -15,14 +15,14 @@ class VersionedOperationResponse
         MODIFIED_KEY
     };
 
-    VersionedOperationResponse(const hrbytes& val, RspCode c) :
+    VersionedOperationResponse(const std::vector<char>& val, RspCode c) :
        value(val), code(c) {}
 
     bool isUpdated() {
         return code==SUCCESS;
     }
 
-    const hrbytes& getValue() {
+    const std::vector<char>& getValue() {
         return value;
     }
 
@@ -31,7 +31,7 @@ class VersionedOperationResponse
     }
 
     private:
-        hrbytes value;
+        std::vector<char> value;
         RspCode code;
 };
 
