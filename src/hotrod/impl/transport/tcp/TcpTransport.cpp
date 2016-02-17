@@ -61,8 +61,8 @@ void TcpTransport::writeVLong(uint64_t ulong) {
 	socket.getOutputStream().write((char) ulong);
 }
 
-void TcpTransport::writeBytes(const hrbytes& bytes) {
-	hrbytes& not_const_bytes = const_cast<hrbytes&>(bytes);
+void TcpTransport::writeBytes(const std::vector<char>& bytes) {
+	std::vector<char>& not_const_bytes = const_cast<std::vector<char>&>(bytes);
     //out.write(not_const_bytes.bytes(),not_const_bytes.length());
 	socket.getOutputStream().write(not_const_bytes.data(), not_const_bytes.size());
 }
@@ -109,15 +109,15 @@ uint64_t TcpTransport::readVLong() {
     return i;
 }
 
-hrbytes TcpTransport::readBytes(uint32_t size) {
+std::vector<char> TcpTransport::readBytes(uint32_t size) {
 	if (size) {
         char* b = new char[size];
 	    //inStr.read(bytes.bytes(), size);
 	    socket.getInputStream().read(b, size);
-        hrbytes hrb(b,size);
+        std::vector<char> hrb(b,b+size);
         return hrb;
 	}
-    return hrbytes();
+    return std::vector<char>();
 }
 
 void TcpTransport::release() {

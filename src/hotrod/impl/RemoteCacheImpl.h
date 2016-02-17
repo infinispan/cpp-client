@@ -36,7 +36,7 @@ public:
     void  keySet(RemoteCacheBase& rcb, int scope, portable::vector<void*> &result);
     void  stats(portable::map<portable::string,portable::string> &stats);
     void  clear();
-    hrbytes execute(RemoteCacheBase& /*remoteCacheBase*/, hrbytes cmdName, const portable::map<hrbytes,hrbytes>& args);
+    std::vector<char> execute(RemoteCacheBase& /*remoteCacheBase*/, std::vector<char> cmdName, const portable::map<std::vector<char>,std::vector<char>>& args);
 
     operations::PingResult ping();
 
@@ -65,7 +65,7 @@ private:
     RemoteCacheBase &base;
 public:
     KeyUnmarshallerFtor(RemoteCacheBase &b): base(b) {}
-    void *operator()(const hrbytes &bytes) {
+    void *operator()(const std::vector<char> &bytes) {
         return base.baseKeyUnmarshall(bytes);
     }
 };
@@ -75,7 +75,7 @@ private:
     RemoteCacheBase &base;
 public:
     ValueUnmarshallerFtor(RemoteCacheBase &b): base(b) {}
-    void *operator()(const hrbytes &bytes) {
+    void *operator()(const std::vector<char> &bytes) {
         return base.baseKeyUnmarshall(bytes);
     }
 };

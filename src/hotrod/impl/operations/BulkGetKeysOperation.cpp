@@ -14,32 +14,32 @@ using namespace infinispan::hotrod::transport;
 BulkGetKeysOperation::BulkGetKeysOperation(
     const Codec&      codec_,
     std::shared_ptr<TransportFactory> transportFactory_,
-    const hrbytes&    cacheName_,
+    const std::vector<char>&    cacheName_,
     IntWrapper&  topologyId_,
     uint32_t    flags_,
     int32_t  scope_)
-    : RetryOnFailureOperation<std::set<hrbytes> >(
+    : RetryOnFailureOperation<std::set<std::vector<char>> >(
         codec_, transportFactory_, cacheName_, topologyId_, flags_), scope(scope_)
 {}
 
 Transport& BulkGetKeysOperation::getTransport(int /*retryCount*/)
 {
-        return RetryOnFailureOperation<std::set<hrbytes> >::transportFactory->getTransport(cacheName);
+        return RetryOnFailureOperation<std::set<std::vector<char>> >::transportFactory->getTransport(cacheName);
 }
 
-std::set<hrbytes> BulkGetKeysOperation::executeOperation(Transport& transport)
+std::set<std::vector<char>> BulkGetKeysOperation::executeOperation(Transport& transport)
 {
     TRACE("Execute BulkGetKeys(flags=%u,scope=%d)", flags, scope);
-    hr_scoped_ptr<HeaderParams> params(&(RetryOnFailureOperation<std::set<hrbytes> >::writeHeader(transport, BULK_GET_KEYS_REQUEST)));
+    hr_scoped_ptr<HeaderParams> params(&(RetryOnFailureOperation<std::set<std::vector<char>> >::writeHeader(transport, BULK_GET_KEYS_REQUEST)));
     transport.writeVInt(scope);
     transport.flush();
-    RetryOnFailureOperation<std::set<hrbytes> >::readHeaderAndValidate(transport, *params);
-    std::set<hrbytes> result;
+    RetryOnFailureOperation<std::set<std::vector<char>> >::readHeaderAndValidate(transport, *params);
+    std::set<std::vector<char>> result;
     while (transport.readByte()==1) {
         result.insert(transport.readArray());
     }
     if (logger.isTraceEnabled()) {
-        for (std::set<hrbytes>::iterator it = result.begin(); it != result.end(); ++it) {
+        for (std::set<std::vector<char>>::iterator it = result.begin(); it != result.end(); ++it) {
             TRACEBYTES("return key = ", *it);
         }
         if (result.size() == 0) {

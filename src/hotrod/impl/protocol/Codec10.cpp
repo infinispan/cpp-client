@@ -112,7 +112,7 @@ void Codec10::readNewTopologyIfPresent(
         readNewTopologyAndHash(transport, params.topologyId, params.cacheName);
 }
 
-void Codec10::readNewTopologyAndHash(Transport& transport, IntWrapper& topologyId, const hrbytes& cacheName) const{
+void Codec10::readNewTopologyAndHash(Transport& transport, IntWrapper& topologyId, const std::vector<char>& cacheName) const{
     uint32_t newTopologyId = transport.readVInt();
     topologyId.set(newTopologyId); //update topologyId reference
     int16_t numKeyOwners = transport.readUnsignedShort();
@@ -217,8 +217,8 @@ bool hasForceReturn(uint32_t _flags) {
     return true;
 }
 
-hrbytes Codec10::returnPossiblePrevValue(transport::Transport& t, uint8_t /*status*/, uint32_t flags) const{
-    hrbytes result;
+std::vector<char> Codec10::returnPossiblePrevValue(transport::Transport& t, uint8_t /*status*/, uint32_t flags) const{
+    std::vector<char> result;
 	if (hasForceReturn(flags)) {
         result = t.readArray();
 		TRACEBYTES("return value = ", result);

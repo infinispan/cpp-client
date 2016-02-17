@@ -10,19 +10,19 @@ using namespace infinispan::hotrod::transport;
 GetWithVersionOperation::GetWithVersionOperation(
     const Codec&      codec_,
     std::shared_ptr<TransportFactory> transportFactory_,
-    const hrbytes&    key_,
-    const hrbytes&    cacheName_,
+    const std::vector<char>&    key_,
+    const std::vector<char>&    cacheName_,
     IntWrapper&          topologyId_,
     uint32_t    flags_)
-    : AbstractKeyOperation<VersionedValueImpl<hrbytes> >(
+    : AbstractKeyOperation<VersionedValueImpl<std::vector<char>> >(
         codec_, transportFactory_, key_, cacheName_, topologyId_, flags_)
 {}
 
-VersionedValueImpl<hrbytes> GetWithVersionOperation::executeOperation(Transport& transport)
+VersionedValueImpl<std::vector<char>> GetWithVersionOperation::executeOperation(Transport& transport)
 {
     TRACE("Execute GetWithVersion(flags=%u)", flags);
     TRACEBYTES("key = ", key);
-    VersionedValueImpl<hrbytes> result;
+    VersionedValueImpl<std::vector<char>> result;
     uint8_t status = sendKeyOperation(
         key, transport, GET_WITH_VERSION_REQUEST, GET_WITH_VERSION_RESPONSE);
     if (status == NO_ERROR_STATUS) {
