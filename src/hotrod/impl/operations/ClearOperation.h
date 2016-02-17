@@ -14,19 +14,19 @@ namespace hotrod {
 class IntWrapper;
 namespace operations {
 
-class ClearOperation : public RetryOnFailureOperation<hrbytes>
+class ClearOperation : public RetryOnFailureOperation<std::vector<char>>
 {
     protected:
 	ClearOperation(
             const infinispan::hotrod::protocol::Codec&       codec_,
             std::shared_ptr<transport::TransportFactory> transportFactory_,
-            const hrbytes&                                   cacheName_,
+            const std::vector<char>&                                   cacheName_,
             IntWrapper&                                 topologyId_,
             uint32_t                                   flags_);
 
         infinispan::hotrod::transport::Transport& getTransport(int retryCount);
 
-        hrbytes executeOperation(infinispan::hotrod::transport::Transport& transport);
+        std::vector<char> executeOperation(infinispan::hotrod::transport::Transport& transport);
 
     friend class OperationsFactory;
 };

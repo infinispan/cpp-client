@@ -10,22 +10,22 @@ using namespace infinispan::hotrod::transport;
 RemoveOperation::RemoveOperation(
     const Codec&      codec_,
     std::shared_ptr<transport::TransportFactory> transportFactory_,
-    const hrbytes&    key_,
-    const hrbytes&    cacheName_,
+    const std::vector<char>&    key_,
+    const std::vector<char>&    cacheName_,
     IntWrapper&  topologyId_,
     uint32_t    flags_)
-    : AbstractKeyOperation<hrbytes>(
+    : AbstractKeyOperation<std::vector<char>>(
         codec_, transportFactory_, key_, cacheName_, topologyId_, flags_)
 {}
 
-hrbytes RemoveOperation::executeOperation(Transport& transport)
+std::vector<char> RemoveOperation::executeOperation(Transport& transport)
 {
     TRACE("Execute Remove(flags=%u)", flags);
     TRACEBYTES("key = ", key);
-    hrbytes result;
+    std::vector<char> result;
     uint8_t status=sendKeyOperation(key,
         transport, REMOVE_REQUEST, REMOVE_RESPONSE);
-    return AbstractKeyOperation<hrbytes>::returnPossiblePrevValue(transport, status);
+    return AbstractKeyOperation<std::vector<char>>::returnPossiblePrevValue(transport, status);
 }
 
 }}} /// namespace infinispan::hotrod::operations

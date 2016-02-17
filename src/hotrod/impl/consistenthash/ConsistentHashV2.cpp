@@ -50,7 +50,7 @@ void ConsistentHashV2::init(
     this->numKeyOwners = nKeyOwners;
 }
 
-const InetSocketAddress& ConsistentHashV2::getServer(const hrbytes& key) {
+const InetSocketAddress& ConsistentHashV2::getServer(const std::vector<char>& key) {
     int32_t normalisedHashForKey;
     if (hashSpaceIsMaxInt) {
         normalisedHashForKey = getNormalizedHash(key);
@@ -72,7 +72,7 @@ int32_t ConsistentHashV2::getNormalizedHash(int32_t objectId) {
     return hash->hash(objectId) & std::numeric_limits<int32_t>::max();
 }
 
-int32_t ConsistentHashV2::getNormalizedHash(const hrbytes& key) {
+int32_t ConsistentHashV2::getNormalizedHash(const std::vector<char>& key) {
     // make sure no negative numbers are involved.
     return hash->hash(key.data(), key.size()) & std::numeric_limits<int32_t>::max();
 }

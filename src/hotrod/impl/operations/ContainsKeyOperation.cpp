@@ -10,8 +10,8 @@ using namespace infinispan::hotrod::transport;
 ContainsKeyOperation::ContainsKeyOperation(
     const Codec&      codec_,
     std::shared_ptr<transport::TransportFactory> transportFactory_,
-    const hrbytes&    key_,
-    const hrbytes&    cacheName_,
+    const std::vector<char>&    key_,
+    const std::vector<char>&    cacheName_,
     IntWrapper&  topologyId_,
     uint32_t    flags_)
     : AbstractKeyOperation<bool>(

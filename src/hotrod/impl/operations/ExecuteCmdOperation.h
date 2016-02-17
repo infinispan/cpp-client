@@ -13,25 +13,25 @@ namespace hotrod {
 class IntWrapper;
 namespace operations {
 
-class ExecuteCmdOperation : public RetryOnFailureOperation<hrbytes >
+class ExecuteCmdOperation : public RetryOnFailureOperation<std::vector<char> >
 {
 protected:
     infinispan::hotrod::transport::Transport& getTransport(int retryCount);
     ExecuteCmdOperation(
             const infinispan::hotrod::protocol::Codec&       codec_,
             std::shared_ptr<transport::TransportFactory> transportFactory_,
-            const hrbytes&                                   cacheName_,
+            const std::vector<char>&                                   cacheName_,
             IntWrapper&                                 topologyId_,
             uint32_t                                         flags_,
-            const hrbytes&                                   cmdName_,
-            const portable::map<hrbytes,hrbytes>&   cmdArgs_);
-            hrbytes sendExecuteOperation(
+            const std::vector<char>&                                   cmdName_,
+            const portable::map<std::vector<char>,std::vector<char>>&   cmdArgs_);
+            std::vector<char> sendExecuteOperation(
                     transport::Transport&     transport,
 					uint8_t                                       opCode,
 					uint8_t                                       opRespCode);
-	hrbytes executeOperation(infinispan::hotrod::transport::Transport& transport);
-    const hrbytes& cmdName;
-    const portable::map<hrbytes,hrbytes>& cmdArgs;
+	std::vector<char> executeOperation(infinispan::hotrod::transport::Transport& transport);
+    const std::vector<char>& cmdName;
+    const portable::map<std::vector<char>,std::vector<char>>& cmdArgs;
     friend class OperationsFactory;
 };
 

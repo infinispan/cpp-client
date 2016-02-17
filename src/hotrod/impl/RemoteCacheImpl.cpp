@@ -42,10 +42,10 @@ void *RemoteCacheImpl::get(RemoteCacheBase& remoteCacheBase, const void *k) {
     assertRemoteCacheManagerIsStarted();
 	std::vector<char> kbuf;
     remoteCacheBase.baseKeyMarshall(k, kbuf);
-    hrbytes keyBytes(kbuf.data(), kbuf.size());
+    std::vector<char> keyBytes(kbuf.data(), kbuf.data()+kbuf.size());
 
     hr_scoped_ptr<GetOperation> gco(operationsFactory->newGetKeyOperation(keyBytes));
-    hrbytes bytes = gco->execute();
+    std::vector<char> bytes = gco->execute();
     return bytes.data() ? remoteCacheBase.baseValueUnmarshall(bytes) : NULL;
 }
 
@@ -54,12 +54,11 @@ void *RemoteCacheImpl::put(RemoteCacheBase& remoteCacheBase, const void *k, cons
 	std::vector<char> kbuf, vbuf;
     remoteCacheBase.baseKeyMarshall(k, kbuf);
     remoteCacheBase.baseValueMarshall(v, vbuf);
-    hrbytes keyBytes(kbuf.data(), kbuf.size());
-
-    hrbytes valueBytes(vbuf.data(), vbuf.size());
+    std::vector<char> keyBytes(kbuf.data(), kbuf.data()+kbuf.size());
+    std::vector<char> valueBytes(vbuf.data(), vbuf.data()+vbuf.size());
     applyDefaultExpirationFlags(life, idle);
     hr_scoped_ptr<PutOperation> op(operationsFactory->newPutKeyValueOperation(keyBytes, valueBytes,life,idle));
-    hrbytes bytes = op->execute();
+    std::vector<char> bytes = op->execute();
     return bytes.data() ? remoteCacheBase.baseValueUnmarshall(bytes) : NULL;
 }
 
@@ -68,11 +67,11 @@ void *RemoteCacheImpl::putIfAbsent(RemoteCacheBase& remoteCacheBase, const void 
     std::vector<char> kbuf, vbuf;
     remoteCacheBase.baseKeyMarshall(k, kbuf);
     remoteCacheBase.baseValueMarshall(v, vbuf);
-    hrbytes keyBytes(kbuf.data(), kbuf.size());
-    hrbytes valueBytes(vbuf.data(), vbuf.size());
+    std::vector<char> keyBytes(kbuf.data(), kbuf.data()+kbuf.size());
+    std::vector<char> valueBytes(vbuf.data(), vbuf.data()+vbuf.size());
     applyDefaultExpirationFlags(life, idle);
     hr_scoped_ptr<PutIfAbsentOperation> op(operationsFactory->newPutIfAbsentOperation(keyBytes, valueBytes,life,idle));
-    hrbytes bytes = op->execute();
+    std::vector<char> bytes = op->execute();
     return bytes.data() ? remoteCacheBase.baseValueUnmarshall(bytes) : NULL;
 }
 
@@ -86,11 +85,11 @@ void *RemoteCacheImpl::replace(RemoteCacheBase& remoteCacheBase, const void *k, 
     std::vector<char> kbuf, vbuf;
     remoteCacheBase.baseKeyMarshall(k, kbuf);
     remoteCacheBase.baseValueMarshall(v, vbuf);
-    hrbytes keyBytes(kbuf.data(), kbuf.size());
-    hrbytes valueBytes(vbuf.data(), vbuf.size());
+    std::vector<char> keyBytes(kbuf.data(), kbuf.data()+kbuf.size());
+    std::vector<char> valueBytes(vbuf.data(), vbuf.data()+vbuf.size());
     applyDefaultExpirationFlags(life, idle);
     hr_scoped_ptr<ReplaceOperation> op(operationsFactory->newReplaceOperation(keyBytes, valueBytes,life,idle));
-    hrbytes bytes = op->execute();
+    std::vector<char> bytes = op->execute();
     return bytes.data() ? remoteCacheBase.baseValueUnmarshall(bytes) : NULL;
 }
 
@@ -98,10 +97,10 @@ void *RemoteCacheImpl::remove(RemoteCacheBase& remoteCacheBase, const void* k) {
     assertRemoteCacheManagerIsStarted();
     std::vector<char> kbuf, obuf;
     remoteCacheBase.baseKeyMarshall(k, kbuf);
-    hrbytes keyBytes(kbuf.data(), kbuf.size());
+    std::vector<char> keyBytes(kbuf.data(), kbuf.data()+kbuf.size());
 
     hr_scoped_ptr<RemoveOperation> gco(operationsFactory->newRemoveOperation(keyBytes));
-    hrbytes bytes = gco->execute();
+    std::vector<char> bytes = gco->execute();
     return bytes.data() ? remoteCacheBase.baseValueUnmarshall(bytes) : NULL;
 }
 
@@ -109,7 +108,7 @@ bool RemoteCacheImpl::containsKey(RemoteCacheBase& remoteCacheBase, const void* 
     assertRemoteCacheManagerIsStarted();
     std::vector<char> kbuf;
     remoteCacheBase.baseKeyMarshall(k, kbuf);
-    hrbytes keyBytes(kbuf.data(), kbuf.size());
+    std::vector<char> keyBytes(kbuf.data(), kbuf.data()+kbuf.size());
     hr_scoped_ptr<ContainsKeyOperation> gco(
         operationsFactory->newContainsKeyOperation(keyBytes));
     return gco->execute();
@@ -122,8 +121,8 @@ bool RemoteCacheImpl::replaceWithVersion(RemoteCacheBase& remoteCacheBase,
     std::vector<char> kbuf, vbuf;
     remoteCacheBase.baseKeyMarshall(k, kbuf);
     remoteCacheBase.baseValueMarshall(v, vbuf);
-    hrbytes keyBytes(kbuf.data(), kbuf.size());
-    hrbytes valueBytes(vbuf.data(), vbuf.size());
+    std::vector<char> keyBytes(kbuf.data(), kbuf.data()+kbuf.size());
+    std::vector<char> valueBytes(vbuf.data(), vbuf.data()+vbuf.size());
 
     hr_scoped_ptr<ReplaceIfUnmodifiedOperation> op(operationsFactory->newReplaceIfUnmodifiedOperation(keyBytes, valueBytes,life,idle,version));
     VersionedOperationResponse response = op->execute();
@@ -134,7 +133,7 @@ bool RemoteCacheImpl::removeWithVersion(RemoteCacheBase& remoteCacheBase, const 
     assertRemoteCacheManagerIsStarted();
     std::vector<char> kbuf;
     remoteCacheBase.baseKeyMarshall(k, kbuf);
-    hrbytes keyBytes(kbuf.data(), kbuf.size());
+    std::vector<char> keyBytes(kbuf.data(), kbuf.data()+kbuf.size());
 
     hr_scoped_ptr<RemoveIfUnmodifiedOperation> gco(operationsFactory->newRemoveIfUnmodifiedOperation(keyBytes, version));
     VersionedOperationResponse response = gco->execute();
@@ -146,9 +145,9 @@ void *RemoteCacheImpl::getWithVersion(RemoteCacheBase& remoteCacheBase, const vo
     assertRemoteCacheManagerIsStarted();
     std::vector<char> kbuf, obuf;
     remoteCacheBase.baseKeyMarshall(k, kbuf);
-    hrbytes keyBytes(kbuf.data(), kbuf.size());
+    std::vector<char> keyBytes(kbuf.data(), kbuf.data()+kbuf.size());
     hr_scoped_ptr<GetWithVersionOperation> gco(operationsFactory->newGetWithVersionOperation(keyBytes));
-    VersionedValueImpl<hrbytes> m = gco->execute();
+    VersionedValueImpl<std::vector<char>> m = gco->execute();
     obuf=m.getValue();
     version->version = m.version;
     return obuf.data() ? remoteCacheBase.baseValueUnmarshall(obuf) : NULL;
@@ -159,9 +158,9 @@ void *RemoteCacheImpl::getWithMetadata(RemoteCacheBase& remoteCacheBase, const v
     assertRemoteCacheManagerIsStarted();
     std::vector<char> kbuf, obuf;
     remoteCacheBase.baseKeyMarshall(k, kbuf);
-    hrbytes keyBytes(kbuf.data(), kbuf.size());
+    std::vector<char> keyBytes(kbuf.data(), kbuf.data()+kbuf.size());
     hr_scoped_ptr<GetWithMetadataOperation> gco(operationsFactory->newGetWithMetadataOperation(keyBytes));
-    MetadataValueImpl<hrbytes> m = gco->execute();
+    MetadataValueImpl<std::vector<char>> m = gco->execute();
     obuf=m.getValue();
     metadata->version = m.version;
     metadata->created = m.created;
@@ -178,7 +177,7 @@ void RemoteCacheImpl::getBulk(RemoteCacheBase& remoteCacheBase, portable::map<vo
 void RemoteCacheImpl::getBulk(RemoteCacheBase& remoteCacheBase, int size, portable::map<void*, void*> &map) {
     assertRemoteCacheManagerIsStarted();
     hr_scoped_ptr<BulkGetOperation> gco(operationsFactory->newBulkGetOperation(size));
-    std::map<hrbytes,hrbytes> res = gco->execute();
+    std::map<std::vector<char>,std::vector<char>> res = gco->execute();
     portable::map<void *, void *> tmpMap(res, KeyUnmarshallerFtor(remoteCacheBase), ValueUnmarshallerFtor(remoteCacheBase));
     map = tmpMap.move();
 }
@@ -186,7 +185,7 @@ void RemoteCacheImpl::getBulk(RemoteCacheBase& remoteCacheBase, int size, portab
 void RemoteCacheImpl::keySet(RemoteCacheBase& remoteCacheBase, int scope, portable::vector<void*> &result) {
     assertRemoteCacheManagerIsStarted();
     hr_scoped_ptr<BulkGetKeysOperation> gco(operationsFactory->newBulkGetKeysOperation(scope));
-    std::set<hrbytes> res = gco->execute();
+    std::set<std::vector<char>> res = gco->execute();
     portable::vector<void *> tmpVector(res, KeyUnmarshallerFtor(remoteCacheBase));
     result = tmpVector.move();
 }
@@ -233,7 +232,7 @@ void RemoteCacheImpl::assertRemoteCacheManagerIsStarted() {
                  << "Use RemoteCacheManager.start before using the remote cache.");
    }
 }
-hrbytes RemoteCacheImpl::execute(RemoteCacheBase& /*remoteCacheBase*/, hrbytes cmdNameBytes, const portable::map<hrbytes,hrbytes>& args) {
+std::vector<char> RemoteCacheImpl::execute(RemoteCacheBase& /*remoteCacheBase*/, std::vector<char> cmdNameBytes, const portable::map<std::vector<char>,std::vector<char>>& args) {
 	assertRemoteCacheManagerIsStarted();
 
     hr_scoped_ptr<ExecuteCmdOperation> op(operationsFactory->newExecuteCmdOperation(cmdNameBytes, args));

@@ -10,14 +10,14 @@ using infinispan::hotrod::protocol::Codec;
 using namespace infinispan::hotrod::transport;
 
 GetOperation::GetOperation(
-    const Codec& _codec, std::shared_ptr<transport::TransportFactory> _transportFactory, const hrbytes& _key,
-    const hrbytes& _cacheName, IntWrapper& _topologyId, uint32_t _flags)
-    : AbstractKeyOperation<hrbytes>(
+    const Codec& _codec, std::shared_ptr<transport::TransportFactory> _transportFactory, const std::vector<char>& _key,
+    const std::vector<char>& _cacheName, IntWrapper& _topologyId, uint32_t _flags)
+    : AbstractKeyOperation<std::vector<char>>(
         _codec, _transportFactory, _key, _cacheName, _topologyId, _flags)
 {}
 
-hrbytes GetOperation::executeOperation(Transport& transport) {
-    hrbytes result;
+std::vector<char> GetOperation::executeOperation(Transport& transport) {
+    std::vector<char> result;
     TRACE("Executing Get(flags=%u)", flags);
     TRACEBYTES("key = ", key);
     uint8_t status = sendKeyOperation(key, transport, GET_REQUEST, GET_RESPONSE);

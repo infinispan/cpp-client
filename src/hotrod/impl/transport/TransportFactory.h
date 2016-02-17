@@ -31,8 +31,8 @@ class TransportFactory
     virtual void start(protocol::Codec& codec) = 0;
     virtual void destroy() = 0;
 
-    virtual Transport& getTransport(const hrbytes& cacheName) = 0;
-    virtual Transport& getTransport(const hrbytes& key, const hrbytes& cacheName) = 0;
+    virtual Transport& getTransport(const std::vector<char>& cacheName) = 0;
+    virtual Transport& getTransport(const std::vector<char>& key, const std::vector<char>& cacheName) = 0;
 
     virtual void releaseTransport(Transport& transport) = 0;
     virtual void invalidateTransport(
@@ -50,8 +50,8 @@ class TransportFactory
             std::map<InetSocketAddress, std::set<int32_t> >& servers2Hash,
             int32_t numKeyOwners, uint8_t hashFunctionVersion,
             int32_t hashSpace,
-            const hrbytes& cacheName) = 0;
-    virtual void clearHashFunction(const hrbytes& cacheName) = 0;
+            const std::vector<char>& cacheName) = 0;
+    virtual void clearHashFunction(const std::vector<char>& cacheName) = 0;
 
     virtual infinispan::hotrod::consistenthash::ConsistentHashFactory
     & getConsistentHashFactory() = 0;

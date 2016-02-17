@@ -20,7 +20,7 @@ template<class T> class HotRodOperation : public protocol::HotRodConstants
   protected:
     HotRodOperation(
         const protocol::Codec& _codec,
-        uint32_t _flags, const hrbytes& _cacheName, IntWrapper& _topologyId) :
+        uint32_t _flags, const std::vector<char>& _cacheName, IntWrapper& _topologyId) :
             codec(_codec), flags(_flags),
             cacheName(_cacheName), topologyId(_topologyId) {
     }
@@ -49,7 +49,7 @@ template<class T> class HotRodOperation : public protocol::HotRodConstants
 
     const protocol::Codec& codec;
     uint32_t flags;
-    hrbytes cacheName;
+    std::vector<char> cacheName;
     // TODO: atomic
     IntWrapper& topologyId;
 

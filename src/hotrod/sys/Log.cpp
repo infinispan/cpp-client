@@ -108,7 +108,7 @@ void Log::log(const char *level, const char *fname, const int lineno, const char
     std::cerr << buf << std::endl;
 }
 
-void Log::log(const char *level, const char *fname, const int lineno, const char *message, const infinispan::hotrod::hrbytes &bytes) {    
+void Log::log(const char *level, const char *fname, const int lineno, const char *message, const std::vector<char> &bytes) {
     std::ostringstream buf;
     buf << message << "[length=" << bytes.size() << " string=";
     unsigned maxLength = std::min(m_traceBytesMax, (size_t) bytes.size());
@@ -126,7 +126,7 @@ void Log::log(const char *level, const char *fname, const int lineno, const char
     if (bytes.size() > m_traceBytesMax) {
         buf << "...";
     }
-    buf << ", addr=0x" << std::setw(16) << (unsigned long long) (void *) bytes.data() << "]\n";
+    buf << ", addr=0x" << std::setw(16) << (const unsigned long long) (const void *) bytes.data() << "]\n";
     
     ScopedLock<Mutex> sl(lock);
     log(level, fname, lineno);

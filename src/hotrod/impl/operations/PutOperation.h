@@ -12,20 +12,20 @@ namespace hotrod {
 class IntWrapper;
 namespace operations {
 
-class PutOperation : public AbstractKeyValueOperation<hrbytes>
+class PutOperation : public AbstractKeyValueOperation<std::vector<char>>
 {
     public:
-	hrbytes executeOperation(infinispan::hotrod::transport::Transport& transport);
+	std::vector<char> executeOperation(infinispan::hotrod::transport::Transport& transport);
 
     private:
         PutOperation(
             const infinispan::hotrod::protocol::Codec&       codec_,
             std::shared_ptr<transport::TransportFactory> transportFactory_,
-            const hrbytes&                                   key_,
-            const hrbytes&                                   cacheName_,
+            const std::vector<char>&                                   key_,
+            const std::vector<char>&                                   cacheName_,
             IntWrapper&                                 topologyId_,
             uint32_t                                         flags_,
-            const hrbytes&                                   value_,
+            const std::vector<char>&                                   value_,
             uint32_t                                         lifespan_,
             uint32_t                                         maxIdle_);
 
