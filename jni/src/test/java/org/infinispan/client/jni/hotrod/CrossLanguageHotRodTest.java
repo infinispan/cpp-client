@@ -1,8 +1,9 @@
 package org.infinispan.client.jni.hotrod;
 
-import static org.infinispan.client.hotrod.test.HotRodClientTestingUtil.killServers;
+import static org.infinispan.client.hotrod.test.HotRodClientTestingUtil.startHotRodServer;
 import static org.infinispan.server.hotrod.test.HotRodTestingUtil.hotRodCacheConfiguration;
 import static org.infinispan.test.TestingUtil.killCacheManagers;
+import static org.infinispan.client.hotrod.test.HotRodClientTestingUtil.killServers;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
@@ -20,7 +21,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.infinispan.client.hotrod.TestHelper;
 import org.infinispan.client.hotrod.jni.Flag;
 import org.infinispan.client.hotrod.jni.Hotrod;
 import org.infinispan.client.hotrod.jni.JniHelper;
@@ -150,7 +150,7 @@ public class CrossLanguageHotRodTest extends SingleCacheManagerTest {
       cacheManager = TestCacheManagerFactory.createCacheManager((ConfigurationBuilder) config);
       cacheManager.defineConfiguration(DEFAULT_CACHE, ((ConfigurationBuilder) config).build());
 
-      hotrodServer = TestHelper.startHotRodServer(cacheManager);
+      hotrodServer = startHotRodServer(cacheManager);
       org.infinispan.client.hotrod.jni.ConfigurationBuilder cppBuilder = new org.infinispan.client.hotrod.jni.ConfigurationBuilder();
       cppBuilder.addServer().host("localhost").port(hotrodServer.getPort());
 

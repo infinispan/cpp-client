@@ -41,7 +41,6 @@ public class JniTest {
             DefaultExpirationTest.class,
             // ExpiryTest.class,                     // unstable
             ForceReturnValuesTest.class, 
-            ForceReturnValueTest.class, 
             // HeavyLoadConnectionPoolingTest.class, // requires transport extraction
             HitsAwareCacheManagersTest.class,
             // HotRod10CSAIntegrationTest.class,     // requires transport extraction
