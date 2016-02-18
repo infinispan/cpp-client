@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<settings xmlns="http://maven.apache.org/settings/1.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
+    <localRepository>${user.home}/.m2/jdg-mead-repository</localRepository>
+
+    <mirrors>
+        <mirror>
+            <id>jdg7-mirror-setting</id>
+            <mirrorOf>
+                *
+            </mirrorOf>
+            <name>Mirror Settings for JDG 7 build</name>
+            <url>http://download.eng.bos.redhat.com/brewroot/repos/jb-dg-7-rhel-7-build/latest/maven/</url>
+        </mirror>
+    </mirrors>
+
+</settings>
