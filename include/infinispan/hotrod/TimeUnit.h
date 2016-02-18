@@ -9,17 +9,18 @@ namespace hotrod {
  * mostly when inserting key/value pairs in RemoteCache.
  *
  */
-enum TimeUnit
-{
-    NANOSECONDS,
-    MICROSECONDS,
-    MILLISECONDS,
-    SECONDS,
-    MINUTES,
-    HOURS,
-    DAYS
-};
 
+    enum  TimeUnit {
+        SECONDS = 0x00,
+        MILLISECONDS = 0x01,
+        NANOSECONDS = 0x02,
+        MICROSECONDS = 0x03,
+        MINUTES = 0x04,
+        DAYS = 0x06,
+        HOURS = 0x05,
+        DEFAULT = 0x07,
+        INFINITE = 0x08
+    };
 }} // namespace
 
 #endif  /* ISPN_HOTROD_TIMEUNIT_H */
