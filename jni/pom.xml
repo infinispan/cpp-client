@@ -18,8 +18,8 @@
 
    <properties>
       <version.org.infinispan>8.3.0-redhat-SNAPSHOT</version.org.infinispan>
-      <version.org.jboss.logging.processor>1.1.0.Final-redhat-1</version.org.jboss.logging.processor>
-      <version.org.jboss.jbossts>4.17.15.Final-redhat-4</version.org.jboss.jbossts>
+      <version.org.jboss.logging.processor>1.1.0.Final</version.org.jboss.logging.processor>
+      <version.org.jboss.jbossts>4.17.24.Final</version.org.jboss.jbossts>
       <version.org.testng>6.8</version.org.testng>
       <maven.test.skip.exec>true</maven.test.skip.exec>
    </properties>

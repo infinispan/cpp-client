@@ -1,12 +1,13 @@
 #!/bin/bash
 
-INFINISPAN_VERSION=8.0.1.Final
+JDG_VERSION=7.0.0
+MILESTONE_VERSION=DR1
 BUILD_DIR=build
 
-wget -N http://downloads.jboss.org/infinispan/${INFINISPAN_VERSION}/infinispan-server-${INFINISPAN_VERSION}-bin.zip 
+wget -N http://download.eng.bos.redhat.com/devel/candidates/JDG/JDG-$JDG_VERSION-$MILESTONE_VERSION/jboss-datagrid-$JDG_VERSION.$MILESTONE_VERSION-server.zip
 
-rm -rf infinispan-server-${INFINISPAN_VERSION}
-unzip infinispan-server-${INFINISPAN_VERSION}-bin.zip
+rm -rf jboss-datagrid-${INFINISPAN_VERSION}
+unzip jboss-datagrid-$JDG_VERSION.$MILESTONE_VERSION-server.zip
 export JBOSS_HOME=`pwd`/infinispan-server-${INFINISPAN_VERSION}
 echo $1
 if [  $1 == DEBUG ]
