@@ -33,7 +33,7 @@ class ConfigurationBuilder
         m_forceReturnValue(false),
         m_keySizeEstimate(64),
         m_pingOnStartup(true),
-        m_protocolVersion(Configuration::PROTOCOL_VERSION_12),
+        m_protocolVersion(Configuration::PROTOCOL_VERSION_24),
         m_socketTimeout(60000),
         m_tcpNoDelay(true),
         m_valueSizeEstimate(512),
