@@ -33,10 +33,8 @@ using namespace transport;
 OperationsFactory::OperationsFactory(
     std::shared_ptr<infinispan::hotrod::transport::TransportFactory> tf, const std::string& cn,
     bool frv, const Codec& c) :
-        transportFactory(tf), topologyId(0), codec(c), forceReturnValue(frv), flags()
+        transportFactory(tf), topologyId(0), codec(c), forceReturnValue(frv), flags(), cacheNameBytes(cn.begin(),cn.end())
 {
-    cacheNameBytes.reserve(cn.length());
-    memcpy(cacheNameBytes.bytes(), cn.c_str(), cn.length());
 }
 
 PingOperation* OperationsFactory::newPingOperation(Transport& transport)
@@ -44,14 +42,14 @@ PingOperation* OperationsFactory::newPingOperation(Transport& transport)
     return new PingOperation(codec, topologyId, transport, cacheNameBytes);
 }
 
-GetOperation* OperationsFactory::newGetKeyOperation(const hrbytes& key)
+GetOperation* OperationsFactory::newGetKeyOperation(const std::vector<char>& key)
 {
     return new GetOperation(
         codec, transportFactory, key, cacheNameBytes, topologyId, getFlags());
 }
 
 PutOperation* OperationsFactory::newPutKeyValueOperation(
-    const hrbytes& key, const hrbytes& value,
+    const std::vector<char>& key, const std::vector<char>& value,
     uint32_t lifespanSecs, uint32_t maxIdleSecs)
 {
     return new PutOperation(
@@ -60,7 +58,7 @@ PutOperation* OperationsFactory::newPutKeyValueOperation(
 }
 
 PutIfAbsentOperation* OperationsFactory::newPutIfAbsentOperation(
-    const hrbytes& key, const hrbytes& value,
+    const std::vector<char>& key, const std::vector<char>& value,
     uint32_t lifespanSecs, uint32_t maxIdleSecs)
 {
     return new PutIfAbsentOperation(
@@ -69,7 +67,7 @@ PutIfAbsentOperation* OperationsFactory::newPutIfAbsentOperation(
 }
 
 ReplaceOperation* OperationsFactory::newReplaceOperation(
-    const hrbytes& key, const hrbytes& value,
+    const std::vector<char>& key, const std::vector<char>& value,
     uint32_t lifespanSecs, uint32_t maxIdleSecs)
 {
     return new ReplaceOperation(
@@ -77,18 +75,18 @@ ReplaceOperation* OperationsFactory::newReplaceOperation(
         topologyId, getFlags(), value, lifespanSecs, maxIdleSecs);
 }
 
-RemoveOperation* OperationsFactory::newRemoveOperation(const hrbytes& key) {
+RemoveOperation* OperationsFactory::newRemoveOperation(const std::vector<char>& key) {
     return new RemoveOperation(
         codec, transportFactory, key, cacheNameBytes, topologyId, getFlags());
 }
 
-ContainsKeyOperation* OperationsFactory::newContainsKeyOperation(const hrbytes& key) {
+ContainsKeyOperation* OperationsFactory::newContainsKeyOperation(const std::vector<char>& key) {
     return new ContainsKeyOperation(
         codec, transportFactory, key, cacheNameBytes, topologyId, getFlags());
 }
 
 ReplaceIfUnmodifiedOperation* OperationsFactory::newReplaceIfUnmodifiedOperation(
-    const hrbytes& key, const hrbytes& value,
+    const std::vector<char>& key, const std::vector<char>& value,
     uint32_t lifespanSecs, uint32_t maxIdleSecs, int64_t version)
 {
     return new ReplaceIfUnmodifiedOperation(
@@ -97,18 +95,18 @@ ReplaceIfUnmodifiedOperation* OperationsFactory::newReplaceIfUnmodifiedOperation
 }
 
 RemoveIfUnmodifiedOperation* OperationsFactory::newRemoveIfUnmodifiedOperation(
-    const hrbytes& key, int64_t version)
+    const std::vector<char>& key, int64_t version)
 {
     return new RemoveIfUnmodifiedOperation(
         codec, transportFactory, key, cacheNameBytes, topologyId, getFlags(), version);
 }
 
-GetWithMetadataOperation* OperationsFactory::newGetWithMetadataOperation(const hrbytes& key) {
+GetWithMetadataOperation* OperationsFactory::newGetWithMetadataOperation(const std::vector<char>& key) {
     return new GetWithMetadataOperation(
         codec, transportFactory, key, cacheNameBytes, topologyId, getFlags());
 }
 
-GetWithVersionOperation* OperationsFactory::newGetWithVersionOperation(const hrbytes& key) {
+GetWithVersionOperation* OperationsFactory::newGetWithVersionOperation(const std::vector<char>& key) {
     return new GetWithVersionOperation(
         codec, transportFactory, key, cacheNameBytes, topologyId, getFlags());
 }
@@ -139,7 +137,7 @@ FaultTolerantPingOperation* OperationsFactory::newFaultTolerantPingOperation() {
 }
 
 ExecuteCmdOperation* OperationsFactory::newExecuteCmdOperation(
-    const hrbytes& cmdName, const portable::map<hrbytes,hrbytes>& values)
+    const std::vector<char>& cmdName, const portable::map<std::vector<char>,std::vector<char>>& values)
 {
     return new ExecuteCmdOperation(
         codec, transportFactory, cacheNameBytes,

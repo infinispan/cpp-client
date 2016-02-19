@@ -16,7 +16,7 @@ class HeaderParams
   public:
 	HeaderParams(IntWrapper& topId);
     HeaderParams& setOpCode(uint8_t opCode);
-    HeaderParams& setCacheName(const hrbytes& cacheName);
+    HeaderParams& setCacheName(const std::vector<char>& cacheName);
     HeaderParams& setFlags(uint32_t flags);
     HeaderParams& setClientIntel(uint8_t clientIntel);
     HeaderParams& setTxMarker(uint8_t txMarker);
@@ -27,7 +27,7 @@ class HeaderParams
 
     uint8_t opCode;
     uint8_t opRespCode;
-    hrbytes cacheName;
+    std::vector<char> cacheName;
     uint32_t flags;
     uint8_t clientIntel;
     uint8_t txMarker;

@@ -12,21 +12,21 @@ namespace hotrod {
 class IntWrapper;
 namespace operations {
 
-class PutIfAbsentOperation : public AbstractKeyValueOperation<hrbytes>
+class PutIfAbsentOperation : public AbstractKeyValueOperation<std::vector<char>>
 {
     protected:
-        hrbytes executeOperation(
+        std::vector<char> executeOperation(
             infinispan::hotrod::transport::Transport& transport);
 
     private:
         PutIfAbsentOperation(
             const infinispan::hotrod::protocol::Codec& codec,
             std::shared_ptr<transport::TransportFactory> transportFactory_,
-            const hrbytes& key,
-            const hrbytes& cacheName,
+            const std::vector<char>& key,
+            const std::vector<char>& cacheName,
             IntWrapper& topologyId,
             uint32_t flags,
-            const hrbytes& value,
+            const std::vector<char>& value,
             uint32_t lifespan,
             uint32_t maxIdle);
 

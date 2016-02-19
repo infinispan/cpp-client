@@ -25,12 +25,12 @@ class TcpTransport : public AbstractTransport
     void writeByte(uint8_t uchar);
     void writeVInt(uint32_t uint);
     void writeVLong(uint64_t ulong);
-    void writeBytes(const hrbytes& bytes);
+    void writeBytes(const std::vector<char>& bytes);
 
     uint8_t readByte();
     uint32_t readVInt();
     uint64_t readVLong();
-    void readBytes(hrbytes& bytes, uint32_t size);
+    std::vector<char> readBytes(uint32_t size);
 
     void release();
     void invalidate();

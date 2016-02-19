@@ -26,7 +26,8 @@ void consistentHashFactoryTest(uint32_t hashVersion) {
     std::shared_ptr<ConsistentHashFactory> hashFactory;
     hashFactory.reset(new ConsistentHashFactory());
     std::shared_ptr<ConsistentHash> hash = hashFactory->newConsistentHash(hashVersion);
-    hrbytes data(const_cast<char*> ("acbde"), 5);
+    char abcde[]="acbde";
+    std::vector<char> data(abcde,abcde+5);
     uint32_t i1 = hash->getNormalizedHash(data);
     uint32_t i2 = hash->getNormalizedHash(data);
     uint32_t i3 = hash->getNormalizedHash(data);
@@ -88,7 +89,7 @@ void consistentHashInitTest(uint32_t hashVersion, std::string* host) {
     std::vector<char> hostCopy(host->size()+1);
     /* warning free approach to get char* from string* */
     std::copy(host->begin(),host->end(), hostCopy.begin());
-    InetSocketAddress address = hash->getServer(hrbytes(&hostCopy[0], host->length()));
+    InetSocketAddress address = hash->getServer(hostCopy);
 
     std::cout << "consistentHash for hash version " << hashVersion << " returned " << address.getHostname() << std::endl;
     delete hashFactory;

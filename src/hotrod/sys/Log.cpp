@@ -108,25 +108,25 @@ void Log::log(const char *level, const char *fname, const int lineno, const char
     std::cerr << buf << std::endl;
 }
 
-void Log::log(const char *level, const char *fname, const int lineno, const char *message, const infinispan::hotrod::hrbytes &bytes) {    
-    std::ostringstream buf;         
-    buf << message << "[length=" << bytes.length() << " string=";    	   	
-    unsigned maxLength = std::min(m_traceBytesMax, (size_t) bytes.length());
+void Log::log(const char *level, const char *fname, const int lineno, const char *message, const std::vector<char> &bytes) {
+    std::ostringstream buf;
+    buf << message << "[length=" << bytes.size() << " string=";
+    unsigned maxLength = std::min(m_traceBytesMax, (size_t) bytes.size());
     for (unsigned tbi = 0; tbi < maxLength; ++tbi) {
-        unsigned char byte = (unsigned char) bytes.bytes()[tbi];    		
+        unsigned char byte = (unsigned char) bytes.data()[tbi];
         buf << (char) (byte >= 0x20 && byte < 0x7F ? byte : '?');
     }
-    if (bytes.length() > m_traceBytesMax) {
+    if (bytes.size() > m_traceBytesMax) {
         buf << "...";
     }
     buf << ", hex=" << std::hex << std::setfill('0');
     for (unsigned tbi = 0; tbi < maxLength; ++tbi) {
-        buf << ' ' << std::setw(2) << (unsigned int) (unsigned char) bytes.bytes()[tbi];
+        buf << ' ' << std::setw(2) << (unsigned int) (unsigned char) bytes.data()[tbi];
     }            
-    if (bytes.length() > m_traceBytesMax) {
+    if (bytes.size() > m_traceBytesMax) {
         buf << "...";
     }
-    buf << ", addr=0x" << std::setw(16) << (unsigned long long) (void *) bytes.bytes() << "]\n";    
+    buf << ", addr=0x" << std::setw(16) << (const unsigned long long) (const void *) bytes.data() << "]\n";
     
     ScopedLock<Mutex> sl(lock);
     log(level, fname, lineno);

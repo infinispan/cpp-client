@@ -10,7 +10,7 @@ using namespace infinispan::hotrod::transport;
 StatsOperation::StatsOperation(
     const Codec&      codec_,
     std::shared_ptr<transport::TransportFactory> transportFactory_,
-    const hrbytes&    cacheName_,
+    const std::vector<char>&    cacheName_,
     IntWrapper&  topologyId_,
     uint32_t    flags_)
     : RetryOnFailureOperation<std::map<std::string, std::string> >(

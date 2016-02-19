@@ -21,11 +21,11 @@ class ReplaceIfUnmodifiedOperation
     ReplaceIfUnmodifiedOperation(
         const protocol::Codec& codec,
         std::shared_ptr<transport::TransportFactory> transportFactory,
-        const hrbytes& key,
-        const hrbytes& cacheName,
+        const std::vector<char>& key,
+        const std::vector<char>& cacheName,
         IntWrapper& topologyId,
         uint32_t flags,
-        const hrbytes& value,
+        const std::vector<char>& value,
         uint32_t lifespan,
         uint32_t maxIdle,
         int64_t version);

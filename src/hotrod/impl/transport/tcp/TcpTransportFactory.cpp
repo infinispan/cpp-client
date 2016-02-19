@@ -48,7 +48,7 @@ void TcpTransportFactory::start(
     }
  }
 
-Transport& TcpTransportFactory::getTransport(const hrbytes& /*cacheName*/) {
+Transport& TcpTransportFactory::getTransport(const std::vector<char>& /*cacheName*/) {
     const InetSocketAddress* server = NULL;
     {
         ScopedLock<Mutex> l(lock);
@@ -57,14 +57,14 @@ Transport& TcpTransportFactory::getTransport(const hrbytes& /*cacheName*/) {
     return borrowTransportFromPool(*server);
 }
 
-Transport& TcpTransportFactory::getTransport(const hrbytes& key, const hrbytes& cacheName) {
+Transport& TcpTransportFactory::getTransport(const std::vector<char>& key, const std::vector<char>& cacheName) {
     const InetSocketAddress* server = NULL;
     {
         ScopedLock<Mutex> l(lock);
 
         std::shared_ptr<infinispan::hotrod::consistenthash::ConsistentHash> consistentHash;
 
-        std::map<hrbytes, std::shared_ptr<infinispan::hotrod::consistenthash::ConsistentHash> >::iterator element = consistentHashByCacheName.find(cacheName);
+        std::map<std::vector<char>, std::shared_ptr<infinispan::hotrod::consistenthash::ConsistentHash> >::iterator element = consistentHashByCacheName.find(cacheName);
         if (element != consistentHashByCacheName.end()) {
             consistentHash = element->second;
         }
@@ -204,7 +204,7 @@ void TcpTransportFactory::updateServers(std::vector<InetSocketAddress>& newServe
 
 void TcpTransportFactory::updateHashFunction(
         std::map<InetSocketAddress, std::set<int32_t> >& servers2Hash,
-        int32_t numKeyOwners, uint8_t hashFunctionVersion, int32_t hashSpace, const hrbytes& cacheName) {
+        int32_t numKeyOwners, uint8_t hashFunctionVersion, int32_t hashSpace, const std::vector<char>& cacheName) {
     ScopedLock<Mutex> l(lock);
     std::shared_ptr<ConsistentHash> hash = hashFactory->newConsistentHash(hashFunctionVersion);
     if (hash == NULL) {
@@ -216,7 +216,7 @@ void TcpTransportFactory::updateHashFunction(
     consistentHashByCacheName[cacheName] = hash;
 }
 
-void TcpTransportFactory::clearHashFunction(const hrbytes& cacheName) {
+void TcpTransportFactory::clearHashFunction(const std::vector<char>& cacheName) {
     consistentHashByCacheName.erase(cacheName);
 }
 

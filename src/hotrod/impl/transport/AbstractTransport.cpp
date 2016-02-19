@@ -15,80 +15,75 @@ TransportFactory& AbstractTransport::getTransportFactory(){
     return transportFactory;
 }
 
-void AbstractTransport::writeArray(const hrbytes& bytes)
+void AbstractTransport::writeArray(const std::vector<char>& bytes)
 {
-  hrbytes& not_const_bytes = const_cast<hrbytes&>(bytes);
-  writeVInt((uint32_t) not_const_bytes.length());
+  std::vector<char>& not_const_bytes = const_cast<std::vector<char>&>(bytes);
+  writeVInt((uint32_t) not_const_bytes.size());
   writeBytes(bytes);
 }
 
 void AbstractTransport::writeLong(int64_t longValue)
 {
-  hrbytes bytes;
-  bytes.reserve(8);
   /*
   for (char* ptr = bytes.bytes() + 8 ; ptr > bytes.bytes() ; --ptr) {
        // TODO: verificare operatore java >>>
        *ptr = (char) longValue >> ( (bytes.bytes() + 8 - ptr)* 8);
   }
   */
-  char * ptr = bytes.bytes();
+  char ptr[8];
   for (int i = 0 ; i < 8 ; i++) {
     ptr[7-i] = (char) ((longValue) >> (8*i));
   }
+  std::vector<char> bytes(ptr,ptr+8);
   writeBytes(bytes);
 }
 
-hrbytes AbstractTransport::readArray()
+std::vector<char> AbstractTransport::readArray()
 {
   uint32_t size = readVInt();
-  hrbytes result;
-  readBytes(result, size);
+  std::vector<char> result(readBytes(size));
   return result;
 }
 
 int64_t AbstractTransport::readLong()
 {
-  hrbytes longBytes;
-  readBytes(longBytes, 8);
+  std::vector<char> longBytes= readBytes(8);
   int64_t result = 0;
   for (int i = 0; i < 8 ; i++) {
     result <<= 8;
-    result ^= (int64_t) *(longBytes.bytes()+i) & 0xFF;
+    result ^= (int64_t) *(longBytes.data() + i) & 0xFF;
   }
   return result;
 }
 
 int16_t AbstractTransport::readUnsignedShort()
 {
-  hrbytes shortBytes;
-  readBytes(shortBytes, 2);
+  std::vector<char> shortBytes= readBytes(2);
   int16_t result = 0;
 
   for (int i = 0; i < 2 ; i++) {
     result <<= 8;
-    result ^= (int16_t) *(shortBytes.bytes()+i) & 0xFF;
+    result ^= (int16_t) *(shortBytes.data() + i) & 0xFF;
   }
   return result;
 }
 
 int32_t AbstractTransport::read4ByteInt()
 {
-  hrbytes intBytes;
-  readBytes(intBytes, 4);
+  std::vector<char> intBytes= readBytes(4);
   int32_t result = 0;
 
   for (int i = 0; i < 4 ; i++) {
       int shift = (4 - 1 - i) * 8;
-      result += (*(intBytes.bytes()+i) & 0x000000FF) << shift;
+      result += (*(intBytes.data() + i) & 0x000000FF) << shift;
   }
   return result;
 }
 
 // TODO
 std::string AbstractTransport::readString() {
-	hrbytes result = readArray();
-	return std::string(result.bytes(),result.length());
+	std::vector<char> result = readArray();
+	return std::string(result.data(), result.size());
 }
 
 }}} // namespace infinispan::hotrod::transport

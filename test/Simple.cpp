@@ -222,20 +222,30 @@ int basicTest(RemoteCacheManager &cacheManager, RemoteCache<K,V> &cache) {
     }
 
     std::cout << "PASS: simple replace" << std::endl;
-
-    // get non-existing cache
     try {
-        cacheManager.getCache<std::string, std::string>("non-existing", false);
-        std::cerr << "fail getCache for non-existing cache didn't throw exception" << std::endl;
-        return 1;
-    } catch (const HotRodClientException&) {
-        std::cout << "PASS: get non-existing cache" << std::endl;
-    } catch (const Exception& e) {
-        std::cout << "is: " << typeid(e).name() << '\n';
-        std::cerr << "fail unexpected exception: " << e.what() << std::endl;
+        RemoteCache<std::string, std::string> namedCache =
+                cacheManager.getCache<std::string, std::string>("namedCache", false);
+        std::unique_ptr<std::string> namedCacheV1(namedCache.get("k1"));
+    }
+    catch (...)
+    {
         return 1;
     }
+    std::cout << "PASS: get for namedCache" << std::endl;
 
+    // get non-existing cache
+        try {
+            RemoteCache<std::string, std::string> non_existing =
+                    cacheManager.getCache<std::string, std::string>("non-existing", false);
+            std::cerr << "fail getCache for non-existing cache didn't throw exception" << std::endl;
+            return 1;
+        } catch (const HotRodClientException &ex) {
+            std::cout << "PASS: get non-existing cache" << std::endl;
+        } catch (const Exception &e) {
+            std::cout << "is: " << typeid(e).name() << '\n';
+            std::cerr << "fail unexpected exception: " << e.what() << std::endl;
+            return 1;
+        }
 
     return 0;
 }
@@ -271,7 +281,10 @@ int main(int argc, char** argv) {
             "cache.put(\"b\", \"b\");\n"
             "cache.get(\"a\");\n");
             std::string script_name("script.js");
-            cacheManager.getCache<std::string,std::string>("___script_cache",false).put(JBasicMarshaller<std::string>::addPreamble(script_name), JBasicMarshaller<std::string>::addPreamble(script));
+            std::string p_script_name=JBasicMarshaller<std::string>::addPreamble(script_name);
+            std::string p_script=JBasicMarshaller<std::string>::addPreamble(script);
+            RemoteCache<std::string, std::string> scriptCache=cacheManager.getCache<std::string,std::string>("___script_cache",false);
+            scriptCache.put(p_script_name, p_script);
             char* execResult = cache.execute(script_name,s);
 
 
@@ -292,7 +305,6 @@ int main(int argc, char** argv) {
         std::cout << "PASS: script execution on server" << std::endl;
 
         cacheManager.stop();
-
     }
     if (result!=0)
         return result;
@@ -343,10 +355,9 @@ int main(int argc, char** argv) {
             return 1;
         }
         std::cout << "PASS: script execution on server" << std::endl;
+
         cacheManager.stop();
-
     }
-
     return result;
 }
 

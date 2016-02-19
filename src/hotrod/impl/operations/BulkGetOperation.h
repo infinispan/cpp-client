@@ -16,20 +16,20 @@ namespace hotrod {
 class IntWrapper;
 namespace operations {
 
-class BulkGetOperation : public RetryOnFailureOperation<std::map<hrbytes, hrbytes> >
+class BulkGetOperation : public RetryOnFailureOperation<std::map<std::vector<char>, std::vector<char>> >
 {
     protected:
         BulkGetOperation(
             const infinispan::hotrod::protocol::Codec&       codec_,
             std::shared_ptr<transport::TransportFactory> transportFactory,
-            const hrbytes&                                   cacheName_,
+            const std::vector<char>&                                   cacheName_,
             IntWrapper&                                 topologyId_,
             uint32_t                                   flags_,
             int                                    entryCount_);
 
         infinispan::hotrod::transport::Transport& getTransport(int retryCount);
 
-        std::map<hrbytes,hrbytes> executeOperation(infinispan::hotrod::transport::Transport& transport);
+        std::map<std::vector<char>,std::vector<char>> executeOperation(infinispan::hotrod::transport::Transport& transport);
     private:
         int entryCount;
 

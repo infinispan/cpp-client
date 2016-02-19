@@ -21,7 +21,7 @@ class RemoveIfUnmodifiedOperation
         RemoveIfUnmodifiedOperation(
             const infinispan::hotrod::protocol::Codec& codec,
             std::shared_ptr<transport::TransportFactory> transportFactory,
-            const hrbytes& key, const hrbytes& cacheName,
+            const std::vector<char>& key, const std::vector<char>& cacheName,
             IntWrapper& topologyId, uint32_t flags, int64_t version);
 
         int64_t version;

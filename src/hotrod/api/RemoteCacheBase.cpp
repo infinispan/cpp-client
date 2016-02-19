@@ -112,20 +112,21 @@ void RemoteCacheBase::base_withFlags(Flag flags) {
     IMPL->withFlags(flags);
 }
 char *RemoteCacheBase::base_execute(RemoteCacheBase& remoteCacheBase, std::string cmdName, const std::map<std::string,std::string>& args){
-	std::map<hrbytes,hrbytes> m;
+	std::map<std::vector<char>,std::vector<char>> m;
     std::vector<char> cmdNameBuf;
     std::vector<char> argNameBuf, argValueBuf;
 	for (std::map<std::string,std::string>::const_iterator it=args.begin(); it!=args.end(); ++it)
 	{
         baseValueMarshall(&(it->second), argValueBuf);
-        hrbytes argNameBytes(const_cast<char*>(it->first.data()),it->first.size());
-        hrbytes argValueBytes(argValueBuf.data(),argValueBuf.size());
-        m.insert(std::pair<hrbytes,hrbytes>(argNameBytes, argValueBytes));
+        std::vector<char> argNameBytes(it->first.data(),it->first.data()+it->first.size());
+        std::vector<char> argValueBytes(argValueBuf.data(),argValueBuf.data()+argValueBuf.size());
+        m.insert(std::pair<std::vector<char>,std::vector<char>>(argNameBytes, argValueBytes));
 	}
-	portable::map<hrbytes,hrbytes> pm(m);
-    const hrbytes cmdNameBytes(const_cast<char*>(cmdName.data()), cmdName.size());
-	char *result;
-	IMPL->execute(remoteCacheBase, cmdNameBytes, pm).releaseTo(result);
+	portable::map<std::vector<char>,std::vector<char>> pm(m);
+    const std::vector<char> cmdNameBytes((cmdName.data()),(cmdName.data())+cmdName.size());
+	std::vector<char> resBytes= IMPL->execute(remoteCacheBase, cmdNameBytes, pm);
+    char *result = new char[resBytes.size()];
+    std::copy(resBytes.begin(),resBytes.end(),result);
 	return result;
 }
 

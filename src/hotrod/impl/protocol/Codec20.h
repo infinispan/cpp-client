@@ -29,7 +29,7 @@ class Codec20 : public Codec
 
     long getMessageId();
 
-    hrbytes returnPossiblePrevValue(transport::Transport& t, uint8_t status, uint32_t flags) const;
+    std::vector<char> returnPossiblePrevValue(transport::Transport& t, uint8_t status, uint32_t flags) const;
     void writeExpirationParams(transport::Transport& t,uint64_t lifespan, uint64_t maxIdle) const;
 
 
@@ -55,7 +55,7 @@ class Codec20 : public Codec
     void readNewTopologyAndHash(
         infinispan::hotrod::transport::Transport& transport,
         IntWrapper& topologyId,
-        const hrbytes& cacheName) const;
+        const std::vector<char>& cacheName) const;
 
     void checkForErrorsInResponseStatus(
         infinispan::hotrod::transport::Transport& transport,
