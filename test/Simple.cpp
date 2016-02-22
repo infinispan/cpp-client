@@ -13,6 +13,50 @@
 
 using namespace infinispan::hotrod;
 
+namespace infinispan {
+    namespace hotrod {
+        namespace transport {
+
+            class MyRoundRobinBalancingStrategy : public FailOverRequestBalancingStrategy
+            {
+            public:
+                MyRoundRobinBalancingStrategy() : index(0) { }
+
+                static FailOverRequestBalancingStrategy *newInstance() {
+                    return new MyRoundRobinBalancingStrategy();
+                }
+
+                void setServers(const std::vector<ServerNameId> &s) {
+                    servers = s;
+                    // keep the old index if possible so that we don't produce more requests for the first server
+                    if (index >= servers.size()) {
+                        index = 0;
+                    }
+                }
+
+                ~MyRoundRobinBalancingStrategy() { }
+
+                const ServerNameId &getServerByIndex(size_t pos) {
+                    const ServerNameId &server = servers[pos];
+                    return server;
+                }
+            private:
+                std::vector<ServerNameId> servers;
+                size_t index;
+                const ServerNameId &nextServer() {
+                    const ServerNameId &server = getServerByIndex(index++);
+                    if (index >= servers.size()) {
+                        index = 0;
+                    }
+                    return server;
+                }
+
+
+            };
+
+        }}}
+
+
 template <class T>
 void assert_not_null(const std::string& message, int line,  const std::unique_ptr<T>& pointer) {
   if (pointer.get() == 0) {
@@ -248,6 +292,8 @@ int main(int argc, char** argv) {
     {
         ConfigurationBuilder builder;
         builder.addServer().host(argc > 1 ? argv[1] : "127.0.0.1").port(argc > 2 ? atoi(argv[2]) : 11222).protocolVersion(Configuration::PROTOCOL_VERSION_24);
+//        builder.balancingStrategyProducer(transport::MyRoundRobinBalancingStrategy::newInstance);
+        builder.balancingStrategyProducer(nullptr);
         RemoteCacheManager cacheManager(builder.build(), false);
         BasicMarshaller<std::string> *km = new BasicMarshaller<std::string>();
         BasicMarshaller<std::string> *vm = new BasicMarshaller<std::string>();
@@ -300,6 +346,8 @@ int main(int argc, char** argv) {
     std::cout << "Basic Test with JBasicMarshaller" << std::endl;
     {
         ConfigurationBuilder builder;
+        //        builder.balancingStrategyProducer(transport::MyRoundRobinBalancingStrategy::newInstance);
+                builder.balancingStrategyProducer(nullptr);
         builder.addServer().host(argc > 1 ? argv[1] : "127.0.0.1").port(argc > 2 ? atoi(argv[2]) : 11222).protocolVersion(Configuration::PROTOCOL_VERSION_24);
         RemoteCacheManager cacheManager(builder.build(), false);
         JBasicMarshaller<std::string> *km = new JBasicMarshaller<std::string>();

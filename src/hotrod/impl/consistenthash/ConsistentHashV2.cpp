@@ -1,5 +1,5 @@
+#include <hotrod/impl/transport/tcp/InetSocketAddress.h>
 #include "hotrod/impl/consistenthash/ConsistentHashV2.h"
-#include "hotrod/impl/transport/tcp/InetSocketAddress.h"
 #include "hotrod/impl/hash/MurmurHash3.h"
 #include <limits>
 #include <algorithm>

@@ -22,6 +22,8 @@
 #include <infinispan/hotrod/defs.h>
 #include <infinispan/hotrod/ConnectionPoolConfiguration.h>
 #include <infinispan/hotrod/exceptions.h>
+#include <infinispan/hotrod/ServerNameId.h>
+#include <infinispan/hotrod/FailOverRequestBalancingStrategy.h>
 #include <infinispan/hotrod/ServerConfiguration.h>
 #include <infinispan/hotrod/SslConfiguration.h>
 #include <infinispan/hotrod/Configuration.h>
@@ -42,6 +44,8 @@
 
 %include "infinispan/hotrod/defs.h"
 %include "infinispan/hotrod/ImportExport.h"
+%include "infinispan/hotrod/ServerNameId.h"
+%include "infinispan/hotrod/FailOverRequestBalancingStrategy.h"
 %include "infinispan/hotrod/Builder.h"
 %include "infinispan/hotrod/ConnectionPoolConfiguration.h"
 %include "infinispan/hotrod/ServerConfiguration.h"
@@ -53,6 +57,8 @@
 %template(Builder_poolconf) infinispan::hotrod::Builder<infinispan::hotrod::ConnectionPoolConfiguration>;
 %template(Builder_sslconf) infinispan::hotrod::Builder<infinispan::hotrod::SslConfiguration>;
 
+%include "infinispan/hotrod/ServerNameId.h"
+%include "infinispan/hotrod/FailOverRequestBalancingStrategy.h"
 %include "infinispan/hotrod/ConfigurationChildBuilder.h"
 %include "infinispan/hotrod/SslConfigurationBuilder.h"
 %include "infinispan/hotrod/ServerConfigurationBuilder.h"

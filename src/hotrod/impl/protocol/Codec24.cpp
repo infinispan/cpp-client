@@ -1,10 +1,9 @@
+#include <hotrod/impl/transport/tcp/InetSocketAddress.h>
 #include "hotrod/impl/protocol/Codec24.h"
 #include "hotrod/impl/protocol/HotRodConstants.h"
 #include "hotrod/impl/protocol/HeaderParams.h"
 #include "hotrod/impl/transport/Transport.h"
 #include "hotrod/impl/transport/TransportFactory.h"
-#include "hotrod/impl/transport/tcp/InetSocketAddress.h"
-
 #include <iostream>
 #include <sstream>
 #include <set>

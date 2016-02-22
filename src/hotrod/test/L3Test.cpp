@@ -2,7 +2,6 @@
 #include "hotrod/impl/consistenthash/ConsistentHashFactory.h"
 #include "hotrod/impl/consistenthash/ConsistentHash.h"
 #include "hotrod/impl/consistenthash/ConsistentHashV2.h"
-#include "hotrod/impl/transport/tcp/InetSocketAddress.h"
 #include "hotrod/impl/protocol/HotRodConstants.h"
 #include "infinispan/hotrod/defs.h"
 #include <iostream>
@@ -13,6 +12,7 @@
 #include <string>
 #include <algorithm>
 #include <assert.h>
+#include <hotrod/impl/transport/tcp/InetSocketAddress.h>
 
 
 using namespace infinispan::hotrod;

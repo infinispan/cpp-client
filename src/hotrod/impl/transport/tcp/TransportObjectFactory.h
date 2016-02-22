@@ -1,7 +1,7 @@
 #ifndef ISPN_HOTROD_TRANSPORT_TRANSPORTOBJECTFACTORY_H
 #define ISPN_HOTROD_TRANSPORT_TRANSPORTOBJECTFACTORY_H
 
-#include "hotrod/impl/transport/tcp/InetSocketAddress.h"
+#include <hotrod/impl/transport/tcp/InetSocketAddress.h>
 #include "hotrod/impl/transport/tcp/TcpTransport.h"
 #include "hotrod/impl/operations/PingOperation.h"
 
