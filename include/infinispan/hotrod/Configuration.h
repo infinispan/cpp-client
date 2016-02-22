@@ -10,6 +10,7 @@
 #include "ConnectionPoolConfiguration.h"
 #include "ServerConfiguration.h"
 #include "SslConfiguration.h"
+#include "infinispan/hotrod/FailOverRequestBalancingStrategy.h"
 
 namespace infinispan {
 namespace hotrod {
@@ -45,13 +46,14 @@ class Configuration
             const SslConfiguration _sslConfiguration,
             bool _tcpNoDelay,
             int _valueSizeEstimate,
-            int _maxRetries):
+            int _maxRetries,
+            FailOverRequestBalancingStrategy::ProducerFn bsp=0):
                 protocolVersion(_protocolVersion), protocolVersionPtr(),
                 connectionPoolConfiguration(_connectionPoolConfiguration),
                 connectionTimeout(_connectionTimeout), forceReturnValue(_forceReturnValue),
                 keySizeEstimate(_keySizeEstimate), pingOnStartup(_pingOnStartup), servers(_serversConfiguration),
                 socketTimeout(_socketTimeout), sslConfiguration(_sslConfiguration),tcpNoDelay(_tcpNoDelay),
-                valueSizeEstimate(_valueSizeEstimate), maxRetries(_maxRetries) {}
+                valueSizeEstimate(_valueSizeEstimate), maxRetries(_maxRetries), balancingStrategyProducer(bsp) {}
 
     /**
      * DEPRECATED. Use getProtocolVersionCString().
@@ -157,6 +159,8 @@ class Configuration
      */
     HR_EXTERN const int& getMaxRetries() const;
 
+    HR_EXTERN FailOverRequestBalancingStrategy::ProducerFn getBalancingStrategy() const;
+
 private:
     portable::string protocolVersion;
     portable::local_ptr<std::string> protocolVersionPtr;
@@ -171,6 +175,7 @@ private:
     bool tcpNoDelay;
     int valueSizeEstimate;
     int maxRetries;
+    FailOverRequestBalancingStrategy::ProducerFn balancingStrategyProducer;
 
     static void deleteString(std::string *str) { delete str; }
 };

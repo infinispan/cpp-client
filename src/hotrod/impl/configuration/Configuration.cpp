@@ -68,5 +68,8 @@ const int& Configuration::getMaxRetries() const
 {
   return Configuration::maxRetries;
 }
-
+FailOverRequestBalancingStrategy::ProducerFn Configuration::getBalancingStrategy() const
+{
+  return balancingStrategyProducer;
+}
 }} /* namespace */

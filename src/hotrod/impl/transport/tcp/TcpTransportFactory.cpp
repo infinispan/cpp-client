@@ -1,8 +1,10 @@
+#include <hotrod/impl/transport/tcp/InetSocketAddress.h>
+#include <infinispan/hotrod/exceptions.h>
+#include <infinispan/hotrod/ServerNameId.h>
 #include "hotrod/impl/transport/tcp/TcpTransportFactory.h"
 #include "hotrod/impl/transport/tcp/TcpTransport.h"
-#include "hotrod/impl/transport/tcp/InetSocketAddress.h"
 #include "hotrod/impl/transport/tcp/TransportObjectFactory.h"
-#include "hotrod/impl/transport/tcp/RequestBalancingStrategy.h"
+#include "hotrod/impl/transport/tcp/RoundRobinBalancingStrategy.h"
 #include "hotrod/impl/protocol/Codec.h"
 #include "infinispan/hotrod/Configuration.h"
 #include "hotrod/impl/consistenthash/ConsistentHash.h"
@@ -18,6 +20,8 @@ using namespace consistenthash;
 
 namespace transport {
 
+
+
 TransportFactory* TransportFactory::newInstance(const Configuration& configuration) {
     return new TcpTransportFactory(configuration);
 }
@@ -25,7 +29,7 @@ TransportFactory* TransportFactory::newInstance(const Configuration& configurati
 void TcpTransportFactory::start(
     Codec& codec)
 {
-    ScopedLock<Mutex> l(lock);
+	ScopedLock<Mutex> l(lock);
     std::vector<ServerConfiguration> configuredServers = configuration.getServersConfiguration();
     for (std::vector<ServerConfiguration>::const_iterator iter = configuredServers.begin();
         iter != configuredServers.end(); iter++)
@@ -33,7 +37,14 @@ void TcpTransportFactory::start(
         servers.push_back(InetSocketAddress(iter->getHostCString(), iter->getPort()));
     }
 
-    balancer.reset(RequestBalancingStrategy::newInstance());
+    FailOverRequestBalancingStrategy::ProducerFn producerFn=configuration.getBalancingStrategy();
+    if (producerFn!= nullptr) {
+        balancer.reset((*producerFn)());
+    }
+    else
+    {
+        balancer.reset(RoundRobinBalancingStrategy::newInstance());
+    }
     hashFactory.reset(new ConsistentHashFactory());
 
     // TODO: SSL configuration
@@ -41,7 +52,20 @@ void TcpTransportFactory::start(
     transportFactory.reset(new TransportObjectFactory(codec, *this));
 
     createAndPreparePool();
-    balancer->setServers(servers);
+
+    //  update map conversion ServerIdentity/INetSocketAddress
+    std::vector<ServerNameId> serverNames;
+    for (std::vector<InetSocketAddress>::const_iterator it =
+            servers.begin(); it != servers.end(); ++it) {
+    	const ServerNameId tmp = (ServerNameId)*it;
+    	if (serverNameMap.find(tmp)==serverNameMap.end())
+    	{
+    		serverNameMap.insert(std::make_pair(tmp,InetSocketAddress(*it)));
+    	}
+    	serverNames.push_back(tmp);
+    }
+
+    balancer->setServers(serverNames);
 
     if (configuration.isPingOnStartup()) {
        pingServers();
@@ -52,7 +76,11 @@ Transport& TcpTransportFactory::getTransport(const std::vector<char>& /*cacheNam
     const InetSocketAddress* server = NULL;
     {
         ScopedLock<Mutex> l(lock);
-        server = &balancer->nextServer();
+        std::map<ServerNameId,InetSocketAddress>::iterator it=serverNameMap.find(balancer->nextServer());
+        if (it==serverNameMap.end()){
+          throw Exception("Server not found!");
+        }
+    	server=&it->second;
     }
     return borrowTransportFromPool(*server);
 }
@@ -72,7 +100,11 @@ Transport& TcpTransportFactory::getTransport(const std::vector<char>& key, const
         if (consistentHash != NULL) {
             server = &consistentHash->getServer(key);
         } else {
-            server = &balancer->nextServer();
+            std::map<ServerNameId,InetSocketAddress>::iterator it=serverNameMap.find(balancer->nextServer());
+            if (it==serverNameMap.end()){
+                throw Exception("Server not found!");
+            }
+        	server=&it->second;
         }
     }
     return borrowTransportFromPool(*server);
@@ -190,7 +222,21 @@ void TcpTransportFactory::updateServers(std::vector<InetSocketAddress>& newServe
     //2. now set the server list to the active list of servers. All the active servers (potentially together with some
     // failed servers) are in the pool now. But after this, the pool won't be asked for connections to failed servers,
     // as the balancer will only know about the active servers
-    balancer->setServers(newServers);
+
+    //3. update map conversion ServerIdentity/INetSocketAddress
+    std::vector<ServerNameId> newServerNames;
+    for (std::vector<InetSocketAddress>::const_iterator it =
+            newServers.begin(); it != newServers.end(); ++it) {
+    	const ServerNameId tmp = (ServerNameId)*it;
+    	if (serverNameMap.find(tmp)==serverNameMap.end())
+    	{
+    		serverNameMap.insert(std::make_pair(tmp,InetSocketAddress(*it)));
+    	}
+    	newServerNames.push_back(tmp);
+    }
+
+
+    balancer->setServers(newServerNames);
 
     //3. Now just remove failed servers
     for (std::vector<InetSocketAddress>::const_iterator it =

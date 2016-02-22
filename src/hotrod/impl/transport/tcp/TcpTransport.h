@@ -3,12 +3,12 @@
 
 
 
+#include <hotrod/impl/transport/tcp/InetSocketAddress.h>
 #include <sstream>
 
 #include "infinispan/hotrod/defs.h"
 #include "hotrod/impl/transport/AbstractTransport.h"
 #include "hotrod/impl/transport/tcp/Socket.h"
-#include "hotrod/impl/transport/tcp/InetSocketAddress.h"
 
 namespace infinispan {
 namespace hotrod {

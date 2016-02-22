@@ -38,6 +38,7 @@ class ConfigurationBuilder
         m_tcpNoDelay(true),
         m_valueSizeEstimate(512),
         m_maxRetries(10),
+		m_balancingStrategyProducer(nullptr),
         __pragma(warning(suppress:4355)) // passing uninitialized 'this'
         connectionPoolConfigurationBuilder(*this),
         __pragma(warning(suppress:4355))
@@ -194,6 +195,11 @@ class ConfigurationBuilder
     	return *this;
     }
 
+    ConfigurationBuilder& balancingStrategyProducer(FailOverRequestBalancingStrategy::ProducerFn bsp) {
+        m_balancingStrategyProducer = bsp;
+        return *this;
+    }
+
     /**
      * Build and returns an actual Configuration instance to be used for configuration of
      * RemoteCacheManager.
@@ -231,7 +237,8 @@ class ConfigurationBuilder
             sslConfigurationBuilder.create(),
             m_tcpNoDelay,
             m_valueSizeEstimate,
-            m_maxRetries);
+            m_maxRetries,
+            m_balancingStrategyProducer);
 
     }
 
@@ -269,6 +276,7 @@ class ConfigurationBuilder
     bool m_tcpNoDelay;
     int m_valueSizeEstimate;
     int m_maxRetries;
+    FailOverRequestBalancingStrategy::ProducerFn m_balancingStrategyProducer;
 
     ConnectionPoolConfigurationBuilder connectionPoolConfigurationBuilder;
     SslConfigurationBuilder sslConfigurationBuilder;
@@ -324,6 +332,9 @@ inline ConfigurationBuilder &ConfigurationChildBuilder::valueSizeEstimate(int va
 
 inline ConfigurationBuilder &ConfigurationChildBuilder::maxRetries(int maxRetries_) {
     return m_builder->maxRetries(maxRetries_);
+}
+inline ConfigurationBuilder &ConfigurationChildBuilder::balancingStrategyProducer(FailOverRequestBalancingStrategy::ProducerFn bsp) {
+    return m_builder->balancingStrategyProducer(bsp);
 }
 
 inline Configuration ConfigurationChildBuilder::build() {

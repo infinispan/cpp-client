@@ -57,8 +57,8 @@ class TcpTransportFactory : public TransportFactory
     int maxRetries;
     std::shared_ptr<TransportObjectFactory> transportFactory;
     std::shared_ptr<ConnectionPool> connectionPool;
-    std::shared_ptr<RequestBalancingStrategy> balancer;
-
+    std::shared_ptr<FailOverRequestBalancingStrategy> balancer;
+    std::map<const ServerNameId,InetSocketAddress> serverNameMap;
     void createAndPreparePool();
 
     std::shared_ptr<infinispan::hotrod::consistenthash::ConsistentHashFactory> hashFactory;

@@ -2,18 +2,17 @@
 
 #include "hotrod/impl/transport/tcp/RoundRobinBalancingStrategy.h"
 
-
 namespace infinispan {
 namespace hotrod {
 namespace transport {
 
-RequestBalancingStrategy* RequestBalancingStrategy::newInstance() {
+FailOverRequestBalancingStrategy* RoundRobinBalancingStrategy::newInstance() {
     return new RoundRobinBalancingStrategy();
 }
 
 RoundRobinBalancingStrategy::RoundRobinBalancingStrategy() : index(0) {}
 
-void RoundRobinBalancingStrategy::setServers(const std::vector<InetSocketAddress>& s) {
+void RoundRobinBalancingStrategy::setServers(const std::vector<ServerNameId>& s) {
     servers = s;
     // keep the old index if possible so that we don't produce more requests for the first server
     if (index >= servers.size()) {
@@ -21,16 +20,16 @@ void RoundRobinBalancingStrategy::setServers(const std::vector<InetSocketAddress
     }
 }
 
-const InetSocketAddress& RoundRobinBalancingStrategy::nextServer() {
-    const InetSocketAddress& server = getServerByIndex(index++);
+const ServerNameId& RoundRobinBalancingStrategy::nextServer() {
+    const ServerNameId& server = getServerByIndex(index++);
     if (index >= servers.size()) {
        index = 0;
     }
     return server;
 }
 
-const InetSocketAddress& RoundRobinBalancingStrategy::getServerByIndex(size_t pos) {
-    const InetSocketAddress& server = servers[pos];
+const ServerNameId& RoundRobinBalancingStrategy::getServerByIndex(size_t pos) {
+    const ServerNameId& server = servers[pos];
     return server;
 }
 

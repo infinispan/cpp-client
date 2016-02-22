@@ -2,10 +2,11 @@
 #define ISPN_HOTROD_OPERATIONS_RETRYONFAILUREOPERATION_H
 
 
-
+#include "infinispan/hotrod/exceptions.h"
+#include "hotrod/impl/transport/tcp/InetSocketAddress.h"
 #include "hotrod/impl/operations/HotRodOperation.h"
 #include "hotrod/impl/transport/TransportFactory.h"
-#include "hotrod/impl/transport/tcp/InetSocketAddress.h"
+
 
 namespace infinispan {
 namespace hotrod {

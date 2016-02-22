@@ -117,6 +117,13 @@ class ConfigurationChildBuilder
      */
     ConfigurationBuilder& maxRetries(int maxRetries_);
 
+    /**
+     * Sets the balancer generator function
+     *
+     *\return ConfigurationBuilder instance to be used for further configuration
+     */
+    ConfigurationBuilder& balancingStrategyProducer(FailOverRequestBalancingStrategy::ProducerFn bsp);
+
     Configuration build();
 
 private:

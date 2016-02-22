@@ -1,9 +1,9 @@
 #ifndef ISPN_HOTROD_CONSISTENT_HASH_H
 #define ISPN_HOTROD_CONSISTENT_HASH_H
 
+#include <hotrod/impl/transport/tcp/InetSocketAddress.h>
 #include "infinispan/hotrod/defs.h"
 #include "hotrod/impl/hash/Hash.h"
-#include "hotrod/impl/transport/tcp/InetSocketAddress.h"
 #include <set>
 #include <map>
 #include <vector>

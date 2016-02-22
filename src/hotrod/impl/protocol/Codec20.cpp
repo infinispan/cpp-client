@@ -1,9 +1,10 @@
+#include "infinispan/hotrod/exceptions.h"
+#include <hotrod/impl/transport/tcp/InetSocketAddress.h>
 #include "hotrod/impl/protocol/Codec20.h"
 #include "hotrod/impl/protocol/HotRodConstants.h"
 #include "hotrod/impl/protocol/HeaderParams.h"
 #include "hotrod/impl/transport/Transport.h"
 #include "hotrod/impl/transport/TransportFactory.h"
-#include "hotrod/impl/transport/tcp/InetSocketAddress.h"
 #include "hotrod/sys/Log.h"
 #include "hotrod/sys/Mutex.h"
 
