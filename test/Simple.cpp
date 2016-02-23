@@ -257,7 +257,7 @@ int main(int argc, char** argv) {
     std::cout << "Basic Test with BasicMarshaller" << std::endl;
     {
         ConfigurationBuilder builder;
-        builder.addServer().host(argc > 1 ? argv[1] : "127.0.0.1").port(argc > 2 ? atoi(argv[2]) : 11222).protocolVersion(Configuration::PROTOCOL_VERSION_20);
+        builder.addServer().host(argc > 1 ? argv[1] : "127.0.0.1").port(argc > 2 ? atoi(argv[2]) : 11222).protocolVersion(Configuration::PROTOCOL_VERSION_24);
         RemoteCacheManager cacheManager(builder.build(), false);
         BasicMarshaller<std::string> *km = new BasicMarshaller<std::string>();
         BasicMarshaller<std::string> *vm = new BasicMarshaller<std::string>();
@@ -312,7 +312,7 @@ int main(int argc, char** argv) {
     std::cout << "Basic Test with JBasicMarshaller" << std::endl;
     {
         ConfigurationBuilder builder;
-        builder.addServer().host(argc > 1 ? argv[1] : "127.0.0.1").port(argc > 2 ? atoi(argv[2]) : 11222).protocolVersion(Configuration::PROTOCOL_VERSION_20);
+        builder.addServer().host(argc > 1 ? argv[1] : "127.0.0.1").port(argc > 2 ? atoi(argv[2]) : 11222).protocolVersion(Configuration::PROTOCOL_VERSION_24);
         RemoteCacheManager cacheManager(builder.build(), false);
         JBasicMarshaller<std::string> *km = new JBasicMarshaller<std::string>();
         JBasicMarshaller<std::string> *vm = new JBasicMarshaller<std::string>();
