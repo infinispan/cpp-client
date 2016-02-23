@@ -34,7 +34,7 @@ template<class T> class AbstractKeyValueOperation : public AbstractKeyOperation<
         const std::vector<char>& value;
         uint32_t lifespan;
         uint32_t maxIdle;
-
+        using HotRodOperation<T>::codec;
         //[header][key length][key][lifespan][max idle][value length][value]
         uint8_t sendPutOperation(
             transport::Transport&     transport,
@@ -46,8 +46,7 @@ template<class T> class AbstractKeyValueOperation : public AbstractKeyOperation<
 
             // 2) write key and value
             transport.writeArray(this->key);
-            transport.writeVInt(lifespan);
-            transport.writeVInt(maxIdle);
+            codec.writeExpirationParams(transport, lifespan, maxIdle);
             transport.writeArray(value);
             transport.flush();
 
