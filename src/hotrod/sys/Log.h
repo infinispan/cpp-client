@@ -6,6 +6,7 @@
 #include <stdexcept>
 #include <stdarg.h>
 #include <stdlib.h>
+#include <vector>
 
 #define LOG_LEVEL_TRACE "TRACE"
 #define LOG_LEVEL_DEBUG "DEBUG"
