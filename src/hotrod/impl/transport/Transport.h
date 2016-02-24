@@ -1,6 +1,7 @@
 #ifndef ISPN_HOTROD_TRANSPORT_TRANSPORT_H
 #define ISPN_HOTROD_TRANSPORT_TRANSPORT_H
 
+#include <cstdint>
 #include <vector>
 
 namespace infinispan {
