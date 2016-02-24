@@ -19,19 +19,19 @@ void RemoteCacheBase::setMarshallers(void* rc, MarshallHelperFn kf, MarshallHelp
     baseValueUnmarshallFn = uvf;
 }
     
-void RemoteCacheBase::baseKeyMarshall(const void* k, ScopedBuffer &buf) {
+void RemoteCacheBase::baseKeyMarshall(const void* k, std::vector<char> &buf) {
     baseKeyMarshallFn(remoteCachePtr, k, buf);
 }
 
-void RemoteCacheBase::baseValueMarshall(const void* v, ScopedBuffer &buf) {
+void RemoteCacheBase::baseValueMarshall(const void* v, std::vector<char> &buf) {
     baseValueMarshallFn(remoteCachePtr, v, buf);
 }
 
-void* RemoteCacheBase::baseKeyUnmarshall(const ScopedBuffer &buf) {
+void* RemoteCacheBase::baseKeyUnmarshall(const std::vector<char> &buf) {
     return baseKeyUnmarshallFn(remoteCachePtr, buf);
 }
 
-void* RemoteCacheBase::baseValueUnmarshall(const ScopedBuffer &buf) {
+void* RemoteCacheBase::baseValueUnmarshall(const std::vector<char> &buf) {
     return baseValueUnmarshallFn(remoteCachePtr, buf);
 }
 
@@ -110,6 +110,24 @@ void RemoteCacheBase::base_ping() {
 
 void RemoteCacheBase::base_withFlags(Flag flags) {
     IMPL->withFlags(flags);
+}
+char *RemoteCacheBase::base_execute(RemoteCacheBase& remoteCacheBase, std::string cmdName, const std::map<std::string,std::string>& args){
+	std::map<std::vector<char>,std::vector<char>> m;
+    std::vector<char> cmdNameBuf;
+    std::vector<char> argNameBuf, argValueBuf;
+	for (std::map<std::string,std::string>::const_iterator it=args.begin(); it!=args.end(); ++it)
+	{
+        baseValueMarshall(&(it->second), argValueBuf);
+        std::vector<char> argNameBytes(it->first.data(),it->first.data()+it->first.size());
+        std::vector<char> argValueBytes(argValueBuf.data(),argValueBuf.data()+argValueBuf.size());
+        m.insert(std::pair<std::vector<char>,std::vector<char>>(argNameBytes, argValueBytes));
+	}
+	portable::map<std::vector<char>,std::vector<char>> pm(m);
+    const std::vector<char> cmdNameBytes((cmdName.data()),(cmdName.data())+cmdName.size());
+	std::vector<char> resBytes= IMPL->execute(remoteCacheBase, cmdNameBytes, pm);
+    char *result = new char[resBytes.size()];
+    std::copy(resBytes.begin(),resBytes.end(),result);
+	return result;
 }
 
 }} /* namespace */

@@ -9,8 +9,8 @@ For more information, please refer to [the documentation of this client library]
 ## Build ##
 Build prerequisites: 
 
-* CMake 2.8
-* C++03 plus shared_ptr TR1 support.
+* CMake 2.8 (3.x if Visual Studio 2012 or newer)
+* C++11
 * Infinispan server distribution (located via JBOSS_HOME or cmake directive)
 * Java (any version compatible with the Infinispan distribution)
 * Python 2.6 or newer
@@ -25,7 +25,12 @@ On Linux, use the package manager for your distribution to install the
 necessary packages.  You may have to point to a special repository,
 such as EPEL, to get CMake 2.8.
 
-On Windows, Visual Studio 2008 + SP1, or any newer version, is
+On Mac OS X, use Brew or another package manager to install gcc and swig.
+The compilation will not currently work with Apple's LLVM-based compilers.
+
+* http://brew.sh/
+
+On Windows, Visual Studio 2012, or any newer version, is
 required.  You can obtain Windows installable distributions of other
 needed software from:
 

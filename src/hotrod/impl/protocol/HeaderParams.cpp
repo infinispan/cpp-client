@@ -2,6 +2,7 @@
 
 #include "hotrod/impl/protocol/HeaderParams.h"
 #include "hotrod/impl/protocol/HotRodConstants.h"
+#include "infinispan/hotrod/exceptions.h"
 
 #include <sstream>
 
@@ -18,7 +19,7 @@ HeaderParams& HeaderParams::setOpCode(uint8_t code) {
     return *this;
 }
 
-HeaderParams& HeaderParams::setCacheName(const hrbytes& c) {
+HeaderParams& HeaderParams::setCacheName(const std::vector<char>& c) {
     cacheName = c;
     return *this;
 }
@@ -75,6 +76,8 @@ uint8_t HeaderParams::toOpRespCode(uint8_t code) {
         return HotRodConstants::GET_WITH_METADATA_RESPONSE;
     case HotRodConstants::BULK_GET_KEYS_REQUEST:
         return HotRodConstants::BULK_GET_KEYS_RESPONSE;
+    case HotRodConstants::EXEC_REQUEST:
+        return HotRodConstants::EXEC_RESPONSE;
     default:
     	std::ostringstream msg;
     	msg << "Unknown operation code: " << opCode;

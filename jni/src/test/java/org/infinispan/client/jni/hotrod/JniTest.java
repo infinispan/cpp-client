@@ -41,7 +41,6 @@ public class JniTest {
             DefaultExpirationTest.class,
             // ExpiryTest.class,                     // unstable
             ForceReturnValuesTest.class, 
-            ForceReturnValueTest.class, 
             // HeavyLoadConnectionPoolingTest.class, // requires transport extraction
             HitsAwareCacheManagersTest.class,
             // HotRod10CSAIntegrationTest.class,     // requires transport extraction
@@ -79,7 +78,22 @@ public class JniTest {
             "CacheManagerNotStartedTest.testVersionedRemoveAsync",               // async not implemented
             "ClientSocketReadTimeoutTest.testPutTimeout",                        // TODO: TransportException not marshalled correctly
             "RemoteCacheManagerTest.testMarshallerInstance",                     // setting marshaller through configuration builder not implemented
-            "RemoteCacheManagerTest.testUrlAndBooleanConstructor"                // getProperties deprecated, not implemented
+            "RemoteCacheManagerTest.testUrlAndBooleanConstructor",               // getProperties deprecated, not implemented
+            "BulkGetKeysReplTest.testBulkGetAfterLifespanExpire",
+            "BulkGetKeysSimpleTest.testBulkGetAfterLifespanExpire",
+            "BulkGetReplTest.testBulkGetAfterLifespanExpire",
+            "BulkGetSimpleTest.testBulkGetAfterLifespanExpire",
+            "CrossLanguageHotRodTest.testCppReplace",
+            "ForceReturnValuesTest.testDifferentInstancesForDifferentForceReturnValues",
+            "ForceReturnValuesTest.testSameInstanceForSameForceReturnValues",
+            "HotRodIntegrationTest.testGetWithMetadata",
+            "HotRodIntegrationTest.testReplaceWithPrevious",
+            "RemoteCacheManagerTest.testGetUndefinedCache",
+            "ServerShutdownTest.testServerShutdownWithConnectedClient",
+            "ServerShutdownTest.testServerShutdownWithoutConnectedClient",
+            "CrossLanguageHotRodTest.testCppPutIfAbsent",
+            "HotRodIntegrationTest.testPutIfAbsentWithPrevious",
+            "HotRodIntegrationTest.testPutSerializableByteArray"
       ));
       Set<String> expectedSkips = Collections.emptySet();
 

@@ -20,12 +20,12 @@ namespace operations {
 template<class T> class AbstractKeyOperation : public RetryOnFailureOperation<T>
 {
   protected:
-    const hrbytes& key;
+    const std::vector<char>& key;
 
     AbstractKeyOperation(
         const protocol::Codec& _codec,
         std::shared_ptr<transport::TransportFactory> _transportFactory,
-        const hrbytes& _key, const hrbytes& _cacheName,
+        const std::vector<char>& _key, const std::vector<char>& _cacheName,
         IntWrapper& _topologyId, uint32_t  _flags) :
             RetryOnFailureOperation<T>(
                 _codec, _transportFactory, _cacheName, _topologyId, _flags),
@@ -41,11 +41,11 @@ template<class T> class AbstractKeyOperation : public RetryOnFailureOperation<T>
     }
 
     uint8_t sendKeyOperation(
-        const hrbytes& _key, transport::Transport& transport,
+        const std::vector<char>& _key, transport::Transport& transport,
         uint8_t opCode, uint8_t /*opRespCode*/)
     {
         // 1) write [header][key length][key]
-        hr_scoped_ptr<protocol::HeaderParams> params(
+        std::unique_ptr<protocol::HeaderParams> params(
             &(this->writeHeader(transport, opCode)));
         transport.writeArray(_key);
         transport.flush();
@@ -54,7 +54,7 @@ template<class T> class AbstractKeyOperation : public RetryOnFailureOperation<T>
         return this->readHeaderAndValidate(transport, *params);
     }
 
-    hrbytes returnPossiblePrevValue(transport::Transport& transport, uint8_t status) {
+    std::vector<char> returnPossiblePrevValue(transport::Transport& transport, uint8_t status) {
     	return this->codec.returnPossiblePrevValue(transport, status, this->flags);
     }
 
@@ -79,7 +79,7 @@ template<class T> class AbstractKeyOperation : public RetryOnFailureOperation<T>
             // TODO: check exception type
             throw InvalidResponseException(message.str());
         }
-        hrbytes prevValue = returnPossiblePrevValue(transport,status);
+        std::vector<char> prevValue = returnPossiblePrevValue(transport,status);
         return VersionedOperationResponse(prevValue, code);
     }
 

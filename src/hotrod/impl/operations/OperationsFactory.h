@@ -2,9 +2,9 @@
 #define ISPN_HOTROD_OPERATIONS_OPERATIONSFACTORY_H
 
 #include "infinispan/hotrod/Flag.h"
-#include "hotrod/types.h"
 
 #include <set>
+#include <infinispan/hotrod/portable.h>
 
 namespace infinispan {
 namespace hotrod {
@@ -39,6 +39,7 @@ class BulkGetKeysOperation;
 class StatsOperation;
 class ClearOperation;
 class FaultTolerantPingOperation;
+class ExecuteCmdOperation;
 
 class OperationsFactory
 {
@@ -47,33 +48,33 @@ class OperationsFactory
     PingOperation* newPingOperation(
       infinispan::hotrod::transport::Transport& transport);
 
-    GetOperation* newGetKeyOperation(const hrbytes& key);
+    GetOperation* newGetKeyOperation(const std::vector<char>& key);
 
     PutOperation* newPutKeyValueOperation(
-      const hrbytes& key, const hrbytes& value,
+      const std::vector<char>& key, const std::vector<char>& value,
       uint32_t lifespanSecs, uint32_t maxIdleSecs);
 
     PutIfAbsentOperation* newPutIfAbsentOperation(
-      const hrbytes& key, const hrbytes& value,
+      const std::vector<char>& key, const std::vector<char>& value,
       uint32_t lifespanSecs, uint32_t maxIdleSecs);
 
     ReplaceOperation* newReplaceOperation(
-      const hrbytes& key, const hrbytes& value,
+      const std::vector<char>& key, const std::vector<char>& value,
       uint32_t lifespanSecs, uint32_t maxIdleSecs);
 
-    RemoveOperation* newRemoveOperation(const hrbytes& key);
+    RemoveOperation* newRemoveOperation(const std::vector<char>& key);
 
-    ContainsKeyOperation* newContainsKeyOperation(const hrbytes& key);
+    ContainsKeyOperation* newContainsKeyOperation(const std::vector<char>& key);
 
     ReplaceIfUnmodifiedOperation* newReplaceIfUnmodifiedOperation(
-      const hrbytes& key, const hrbytes& value,
+      const std::vector<char>& key, const std::vector<char>& value,
       uint32_t lifespanSecs, uint32_t maxIdleSecs, int64_t version);
 
-    RemoveIfUnmodifiedOperation* newRemoveIfUnmodifiedOperation(const hrbytes& key, int64_t version);
+    RemoveIfUnmodifiedOperation* newRemoveIfUnmodifiedOperation(const std::vector<char>& key, int64_t version);
 
-    GetWithMetadataOperation* newGetWithMetadataOperation(const hrbytes& key);
+    GetWithMetadataOperation* newGetWithMetadataOperation(const std::vector<char>& key);
 
-    GetWithVersionOperation* newGetWithVersionOperation(const hrbytes& key);
+    GetWithVersionOperation* newGetWithVersionOperation(const std::vector<char>& key);
 
     BulkGetOperation* newBulkGetOperation(int size);
 
@@ -83,18 +84,23 @@ class OperationsFactory
 
     ClearOperation* newClearOperation();
 
+    ExecuteCmdOperation* newExecuteCmdOperation(
+        const std::vector<char>& cmdName, const portable::map<std::vector<char>,std::vector<char>>& values);
+
     FaultTolerantPingOperation* newFaultTolerantPingOperation();
 
     void addFlags(uint32_t flags);
     void setFlags(uint32_t flags);
 
-  private:
+    virtual ~OperationsFactory() { }
+
+private:
     std::shared_ptr<infinispan::hotrod::transport::TransportFactory> transportFactory;
     IntWrapper topologyId;
     const infinispan::hotrod::protocol::Codec& codec;
-    hrbytes cacheNameBytes;
     bool forceReturnValue;
     uint32_t flags;
+    std::vector<char> cacheNameBytes;
 
     uint32_t getFlags();
 

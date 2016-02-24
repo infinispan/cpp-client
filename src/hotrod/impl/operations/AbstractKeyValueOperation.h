@@ -18,11 +18,11 @@ template<class T> class AbstractKeyValueOperation : public AbstractKeyOperation<
 	    AbstractKeyValueOperation(
             const protocol::Codec&       codec_,
             std::shared_ptr<transport::TransportFactory> transportFactory_,
-            const hrbytes&                                   key_,
-            const hrbytes&                                   cacheName_,
+            const std::vector<char>&                                   key_,
+            const std::vector<char>&                                   cacheName_,
             IntWrapper&                                 topologyId_,
             uint32_t                                         flags_,
-            const hrbytes&                                   value_,
+            const std::vector<char>&                                   value_,
             uint32_t                                         lifespan_,
             uint32_t                                         maxIdle_)
             : AbstractKeyOperation<T>(codec_, transportFactory_, key_,
@@ -31,10 +31,10 @@ template<class T> class AbstractKeyValueOperation : public AbstractKeyOperation<
             value(value_), lifespan(lifespan_), maxIdle(maxIdle_)
         {}
 
-        const hrbytes& value;
+        const std::vector<char>& value;
         uint32_t lifespan;
         uint32_t maxIdle;
-
+        using HotRodOperation<T>::codec;
         //[header][key length][key][lifespan][max idle][value length][value]
         uint8_t sendPutOperation(
             transport::Transport&     transport,
@@ -42,12 +42,11 @@ template<class T> class AbstractKeyValueOperation : public AbstractKeyOperation<
             uint8_t                                       /*opRespCode*/)
         {
             // 1) write header
-            hr_scoped_ptr<protocol::HeaderParams> params(&(this->writeHeader(transport, opCode)));
+            std::unique_ptr<protocol::HeaderParams> params(&(this->writeHeader(transport, opCode)));
 
             // 2) write key and value
             transport.writeArray(this->key);
-            transport.writeVInt(lifespan);
-            transport.writeVInt(maxIdle);
+            codec.writeExpirationParams(transport, lifespan, maxIdle);
             transport.writeArray(value);
             transport.flush();
 

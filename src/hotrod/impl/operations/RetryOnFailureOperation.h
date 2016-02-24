@@ -2,10 +2,11 @@
 #define ISPN_HOTROD_OPERATIONS_RETRYONFAILUREOPERATION_H
 
 
-
+#include "infinispan/hotrod/exceptions.h"
+#include "hotrod/impl/transport/tcp/InetSocketAddress.h"
 #include "hotrod/impl/operations/HotRodOperation.h"
 #include "hotrod/impl/transport/TransportFactory.h"
-#include "hotrod/impl/transport/tcp/InetSocketAddress.h"
+
 
 namespace infinispan {
 namespace hotrod {
@@ -47,12 +48,12 @@ template<class T> class RetryOnFailureOperation : public HotRodOperation<T>
     RetryOnFailureOperation(
         const protocol::Codec& _codec,
         std::shared_ptr<transport::TransportFactory> _transportFactory,
-        const hrbytes& _cacheName, IntWrapper& _topologyId, uint32_t _flags) :
+        const std::vector<char>& _cacheName, IntWrapper& _topologyId, uint32_t _flags) :
             HotRodOperation<T>(_codec, _flags, _cacheName, _topologyId),
             transportFactory(_transportFactory) {}
 
     bool shouldRetry(int retryCount) {
-       return retryCount < transportFactory->getMaxRetries();
+       return retryCount <= transportFactory->getMaxRetries();
     }
 
     void releaseTransport(transport::Transport* transport) {

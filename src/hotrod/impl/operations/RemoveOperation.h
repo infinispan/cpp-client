@@ -1,7 +1,6 @@
 #ifndef ISPN_HOTROD_OPERATIONS_REMOVEOPERATION_H
 #define ISPN_HOTROD_OPERATIONS_REMOVEOPERATION_H
 
-#include "infinispan/hotrod/ScopedBuffer.h"
 #include "infinispan/hotrod/RemoteCacheBase.h"
 #include "hotrod/impl/operations/AbstractKeyOperation.h"
 
@@ -10,17 +9,17 @@ namespace hotrod {
 class IntWrapper;
 namespace operations {
 
-class RemoveOperation : public AbstractKeyOperation<hrbytes>
+class RemoveOperation : public AbstractKeyOperation<std::vector<char>>
 {
     protected:
-        hrbytes executeOperation(
+        std::vector<char> executeOperation(
             infinispan::hotrod::transport::Transport& transport);
 
     private:
         RemoveOperation(
             const infinispan::hotrod::protocol::Codec& codec,
             std::shared_ptr<transport::TransportFactory> transportFactory,
-            const hrbytes& key, const hrbytes& cacheName,
+            const std::vector<char>& key, const std::vector<char>& cacheName,
             IntWrapper& topologyId, uint32_t flags);
 
     friend class OperationsFactory;

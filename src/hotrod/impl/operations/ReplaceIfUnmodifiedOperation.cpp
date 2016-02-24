@@ -8,9 +8,9 @@ using infinispan::hotrod::protocol::Codec;
 using namespace infinispan::hotrod::transport;
 
 ReplaceIfUnmodifiedOperation::ReplaceIfUnmodifiedOperation(
-    const Codec& _codec, std::shared_ptr<TransportFactory> _transportFactory, const hrbytes& _key,
-    const hrbytes& _cacheName, IntWrapper& _topologyId, uint32_t _flags,
-    const hrbytes& _value, uint32_t _lifespan, uint32_t _maxIdle, int64_t _version) :
+    const Codec& _codec, std::shared_ptr<TransportFactory> _transportFactory, const std::vector<char>& _key,
+    const std::vector<char>& _cacheName, IntWrapper& _topologyId, uint32_t _flags,
+    const std::vector<char>& _value, uint32_t _lifespan, uint32_t _maxIdle, int64_t _version) :
         AbstractKeyValueOperation<VersionedOperationResponse>(
             _codec, _transportFactory, _key, _cacheName, _topologyId,
             _flags, _value, _lifespan, _maxIdle), version(_version)
@@ -23,7 +23,7 @@ VersionedOperationResponse ReplaceIfUnmodifiedOperation::executeOperation(
     TRACEBYTES("key = ", key);
     TRACEBYTES("value = ", value);
     // 1) write header
-    hr_scoped_ptr<infinispan::hotrod::protocol::HeaderParams> params(
+    std::unique_ptr<infinispan::hotrod::protocol::HeaderParams> params(
         &(AbstractKeyOperation<VersionedOperationResponse>::writeHeader(
             transport, REPLACE_IF_UNMODIFIED_REQUEST)));
 

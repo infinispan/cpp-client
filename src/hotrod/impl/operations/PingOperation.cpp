@@ -13,19 +13,19 @@ using transport::Transport;
 namespace operations {
 
 PingOperation::PingOperation(const Codec& c, IntWrapper& id,
-		Transport& t, const hrbytes& n)
+		Transport& t, const std::vector<char>& n)
     : HotRodOperation<PingResult>(c, 0, n, id), transport(t)
 {}
 
 PingOperation::PingOperation(const Codec& c, IntWrapper& id,
 		Transport& t)
-    : HotRodOperation<PingResult>(c, 0, hrbytes(), id), transport(t)
+    : HotRodOperation<PingResult>(c, 0, std::vector<char>(), id), transport(t)
 {}
 
 PingResult PingOperation::execute() {
     //HeaderParams params;
 	TRACE("Executing Ping");
-	hr_scoped_ptr<infinispan::hotrod::protocol::HeaderParams> params(&writeHeader(transport, HotRodConstants::PING_REQUEST));
+	std::unique_ptr<infinispan::hotrod::protocol::HeaderParams> params(&writeHeader(transport, HotRodConstants::PING_REQUEST));
 	transport.flush();
 
     uint8_t respStatus = readHeaderAndValidate(transport, *params);

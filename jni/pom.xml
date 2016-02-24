@@ -87,6 +87,12 @@
          <scope>test</scope>
       </dependency>
       <dependency>
+         <groupId>org.infinispan</groupId>
+         <artifactId>infinispan-query-dsl</artifactId>
+         <version>${version.org.infinispan}</version>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
          <groupId>org.jboss.jbossts.jta</groupId>
          <artifactId>narayana-jta</artifactId>
          <version>${version.org.jboss.jbossts}</version>

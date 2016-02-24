@@ -1,9 +1,9 @@
 #include "infinispan/hotrod/ConfigurationBuilder.h"
 #include "infinispan/hotrod/RemoteCacheManager.h"
 #include "infinispan/hotrod/RemoteCache.h"
-#include "infinispan/hotrod/ScopedBuffer.h"
 #include "infinispan/hotrod/Version.h"
 
+#include "infinispan/hotrod/JBasicMarshaller.h"
 #include <stdlib.h>
 #include <iostream>
 #include <memory>
@@ -12,6 +12,50 @@
 // For CTest: return 0 if all tests pass, non-zero otherwise.
 
 using namespace infinispan::hotrod;
+
+namespace infinispan {
+    namespace hotrod {
+        namespace transport {
+
+            class MyRoundRobinBalancingStrategy : public FailOverRequestBalancingStrategy
+            {
+            public:
+                MyRoundRobinBalancingStrategy() : index(0) { }
+
+                static FailOverRequestBalancingStrategy *newInstance() {
+                    return new MyRoundRobinBalancingStrategy();
+                }
+
+                void setServers(const std::vector<ServerNameId> &s) {
+                    servers = s;
+                    // keep the old index if possible so that we don't produce more requests for the first server
+                    if (index >= servers.size()) {
+                        index = 0;
+                    }
+                }
+
+                ~MyRoundRobinBalancingStrategy() { }
+
+                const ServerNameId &getServerByIndex(size_t pos) {
+                    const ServerNameId &server = servers[pos];
+                    return server;
+                }
+            private:
+                std::vector<ServerNameId> servers;
+                size_t index;
+                const ServerNameId &nextServer() {
+                    const ServerNameId &server = getServerByIndex(index++);
+                    if (index >= servers.size()) {
+                        index = 0;
+                    }
+                    return server;
+                }
+
+
+            };
+
+        }}}
+
 
 template <class T>
 void assert_not_null(const std::string& message, int line,  const std::unique_ptr<T>& pointer) {
@@ -22,13 +66,8 @@ void assert_not_null(const std::string& message, int line,  const std::unique_pt
   }
 }
 
-int main(int argc, char** argv) {
-    ConfigurationBuilder builder;
-    builder.addServer().host(argc > 1 ? argv[1] : "127.0.0.1").port(argc > 2 ? atoi(argv[2]) : 11222);
-    builder.protocolVersion(Configuration::PROTOCOL_VERSION_20);
-    RemoteCacheManager cacheManager(builder.build(), false);
-    RemoteCache<std::string, std::string> cache = cacheManager.getCache<std::string, std::string>();
-    cacheManager.start();
+template <class K, class V>
+int basicTest(RemoteCacheManager &cacheManager, RemoteCache<K,V> &cache) {
 
     std::cout << "HotRod C++ Library version " << cache.getVersion() << std::endl;
     std::cout << "Protocol " << cache.getProtocolVersion() << std::endl;
@@ -227,21 +266,146 @@ int main(int argc, char** argv) {
     }
 
     std::cout << "PASS: simple replace" << std::endl;
-
-    // get non-existing cache
     try {
-        cacheManager.getCache<std::string, std::string>("non-existing", false);
-        std::cerr << "fail getCache for non-existing cache didn't throw exception" << std::endl;
-        return 1;
-    } catch (const HotRodClientException&) {
-        std::cout << "PASS: get non-existing cache" << std::endl;
-    } catch (const Exception& e) {
-        std::cout << "is: " << typeid(e).name() << '\n';
-        std::cerr << "fail unexpected exception: " << e.what() << std::endl;
+        RemoteCache<std::string, std::string> namedCache =
+                cacheManager.getCache<std::string, std::string>("namedCache", false);
+        std::unique_ptr<std::string> namedCacheV1(namedCache.get("k1"));
+    }
+    catch (...)
+    {
         return 1;
     }
+    std::cout << "PASS: get for namedCache" << std::endl;
 
-    cacheManager.stop();
+    // get non-existing cache
+        try {
+            RemoteCache<std::string, std::string> non_existing =
+                    cacheManager.getCache<std::string, std::string>("non-existing", false);
+            std::cerr << "fail getCache for non-existing cache didn't throw exception" << std::endl;
+            return 1;
+        } catch (const HotRodClientException &ex) {
+            std::cout << "PASS: get non-existing cache" << std::endl;
+        } catch (const Exception &e) {
+            std::cout << "is: " << typeid(e).name() << '\n';
+            std::cerr << "fail unexpected exception: " << e.what() << std::endl;
+            return 1;
+        }
 
     return 0;
 }
+
+int main(int argc, char** argv) {
+    // Call basic test for every marshaller and every codec
+
+    int result;
+    std::cout << "Basic Test with BasicMarshaller" << std::endl;
+    {
+        ConfigurationBuilder builder;
+        builder.addServer().host(argc > 1 ? argv[1] : "127.0.0.1").port(argc > 2 ? atoi(argv[2]) : 11222).protocolVersion(Configuration::PROTOCOL_VERSION_24);
+//        builder.balancingStrategyProducer(transport::MyRoundRobinBalancingStrategy::newInstance);
+        builder.balancingStrategyProducer(nullptr);
+        RemoteCacheManager cacheManager(builder.build(), false);
+        BasicMarshaller<std::string> *km = new BasicMarshaller<std::string>();
+        BasicMarshaller<std::string> *vm = new BasicMarshaller<std::string>();
+        RemoteCache<std::string, std::string> cache = cacheManager.getCache<std::string, std::string>(km,
+                &Marshaller<std::string>::destroy,
+                vm,
+                &Marshaller<std::string>::destroy);
+        cacheManager.start();
+        result = basicTest<std::string, std::string>(cacheManager, cache);
+
+        try
+        {
+            std::map<std::string,std::string> s;
+            std::string argName = std::string("a");
+            std::string argValue = std::string("b");
+            // execute() operation wants JBossMarshalling format sometimes
+            s.insert(std::pair<std::string, std::string>(argName,JBasicMarshaller<std::string>::addPreamble(argValue)));
+            std::string script ("// mode=local,language=javascript\n "
+            "var cache = cacheManager.getCache();\n"
+            "cache.put(\"a\", \"abc\");\n"
+            "cache.put(\"b\", \"b\");\n"
+            "cache.get(\"a\");\n");
+            std::string script_name("script.js");
+            std::string p_script_name=JBasicMarshaller<std::string>::addPreamble(script_name);
+            std::string p_script=JBasicMarshaller<std::string>::addPreamble(script);
+            RemoteCache<std::string, std::string> scriptCache=cacheManager.getCache<std::string,std::string>("___script_cache",false);
+            scriptCache.put(p_script_name, p_script);
+            char* execResult = cache.execute(script_name,s);
+
+
+            // We know the remote script returns a string and
+            // we use the helper to unmarshall
+            std::string res(JBasicMarshallerHelper::unmarshall<std::string>(execResult));
+            if (res.compare("abc")!=0)
+            {
+                std::cerr << "fail: cache.exec() returned unexpected result"<< std::endl;
+                return 1;
+            }
+            delete(execResult);
+        } catch (const Exception& e) {
+            std::cout << "is: " << typeid(e).name() << '\n';
+            std::cerr << "fail unexpected exception: " << e.what() << std::endl;
+            return 1;
+        }
+        std::cout << "PASS: script execution on server" << std::endl;
+
+        cacheManager.stop();
+    }
+    if (result!=0)
+        return result;
+
+    std::cout << "Basic Test with JBasicMarshaller" << std::endl;
+    {
+        ConfigurationBuilder builder;
+        //        builder.balancingStrategyProducer(transport::MyRoundRobinBalancingStrategy::newInstance);
+                builder.balancingStrategyProducer(nullptr);
+        builder.addServer().host(argc > 1 ? argv[1] : "127.0.0.1").port(argc > 2 ? atoi(argv[2]) : 11222).protocolVersion(Configuration::PROTOCOL_VERSION_24);
+        RemoteCacheManager cacheManager(builder.build(), false);
+        JBasicMarshaller<std::string> *km = new JBasicMarshaller<std::string>();
+        JBasicMarshaller<std::string> *vm = new JBasicMarshaller<std::string>();
+        RemoteCache<std::string, std::string> cache = cacheManager.getCache<std::string, std::string>(km,
+                &Marshaller<std::string>::destroy,
+                vm,
+                &Marshaller<std::string>::destroy);
+        cacheManager.start();
+        result = basicTest<std::string, std::string>(cacheManager, cache);
+        try
+        {
+            std::map<std::string,std::string> s;
+            std::string argName = std::string("a");
+            std::string argValue = std::string("b");
+            s.insert(std::pair<std::string, std::string>(argName,argValue));
+            std::string script ("// mode=local,language=javascript\n "
+            "var cache = cacheManager.getCache();\n"
+            "cache.put(\"a\", \"abc\");\n"
+            "cache.put(\"b\", \"b\");\n"
+            "cache.get(\"a\");\n");
+            std::string script_name("script.js");
+            cacheManager.getCache<std::string,std::string>(km,
+                    &Marshaller<std::string>::destroy,
+                    vm,
+                    &Marshaller<std::string>::destroy,"___script_cache").put(script_name, script);
+            char* execResult = cache.execute(script_name,s);
+
+            // We know the remote script returns a string and
+            // we use the helper to unmarshall
+            std::string res(JBasicMarshallerHelper::unmarshall<std::string>(execResult));
+            if (res.compare("abc")!=0)
+            {
+                std::cerr << "fail: cache.exec() returned unexpected result"<< std::endl;
+                return 1;
+            }
+            delete(execResult);
+        } catch (const Exception& e) {
+            std::cout << "is: " << typeid(e).name() << '\n';
+            std::cerr << "fail unexpected exception: " << e.what() << std::endl;
+            return 1;
+        }
+        std::cout << "PASS: script execution on server" << std::endl;
+
+        cacheManager.stop();
+    }
+    return result;
+}
+

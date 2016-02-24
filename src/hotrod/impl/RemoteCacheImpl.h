@@ -2,9 +2,7 @@
 #define ISPN_HOTROD_REMOTECACHEIMPL_H
 
 #include "infinispan/hotrod/portable.h"
-#include "infinispan/hotrod/ScopedBuffer.h"
 #include "infinispan/hotrod/RemoteCacheBase.h"
-#include "hotrod/types.h"
 #include "hotrod/impl/MetadataValueImpl.h"
 #include "hotrod/impl/VersionedValueImpl.h"
 #include "hotrod/impl/operations/PingOperation.h"
@@ -37,6 +35,7 @@ public:
     void  keySet(RemoteCacheBase& rcb, int scope, portable::vector<void*> &result);
     void  stats(portable::map<portable::string,portable::string> &stats);
     void  clear();
+    std::vector<char> execute(RemoteCacheBase& /*remoteCacheBase*/, std::vector<char> cmdName, const portable::map<std::vector<char>,std::vector<char>>& args);
 
     operations::PingResult ping();
 
@@ -65,10 +64,8 @@ private:
     RemoteCacheBase &base;
 public:
     KeyUnmarshallerFtor(RemoteCacheBase &b): base(b) {}
-    void *operator()(const hrbytes &bytes) {
-        ScopedBuffer buf;
-        bytes.releaseTo(buf);
-        return base.baseKeyUnmarshall(buf);
+    void *operator()(const std::vector<char> &bytes) {
+        return base.baseKeyUnmarshall(bytes);
     }
 };
 
@@ -77,10 +74,8 @@ private:
     RemoteCacheBase &base;
 public:
     ValueUnmarshallerFtor(RemoteCacheBase &b): base(b) {}
-    void *operator()(const hrbytes &bytes) {
-        ScopedBuffer buf;
-        bytes.releaseTo(buf);
-        return base.baseKeyUnmarshall(buf);
+    void *operator()(const std::vector<char> &bytes) {
+        return base.baseKeyUnmarshall(bytes);
     }
 };
 

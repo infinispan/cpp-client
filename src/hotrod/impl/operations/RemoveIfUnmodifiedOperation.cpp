@@ -10,8 +10,8 @@ using namespace infinispan::hotrod::transport;
 RemoveIfUnmodifiedOperation::RemoveIfUnmodifiedOperation(
     const Codec&      codec_,
     std::shared_ptr<transport::TransportFactory> transportFactory_,
-    const hrbytes&    key_,
-    const hrbytes&    cacheName_,
+    const std::vector<char>&    key_,
+    const std::vector<char>&    cacheName_,
     IntWrapper&  topologyId_,
     uint32_t    flags_,
     int64_t version_)
@@ -25,7 +25,7 @@ VersionedOperationResponse RemoveIfUnmodifiedOperation::executeOperation(Transpo
     TRACE("Execute RemoteIfUnmodified(flags=%u, version=%lld)", flags, version);
     TRACEBYTES("key = ", key);
     // 1) write header
-    hr_scoped_ptr<infinispan::hotrod::protocol::HeaderParams> params(
+    std::unique_ptr<infinispan::hotrod::protocol::HeaderParams> params(
         &(AbstractKeyOperation<VersionedOperationResponse>::writeHeader(
             transport, REMOVE_IF_UNMODIFIED_REQUEST)));
 

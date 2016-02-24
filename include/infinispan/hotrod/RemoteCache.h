@@ -10,6 +10,7 @@
 #include "infinispan/hotrod/TimeUnit.h"
 #include "infinispan/hotrod/VersionedValue.h"
 #include "infinispan/hotrod/Version.h"
+#include "infinispan/hotrod/exceptions.h"
 
 #include <cmath>
 #include <set>
@@ -461,6 +462,16 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
         return result;
     }
     /**
+     * Execute script on server
+     * \param cmdName name of the script
+     * \param args maps of (name,value) arguments
+     * \return byte[] result in dark matter shape
+     */
+    char* execute(const std::string& name, const std::map<std::string,std::string>& args)
+    {
+    	return base_execute(*this,name,args);
+    }
+    /**
      * Unsupported operation in this release of Hot Rod client. UnsupportedOperationException is
      * thrown if his method is invoked.
      */
@@ -606,16 +617,16 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
     }
 
     // type-hiding and resurrecting support
-    static void keyMarshall(void *thisp, const void* key, ScopedBuffer &buf) {
+    static void keyMarshall(void *thisp, const void* key, std::vector<char> &buf) {
         ((RemoteCache<K, V> *) thisp)->keyMarshaller->marshall(*(const K *) key, buf);
     }
-    static void valueMarshall(void* thisp, const void* val, ScopedBuffer &buf) {
+    static void valueMarshall(void* thisp, const void* val, std::vector<char> &buf) {
         ((RemoteCache<K, V> *)thisp)->valueMarshaller->marshall(*(const V *) val, buf);
     }
-    static void* keyUnmarshall(void *thisp, const ScopedBuffer &buf) {
+    static void* keyUnmarshall(void *thisp, const std::vector<char> &buf) {
         return ((RemoteCache<K, V> *) thisp)->keyMarshaller->unmarshall(buf);
     }
-    static void* valueUnmarshall(void* thisp, const ScopedBuffer &buf) {
+    static void* valueUnmarshall(void* thisp, const std::vector<char> &buf) {
         return ((RemoteCache<K, V> *)thisp)->valueMarshaller->unmarshall(buf);
     }
 

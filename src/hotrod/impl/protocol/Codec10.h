@@ -1,7 +1,6 @@
 #ifndef ISPN_HOTROD_PROTOCOL_CODEC10_H
 #define ISPN_HOTROD_PROTOCOL_CODEC10_H
 
-#include "hotrod/types.h"
 #include "hotrod/impl/protocol/Codec.h"
 
 namespace infinispan {
@@ -28,7 +27,7 @@ class Codec10 : public Codec
         HeaderParams& params) const;
 
     long getMessageId();
-    hrbytes returnPossiblePrevValue(transport::Transport& t, uint8_t status, uint32_t flags) const;
+    std::vector<char> returnPossiblePrevValue(transport::Transport& t, uint8_t status, uint32_t flags) const;
     void writeExpirationParams(transport::Transport& t,uint64_t lifespan, uint64_t maxIdle) const;
 
   protected:
@@ -53,7 +52,7 @@ class Codec10 : public Codec
     void readNewTopologyAndHash(
         infinispan::hotrod::transport::Transport& transport,
         IntWrapper& topologyId,
-        const hrbytes& cacheName) const;
+        const std::vector<char>& cacheName) const;
 
     void checkForErrorsInResponseStatus(
         infinispan::hotrod::transport::Transport& transport,

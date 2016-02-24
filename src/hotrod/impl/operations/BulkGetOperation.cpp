@@ -10,34 +10,34 @@ using namespace infinispan::hotrod::transport;
 BulkGetOperation::BulkGetOperation(
     const Codec&      codec_,
     std::shared_ptr<TransportFactory> transportFactory_,
-    const hrbytes&    cacheName_,
+    const std::vector<char>&    cacheName_,
     IntWrapper&  topologyId_,
     uint32_t    flags_,
     int32_t  entryCount_)
-    : RetryOnFailureOperation<std::map<hrbytes, hrbytes> >(
+    : RetryOnFailureOperation<std::map<std::vector<char>, std::vector<char>> >(
         codec_, transportFactory_, cacheName_, topologyId_, flags_), entryCount(entryCount_)
 {}
 
 Transport& BulkGetOperation::getTransport(int /*retryCount*/)
 {
-        return RetryOnFailureOperation<std::map<hrbytes, hrbytes> >::transportFactory->getTransport(cacheName);
+        return RetryOnFailureOperation<std::map<std::vector<char>, std::vector<char>> >::transportFactory->getTransport(cacheName);
 }
 
-std::map<hrbytes,hrbytes> BulkGetOperation::executeOperation(infinispan::hotrod::transport::Transport& transport)
+std::map<std::vector<char>,std::vector<char>> BulkGetOperation::executeOperation(infinispan::hotrod::transport::Transport& transport)
 {
     TRACE("Execute BulkGet(flags=%u, entryCount=%d)", flags, entryCount);
-    hr_scoped_ptr<HeaderParams> params(&(RetryOnFailureOperation<std::map<hrbytes, hrbytes> >::writeHeader(transport, BULK_GET_REQUEST)));
+    std::unique_ptr<HeaderParams> params(&(RetryOnFailureOperation<std::map<std::vector<char>, std::vector<char>> >::writeHeader(transport, BULK_GET_REQUEST)));
     transport.writeVInt(entryCount);
     transport.flush();
-    RetryOnFailureOperation<std::map<hrbytes, hrbytes> >::readHeaderAndValidate(transport, *params);
-    std::map<hrbytes,hrbytes> result;
+    RetryOnFailureOperation<std::map<std::vector<char>, std::vector<char>> >::readHeaderAndValidate(transport, *params);
+    std::map<std::vector<char>,std::vector<char>> result;
     while (transport.readByte()==1) {
-        hrbytes key = transport.readArray();
-        hrbytes value = transport.readArray();
+        std::vector<char> key = transport.readArray();
+        std::vector<char> value = transport.readArray();
         result[key] = value;
     }
     if (logger.isTraceEnabled()) {
-        for (std::map<hrbytes,hrbytes>::iterator it = result.begin(); it != result.end(); ++it) {
+        for (std::map<std::vector<char>,std::vector<char>>::iterator it = result.begin(); it != result.end(); ++it) {
             TRACEBYTES("return key = ", it->first);
             TRACEBYTES("return value = ", it->second);
         }

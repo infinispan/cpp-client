@@ -13,9 +13,9 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
         message(FATAL_ERROR "Clang version must be at least 3.2!")
     endif()
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-    # require at least MS Visual Studio  2013
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 18.0)
-        message(FATAL_ERROR "Microsoft Visual Studio version must be at least 2013!")
+    # require at least MS Visual Studio  2012
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 17.0)
+        message(FATAL_ERROR "Microsoft Visual Studio version must be at least 2012!")
     endif()
 else()
     message(WARNING "You are using an unsupported compiler! Compilation has only been tested with Clang, MSVC and GCC.")
@@ -30,7 +30,7 @@ if (NOT DEFINED CPACK_PACKAGE_VERSION_MINOR)
 endif (NOT DEFINED CPACK_PACKAGE_VERSION_MINOR)
 
 if (NOT DEFINED CPACK_PACKAGE_VERSION_PATCH)
-  set (CPACK_PACKAGE_VERSION_PATCH "0-SNAPSHOT")
+  set (CPACK_PACKAGE_VERSION_PATCH "0.Beta1")
 endif (NOT DEFINED CPACK_PACKAGE_VERSION_PATCH)
 set (HOTROD_VERSION "${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}")
 set (PROTOCOL_VERSION "HotRod C++ client, protocol version: 2.0-topology_change-event")
@@ -49,9 +49,7 @@ include_directories ("${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_SOUR
 # MacOS has a bunch of differences in build tools and process and so we have to turn some things
 # off there by default (for GCC; LLVM will need flags re-evaluated)
 if (APPLE)
-  set (NOENABLE_WARNING_ERROR ON)
   set (NOENABLE_UNDEFINED_ERROR ON)
-  set (NOENABLE_SWIG_TESTING ON)
 endif (APPLE)
 
 if(WIN32 AND NOT CYGWIN)
@@ -203,6 +201,7 @@ else(DEFINED HOTROD_PREBUILT_LIB_DIR)
       src/hotrod/impl/operations/StatsOperation.cpp
       src/hotrod/impl/operations/ClearOperation.cpp
       src/hotrod/impl/operations/FaultTolerantPingOperation.cpp
+      src/hotrod/impl/operations/ExecuteCmdOperation.cpp
       src/hotrod/impl/protocol/HeaderParams.cpp
       src/hotrod/impl/protocol/Codec10.cpp
       src/hotrod/impl/protocol/Codec11.cpp
@@ -331,6 +330,7 @@ endif (ENABLE_VALGRIND)
 set (CPACK_GENERATOR "ZIP")
 set (CPACK_SOURCE_GENERATOR "ZIP")
 set (CPACK_INCLUDE_TOPLEVEL_DIRECTORY "1")
+set (CPACK_SOURCE_IGNORE_FILES "/CVS/;/.svn/;/.bzr/;/.hg/;/.git/;.swp$;.#;/#;${CMAKE_BINARY_DIR}/*;/infinispan-server-*")
 if (CMAKE_SIZEOF_VOID_P MATCHES "8")
     set (PACKAGE_ARCH "x86_64")
 else (CMAKE_SIZEOF_VOID_P MATCHES "8")

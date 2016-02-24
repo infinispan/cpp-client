@@ -1,5 +1,4 @@
-#include "hotrod/impl/transport/tcp/InetSocketAddress.h"
-
+#include <hotrod/impl/transport/tcp/InetSocketAddress.h>
 #include "hotrod/sys/Inet.h"
 
 using namespace infinispan::hotrod::sys;

@@ -1,6 +1,7 @@
 #ifndef ISPN_HOTROD_TRANSPORT_CONNECTIONPOOL_H
 #define ISPN_HOTROD_TRANSPORT_CONNECTIONPOOL_H
 
+#include <hotrod/impl/transport/tcp/InetSocketAddress.h>
 #include <map>
 #include <iterator>
 #include <queue>
@@ -10,7 +11,6 @@
 #include "hotrod/sys/Runnable.h"
 #include "hotrod/sys/Thread.h"
 #include "infinispan/hotrod/Configuration.h"
-#include "hotrod/impl/transport/tcp/InetSocketAddress.h"
 #include "hotrod/impl/transport/tcp/TransportObjectFactory.h"
 
 using infinispan::hotrod::sys::BlockingQueue;

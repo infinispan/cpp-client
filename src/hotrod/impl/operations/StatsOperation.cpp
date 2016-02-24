@@ -10,7 +10,7 @@ using namespace infinispan::hotrod::transport;
 StatsOperation::StatsOperation(
     const Codec&      codec_,
     std::shared_ptr<transport::TransportFactory> transportFactory_,
-    const hrbytes&    cacheName_,
+    const std::vector<char>&    cacheName_,
     IntWrapper&  topologyId_,
     uint32_t    flags_)
     : RetryOnFailureOperation<std::map<std::string, std::string> >(
@@ -25,7 +25,7 @@ Transport& StatsOperation::getTransport(int /*retryCount*/)
 std::map<std::string, std::string> StatsOperation::executeOperation(Transport& transport)
 {
     TRACE("Executing Stats");
-    hr_scoped_ptr<HeaderParams> params(&(RetryOnFailureOperation<std::map<std::string, std::string> >::writeHeader(transport, STATS_REQUEST)));
+    std::unique_ptr<HeaderParams> params(&(RetryOnFailureOperation<std::map<std::string, std::string> >::writeHeader(transport, STATS_REQUEST)));
     transport.flush();
     RetryOnFailureOperation<std::map<std::string, std::string> >::readHeaderAndValidate(transport, *params);
 

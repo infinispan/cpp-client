@@ -1,9 +1,9 @@
+#include <hotrod/impl/transport/tcp/InetSocketAddress.h>
 #include "hotrod/impl/protocol/Codec11.h"
 #include "hotrod/impl/protocol/HotRodConstants.h"
 #include "hotrod/impl/transport/Transport.h"
 #include "hotrod/impl/transport/TransportFactory.h"
 #include "hotrod/impl/transport/tcp/TcpTransportFactory.h"
-#include "hotrod/impl/transport/tcp/InetSocketAddress.h"
 #include "hotrod/impl/consistenthash/ConsistentHash.h"
 #include "hotrod/impl/consistenthash/ConsistentHashFactory.h"
 #include "hotrod/sys/Log.h"

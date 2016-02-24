@@ -2,11 +2,11 @@
 #define ISPN_HOTROD_LOG_H
 
 #include "infinispan/hotrod/ImportExport.h"
-#include "hotrod/types.h"
 #include "hotrod/sys/Mutex.h"
 #include <stdexcept>
 #include <stdarg.h>
 #include <stdlib.h>
+#include <vector>
 
 #define LOG_LEVEL_TRACE "TRACE"
 #define LOG_LEVEL_DEBUG "DEBUG"
@@ -37,7 +37,7 @@ class Log
     ~Log() {}
 
     inline void trace(const char *fname, const int lineno, const char *format, ...) { va_list vl; va_start(vl, format); log(LOG_LEVEL_TRACE, fname, lineno, format, vl); va_end(vl); }
-    inline void trace(const char *fname, const int lineno, const char *message, const infinispan::hotrod::hrbytes &bytes) { log(LOG_LEVEL_TRACE, fname, lineno, message, bytes); }
+    inline void trace(const char *fname, const int lineno, const char *message, const std::vector<char> &bytes) { log(LOG_LEVEL_TRACE, fname, lineno, message, bytes); }
     inline void debug(const char *fname, const int lineno, const char *format, ...) { va_list vl; va_start(vl, format); log(LOG_LEVEL_DEBUG, fname, lineno, format, vl); va_end(vl); }
     inline void info(const char *fname, const int lineno, const char *format, ...) { va_list vl; va_start(vl, format); log(LOG_LEVEL_INFO, fname, lineno, format, vl); va_end(vl); }
     inline void warn(const char *fname, const int lineno, const char *format, ...) { va_list vl; va_start(vl, format); log(LOG_LEVEL_WARN, fname, lineno, format, vl); va_end(vl); }
@@ -57,7 +57,7 @@ class Log
 
     void log(const char *level, const char *fname, const int lineno);
     void log(const char *level, const char *fname, const int lineno, const char *format, va_list vl);
-    void log(const char *level, const char *fname, const int lineno, const char *message, const infinispan::hotrod::hrbytes &bytes);
+    void log(const char *level, const char *fname, const int lineno, const char *message, const std::vector<char> &bytes);
 };
 
 #define TRACE(...) if (logger.isTraceEnabled()) logger.trace(__FILE__, __LINE__, __VA_ARGS__)

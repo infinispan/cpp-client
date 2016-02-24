@@ -1,6 +1,7 @@
 /**
  * This file contains tests for non-public API (not exposed outside the shared library), therefore, it must be inside
  */
+#include <hotrod/impl/transport/tcp/InetSocketAddress.h>
 #include "infinispan/hotrod/ImportExport.h"
 #include "hotrod/sys/Runnable.h"
 #include "hotrod/sys/Thread.h"
@@ -8,8 +9,6 @@
 #include "hotrod/sys/Condition.h"
 #include "hotrod/sys/RunOnce.h"
 #include "hotrod/sys/Log.h"
-#include "hotrod/impl/transport/tcp/InetSocketAddress.h"
-
 #include "hotrod/impl/transport/AbstractTransport.h"
 #include "hotrod/impl/protocol/CodecFactory.h"
 #include "hotrod/impl/protocol/Codec10.h"
@@ -81,13 +80,13 @@ public:
     }
 
 protected:
-    void writeBytes(const hrbytes &bytes) {
+    void writeBytes(const std::vector<char> &bytes) {
         UNUSED(bytes);
     }
 
-    void readBytes(hrbytes &bytes, uint32_t size) {
-        UNUSED(bytes);
+    std::vector<char> readBytes(uint32_t size) {
         UNUSED(size);
+        return std::vector<char>();
     }
 };
 

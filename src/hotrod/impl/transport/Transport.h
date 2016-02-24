@@ -1,7 +1,7 @@
 #ifndef ISPN_HOTROD_TRANSPORT_TRANSPORT_H
 #define ISPN_HOTROD_TRANSPORT_TRANSPORT_H
 
-#include "hotrod/types.h"
+#include <vector>
 
 namespace infinispan {
 namespace hotrod {
@@ -16,14 +16,14 @@ class Transport
     virtual void writeByte(uint8_t uchar) = 0;
     virtual void writeVInt(uint32_t uint) = 0;
     virtual void writeVLong(uint64_t ulong) = 0;
-    virtual void writeArray(const hrbytes& bytes) = 0;
+    virtual void writeArray(const std::vector<char>& bytes) = 0;
 
     virtual void writeLong(int64_t slong) = 0;
 
     virtual uint8_t readByte() = 0;
     virtual uint32_t readVInt() = 0;
     virtual uint64_t readVLong() = 0;
-    virtual hrbytes readArray() = 0;
+    virtual std::vector<char> readArray() = 0;
 
     virtual int64_t readLong() = 0;
     virtual int16_t readUnsignedShort() = 0;

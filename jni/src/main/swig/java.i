@@ -11,7 +11,7 @@
 
 //#define SWIG_SHARED_PTR_NAMESPACE std
 //#define SWIG_SHARED_PTR_SUBNAMESPACE tr1
-//%include "std_shared_ptr.i"
+%include "std_shared_ptr.i"
 
 
 %include "std_pair.i"
@@ -22,6 +22,8 @@
 #include <infinispan/hotrod/defs.h>
 #include <infinispan/hotrod/ConnectionPoolConfiguration.h>
 #include <infinispan/hotrod/exceptions.h>
+#include <infinispan/hotrod/ServerNameId.h>
+#include <infinispan/hotrod/FailOverRequestBalancingStrategy.h>
 #include <infinispan/hotrod/ServerConfiguration.h>
 #include <infinispan/hotrod/SslConfiguration.h>
 #include <infinispan/hotrod/Configuration.h>
@@ -33,7 +35,6 @@
 #include <infinispan/hotrod/TimeUnit.h>
 #include <infinispan/hotrod/RemoteCacheManager.h>
 #include <infinispan/hotrod/RemoteCache.h>
-#include <infinispan/hotrod/ScopedBuffer.h>
 #include <infinispan/hotrod/Marshaller.h>
 
 #include <iostream>
@@ -43,6 +44,8 @@
 
 %include "infinispan/hotrod/defs.h"
 %include "infinispan/hotrod/ImportExport.h"
+%include "infinispan/hotrod/ServerNameId.h"
+%include "infinispan/hotrod/FailOverRequestBalancingStrategy.h"
 %include "infinispan/hotrod/Builder.h"
 %include "infinispan/hotrod/ConnectionPoolConfiguration.h"
 %include "infinispan/hotrod/ServerConfiguration.h"
@@ -54,6 +57,8 @@
 %template(Builder_poolconf) infinispan::hotrod::Builder<infinispan::hotrod::ConnectionPoolConfiguration>;
 %template(Builder_sslconf) infinispan::hotrod::Builder<infinispan::hotrod::SslConfiguration>;
 
+%include "infinispan/hotrod/ServerNameId.h"
+%include "infinispan/hotrod/FailOverRequestBalancingStrategy.h"
 %include "infinispan/hotrod/ConfigurationChildBuilder.h"
 %include "infinispan/hotrod/SslConfigurationBuilder.h"
 %include "infinispan/hotrod/ServerConfigurationBuilder.h"
@@ -182,26 +187,25 @@ class RelayBytes {
 // create a do-nothing marshaller works with the pre-marshalled data
 
 %{
-using infinispan::hotrod::ScopedBuffer;
 
 class RelayMarshallerHelper {
   public:
-    static void noRelease(ScopedBuffer*) { /* nothing allocated, nothing to release */ }
+    static void noRelease(std::vector<char>*) { /* nothing allocated, nothing to release */ }
 };
 
 class RelayMarshaller: public infinispan::hotrod::Marshaller<RelayBytes> {
   public:
-    void marshall(const RelayBytes& jb, ScopedBuffer& b) {
+    void marshall(const RelayBytes& jb, std::vector<char>& b) {
 	if (jb.getLength() == 0) {
 	    return;
 	}
-        b.set(jb.getBytes(), jb.getLength(), &RelayMarshallerHelper::noRelease);
+        b.assign(jb.getBytes(), jb.getBytes()+jb.getLength());
     }
-    RelayBytes* unmarshall(const ScopedBuffer& sbuf) {
+    RelayBytes* unmarshall(const std::vector<char>& sbuf) {
 	RelayBytes* rbytes = new RelayBytes();
-	size_t size = sbuf.getLength();
+	size_t size = sbuf.size();
 	char *bytes = new char[size];
-	memcpy(bytes, sbuf.getBytes(), size);
+	memcpy(bytes, sbuf.data(), size);
 	rbytes->setNative(bytes, size);
 	return rbytes;
     }

@@ -1,12 +1,12 @@
 #ifndef ISPN_HOTROD_CONSISTENT_HASH_H
 #define ISPN_HOTROD_CONSISTENT_HASH_H
 
+#include <hotrod/impl/transport/tcp/InetSocketAddress.h>
 #include "infinispan/hotrod/defs.h"
-#include "hotrod/types.h"
 #include "hotrod/impl/hash/Hash.h"
-#include "hotrod/impl/transport/tcp/InetSocketAddress.h"
 #include <set>
 #include <map>
+#include <vector>
 
 namespace infinispan {
 namespace hotrod {
@@ -21,7 +21,7 @@ public:
                     std::set<int32_t> > & servers2Hash, int32_t numKeyOwners,
             int32_t hashSpace) = 0;
 
-    virtual const infinispan::hotrod::transport::InetSocketAddress& getServer(const hrbytes& key) = 0;
+    virtual const infinispan::hotrod::transport::InetSocketAddress& getServer(const std::vector<char>& key) = 0;
 
     /**
      * Computes hash code of a given int32_t and then normalizes it to ensure a positive
@@ -31,7 +31,7 @@ public:
      */
     virtual int32_t getNormalizedHash(int32_t objectId) = 0;
 
-    virtual int32_t getNormalizedHash(const hrbytes& key) = 0;
+    virtual int32_t getNormalizedHash(const std::vector<char>& key) = 0;
 
 protected:
     ConsistentHash(Hash* hash_) : hash(hash_) {}

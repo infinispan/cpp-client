@@ -18,10 +18,10 @@ public:
                     std::set<int32_t> > & servers2Hash, int32_t numKeyOwners,
             int32_t hashSpace);
 
-    const infinispan::hotrod::transport::InetSocketAddress& getServer(const hrbytes& key);
+    const infinispan::hotrod::transport::InetSocketAddress& getServer(const std::vector<char>& key);
 
     int32_t getNormalizedHash(int32_t objectId);
-    int32_t getNormalizedHash(const hrbytes& key);
+    int32_t getNormalizedHash(const std::vector<char>& key);
 
 private:
     int32_t getHashIndex(int32_t normalisedHashForKey);
