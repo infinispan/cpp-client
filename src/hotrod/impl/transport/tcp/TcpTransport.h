@@ -3,7 +3,7 @@
 
 
 
-#include <hotrod/impl/transport/tcp/InetSocketAddress.h>
+#include <infinispan/hotrod/InetSocketAddress.h>
 #include <sstream>
 
 #include "infinispan/hotrod/defs.h"

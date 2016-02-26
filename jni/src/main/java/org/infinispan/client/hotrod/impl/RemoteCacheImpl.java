@@ -9,6 +9,7 @@ import static org.infinispan.client.hotrod.jni.JniHelper.setJvmBytes;
 import static org.infinispan.client.hotrod.jni.JniHelper.timeunitToSwig;
 
 import java.math.BigInteger;
+import java.net.SocketAddress;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -23,7 +24,11 @@ import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.ServerStatistics;
 import org.infinispan.client.hotrod.VersionedValue;
+import org.infinispan.client.hotrod.jni.CacheTopologyInfo;
 import org.infinispan.client.hotrod.jni.Hotrod;
+import org.infinispan.client.hotrod.jni.InetSocketAddress;
+import org.infinispan.client.hotrod.jni.InetSocketAddressvectorReturn;
+import org.infinispan.client.hotrod.jni.IntegerVectorReturn;
 import org.infinispan.client.hotrod.jni.MapReturn;
 import org.infinispan.client.hotrod.jni.MapType;
 import org.infinispan.client.hotrod.jni.MetadataPairReturn;
@@ -245,6 +250,28 @@ public class RemoteCacheImpl<K, V> extends RemoteCacheUnsupported<K, V> {
     }
 
     @Override
+	public org.infinispan.client.hotrod.CacheTopologyInfo getCacheTopologyInfo() {
+    	org.infinispan.client.hotrod.jni.CacheTopologyInfo jCti= jniRemoteCache.getCacheTopologyInfo();
+     	InetSocketAddressvectorReturn jIsAvR = Hotrod.keySet(jCti.getSegmentPerServer());
+     	long s = jIsAvR.size();
+     	Map<SocketAddress,Set<Integer> > m = new HashMap<SocketAddress, Set<Integer> >();
+     	for(int i=0; i<s; i++)
+     	{
+     		InetSocketAddress isa = jIsAvR.get(i);
+     		IntegerVectorReturn t= jCti.getSegmentPerServer().get(isa);
+     		Set<Integer> segmentSet = new HashSet<Integer>();
+     		for (int j=0; j<t.size(); j++) {
+                  segmentSet.add(t.get(j));
+     		}
+     		SocketAddress sock = new java.net.InetSocketAddress(isa.getHostname(), isa.getPort());
+     		m.put(sock, segmentSet);
+     	}
+     	    
+     		return new org.infinispan.client.hotrod.impl.CacheTopologyInfoImpl(m, jCti.getNumSegment(), jCti.getTopologyId());
+    }
+    
+    
+	@Override
     public V putIfAbsent(K k, V v) {
         return relayedInvoker(new RelayedMethod() {
             @Override

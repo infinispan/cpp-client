@@ -8,7 +8,7 @@ namespace hotrod {
     class TimeUnitParam {
         static TimeUnit encodeDuration(long duration, TimeUnit timeUnit) {
             if (duration == 0) return DEFAULT;
-            if (duration < 0) return INFINITE;
+            if (duration < 0) return INFINITUM;
             return timeUnit;
         }
 

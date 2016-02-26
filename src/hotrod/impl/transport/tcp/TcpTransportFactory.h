@@ -24,7 +24,7 @@ class TcpTransportFactory : public TransportFactory
 {
   public:
     TcpTransportFactory(const Configuration& config) : configuration(config), maxRetries(config.getMaxRetries()) {};
-    void start(protocol::Codec& codec);
+    void start(protocol::Codec& codec, int defaultTopologyId);
     void destroy();
 
     Transport& getTransport(const std::vector<char>& cacheName);
@@ -45,6 +45,10 @@ class TcpTransportFactory : public TransportFactory
                 int32_t numKeyOwners, uint8_t hashFunctionVersion,
                 int32_t hashSpace,
                 const std::vector<char>& cacheName);
+    void updateHashFunction(
+    		std::vector<std::vector<InetSocketAddress>>& segmentOwners,
+            uint32_t &numSegment, uint8_t &hashFunctionVersion,
+            const std::vector<char>& cacheName, int topologyId);
     void clearHashFunction(const std::vector<char>& cacheName);
     infinispan::hotrod::consistenthash::ConsistentHashFactory
             & getConsistentHashFactory();
@@ -52,7 +56,7 @@ class TcpTransportFactory : public TransportFactory
 
   private:
     sys::Mutex lock;
-    std::vector<InetSocketAddress> servers;
+    std::vector<InetSocketAddress> initialServers;
     const Configuration& configuration;
     int maxRetries;
     std::shared_ptr<TransportObjectFactory> transportFactory;
@@ -60,10 +64,6 @@ class TcpTransportFactory : public TransportFactory
     std::shared_ptr<FailOverRequestBalancingStrategy> balancer;
     std::map<const ServerNameId,InetSocketAddress> serverNameMap;
     void createAndPreparePool();
-
-    std::shared_ptr<infinispan::hotrod::consistenthash::ConsistentHashFactory> hashFactory;
-
-    std::map<std::vector<char>, std::shared_ptr<infinispan::hotrod::consistenthash::ConsistentHash> > consistentHashByCacheName;
     void updateTransportCount();
     void pingServers();
     Transport& borrowTransportFromPool(const InetSocketAddress& server);

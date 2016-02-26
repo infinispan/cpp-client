@@ -57,6 +57,8 @@ public class JniTest {
             ServerRestartTest.class,
             ServerShutdownTest.class,
             SocketTimeoutErrorTest.class,
+            SegmentOwnershipLocalTest.class,
+            SegmentOwnershipDistTest.class
             // SslTest.class,                        // SSL not implemented
             // TransportObjectFactoryTest.class,     // omitting
       });

@@ -3,6 +3,7 @@
 
 
 
+#include <infinispan/hotrod/CacheTopologyInfo.h>
 #include "infinispan/hotrod/ImportExport.h"
 #include "infinispan/hotrod/Flag.h"
 #include "infinispan/hotrod/MetadataValue.h"
@@ -46,6 +47,7 @@ protected:
     HR_EXTERN void  base_clear();
     HR_EXTERN void  base_withFlags(Flag flag);
     HR_EXTERN char *base_execute(RemoteCacheBase& remoteCacheBase, std::string cmdName,  const std::map<std::string,std::string>& args);
+    HR_EXTERN CacheTopologyInfo base_getCacheTopologyInfo();
 
     RemoteCacheBase() {}
     HR_EXTERN void setMarshallers(void* rc, MarshallHelperFn kf, MarshallHelperFn vf, UnmarshallHelperFn ukf, UnmarshallHelperFn uvf);

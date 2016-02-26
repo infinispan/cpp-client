@@ -14,7 +14,7 @@ PutOperation::PutOperation(
     std::shared_ptr<transport::TransportFactory> transportFactory_,
     const std::vector<char>&    key_,
     const std::vector<char>&    cacheName_,
-    IntWrapper&  topologyId_,
+    Topology&  topologyId_,
     uint32_t          flags_,
     const std::vector<char>&    value_,
     uint32_t          lifespan_,

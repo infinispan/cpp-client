@@ -38,7 +38,7 @@ public:
     std::vector<char> execute(RemoteCacheBase& /*remoteCacheBase*/, std::vector<char> cmdName, const portable::map<std::vector<char>,std::vector<char>>& args);
 
     operations::PingResult ping();
-
+    CacheTopologyInfo getCacheTopologyInfo();
     void init(operations::OperationsFactory* operationsFactory);
 
     void withFlags(Flag flag);

@@ -5,7 +5,7 @@
 
 namespace infinispan {
 namespace hotrod {
-class IntWrapper;
+class Topology;
 
 namespace transport {
 class Transport;
@@ -37,10 +37,6 @@ class Codec20 : public Codec
         infinispan::hotrod::transport::Transport& transport,
         HeaderParams& params, uint8_t version) const;
 
-    std::map<infinispan::hotrod::transport::InetSocketAddress, std::set<int32_t> > computeNewHashes(
-        infinispan::hotrod::transport::Transport& transport, uint32_t newTopologyId, int16_t numKeyOwners,
-        uint8_t hashFunctionVersion, uint32_t hashSpace, uint32_t clusterSize) const;
-
     Codec20() {}
 
   friend class CodecFactory;
@@ -51,10 +47,7 @@ class Codec20 : public Codec
         infinispan::hotrod::transport::Transport& transport,
         HeaderParams& params) const;
 
-    void readNewTopologyAndHash(
-        infinispan::hotrod::transport::Transport& transport,
-        IntWrapper& topologyId,
-        const std::vector<char>& cacheName) const;
+    void readNewTopologyAndHash(infinispan::hotrod::transport::Transport& transport, HeaderParams& params) const;
 
     void checkForErrorsInResponseStatus(
         infinispan::hotrod::transport::Transport& transport,

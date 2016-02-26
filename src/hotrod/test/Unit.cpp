@@ -1,7 +1,7 @@
 /**
  * This file contains tests for non-public API (not exposed outside the shared library), therefore, it must be inside
  */
-#include <hotrod/impl/transport/tcp/InetSocketAddress.h>
+#include <infinispan/hotrod/InetSocketAddress.h>
 #include "infinispan/hotrod/ImportExport.h"
 #include "hotrod/sys/Runnable.h"
 #include "hotrod/sys/Thread.h"
@@ -95,7 +95,7 @@ class CodecInvoker : public Runnable {
 public:
 
     CodecInvoker(Codec10 *testedCodecPassedIn) : testedCodec(testedCodecPassedIn) {
-        testedIntWrapper = new IntWrapper(0);
+        testedIntWrapper = new Topology(0);
         testedTransport = new TestTransport();
         testedHeaderParams = new HeaderParams(*testedIntWrapper);
     }
@@ -117,7 +117,7 @@ public:
     }
 
 private:
-    IntWrapper *testedIntWrapper;
+    Topology *testedIntWrapper;
     TestTransport *testedTransport;
     HeaderParams *testedHeaderParams;
     Codec10 *testedCodec;

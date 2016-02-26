@@ -12,7 +12,7 @@ RemoveIfUnmodifiedOperation::RemoveIfUnmodifiedOperation(
     std::shared_ptr<transport::TransportFactory> transportFactory_,
     const std::vector<char>&    key_,
     const std::vector<char>&    cacheName_,
-    IntWrapper&  topologyId_,
+    Topology&  topologyId_,
     uint32_t    flags_,
     int64_t version_)
     : AbstractKeyOperation<VersionedOperationResponse>(

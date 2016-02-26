@@ -10,7 +10,7 @@
 
 namespace infinispan {
 namespace hotrod {
-class IntWrapper;
+class Topology;
 namespace operations {
 
 class ExecuteCmdOperation : public RetryOnFailureOperation<std::vector<char> >
@@ -21,7 +21,7 @@ protected:
             const infinispan::hotrod::protocol::Codec&       codec_,
             std::shared_ptr<transport::TransportFactory> transportFactory_,
             const std::vector<char>&                                   cacheName_,
-            IntWrapper&                                 topologyId_,
+            Topology&                                 topologyId_,
             uint32_t                                         flags_,
             const std::vector<char>&                                   cmdName_,
             const portable::map<std::vector<char>,std::vector<char>>&   cmdArgs_);

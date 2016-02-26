@@ -19,7 +19,7 @@ namespace hotrod {
         DAYS = 0x06,
         HOURS = 0x05,
         DEFAULT = 0x07,
-        INFINITE = 0x08
+        INFINITUM = 0x08
     };
 }} // namespace
 

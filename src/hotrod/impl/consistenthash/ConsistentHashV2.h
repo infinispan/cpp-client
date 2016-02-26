@@ -17,6 +17,7 @@ public:
             std::map<infinispan::hotrod::transport::InetSocketAddress,
                     std::set<int32_t> > & servers2Hash, int32_t numKeyOwners,
             int32_t hashSpace);
+    void init(std::vector<std::vector<transport::InetSocketAddress>>& segmentOwners, uint32_t numSegment);
 
     const infinispan::hotrod::transport::InetSocketAddress& getServer(const std::vector<char>& key);
 

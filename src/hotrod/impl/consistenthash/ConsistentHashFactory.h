@@ -2,6 +2,12 @@
 #define  ISPN_HOTROD_CONSISTENT_HASH_FACTORY_H
 
 #include "infinispan/hotrod/defs.h"
+#include "hotrod/impl/protocol/HotRodConstants.h"
+#include "hotrod/impl/consistenthash/ConsistentHashV2.h"
+#include "hotrod/impl/consistenthash/SegmentConsistentHash.h"
+#include "infinispan/hotrod/Configuration.h"
+#include "infinispan/hotrod/exceptions.h"
+
 #include <map>
 
 namespace infinispan {
@@ -9,6 +15,7 @@ namespace hotrod {
 class Configuration;
 namespace consistenthash {
 class ConsistentHash;
+using infinispan::hotrod::protocol::HotRodConstants;
 
 class ConsistentHashFactory
 {
@@ -19,8 +26,10 @@ class ConsistentHashFactory
      *
     void init(Configuration& config); */
 
-    std::shared_ptr<ConsistentHash> newConsistentHash(uint8_t version);
+	std::shared_ptr<ConsistentHash> newConsistentHash(uint8_t version) const;
+	std::shared_ptr<SegmentConsistentHash> newSegmentConsistentHash(uint8_t version) const;
 };
+
 }}} // namespace infinispan::hotrod::consistenthash
 
 #endif //  ISPN_HOTROD_CONSISTENT_HASH_FACTORY_H

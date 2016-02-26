@@ -1,5 +1,5 @@
+#include <infinispan/hotrod/InetSocketAddress.h>
 #include "infinispan/hotrod/exceptions.h"
-#include "hotrod/impl/transport/tcp/InetSocketAddress.h"
 #include "hotrod/impl/protocol/Codec10.h"
 #include "hotrod/impl/protocol/HotRodConstants.h"
 #include "hotrod/impl/protocol/HeaderParams.h"
@@ -55,7 +55,7 @@ HeaderParams& Codec10::writeHeader(
     transport.writeArray(params.cacheName);
     transport.writeVInt(params.flags);
     transport.writeByte(params.clientIntel);
-    transport.writeVInt(params.topologyId.get());
+    transport.writeVInt(params.topologyId.getId());
     transport.writeByte(params.txMarker);
     return params;
 }
@@ -113,9 +113,9 @@ void Codec10::readNewTopologyIfPresent(
         readNewTopologyAndHash(transport, params.topologyId, params.cacheName);
 }
 
-void Codec10::readNewTopologyAndHash(Transport& transport, IntWrapper& topologyId, const std::vector<char>& cacheName) const{
+void Codec10::readNewTopologyAndHash(Transport& transport, Topology& topologyId, const std::vector<char>& cacheName) const{
     uint32_t newTopologyId = transport.readVInt();
-    topologyId.set(newTopologyId); //update topologyId reference
+    topologyId.setId(newTopologyId); //update topologyId reference
     int16_t numKeyOwners = transport.readUnsignedShort();
     uint8_t hashFunctionVersion = transport.readByte();
     uint32_t hashSpace = transport.readVInt();
