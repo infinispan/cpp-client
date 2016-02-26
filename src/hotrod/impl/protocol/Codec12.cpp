@@ -1,4 +1,4 @@
-#include <hotrod/impl/transport/tcp/InetSocketAddress.h>
+#include <infinispan/hotrod/InetSocketAddress.h>
 #include "hotrod/impl/protocol/Codec12.h"
 #include "hotrod/impl/protocol/HotRodConstants.h"
 #include "hotrod/impl/protocol/HeaderParams.h"

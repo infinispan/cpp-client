@@ -1,7 +1,7 @@
 #ifndef ISPN_HOTROD_CONSISTENT_HASH_H
 #define ISPN_HOTROD_CONSISTENT_HASH_H
 
-#include <hotrod/impl/transport/tcp/InetSocketAddress.h>
+#include <infinispan/hotrod/InetSocketAddress.h>
 #include "infinispan/hotrod/defs.h"
 #include "hotrod/impl/hash/Hash.h"
 #include <set>
@@ -32,6 +32,12 @@ public:
     virtual int32_t getNormalizedHash(int32_t objectId) = 0;
 
     virtual int32_t getNormalizedHash(const std::vector<char>& key) = 0;
+
+    virtual std::map<infinispan::hotrod::transport::InetSocketAddress, std::vector<int> > getSegmentsByServers(){
+		// No segments here. Return empty map
+    	std::map<infinispan::hotrod::transport::InetSocketAddress, std::vector<int> > m;
+    	return m;
+    }
 
 protected:
     ConsistentHash(Hash* hash_) : hash(hash_) {}

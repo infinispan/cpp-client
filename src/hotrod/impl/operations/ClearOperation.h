@@ -11,7 +11,7 @@
 
 namespace infinispan {
 namespace hotrod {
-class IntWrapper;
+class Topology;
 namespace operations {
 
 class ClearOperation : public RetryOnFailureOperation<std::vector<char>>
@@ -21,7 +21,7 @@ class ClearOperation : public RetryOnFailureOperation<std::vector<char>>
             const infinispan::hotrod::protocol::Codec&       codec_,
             std::shared_ptr<transport::TransportFactory> transportFactory_,
             const std::vector<char>&                                   cacheName_,
-            IntWrapper&                                 topologyId_,
+            Topology&                                 topologyId_,
             uint32_t                                   flags_);
 
         infinispan::hotrod::transport::Transport& getTransport(int retryCount);

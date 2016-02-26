@@ -26,7 +26,8 @@ class HotRodConstants
     static const uint8_t VERSION_24 = 24;
 
     //hotrod consistenthash version
-    static const uint8_t CONSISTENT_HASH_V2 = 2;
+    static const uint8_t CONSISTENT_HASH_V2      = 2;
+    static const uint8_t SEGMENT_CONSISTENT_HASH = 3;
 
     //requests
     static const uint8_t PUT_REQUEST                    = 0x01;
@@ -117,6 +118,11 @@ class HotRodConstants
 
     static const uint8_t INFINITE_LIFESPAN = 0x01;
     static const uint8_t INFINITE_MAXIDLE  = 0x02;
+
+    static const int8_t NO_TOPOLOGY             =  0;
+    static const int8_t DEFAULT_CACHE_TOPOLOGY  = -1;
+    static const int8_t SWITCH_CLUSTER_TOPOLOGY = -2;
+
 
     static bool isSuccess(short status) {
        return status == NO_ERROR_STATUS

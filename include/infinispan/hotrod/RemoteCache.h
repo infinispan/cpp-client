@@ -554,6 +554,10 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
     void ping() {
         base_ping();
     }
+
+    CacheTopologyInfo getCacheTopologyInfo(){
+    	return base_getCacheTopologyInfo();
+    }
     /**
      * Applies one or more Flag enums to the scope of a single invocation.
      *

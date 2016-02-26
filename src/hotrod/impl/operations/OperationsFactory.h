@@ -1,6 +1,7 @@
 #ifndef ISPN_HOTROD_OPERATIONS_OPERATIONSFACTORY_H
 #define ISPN_HOTROD_OPERATIONS_OPERATIONSFACTORY_H
 
+#include <infinispan/hotrod/CacheTopologyInfo.h>
 #include "infinispan/hotrod/Flag.h"
 
 #include <set>
@@ -10,7 +11,7 @@ namespace infinispan {
 namespace hotrod {
 
 class RemoteCacheManagerImpl;
-class IntWrapper;
+class Topology;
 
 namespace transport {
 class TransportFactory;
@@ -92,11 +93,13 @@ class OperationsFactory
     void addFlags(uint32_t flags);
     void setFlags(uint32_t flags);
 
+    CacheTopologyInfo getCacheTopologyInfo();
+
     virtual ~OperationsFactory() { }
 
 private:
     std::shared_ptr<infinispan::hotrod::transport::TransportFactory> transportFactory;
-    IntWrapper topologyId;
+    Topology topologyId;
     const infinispan::hotrod::protocol::Codec& codec;
     bool forceReturnValue;
     uint32_t flags;

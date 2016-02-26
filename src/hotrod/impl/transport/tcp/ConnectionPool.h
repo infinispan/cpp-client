@@ -1,7 +1,7 @@
 #ifndef ISPN_HOTROD_TRANSPORT_CONNECTIONPOOL_H
 #define ISPN_HOTROD_TRANSPORT_CONNECTIONPOOL_H
 
-#include <hotrod/impl/transport/tcp/InetSocketAddress.h>
+#include <infinispan/hotrod/InetSocketAddress.h>
 #include <map>
 #include <iterator>
 #include <queue>

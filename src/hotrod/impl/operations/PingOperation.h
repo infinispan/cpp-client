@@ -7,8 +7,7 @@
 
 namespace infinispan {
 namespace hotrod {
-//class std::vector<char>;
-class IntWrapper;
+class Topology;
 
 namespace operations {
 
@@ -28,13 +27,13 @@ class PingOperation : public HotRodOperation<PingResult>
     PingResult execute();
     PingOperation(
         const protocol::Codec& codec,
-        IntWrapper& topologyId,
+        Topology& topologyId,
         transport::Transport& transport);
 
   private:
     PingOperation(
         const protocol::Codec& codec,
-        IntWrapper& topologyId,
+        Topology& topologyId,
         transport::Transport& transport,
         const std::vector<char>& cacheName);
 

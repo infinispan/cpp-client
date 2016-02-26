@@ -45,7 +45,7 @@ void TransportObjectFactory::passivateObject(
 PingResult TransportObjectFactory::ping(
     TcpTransport& tcpTransport)
 {
-	IntWrapper tid(std::numeric_limits<uint32_t>::max());
+	Topology tid(-1);
     PingOperation po(codec, tid, tcpTransport);
     return po.execute();
 }

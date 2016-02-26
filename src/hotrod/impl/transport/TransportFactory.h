@@ -2,8 +2,9 @@
 #define ISPN_HOTROD_TRANSPORT_TRANSPORTFACTORY_H
 
 
-
 #include "hotrod/impl/transport/Transport.h"
+#include "hotrod/impl/Topology.h"
+#include "hotrod/impl/TopologyInfo.h"
 #include <vector>
 #include <set>
 #include <map>
@@ -28,7 +29,7 @@ class InetSocketAddress;
 class TransportFactory
 {
   public:
-    virtual void start(protocol::Codec& codec) = 0;
+    virtual void start(protocol::Codec& codec, int defaultTopologyId) = 0;
     virtual void destroy() = 0;
 
     virtual Transport& getTransport(const std::vector<char>& cacheName) = 0;
@@ -51,17 +52,43 @@ class TransportFactory
             int32_t numKeyOwners, uint8_t hashFunctionVersion,
             int32_t hashSpace,
             const std::vector<char>& cacheName) = 0;
+    virtual void updateHashFunction( std::vector<std::vector<InetSocketAddress>>& segmentOwners,
+            						uint32_t &numSegment, uint8_t &hashFunctionVersion,
+            						const std::vector<char>& cacheName, int topologyId) = 0;
+
     virtual void clearHashFunction(const std::vector<char>& cacheName) = 0;
 
     virtual infinispan::hotrod::consistenthash::ConsistentHashFactory
     & getConsistentHashFactory() = 0;
 
+    int getTopologyId(const std::vector<char> &cacheName) {
+    	if (topologyInfo) {
+    	  return topologyInfo->getCacheTopologyInfo(cacheName).getTopologyId();
+    	}
+    	else {
+    		throw Exception("TopologyInfo is null");
+    	}
+    }
+    int createTopologyId(std::vector<char> cacheName) {
+    	return topologyInfo->createTopologyId(cacheName,-1);
+    }
+    int getTopologyAge()
+    {
+    	return topologyAge;
+    }
+
+    CacheTopologyInfo getCacheTopologyInfo(const std::vector<char>& cacheName)
+    {
+    	return topologyInfo->getCacheTopologyInfo(cacheName);
+    }
     // TODO: ssl
     // getSSLContext
+  protected:
+    TopologyInfo* topologyInfo;
+    int topologyAge;
 
   private:
     static TransportFactory* newInstance(const Configuration& config);
-
   friend class infinispan::hotrod::RemoteCacheManagerImpl;
 };
 

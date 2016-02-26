@@ -129,5 +129,13 @@ char *RemoteCacheBase::base_execute(RemoteCacheBase& remoteCacheBase, std::strin
     std::copy(resBytes.begin(),resBytes.end(),result);
 	return result;
 }
+CacheTopologyInfo RemoteCacheBase::base_getCacheTopologyInfo() {
+	TRACE("Calling RemoteCache for getCacheTopologyInfo");
+	CacheTopologyInfo c=IMPL->getCacheTopologyInfo();
+	TRACE("segmentPerServer: %d",c.getSegmentPerServer().size());
+	return c;
+}
 
-}} /* namespace */
+}
+} /* namespace */
+

@@ -13,7 +13,7 @@
 
 namespace infinispan {
 namespace hotrod {
-class IntWrapper;
+class Topology;
 namespace operations {
 
 class BulkGetKeysOperation : public RetryOnFailureOperation<std::set<std::vector<char>> >
@@ -23,7 +23,7 @@ class BulkGetKeysOperation : public RetryOnFailureOperation<std::set<std::vector
             const infinispan::hotrod::protocol::Codec&       codec_,
             std::shared_ptr<transport::TransportFactory> transportFactory_,
             const std::vector<char>&                                   cacheName_,
-            IntWrapper&                                 topologyId_,
+            Topology&                                 topologyId_,
             uint32_t                                   flags_,
             int                                    entryCount_);
 

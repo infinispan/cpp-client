@@ -35,7 +35,7 @@ class Log
     }
 
     ~Log() {}
-
+    inline void setLogLevel(LogLevel l) { m_level=l; }
     inline void trace(const char *fname, const int lineno, const char *format, ...) { va_list vl; va_start(vl, format); log(LOG_LEVEL_TRACE, fname, lineno, format, vl); va_end(vl); }
     inline void trace(const char *fname, const int lineno, const char *message, const std::vector<char> &bytes) { log(LOG_LEVEL_TRACE, fname, lineno, message, bytes); }
     inline void debug(const char *fname, const int lineno, const char *format, ...) { va_list vl; va_start(vl, format); log(LOG_LEVEL_DEBUG, fname, lineno, format, vl); va_end(vl); }

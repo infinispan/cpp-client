@@ -11,7 +11,7 @@ StatsOperation::StatsOperation(
     const Codec&      codec_,
     std::shared_ptr<transport::TransportFactory> transportFactory_,
     const std::vector<char>&    cacheName_,
-    IntWrapper&  topologyId_,
+    Topology&  topologyId_,
     uint32_t    flags_)
     : RetryOnFailureOperation<std::map<std::string, std::string> >(
         codec_, transportFactory_, cacheName_, topologyId_, flags_)
