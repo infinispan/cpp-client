@@ -335,4 +335,13 @@ public class ConfigurationBuilder implements ConfigurationChildBuilder, Builder<
       this.maxRetries(template.maxRetries());
       return this;
    }
+
+   static {
+      try {
+         System.loadLibrary("hotrod");
+      } catch (UnsatisfiedLinkError e) {
+         System.loadLibrary("hotrod32");
+      }
+      System.loadLibrary("hotrod-jni");
+   }
 }
