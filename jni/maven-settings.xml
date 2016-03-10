@@ -16,4 +16,43 @@
         </mirror>
     </mirrors>
 
+    <profiles>
+        <profile>
+            <id>jdg-mead-repository</id>
+            <activation>
+                <property>
+                    <name>!jdg-mead-repository</name>
+                </property>
+            </activation>
+            <repositories>
+                <repository>
+                    <id>mead-jdg7</id>
+                    <name>MEAD JDG7 Maven Repository</name>
+                    <url>http://download.eng.bos.redhat.com/brewroot/repos/jb-dg-7-rhel-7-build/latest/maven/</url>
+                    <releases>
+                        <enabled>true</enabled>
+                        <updatePolicy>never</updatePolicy>
+                    </releases>
+                    <snapshots>
+                        <enabled>false</enabled>
+                    </snapshots>
+                </repository>
+            </repositories>
+            <pluginRepositories>
+                <pluginRepository>
+                    <id>mead-jdg7-plugins</id>
+                    <name>MEAD JDG7 Maven Plugin Repository</name>
+                    <url>http://download.eng.bos.redhat.com/brewroot/repos/jb-dg-7-rhel-7-build/latest/maven/</url>
+                    <releases>
+                        <enabled>true</enabled>
+                        <updatePolicy>never</updatePolicy>
+                    </releases>
+                    <snapshots>
+                        <enabled>false</enabled>
+                    </snapshots>
+                </pluginRepository>
+            </pluginRepositories>
+        </profile>
+    </profiles>
+
 </settings>
