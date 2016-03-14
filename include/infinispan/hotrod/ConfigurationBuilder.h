@@ -32,7 +32,6 @@ class ConfigurationBuilder
         m_connectionTimeout(60000),
         m_forceReturnValue(false),
         m_keySizeEstimate(64),
-        m_pingOnStartup(true),
         m_protocolVersion(Configuration::PROTOCOL_VERSION_24),
         m_socketTimeout(60000),
         m_tcpNoDelay(true),
@@ -118,17 +117,6 @@ class ConfigurationBuilder
      */
     ConfigurationBuilder& keySizeEstimate(int keySizeEstimate_) {
         m_keySizeEstimate = keySizeEstimate_;
-        return *this;
-    }
-
-    /**
-     * Sets whether to ping remote HotRod Infinispan servers before any cache
-     * operations are initiated. Default is true.
-     *
-     *\return ConfigurationBuilder instance to be used for further configuration
-     */
-    ConfigurationBuilder& pingOnStartup(bool pingOnStartup_) {
-        m_pingOnStartup = pingOnStartup_;
         return *this;
     }
 
@@ -231,7 +219,6 @@ class ConfigurationBuilder
             m_connectionTimeout,
             m_forceReturnValue,
             m_keySizeEstimate,
-            m_pingOnStartup,
             servers,
             m_socketTimeout,
             sslConfigurationBuilder.create(),
@@ -253,7 +240,6 @@ class ConfigurationBuilder
         m_protocolVersion = configuration.getProtocolVersionCString();
         m_connectionTimeout = configuration.getConnectionTimeout();
         m_forceReturnValue = configuration.isForceReturnValue();
-        m_pingOnStartup = configuration.isPingOnStartup();
         m_socketTimeout = configuration.getSocketTimeout();
         m_tcpNoDelay = configuration.isTcpNoDelay();
         m_keySizeEstimate = configuration.getKeySizeEstimate();
@@ -269,7 +255,6 @@ class ConfigurationBuilder
     int m_connectionTimeout;
     bool m_forceReturnValue;
     int m_keySizeEstimate;
-    bool m_pingOnStartup;
     std::string m_protocolVersion;
     std::vector<ServerConfigurationBuilder> m_servers;
     int m_socketTimeout;
@@ -304,10 +289,6 @@ inline ConfigurationBuilder &ConfigurationChildBuilder::forceReturnValues(bool f
 
 inline ConfigurationBuilder &ConfigurationChildBuilder::keySizeEstimate(int keySizeEstimate_) {
     return m_builder->keySizeEstimate(keySizeEstimate_);
-}
-
-inline ConfigurationBuilder &ConfigurationChildBuilder::pingOnStartup(bool pingOnStartup_) {
-    return m_builder->pingOnStartup(pingOnStartup_);
 }
 
 inline ConfigurationBuilder &ConfigurationChildBuilder::protocolVersion(const std::string &protocolVersion_) {

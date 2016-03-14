@@ -182,7 +182,6 @@ public class ConfigurationBuilder implements ConfigurationChildBuilder, Builder<
 
    @Override
    public ConfigurationBuilder pingOnStartup(boolean pingOnStartup) {
-      this.jniConfigurationBuilder.pingOnStartup(pingOnStartup);
       this.pingOnStartup = pingOnStartup;
       return this;
    }
@@ -321,7 +320,7 @@ public class ConfigurationBuilder implements ConfigurationChildBuilder, Builder<
       this.keySizeEstimate(template.keySizeEstimate());
       this.marshaller = template.marshaller();
       this.marshallerClass = template.marshallerClass();
-      this.pingOnStartup(template.pingOnStartup());
+      this.pingOnStartup(true);
       this.protocolVersion(template.protocolVersion());
       this.servers.clear();
       for (ServerConfiguration server : template.servers()) {
