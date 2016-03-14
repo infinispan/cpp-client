@@ -99,7 +99,7 @@ RemoteCacheImpl *RemoteCacheManagerImpl::createRemoteCache(
     RemoteCacheImpl *rcache = new RemoteCacheImpl(*this, name);
     try {
         startRemoteCache(*rcache, forceReturnValue);
-        if ((name != DefaultCacheName) && configuration.isPingOnStartup()) {
+        if (name != DefaultCacheName) {
            // If ping not successful assume that the cache does not exist
            // Default cache is always started, so don't do for it
            if (ping(*rcache) == CACHE_DOES_NOT_EXIST) {

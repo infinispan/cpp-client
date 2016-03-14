@@ -40,7 +40,6 @@ class Configuration
             int _connectionTimeout,
             bool _forceReturnValue,
             int _keySizeEstimate,
-            bool _pingOnStartup,
             std::vector<ServerConfiguration> _serversConfiguration,
             int _socketTimeout,
             const SslConfiguration _sslConfiguration,
@@ -51,7 +50,7 @@ class Configuration
                 protocolVersion(_protocolVersion), protocolVersionPtr(),
                 connectionPoolConfiguration(_connectionPoolConfiguration),
                 connectionTimeout(_connectionTimeout), forceReturnValue(_forceReturnValue),
-                keySizeEstimate(_keySizeEstimate), pingOnStartup(_pingOnStartup), servers(_serversConfiguration),
+                keySizeEstimate(_keySizeEstimate), servers(_serversConfiguration),
                 socketTimeout(_socketTimeout), sslConfiguration(_sslConfiguration),tcpNoDelay(_tcpNoDelay),
                 valueSizeEstimate(_valueSizeEstimate), maxRetries(_maxRetries), balancingStrategyProducer(bsp) {}
 
@@ -168,7 +167,6 @@ private:
     int connectionTimeout;
     bool forceReturnValue;
     int keySizeEstimate;
-    bool pingOnStartup;
     portable::vector<ServerConfiguration> servers;
     int socketTimeout;
     SslConfiguration sslConfiguration;
