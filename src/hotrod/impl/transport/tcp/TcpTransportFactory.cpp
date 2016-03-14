@@ -67,10 +67,7 @@ void TcpTransportFactory::start(
     }
 
     balancer->setServers(serverNames);
-
-    if (configuration.isPingOnStartup()) {
-       pingServers();
-    }
+    pingServers();
  }
 
 Transport& TcpTransportFactory::getTransport(const std::vector<char>& /*cacheName*/) {
