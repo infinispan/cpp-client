@@ -64,13 +64,6 @@ class ConfigurationChildBuilder
     ConfigurationBuilder& keySizeEstimate(int keySizeEstimate);
 
     /**
-     * If true, a ping request is sent to a back end server in order to fetch cluster's topology.
-     *
-     * \return ConfigurationBuilder for further configuration
-     */
-    ConfigurationBuilder& pingOnStartup(bool pingOnStartup);
-
-    /**
      * This property defines the protocol version that this client should use. Defaults to 1.2. Other
      * valid values include 1.0 and 1.1.
      *
