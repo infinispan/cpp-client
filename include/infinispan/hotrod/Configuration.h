@@ -106,14 +106,6 @@ class Configuration
     HR_EXTERN const int& getKeySizeEstimate() const;
 
     /**
-     * Returns true if Hot Rod servers are going to pinged before any cache
-     * %operations are invoked, false otherwise.
-     *
-     *\return true if servers are going to be pinged, false otherwise
-     */
-    HR_EXTERN const bool& isPingOnStartup() const;
-
-    /**
      * Returns the vector of server configurations where each server configuration instance
      * describes a HotRod server address and port.
      *
