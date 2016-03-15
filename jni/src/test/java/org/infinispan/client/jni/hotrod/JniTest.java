@@ -1,21 +1,36 @@
 package org.infinispan.client.jni.hotrod;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
-
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
 import org.infinispan.client.hotrod.*;
-import org.testng.TestNG;
+import org.testng.IMethodSelector;
+import org.testng.IMethodSelectorContext;
+import org.testng.ITestNGMethod;
 import org.testng.ITestResult;
+import org.testng.TestNG;
 import org.testng.reporters.TextReporter;
 
-public class JniTest {
+public class JniTest implements IMethodSelector {
+	private final static String [] passOverTestList = {
+	"CacheManagerNotStartedTest.testPutAllAsync",
+	"CacheManagerNotStartedTest.testPutAsync",
+	"CacheManagerNotStartedTest.testReplaceAsync",
+	"CacheManagerNotStartedTest.testVersionedRemoveAsync",
+	"CacheManagerStoppedTest.testPutAllAsync",
+	"CacheManagerStoppedTest.testPutAsync",
+	"CacheManagerStoppedTest.testReplaceAsync",
+	"CacheManagerStoppedTest.testVersionedRemoveAsync"};
+	
+   private final static HashSet<String> passOverTestSet = new HashSet<String>(Arrays.asList(passOverTestList));
+	
    public static void main(String[] args) {
       TestNG testng = new TestNG();
+      testng.addMethodSelector("org.infinispan.client.jni.hotrod.JniTest", 1);
       TextReporter tr = new TextReporter("SWIG Tests", 2);
 
       testng.setTestClasses(new Class[] {
@@ -70,14 +85,6 @@ public class JniTest {
       Set<String> expectedTestFailures = new TreeSet<String>(Arrays.asList( 
             "BulkGetKeysDistTest.testBulkGetAfterLifespanExpire",                // unstable, ISPN-4017
             "HotRodIntegrationTest.testReplaceWithVersionWithLifespanAsync",     // async not implemented
-            "CacheManagerStoppedTest.testPutAllAsync",                           // async not implemented
-            "CacheManagerStoppedTest.testPutAsync",                              // async not implemented
-            "CacheManagerStoppedTest.testReplaceAsync",                          // async not implemented
-            "CacheManagerStoppedTest.testVersionedRemoveAsync",                  // async not implemented
-            "CacheManagerNotStartedTest.testPutAllAsync",                        // async not implemented
-            "CacheManagerNotStartedTest.testPutAsync",                           // async not implemented
-            "CacheManagerNotStartedTest.testReplaceAsync",                       // async not implemented
-            "CacheManagerNotStartedTest.testVersionedRemoveAsync",               // async not implemented
             "ClientSocketReadTimeoutTest.testPutTimeout",                        // TODO: TransportException not marshalled correctly
             "RemoteCacheManagerTest.testMarshallerInstance",                     // setting marshaller through configuration builder not implemented
             "RemoteCacheManagerTest.testUrlAndBooleanConstructor",               // getProperties deprecated, not implemented
@@ -152,4 +159,21 @@ public class JniTest {
          when main() returns. */
       System.exit(exitCode);
    }
+
+@Override
+public boolean includeMethod(IMethodSelectorContext context, ITestNGMethod method, boolean isTestMethod) {
+	String testName = method.getRealClass().getSimpleName()+"."+method.getMethodName();
+	if (passOverTestSet.contains(testName))
+	{
+		context.setStopped(true);
+		return false;
+	}
+	return true;
+}
+
+@Override
+public void setTestMethods(List<ITestNGMethod> testMethods) {
+	// TODO Auto-generated method stub
+	
+}
 }
