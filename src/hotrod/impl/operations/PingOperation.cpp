@@ -27,9 +27,15 @@ PingResult PingOperation::execute() {
 	transport.flush();
 
     uint8_t respStatus = readHeaderAndValidate(transport, *params);
-    if (respStatus == HotRodConstants::NO_ERROR_STATUS) {
+    if (HotRodConstants::isSuccess(respStatus)) {
     	TRACE("Ping successful!");
-    	return SUCCESS;
+    	if (HotRodConstants::hasCompatibility(respStatus)) {
+    		WARN("Server has compatibility mode enabled. Inconsistency in hash calculation may occur");
+    		return PingResult::SUCCESS_WITH_COMPAT;
+    	}
+    	else {
+    		return PingResult::SUCCESS;
+    	}
     } else {
     	TRACE("Ping failed!");
     	return FAIL;

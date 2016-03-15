@@ -15,6 +15,8 @@ enum PingResult
 {
   // Success if the ping request was responded correctly
   SUCCESS,
+  // Success with compatibility enabled
+  SUCCESS_WITH_COMPAT,
   // When the ping request fails due to non-existing cache
   CACHE_DOES_NOT_EXIST,
   // For any other type of failures
