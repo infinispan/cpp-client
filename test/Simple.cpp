@@ -107,28 +107,57 @@ int basicTest(RemoteCacheManager &cacheManager, RemoteCache<K,V> &cache) {
 
     std::cout << "PASS: simple get/put" << std::endl;
 
+    {
+      std::string k3("rolling");
+      std::string v3("stones");
+      std::string v4("beatles");
+
+      // putIfAbsent
+      cache.putIfAbsent(k3, v3);
+      std::unique_ptr<std::string> rv3(cache.get(k3));
+      assert_not_null("get returned null!", __LINE__, rv3);
+      if (rv3->compare(v3)) {
+          std::cerr << "putIfAbsent fail for " << k3 << " got " << *rv3 << " expected " << v3 << std::endl;
+          return 1;
+      }
+
+      cache.putIfAbsent(k3, v4);
+      std::unique_ptr<std::string> rv4(cache.get(k3));
+      assert_not_null("get returned null!", __LINE__, rv4);
+      if (rv4->compare(v3)) {
+          std::cerr << "putIfAbsent fail for " << k3 << " got " << *rv4 << " expected " << v3 << std::endl;
+          return 1;
+      }
+
+      std::cout << "PASS: simple putIfAbsent"  << std::endl;
+    }
+    {
+      std::string k3("rolling");
+      std::string v3("stones");
+      std::string v4("beatles");
+
+      // putIfAbsent
+      cache.putIfAbsent(k3, v3);
+      std::unique_ptr<std::string> rv3(cache.get(k3));
+      assert_not_null("get returned null!", __LINE__, rv3);
+      if (rv3->compare(v3)) {
+          std::cerr << "putIfAbsent fail for " << k3 << " got " << *rv3 << " expected " << v3 << std::endl;
+          return 1;
+      }
+
+      std::unique_ptr<std::string> rv4(cache.withFlags(FORCE_RETURN_VALUE).putIfAbsent(k3, v4));
+      assert_not_null("get returned null!", __LINE__, rv4);
+      if (rv4->compare(v3)) {
+          std::cerr << "putIfAbsent fail for " << k3 << " got " << *rv4 << " expected " << v3 << std::endl;
+          return 1;
+      }
+
+      std::cout << "PASS: simple putIfAbsent with force return value"  << std::endl;
+    }
+
     std::string k3("rolling");
     std::string v3("stones");
     std::string v4("beatles");
-
-    // putIfAbsent
-    cache.putIfAbsent(k3, v3);
-    std::unique_ptr<std::string> rv3(cache.get(k3));
-    assert_not_null("get returned null!", __LINE__, rv3);
-    if (rv3->compare(v3)) {
-        std::cerr << "putIfAbsent fail for " << k3 << " got " << *rv3 << " expected " << v3 << std::endl;
-        return 1;
-    }
-
-    cache.putIfAbsent(k3, v4);
-    std::unique_ptr<std::string> rv4(cache.get(k3));
-    assert_not_null("get returned null!", __LINE__, rv4);
-    if (rv4->compare(v3)) {
-        std::cerr << "putIfAbsent fail for " << k3 << " got " << *rv4 << " expected " << v3 << std::endl;
-        return 1;
-    }
-
-    std::cout << "PASS: simple putIfAbsent"  << std::endl;
 
     cache.put(k3, v3, 10, SECONDS);
     // getWithMetadata
@@ -164,7 +193,7 @@ int basicTest(RemoteCacheManager &cacheManager, RemoteCache<K,V> &cache) {
     std::unique_ptr<std::string> rv6(cache.get(k3));
     assert_not_null("get returned null!", __LINE__, rv6);
     if (rv6->compare(v4)) {
-        std::cerr << "putIfAbsent fail for " << k3 << " got " << *rv6 << " expected " << v4 << std::endl;
+        std::cerr << "replaceWithVersion fail for " << k3 << " got " << *rv6 << " expected " << v4 << std::endl;
         return 1;
     }
 
@@ -172,7 +201,7 @@ int basicTest(RemoteCacheManager &cacheManager, RemoteCache<K,V> &cache) {
     std::unique_ptr<std::string> rv7(cache.get(k3));
     assert_not_null("get returned null!", __LINE__, rv7);
     if (rv7->compare(v4)) {
-        std::cerr << "putIfAbsent fail for " << k3 << " got " << *rv7 << " expected " << v4 << std::endl;
+        std::cerr << "replaceWithVersion fail for " << k3 << " got " << *rv7 << " expected " << v4 << std::endl;
         return 1;
     }
 

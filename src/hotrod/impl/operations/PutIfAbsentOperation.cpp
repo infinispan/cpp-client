@@ -26,7 +26,7 @@ std::vector<char> PutIfAbsentOperation::executeOperation(Transport& transport)
     uint8_t status = sendPutOperation(
         transport, PUT_IF_ABSENT_REQUEST, PUT_IF_ABSENT_RESPONSE);
     std::vector<char> previousValue;
-    if (status == NO_ERROR_STATUS || status == NOT_PUT_REMOVED_REPLACED_STATUS) {
+    if (HotRodConstants::isNotExecuted(status)) {
         previousValue =
             AbstractKeyValueOperation<std::vector<char>>::returnPossiblePrevValue(transport, status);
     } else {
