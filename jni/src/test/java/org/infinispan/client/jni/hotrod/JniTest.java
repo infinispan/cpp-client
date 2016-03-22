@@ -92,17 +92,12 @@ public class JniTest implements IMethodSelector {
             "BulkGetKeysSimpleTest.testBulkGetAfterLifespanExpire",
             "BulkGetReplTest.testBulkGetAfterLifespanExpire",
             "BulkGetSimpleTest.testBulkGetAfterLifespanExpire",
-            "CrossLanguageHotRodTest.testCppReplace",
             "ForceReturnValuesTest.testDifferentInstancesForDifferentForceReturnValues",
             "ForceReturnValuesTest.testSameInstanceForSameForceReturnValues",
             "HotRodIntegrationTest.testGetWithMetadata",
-            "HotRodIntegrationTest.testReplaceWithPrevious",
             "RemoteCacheManagerTest.testGetUndefinedCache",
             "ServerShutdownTest.testServerShutdownWithConnectedClient",
-            "ServerShutdownTest.testServerShutdownWithoutConnectedClient",
-            "CrossLanguageHotRodTest.testCppPutIfAbsent",
-            "HotRodIntegrationTest.testPutIfAbsentWithPrevious",
-            "HotRodIntegrationTest.testPutSerializableByteArray"
+            "ServerShutdownTest.testServerShutdownWithoutConnectedClient"
       ));
       Set<String> expectedSkips = Collections.emptySet();
 

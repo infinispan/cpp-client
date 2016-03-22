@@ -24,12 +24,8 @@ std::vector<char> ReplaceOperation::executeOperation(Transport& transport)
     std::vector<char> previousValue;
     uint8_t status = sendPutOperation(
         transport, REPLACE_REQUEST, REPLACE_RESPONSE);
-    if (status == NO_ERROR_STATUS || status == NOT_PUT_REMOVED_REPLACED_STATUS) {
         previousValue =
             AbstractKeyValueOperation<std::vector<char>>::returnPossiblePrevValue(transport,status);
-    } else {
-        TRACE("Error status %u", status);
-    }
     return previousValue;
 }
 
