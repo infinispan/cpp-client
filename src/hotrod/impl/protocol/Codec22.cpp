@@ -1,4 +1,3 @@
-#include <hotrod/impl/transport/tcp/InetSocketAddress.h>
 #include "hotrod/impl/protocol/Codec22.h"
 #include "hotrod/impl/protocol/HotRodConstants.h"
 #include "hotrod/impl/protocol/HeaderParams.h"
@@ -10,6 +9,7 @@
 #include <map>
 #include <vector>
 #include <hotrod/impl/TimeUnitParam.h>
+#include <infinispan/hotrod/InetSocketAddress.h>
 
 namespace infinispan {
 namespace hotrod {
@@ -27,11 +27,11 @@ void Codec22::writeExpirationParams(transport::Transport& t,uint64_t lifespan, u
     unsigned char timeCode = TimeUnitParam::encodeTimeUnits(lifespan,SECONDS,maxIdle,SECONDS);
     t.writeByte(timeCode);
     unsigned char lsTimeCode= timeCode >> 4;
-    if (lsTimeCode!=DEFAULT && lsTimeCode!=INFINITE) {
+    if (lsTimeCode!=DEFAULT && lsTimeCode!=INFINITUM) {
         t.writeVLong(lifespan);
     }
     unsigned char miTimeCode= timeCode & 0x0F;
-    if (miTimeCode!=DEFAULT && miTimeCode!=INFINITE) {
+    if (miTimeCode!=DEFAULT && miTimeCode!=INFINITUM) {
         t.writeVLong(maxIdle);
     }
 }

@@ -12,7 +12,7 @@
 #include <string>
 #include <algorithm>
 #include <assert.h>
-#include <hotrod/impl/transport/tcp/InetSocketAddress.h>
+#include <infinispan/hotrod/InetSocketAddress.h>
 
 
 using namespace infinispan::hotrod;

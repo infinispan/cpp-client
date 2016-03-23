@@ -12,7 +12,7 @@ RemoveOperation::RemoveOperation(
     std::shared_ptr<transport::TransportFactory> transportFactory_,
     const std::vector<char>&    key_,
     const std::vector<char>&    cacheName_,
-    IntWrapper&  topologyId_,
+    Topology&  topologyId_,
     uint32_t    flags_)
     : AbstractKeyOperation<std::vector<char>>(
         codec_, transportFactory_, key_, cacheName_, topologyId_, flags_)

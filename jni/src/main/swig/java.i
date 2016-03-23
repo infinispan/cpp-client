@@ -36,11 +36,14 @@
 #include <infinispan/hotrod/RemoteCacheManager.h>
 #include <infinispan/hotrod/RemoteCache.h>
 #include <infinispan/hotrod/Marshaller.h>
+#include <infinispan/hotrod/InetSocketAddress.h>
+#include <infinispan/hotrod/CacheTopologyInfo.h>
 
 #include <iostream>
 %}
 
 %template(MapType) std::map<std::string, std::string>;
+%template(SegPerServer) std::map<infinispan::hotrod::transport::InetSocketAddress, std::vector<int> >;
 
 %include "infinispan/hotrod/defs.h"
 %include "infinispan/hotrod/ImportExport.h"
@@ -71,6 +74,8 @@
 %include "infinispan/hotrod/RemoteCacheManager.h"
 %include "infinispan/hotrod/RemoteCache.h"
 %include "infinispan/hotrod/Marshaller.h"
+%include "infinispan/hotrod/InetSocketAddress.h"
+%include "infinispan/hotrod/CacheTopologyInfo.h"
 
 %include "infinispan/hotrod/exceptions.h"
 
@@ -122,6 +127,12 @@
 %ignore RelayBytes::getBytes;
 %ignore RelayBytes::getJarray;
 
+%ignore getAsync;
+%ignore putAsync;
+%ignore goAsync;
+%ignore putAllAsync;
+%ignore replaceWithVersionAsync;
+
 //%shared_ptr(RelayShrPointer)
 
 %inline %{
@@ -149,6 +160,8 @@ class RelayBytes {
 %template(SetReturn) std::set<std::shared_ptr<RelayBytes> >;
 %template(VectorReturn) std::vector<std::shared_ptr<RelayBytes> >;
 %template(StringVectorReturn) std::vector<std::string>;
+%template(IntegerVectorReturn) std::vector<int>;
+%template(InetSocketAddressvectorReturn) std::vector<infinispan::hotrod::transport::InetSocketAddress>;
 
 %inline %{
  bool isNull(std::shared_ptr<RelayBytes> ptr) {
@@ -158,6 +171,15 @@ class RelayBytes {
  RelayBytes dereference(std::shared_ptr<RelayBytes> ptr) {
      return *ptr;
  }
+
+
+std::vector<infinispan::hotrod::transport::InetSocketAddress> keySet(std::map<infinispan::hotrod::transport::InetSocketAddress, std::vector<int> > map)
+{
+     std::vector<infinispan::hotrod::transport::InetSocketAddress > result;
+     for (std::map<infinispan::hotrod::transport::InetSocketAddress, std::vector<int> >::iterator it = map.begin(); it != map.end(); ++it)
+         result.push_back(it->first);
+     return result;
+}
  
  std::vector<std::shared_ptr<RelayBytes> > keySet(std::map<std::shared_ptr<RelayBytes>, std::shared_ptr<RelayBytes> > map) {
      std::vector<std::shared_ptr<RelayBytes> > result;

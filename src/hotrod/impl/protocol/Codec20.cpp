@@ -1,5 +1,5 @@
+#include <infinispan/hotrod/InetSocketAddress.h>
 #include "infinispan/hotrod/exceptions.h"
-#include <hotrod/impl/transport/tcp/InetSocketAddress.h>
 #include "hotrod/impl/protocol/Codec20.h"
 #include "hotrod/impl/protocol/HotRodConstants.h"
 #include "hotrod/impl/protocol/HeaderParams.h"
@@ -55,7 +55,7 @@ HeaderParams& Codec20::writeHeader(
     transport.writeArray(params.cacheName);
     transport.writeVInt(params.flags);
     transport.writeByte(params.clientIntel);
-    transport.writeVInt(params.topologyId.get());
+    transport.writeVInt(params.topologyId.getId());
     return params;
 }
 
@@ -109,93 +109,64 @@ void Codec20::readNewTopologyIfPresent(
 {
     uint8_t topologyChangeByte = transport.readByte();
     if (topologyChangeByte == 1)
-        readNewTopologyAndHash(transport, params.topologyId, params.cacheName);
+    {
+    	TRACE("Topology has changes");
+        readNewTopologyAndHash(transport, params);
+    }
+    else
+    {
+    	TRACE("No topology changes");
+    }
 }
 
-void Codec20::readNewTopologyAndHash(Transport& transport, IntWrapper& topologyId, const std::vector<char>& /*cacheName*/) const{
+void Codec20::readNewTopologyAndHash(Transport& transport, HeaderParams& params) const{
     // Just consume the header's byte
 	// Do not evaluate new topology right now
-	uint32_t newTopologyId = transport.readVInt();
-    topologyId.set(newTopologyId); //update topologyId reference
-//    uint32_t numKeyOwners = transport.readVInt();
-
-//    uint8_t hashFunctionVersion = transport.readByte();
-//    uint32_t hashSpace = transport.readVInt();
+	int newTopologyId = transport.readVInt();
+    params.topologyId.setId(newTopologyId); //update topologyId reference
     uint32_t clusterSize = transport.readVInt();
-
-//    std::vector<InetSocketAddress> addresses(clusterSize);
+    TRACE("Coded20::readNewToplogyAndhash(): clusterSize=%d",clusterSize);
+    std::vector<InetSocketAddress> addresses(clusterSize);
     for (uint32_t i = 0; i < clusterSize; i++) {
-       /*std::string host*/transport.readString();
-       /*int16_t port = */transport.readUnsignedShort();
-//       addresses[i] = InetSocketAddress(host, port);
+       std::string host(transport.readString());
+       int16_t port = transport.readUnsignedShort();
+       addresses[i] = InetSocketAddress(host, port);
     }
 
     uint8_t hashFunctionVersion = transport.readByte();
     uint32_t numSegments = transport.readVInt();
 
-//    std::vector<std::vector<InetSocketAddress>> segmentOwners(numSegments);
+    std::vector<std::vector<InetSocketAddress>> segmentOwners(numSegments);
 
     if (hashFunctionVersion > 0) {
+       TRACE("Codec20::readNewTopologyAndHash: numSegments=%d", numSegments);
        for (uint32_t i = 0; i < numSegments; i++) {
           uint8_t numOwners = transport.readByte();
+          segmentOwners[i]=std::vector<InetSocketAddress>(numOwners);
           for (uint8_t j = 0; j < numOwners; j++) {
-             /*uint32_t memberIndex = */transport.readVInt();
-//             segmentOwners[i][j] = addresses[memberIndex];
+             uint32_t memberIndex = transport.readVInt();
+             segmentOwners[i][j] = addresses[memberIndex];
           }
        }
     }
-    // TODO: topology evaluation
 
-//    TransportFactory tf = transport.getTransportFactory();
-//    int currentTopology = tf.getTopologyId(cacheName);
-//    std::map<InetSocketAddress, std::set<int32_t> > m = computeNewHashes(
-//            transport, newTopologyId, numKeyOwners, hashFunctionVersion, hashSpace,
-//            clusterSize);
-//
-//    std::vector<InetSocketAddress> socketAddresses;
-//    for (std::map<InetSocketAddress, std::set<int32_t> >::iterator it = m.begin(); it != m.end(); ++it) {
-//        socketAddresses.push_back(it->first);
-//    }
-//    transport.getTransportFactory().updateServers(socketAddresses);
-//
-//    if (hashFunctionVersion == 0) {
-//        TRACE("No hash function present.");
-//        transport.getTransportFactory().clearHashFunction(cacheName);
-//    } else {
-//        TRACE("Updating Hash version: %u owners: %d hash_space: %u cluster_size: %u",
-//                hashFunctionVersion,
-//                numKeyOwners,
-//                hashSpace,
-//                clusterSize);
-//        transport.getTransportFactory().updateHashFunction(m, numKeyOwners,
-//                hashFunctionVersion, hashSpace, cacheName);
-//    }
-}
-
-std::map<InetSocketAddress, std::set<int32_t> > Codec20::computeNewHashes(
-        Transport& transport, uint32_t /*newTopologyId*/, int16_t /*numKeyOwners*/,
-        uint8_t /*hashFunctionVersion*/, uint32_t /*hashSpace*/, uint32_t clusterSize) const {
-
-    std::map<InetSocketAddress, std::set<int32_t> > map;
-    for (uint32_t i = 0; i < clusterSize; i++) {
-        std::string host = transport.readString();
-        int16_t port = transport.readUnsignedShort();
-        int32_t hashCode = transport.read4ByteInt();
-        InetSocketAddress address(host, port);
-
-        std::map<InetSocketAddress, std::set<int32_t> >::iterator it =
-                map.find(address);
-        if (it == map.end()) {
-            std::set<int32_t> hashes;
-            hashes.insert(hashCode);
-            map.insert(
-                    std::pair<InetSocketAddress, std::set<int32_t> >(address,
-                            hashes));
-        } else {
-            it->second.insert(hashCode);
-        }
+    TransportFactory &tf = transport.getTransportFactory();
+    int currentTopology = tf.getTopologyId(params.cacheName);
+    int topologyAge = tf.getTopologyAge();
+    if (params.topologyAge == topologyAge && currentTopology != newTopologyId) {
+       params.topologyId = newTopologyId;
+       tf.updateServers(addresses);
+       if (hashFunctionVersion == 0) {
+             TRACE("Not using a consistent hash function (hash function version == 0).");
+       } else {
+             TRACE("Updating client hash function with %u number of segments", numSegments);
+       }
+       tf.updateHashFunction(segmentOwners,
+          numSegments, hashFunctionVersion, params.cacheName, params.topologyId.getId());
+    } else {
+       TRACE("Outdated topology received (topology id = %d, topology age = %d), so ignoring it: s",
+             newTopologyId, topologyAge/*, Arrays.toString(addresses)*/);
     }
-    return map;
 }
 
 void Codec20::checkForErrorsInResponseStatus(Transport& transport, HeaderParams& params, uint8_t status) const {

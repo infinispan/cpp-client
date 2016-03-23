@@ -232,12 +232,16 @@ void ConnectionPool::clear(std::map<InetSocketAddress, TransportQueuePtr>& queue
 void ConnectionPool::clear(const InetSocketAddress& key) {
     sys::ScopedLock<sys::Mutex> l(lock);
     TransportQueuePtr idleQ = idle[key];
+    if (!idleQ)
+    	return;
     totalIdle -= idleQ->size();
     clear(key, idleQ);
     idle.erase(key);
 }
 
 void ConnectionPool::clear(const InetSocketAddress& key, TransportQueuePtr queue) {
+	if (!queue)
+		return;
     while (queue->size() > 0) {
         TcpTransport* transport = queue->pop();
         factory->destroyObject(key, *transport);

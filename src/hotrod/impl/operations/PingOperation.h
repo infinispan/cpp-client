@@ -7,8 +7,7 @@
 
 namespace infinispan {
 namespace hotrod {
-//class std::vector<char>;
-class IntWrapper;
+class Topology;
 
 namespace operations {
 
@@ -16,6 +15,8 @@ enum PingResult
 {
   // Success if the ping request was responded correctly
   SUCCESS,
+  // Success with compatibility enabled
+  SUCCESS_WITH_COMPAT,
   // When the ping request fails due to non-existing cache
   CACHE_DOES_NOT_EXIST,
   // For any other type of failures
@@ -28,13 +29,13 @@ class PingOperation : public HotRodOperation<PingResult>
     PingResult execute();
     PingOperation(
         const protocol::Codec& codec,
-        IntWrapper& topologyId,
+        Topology& topologyId,
         transport::Transport& transport);
 
   private:
     PingOperation(
         const protocol::Codec& codec,
-        IntWrapper& topologyId,
+        Topology& topologyId,
         transport::Transport& transport,
         const std::vector<char>& cacheName);
 

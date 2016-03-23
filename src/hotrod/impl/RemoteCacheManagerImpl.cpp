@@ -18,7 +18,8 @@ const std::string DefaultCacheName = "";
 
 RemoteCacheManagerImpl::RemoteCacheManagerImpl(bool start_)
   : started(false),
-    configuration(ConfigurationBuilder().build()), codec(0)
+    configuration(ConfigurationBuilder().build()), codec(0),
+	defaultCacheTopologyId(protocol::HotRodConstants::DEFAULT_CACHE_TOPOLOGY)
 {
 	; //force topology read on first op
 	if (start_) start();
@@ -26,7 +27,8 @@ RemoteCacheManagerImpl::RemoteCacheManagerImpl(bool start_)
 
 RemoteCacheManagerImpl::RemoteCacheManagerImpl(const std::map<std::string,std::string>& properties, bool start_)
   : started(false),
-    configuration(ConfigurationBuilder().build()), codec(0)
+    configuration(ConfigurationBuilder().build()), codec(0),
+	defaultCacheTopologyId(protocol::HotRodConstants::DEFAULT_CACHE_TOPOLOGY)
 {
   std::map<std::string,std::string>::const_iterator server_prop;
   server_prop = properties.find(ISPN_CLIENT_HOTROD_SERVER_LIST);
@@ -40,7 +42,8 @@ RemoteCacheManagerImpl::RemoteCacheManagerImpl(const std::map<std::string,std::s
 
 RemoteCacheManagerImpl::RemoteCacheManagerImpl(const Configuration& configuration_, bool start_)
   : started(false),
-    configuration(configuration_), codec(0)
+    configuration(configuration_), codec(0),
+	defaultCacheTopologyId(protocol::HotRodConstants::DEFAULT_CACHE_TOPOLOGY)
 {
   if (start_) start();
 }
@@ -50,7 +53,7 @@ void RemoteCacheManagerImpl::start() {
     codec = CodecFactory::getCodec(configuration.getProtocolVersionCString());
     if (!started) {
         transportFactory.reset(TransportFactory::newInstance(configuration));
-        transportFactory->start(*codec);
+        transportFactory->start(*codec, defaultCacheTopologyId);
 
        for(std::map<std::string, RemoteCacheHolder>::iterator iter = cacheName2RemoteCache.begin(); iter != cacheName2RemoteCache.end(); ++iter ) {
            startRemoteCache(*iter->second.first.get(), iter->second.second);
@@ -96,7 +99,7 @@ RemoteCacheImpl *RemoteCacheManagerImpl::createRemoteCache(
     RemoteCacheImpl *rcache = new RemoteCacheImpl(*this, name);
     try {
         startRemoteCache(*rcache, forceReturnValue);
-        if ((name != DefaultCacheName) && configuration.isPingOnStartup()) {
+        if (name != DefaultCacheName) {
            // If ping not successful assume that the cache does not exist
            // Default cache is always started, so don't do for it
            if (ping(*rcache) == CACHE_DOES_NOT_EXIST) {

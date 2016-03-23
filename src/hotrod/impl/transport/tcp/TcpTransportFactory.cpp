@@ -1,5 +1,5 @@
-#include <hotrod/impl/transport/tcp/InetSocketAddress.h>
 #include <infinispan/hotrod/exceptions.h>
+#include <infinispan/hotrod/InetSocketAddress.h>
 #include <infinispan/hotrod/ServerNameId.h>
 #include "hotrod/impl/transport/tcp/TcpTransportFactory.h"
 #include "hotrod/impl/transport/tcp/TcpTransport.h"
@@ -27,14 +27,15 @@ TransportFactory* TransportFactory::newInstance(const Configuration& configurati
 }
 
 void TcpTransportFactory::start(
-    Codec& codec)
+    Codec& codec, int defaultTopologyId)
 {
 	ScopedLock<Mutex> l(lock);
+	topologyAge = 0;
     std::vector<ServerConfiguration> configuredServers = configuration.getServersConfiguration();
     for (std::vector<ServerConfiguration>::const_iterator iter = configuredServers.begin();
         iter != configuredServers.end(); iter++)
     {
-        servers.push_back(InetSocketAddress(iter->getHostCString(), iter->getPort()));
+        initialServers.push_back(InetSocketAddress(iter->getHostCString(), iter->getPort()));
     }
 
     FailOverRequestBalancingStrategy::ProducerFn producerFn=configuration.getBalancingStrategy();
@@ -45,7 +46,7 @@ void TcpTransportFactory::start(
     {
         balancer.reset(RoundRobinBalancingStrategy::newInstance());
     }
-    hashFactory.reset(new ConsistentHashFactory());
+    topologyInfo = new TopologyInfo(defaultTopologyId, initialServers, configuration);
 
     // TODO: SSL configuration
 
@@ -56,7 +57,7 @@ void TcpTransportFactory::start(
     //  update map conversion ServerIdentity/INetSocketAddress
     std::vector<ServerNameId> serverNames;
     for (std::vector<InetSocketAddress>::const_iterator it =
-            servers.begin(); it != servers.end(); ++it) {
+            initialServers.begin(); it != initialServers.end(); ++it) {
     	const ServerNameId tmp = (ServerNameId)*it;
     	if (serverNameMap.find(tmp)==serverNameMap.end())
     	{
@@ -66,10 +67,7 @@ void TcpTransportFactory::start(
     }
 
     balancer->setServers(serverNames);
-
-    if (configuration.isPingOnStartup()) {
-       pingServers();
-    }
+    pingServers();
  }
 
 Transport& TcpTransportFactory::getTransport(const std::vector<char>& /*cacheName*/) {
@@ -86,28 +84,17 @@ Transport& TcpTransportFactory::getTransport(const std::vector<char>& /*cacheNam
 }
 
 Transport& TcpTransportFactory::getTransport(const std::vector<char>& key, const std::vector<char>& cacheName) {
-    const InetSocketAddress* server = NULL;
+    InetSocketAddress server;
     {
         ScopedLock<Mutex> l(lock);
 
-        std::shared_ptr<infinispan::hotrod::consistenthash::ConsistentHash> consistentHash;
-
-        std::map<std::vector<char>, std::shared_ptr<infinispan::hotrod::consistenthash::ConsistentHash> >::iterator element = consistentHashByCacheName.find(cacheName);
-        if (element != consistentHashByCacheName.end()) {
-            consistentHash = element->second;
+        server = topologyInfo->getHashAwareServer(key,cacheName);
+        if (server.isEmpty())
+        {   // Return balanced transport
+        	return getTransport(cacheName);
         }
-
-        if (consistentHash != NULL) {
-            server = &consistentHash->getServer(key);
-        } else {
-            std::map<ServerNameId,InetSocketAddress>::iterator it=serverNameMap.find(balancer->nextServer());
-            if (it==serverNameMap.end()){
-                throw Exception("Server not found!");
-            }
-        	server=&it->second;
-        }
+        return borrowTransportFromPool(server);
     }
-    return borrowTransportFromPool(*server);
 }
 
 void TcpTransportFactory::releaseTransport(Transport& transport) {
@@ -147,6 +134,7 @@ int TcpTransportFactory::getConnectTimeout() {
 void TcpTransportFactory::createAndPreparePool()
 {
     connectionPool.reset(new ConnectionPool(transportFactory, configuration.getConnectionPoolConfiguration()));
+    std::vector<InetSocketAddress> servers = topologyInfo->getServers();
     for (std::vector<InetSocketAddress>::const_iterator i = servers.begin();
         i != servers.end() ; ++i)
     {
@@ -155,7 +143,7 @@ void TcpTransportFactory::createAndPreparePool()
 }
 
 void TcpTransportFactory::pingServers() {
-    std::vector<InetSocketAddress> s = servers;
+    std::vector<InetSocketAddress> s = topologyInfo->getServers();
     for (std::vector<InetSocketAddress>::const_iterator iter = s.begin(); iter != s.end(); iter++) {
         TcpTransport* transport;
         try {
@@ -178,6 +166,7 @@ void TcpTransportFactory::destroy() {
     ScopedLock<Mutex> l(lock);
     connectionPool->clear();
     connectionPool->close();
+    delete topologyInfo;
 }
 
 Transport& TcpTransportFactory::borrowTransportFromPool(
@@ -196,17 +185,20 @@ ConnectionPool* TcpTransportFactory::getConnectionPool()
 void TcpTransportFactory::updateServers(std::vector<InetSocketAddress>& newServers) {
     ScopedLock<Mutex> l(lock);
     std::vector<InetSocketAddress> addedServers;
-    std::sort(newServers.begin(), newServers.end());
-    std::sort(servers.begin(), servers.end());
+    std::vector<InetSocketAddress> topoServers=topologyInfo->getServers();
 
-    std::set_difference(newServers.begin(), newServers.end(), servers.begin(),
-            servers.end(), std::inserter(addedServers, addedServers.end()));
+    std::sort(newServers.begin(), newServers.end());
+
+    std::sort(topoServers.begin(), topoServers.end());
+
+    std::set_difference(newServers.begin(), newServers.end(), topoServers.begin(),
+    		topoServers.end(), std::inserter(addedServers, addedServers.end()));
 
     std::vector<InetSocketAddress> failedServers;
     std::sort(newServers.begin(), newServers.end());
-    std::sort(servers.begin(), servers.end());
+    std::sort(topoServers.begin(), topoServers.end());
 
-    std::set_difference(servers.begin(), servers.end(), newServers.begin(),
+    std::set_difference(topoServers.begin(), topoServers.end(), newServers.begin(),
             newServers.end(), std::inserter(failedServers, failedServers.end()));
 
     if (failedServers.empty() && newServers.empty()) {
@@ -235,7 +227,7 @@ void TcpTransportFactory::updateServers(std::vector<InetSocketAddress>& newServe
     	newServerNames.push_back(tmp);
     }
 
-
+    topologyInfo->updateServers(newServers);
     balancer->setServers(newServerNames);
 
     //3. Now just remove failed servers
@@ -244,31 +236,35 @@ void TcpTransportFactory::updateServers(std::vector<InetSocketAddress>& newServe
         connectionPool->clear(*it);
     }
 
-    servers.clear();
-    servers = newServers;
+    topoServers.clear();
+    topologyInfo->updateServers(newServers);
 }
 
 void TcpTransportFactory::updateHashFunction(
         std::map<InetSocketAddress, std::set<int32_t> >& servers2Hash,
         int32_t numKeyOwners, uint8_t hashFunctionVersion, int32_t hashSpace, const std::vector<char>& cacheName) {
     ScopedLock<Mutex> l(lock);
-    std::shared_ptr<ConsistentHash> hash = hashFactory->newConsistentHash(hashFunctionVersion);
-    if (hash == NULL) {
-        std::cout << "updateHashFunction with hash version "
-            << hashFunctionVersion << " failed!" << std::endl;
-    } else {
-        hash->init(servers2Hash, numKeyOwners, hashSpace);
-    }
-    consistentHashByCacheName[cacheName] = hash;
+    topologyInfo->updateTopology(servers2Hash,numKeyOwners,hashFunctionVersion,hashSpace,cacheName);
+   }
+
+void TcpTransportFactory::updateHashFunction(
+		std::vector<std::vector<InetSocketAddress>>& segmentOwners,
+        uint32_t &numSegment, uint8_t &hashFunctionVersion,
+        const std::vector<char>& cacheName, int topologyId)
+{
+    ScopedLock<Mutex> l(lock);
+    TRACE("TcpTransportFactory::updateHashFunction(): hashversion=%d, topologyId=%d",hashFunctionVersion, topologyId);
+   std::shared_ptr<consistenthash::ConsistentHash> h=topologyInfo->updateTopology(segmentOwners, numSegment, hashFunctionVersion, cacheName, topologyId);
 }
 
+
 void TcpTransportFactory::clearHashFunction(const std::vector<char>& cacheName) {
-    consistentHashByCacheName.erase(cacheName);
+    topologyInfo->consistentHashErase(cacheName);
 }
 
 ConsistentHashFactory& TcpTransportFactory::getConsistentHashFactory(){
     ScopedLock<Mutex> l(lock);
-    return *hashFactory;
+    return *topologyInfo->getHashFactory();
 }
 
 }}} // namespace infinispan::hotrod::transport

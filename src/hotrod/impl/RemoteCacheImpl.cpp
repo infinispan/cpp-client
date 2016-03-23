@@ -239,6 +239,11 @@ std::vector<char> RemoteCacheImpl::execute(RemoteCacheBase& /*remoteCacheBase*/,
 
 }
 
+CacheTopologyInfo RemoteCacheImpl::getCacheTopologyInfo() {
+	return operationsFactory->getCacheTopologyInfo();
+}
 
 
-}} /* namespace */
+}
+} /* namespace */
+

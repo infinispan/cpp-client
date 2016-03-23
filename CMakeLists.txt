@@ -180,10 +180,12 @@ else(DEFINED HOTROD_PREBUILT_LIB_DIR)
       src/hotrod/impl/configuration/ConnectionPoolConfiguration.cpp
       src/hotrod/impl/RemoteCacheManagerImpl.cpp
       src/hotrod/impl/RemoteCacheImpl.cpp
-      src/hotrod/impl/IntWrapper.cpp
+      src/hotrod/impl/Topology.cpp
+      src/hotrod/impl/TopologyInfo.cpp
       src/hotrod/impl/hash/MurmurHash3.cpp
       src/hotrod/impl/consistenthash/ConsistentHashFactory.cpp
       src/hotrod/impl/consistenthash/ConsistentHashV2.cpp
+      src/hotrod/impl/consistenthash/SegmentConsistentHash.cpp
       src/hotrod/impl/operations/OperationsFactory.cpp
       src/hotrod/impl/operations/PingOperation.cpp
       src/hotrod/impl/operations/GetOperation.cpp

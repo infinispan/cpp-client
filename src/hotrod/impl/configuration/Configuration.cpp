@@ -39,11 +39,6 @@ const int& Configuration::getKeySizeEstimate() const
   return Configuration::keySizeEstimate;
 }
 
-const bool& Configuration::isPingOnStartup() const
-{
-  return Configuration::pingOnStartup;
-}
-
 const int& Configuration::getSocketTimeout() const
 {
   return Configuration::socketTimeout;

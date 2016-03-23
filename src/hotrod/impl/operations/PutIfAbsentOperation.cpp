@@ -11,7 +11,7 @@ using namespace infinispan::hotrod::transport;
 
 PutIfAbsentOperation::PutIfAbsentOperation(
     const Codec& _codec, std::shared_ptr<transport::TransportFactory> _transportFactory, const std::vector<char>& _key,
-    const std::vector<char>& _cacheName, IntWrapper& _topologyId, uint32_t _flags,
+    const std::vector<char>& _cacheName, Topology& _topologyId, uint32_t _flags,
     const std::vector<char>& _value, uint32_t _lifespan, uint32_t _maxIdle) :
         AbstractKeyValueOperation<std::vector<char>>(
             _codec, _transportFactory, _key, _cacheName, _topologyId,
@@ -26,7 +26,7 @@ std::vector<char> PutIfAbsentOperation::executeOperation(Transport& transport)
     uint8_t status = sendPutOperation(
         transport, PUT_IF_ABSENT_REQUEST, PUT_IF_ABSENT_RESPONSE);
     std::vector<char> previousValue;
-    if (status == NO_ERROR_STATUS || status == NOT_PUT_REMOVED_REPLACED_STATUS) {
+    if (HotRodConstants::isNotExecuted(status)) {
         previousValue =
             AbstractKeyValueOperation<std::vector<char>>::returnPossiblePrevValue(transport, status);
     } else {

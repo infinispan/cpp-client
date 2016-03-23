@@ -14,7 +14,7 @@
 
 namespace infinispan {
 namespace hotrod {
-class IntWrapper;
+class Topology;
 namespace operations {
 
 template<class T> class AbstractKeyOperation : public RetryOnFailureOperation<T>
@@ -26,7 +26,7 @@ template<class T> class AbstractKeyOperation : public RetryOnFailureOperation<T>
         const protocol::Codec& _codec,
         std::shared_ptr<transport::TransportFactory> _transportFactory,
         const std::vector<char>& _key, const std::vector<char>& _cacheName,
-        IntWrapper& _topologyId, uint32_t  _flags) :
+        Topology& _topologyId, uint32_t  _flags) :
             RetryOnFailureOperation<T>(
                 _codec, _transportFactory, _cacheName, _topologyId, _flags),
             key(_key)

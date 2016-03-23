@@ -11,7 +11,7 @@
 
 namespace infinispan {
 namespace hotrod {
-class IntWrapper;
+class Topology;
 namespace operations {
 
 class FaultTolerantPingOperation : public RetryOnFailureOperation<PingResult>
@@ -21,7 +21,7 @@ class FaultTolerantPingOperation : public RetryOnFailureOperation<PingResult>
             const protocol::Codec&       codec_,
             std::shared_ptr<transport::TransportFactory> transportFactory_,
             const std::vector<char>&                                   cacheName_,
-            IntWrapper&                                 topologyId_,
+            Topology&                                 topologyId_,
             uint32_t                                   flags_);
 
         transport::Transport& getTransport(int retryCount);

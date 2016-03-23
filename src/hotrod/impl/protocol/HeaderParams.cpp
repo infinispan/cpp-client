@@ -10,7 +10,7 @@ namespace infinispan {
 namespace hotrod {
 namespace protocol {
 
-HeaderParams::HeaderParams(IntWrapper& tid):topologyId(tid){
+HeaderParams::HeaderParams(Topology& tid):topologyId(tid){
 }
 
 HeaderParams& HeaderParams::setOpCode(uint8_t code) {
@@ -83,6 +83,11 @@ uint8_t HeaderParams::toOpRespCode(uint8_t code) {
     	msg << "Unknown operation code: " << opCode;
         throw InternalException(msg.str());
     }
+}
+
+HeaderParams& HeaderParams::setTopologyAge(int topologyAge_) {
+	topologyAge=topologyAge_;
+	return *this;
 }
 
 }}} // namespace

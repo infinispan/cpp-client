@@ -7,7 +7,7 @@
 
 namespace infinispan {
 namespace hotrod {
-class IntWrapper;
+class Topology;
 namespace operations {
 
 class RemoveIfUnmodifiedOperation
@@ -22,7 +22,7 @@ class RemoveIfUnmodifiedOperation
             const infinispan::hotrod::protocol::Codec& codec,
             std::shared_ptr<transport::TransportFactory> transportFactory,
             const std::vector<char>& key, const std::vector<char>& cacheName,
-            IntWrapper& topologyId, uint32_t flags, int64_t version);
+            Topology& topologyId, uint32_t flags, int64_t version);
 
         int64_t version;
 

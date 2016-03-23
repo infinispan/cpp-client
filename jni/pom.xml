@@ -84,7 +84,6 @@
          <groupId>org.infinispan</groupId>
          <artifactId>infinispan-client-hotrod</artifactId>
          <version>${version.org.infinispan}</version>
-         <scope>test</scope>
       </dependency>
       <dependency>
          <groupId>org.infinispan</groupId>

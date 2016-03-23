@@ -6,7 +6,7 @@
 
 namespace infinispan {
 namespace hotrod {
-class IntWrapper;
+class Topology;
 namespace operations {
 
 class RemoveOperation : public AbstractKeyOperation<std::vector<char>>
@@ -20,7 +20,7 @@ class RemoveOperation : public AbstractKeyOperation<std::vector<char>>
             const infinispan::hotrod::protocol::Codec& codec,
             std::shared_ptr<transport::TransportFactory> transportFactory,
             const std::vector<char>& key, const std::vector<char>& cacheName,
-            IntWrapper& topologyId, uint32_t flags);
+            Topology& topologyId, uint32_t flags);
 
     friend class OperationsFactory;
 };

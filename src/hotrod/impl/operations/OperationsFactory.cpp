@@ -1,4 +1,4 @@
-#include "hotrod/impl/IntWrapper.h"
+#include <hotrod/impl/Topology.h>
 #include "hotrod/impl/operations/OperationsFactory.h"
 #include "hotrod/impl/protocol/CodecFactory.h"
 #include "hotrod/impl/transport/Transport.h"
@@ -33,8 +33,12 @@ using namespace transport;
 OperationsFactory::OperationsFactory(
     std::shared_ptr<infinispan::hotrod::transport::TransportFactory> tf, const std::string& cn,
     bool frv, const Codec& c) :
-        transportFactory(tf), topologyId(0), codec(c), forceReturnValue(frv), flags(), cacheNameBytes(cn.begin(),cn.end())
+        transportFactory(tf), codec(c), forceReturnValue(frv), flags(), cacheNameBytes(cn.begin(),cn.end())
 {
+	if (transportFactory)
+	{
+	  topologyId=transportFactory->createTopologyId(cacheNameBytes);
+	}
 }
 
 PingOperation* OperationsFactory::newPingOperation(Transport& transport)
@@ -162,5 +166,12 @@ void OperationsFactory::setFlags(uint32_t f) {
     flags = f;
 }
 
-}}} // namespace infinispan::hotrod::operations
+CacheTopologyInfo infinispan::hotrod::operations::OperationsFactory::getCacheTopologyInfo() {
+	    	return transportFactory->getCacheTopologyInfo(cacheNameBytes);
+	    }
+
+}
+}
+} // namespace infinispan::hotrod::operations
+
 

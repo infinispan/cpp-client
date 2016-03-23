@@ -51,7 +51,7 @@ public class Configuration {
          boolean pingOnStartup, String protocolVersion, List<ServerConfiguration> servers, int socketTimeout, SslConfiguration ssl, boolean tcpNoDelay,
          Class<? extends TransportFactory> transportFactory, int valueSizeEstimate, int maxRetries) {
       this.jniConfiguration = new org.infinispan.client.hotrod.jni.Configuration(protocolVersion, connectionPool.getJniConnectionPoolConfiguration(),
-            connectionTimeout, forceReturnValues, keySizeEstimate, pingOnStartup, null, socketTimeout, ssl.getJniSslConfiguration(), tcpNoDelay,
+            connectionTimeout, forceReturnValues, keySizeEstimate,  null, socketTimeout, ssl.getJniSslConfiguration(), tcpNoDelay,
             valueSizeEstimate, maxRetries);
       this.asyncExecutorFactory = asyncExecutorFactory;
       this.balancingStrategy = balancingStrategy;
@@ -68,7 +68,7 @@ public class Configuration {
          boolean pingOnStartup, String protocolVersion, List<ServerConfiguration> servers, int socketTimeout, SslConfiguration ssl, boolean tcpNoDelay,
          Class<? extends TransportFactory> transportFactory, int valueSizeEstimate, int maxRetries) {
       this.jniConfiguration = new org.infinispan.client.hotrod.jni.Configuration(protocolVersion, connectionPool.getJniConnectionPoolConfiguration(),
-            connectionTimeout, forceReturnValues, keySizeEstimate, pingOnStartup, null, socketTimeout, ssl.getJniSslConfiguration(), tcpNoDelay,
+            connectionTimeout, forceReturnValues, keySizeEstimate, null, socketTimeout, ssl.getJniSslConfiguration(), tcpNoDelay,
             valueSizeEstimate, maxRetries);
       this.asyncExecutorFactory = asyncExecutorFactory;
       this.balancingStrategy = balancingStrategy;
@@ -129,7 +129,7 @@ public class Configuration {
    }
 
    public boolean pingOnStartup() {
-      return this.jniConfiguration.isPingOnStartup();
+      return true;
    }
 
    public String protocolVersion() {

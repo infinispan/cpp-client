@@ -23,7 +23,7 @@ class ReplaceOperation : public AbstractKeyValueOperation<std::vector<char>>
             std::shared_ptr<transport::TransportFactory> transportFactory,
             const std::vector<char>& key,
             const std::vector<char>& cacheName,
-            IntWrapper& topologyId,
+            Topology& topologyId,
             uint32_t flags,
             const std::vector<char>& value,
             uint32_t lifespan,

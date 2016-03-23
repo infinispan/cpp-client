@@ -8,6 +8,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import org.infinispan.client.hotrod.CacheTopologyInfo;
 import org.infinispan.commons.util.concurrent.NotifyingFuture;
 
 public interface RemoteCache<K, V> {
@@ -141,4 +142,6 @@ public interface RemoteCache<K, V> {
     NotifyingFuture<Boolean> replaceWithVersionAsync(K key, V newValue, long version, int lifespanSeconds, int maxIdleSeconds);
     
     NotifyingFuture<Boolean> removeWithVersionAsync(K key, long version);
+    
+    CacheTopologyInfo getCacheTopologyInfo();
 }
