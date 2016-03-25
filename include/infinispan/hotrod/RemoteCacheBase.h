@@ -45,6 +45,7 @@ protected:
     HR_EXTERN void  base_keySet(int scope, portable::vector<void*> &sbuf);
     HR_EXTERN void  base_stats(portable::map<portable::string,portable::string> &sbuf);
     HR_EXTERN void  base_clear();
+    HR_EXTERN uint64_t  base_size();
     HR_EXTERN void  base_withFlags(Flag flag);
     HR_EXTERN char *base_execute(RemoteCacheBase& remoteCacheBase, std::string cmdName,  const std::map<std::string,std::string>& args);
     HR_EXTERN CacheTopologyInfo base_getCacheTopologyInfo();

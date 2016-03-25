@@ -17,6 +17,7 @@
 #include "hotrod/impl/operations/BulkGetKeysOperation.h"
 #include "hotrod/impl/operations/StatsOperation.h"
 #include "hotrod/impl/operations/ClearOperation.h"
+#include "hotrod/impl/operations/SizeOperation.h"
 #include "hotrod/impl/operations/FaultTolerantPingOperation.h"
 #include "hotrod/impl/transport/TransportFactory.h"
 #include "hotrod/impl/protocol/CodecFactory.h"
@@ -173,9 +174,9 @@ void RemoteCacheImpl::getBulk(RemoteCacheBase& remoteCacheBase, portable::map<vo
     getBulk(remoteCacheBase, 0, map);
 }
 
-void RemoteCacheImpl::getBulk(RemoteCacheBase& remoteCacheBase, int size, portable::map<void*, void*> &map) {
+void RemoteCacheImpl::getBulk(RemoteCacheBase& remoteCacheBase, int isize, portable::map<void*, void*> &map) {
     assertRemoteCacheManagerIsStarted();
-    std::unique_ptr<BulkGetOperation> gco(operationsFactory->newBulkGetOperation(size));
+    std::unique_ptr<BulkGetOperation> gco(operationsFactory->newBulkGetOperation(isize));
     std::map<std::vector<char>,std::vector<char>> res = gco->execute();
     portable::map<void *, void *> tmpMap(res, KeyUnmarshallerFtor(remoteCacheBase), ValueUnmarshallerFtor(remoteCacheBase));
     map = tmpMap.move();
@@ -200,6 +201,12 @@ void RemoteCacheImpl::clear() {
     assertRemoteCacheManagerIsStarted();
     std::unique_ptr<ClearOperation> gco(operationsFactory->newClearOperation());
     gco->execute();
+}
+
+uint64_t RemoteCacheImpl::size() {
+    assertRemoteCacheManagerIsStarted();
+    std::unique_ptr<SizeOperation> szo(operationsFactory->newSizeOperation());
+    return szo->execute();
 }
 
 const char *RemoteCacheImpl::getName() const {

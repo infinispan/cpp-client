@@ -39,8 +39,10 @@ class BulkGetOperation;
 class BulkGetKeysOperation;
 class StatsOperation;
 class ClearOperation;
+class SizeOperation;
 class FaultTolerantPingOperation;
 class ExecuteCmdOperation;
+
 
 class OperationsFactory
 {
@@ -84,6 +86,8 @@ class OperationsFactory
     StatsOperation* newStatsOperation();
 
     ClearOperation* newClearOperation();
+
+    SizeOperation* newSizeOperation();
 
     ExecuteCmdOperation* newExecuteCmdOperation(
         const std::vector<char>& cmdName, const portable::map<std::vector<char>,std::vector<char>>& values);

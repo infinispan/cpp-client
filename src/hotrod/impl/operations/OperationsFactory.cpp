@@ -17,6 +17,7 @@
 #include "hotrod/impl/operations/BulkGetKeysOperation.h"
 #include "hotrod/impl/operations/StatsOperation.h"
 #include "hotrod/impl/operations/ClearOperation.h"
+#include "hotrod/impl/operations/SizeOperation.h"
 #include "hotrod/impl/operations/FaultTolerantPingOperation.h"
 #include "hotrod/impl/operations/ExecuteCmdOperation.h"
 #include "infinispan/hotrod/Flag.h"
@@ -132,6 +133,11 @@ StatsOperation* OperationsFactory::newStatsOperation() {
 
 ClearOperation* OperationsFactory::newClearOperation() {
     return new ClearOperation(
+        codec, transportFactory, cacheNameBytes, topologyId, getFlags());
+}
+
+SizeOperation* OperationsFactory::newSizeOperation() {
+    return new SizeOperation(
         codec, transportFactory, cacheNameBytes, topologyId, getFlags());
 }
 

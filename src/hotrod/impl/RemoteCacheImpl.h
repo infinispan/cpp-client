@@ -35,6 +35,7 @@ public:
     void  keySet(RemoteCacheBase& rcb, int scope, portable::vector<void*> &result);
     void  stats(portable::map<portable::string,portable::string> &stats);
     void  clear();
+    uint64_t size();
     std::vector<char> execute(RemoteCacheBase& /*remoteCacheBase*/, std::vector<char> cmdName, const portable::map<std::vector<char>,std::vector<char>>& args);
 
     operations::PingResult ping();

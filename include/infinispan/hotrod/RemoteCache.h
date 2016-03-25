@@ -638,15 +638,7 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      *\return number of entries in cache
      */
     uint64_t size() {
-        portable::map<portable::string,portable::string> statistics;
-        base_stats(statistics);
-        const portable::pair<portable::string,portable::string> *p
-            = statistics.get("currentNumberOfEntries", portable::string::cmp);        
-        if (p) {
-            return strtoull(p->value.c_string(), 0, 10);            
-        } else {
-            return -1;
-        }
+    	return base_size();
     }
     /**
      *Returns true if and only if this cache has no entries.
