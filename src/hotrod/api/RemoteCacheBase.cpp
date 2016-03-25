@@ -104,6 +104,11 @@ void RemoteCacheBase::base_clear()
     IMPL->clear();
 }
 
+uint64_t RemoteCacheBase::base_size()
+{
+    return IMPL->size();
+}
+
 void RemoteCacheBase::base_ping() {
     IMPL->ping();
 }

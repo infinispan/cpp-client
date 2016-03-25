@@ -198,6 +198,7 @@ else(DEFINED HOTROD_PREBUILT_LIB_DIR)
       src/hotrod/impl/operations/BulkGetKeysOperation.cpp
       src/hotrod/impl/operations/StatsOperation.cpp
       src/hotrod/impl/operations/ClearOperation.cpp
+      src/hotrod/impl/operations/SizeOperation.cpp
       src/hotrod/impl/operations/FaultTolerantPingOperation.cpp
       src/hotrod/impl/operations/ExecuteCmdOperation.cpp
       src/hotrod/impl/protocol/HeaderParams.cpp

@@ -66,6 +66,8 @@ uint8_t HeaderParams::toOpRespCode(uint8_t code) {
         return HotRodConstants::GET_WITH_VERSION_RESPONSE;
     case HotRodConstants::CLEAR_REQUEST:
         return HotRodConstants::CLEAR_RESPONSE;
+    case HotRodConstants::SIZE_REQUEST:
+        return HotRodConstants::SIZE_RESPONSE;
     case HotRodConstants::STATS_REQUEST:
         return HotRodConstants::STATS_RESPONSE;
     case HotRodConstants::PING_REQUEST:
