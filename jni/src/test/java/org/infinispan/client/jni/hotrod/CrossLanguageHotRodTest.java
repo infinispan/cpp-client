@@ -197,9 +197,18 @@ public class CrossLanguageHotRodTest extends SingleCacheManagerTest {
       } catch (Exception e) {
          // This should throw an exception
       }
-      Constructor<?> ctor = javaRCMClass.getConstructor(new Class[] { String.class });
+      Class<?> javaConfigurationBuilderClass = ucl
+            .loadClass("org.infinispan.client.hotrod.configuration.ConfigurationBuilder");
+      Method addServersMethod = javaConfigurationBuilderClass.getMethod("addServers", new Class[] { String.class });
+      Method buildMethod = javaConfigurationBuilderClass.getMethod("build", new Class[] {});
+      Object javaConfigurationBuilderObject = javaConfigurationBuilderClass.getConstructor().newInstance();
+      javaConfigurationBuilderObject = addServersMethod.invoke(javaConfigurationBuilderObject,
+            "localhost:" + hotrodServer.getPort());
+      Class<?> javaConfigurationClass = ucl.loadClass("org.infinispan.client.hotrod.configuration.Configuration");
+      Object javaConfigurationObject = buildMethod.invoke(javaConfigurationBuilderObject);
+      Constructor<?> ctor = javaRCMClass.getConstructor(new Class[] { javaConfigurationClass });
+      javaRemoteCacheManagerObject = ctor.newInstance(javaConfigurationObject);
       javaGetCacheMethod = javaRCMClass.getDeclaredMethod("getCache", new Class[] { String.class });
-      javaRemoteCacheManagerObject = ctor.newInstance("localhost:" + hotrodServer.getPort());
 
       javaCacheObject = javaGetCacheMethod.invoke(javaRemoteCacheManagerObject, DEFAULT_CACHE);
       Class<?> javaRCClass = ucl.loadClass("org.infinispan.client.hotrod.RemoteCache");
@@ -665,8 +674,11 @@ public class CrossLanguageHotRodTest extends SingleCacheManagerTest {
       Map<String, String> statsMap = (Map<String, String>) javaGetStatsMapMethod.invoke(stats);
 
       for (String key : statsMap.keySet()) {
-         assertTrue(cppCache.stats().has_key(key));
-         log.info("Key: " + key + "; Value: " + cppGetLongCacheStat(cppCache, key));
+         // BZ-1278934
+         if (!key.startsWith("global")) {
+            assertTrue(cppCache.stats().has_key(key));
+            log.info("Key: " + key + "; Value: " + cppGetLongCacheStat(cppCache, key));
+         }
       }
 
       assertEquals(0, cppGetLongCacheStat(cppCache, "currentNumberOfEntries"));
