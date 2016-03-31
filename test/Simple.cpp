@@ -421,9 +421,49 @@ int basicTest(RemoteCacheManager &cacheManager, RemoteCache<K,V> &cache) {
 }
 
 int main(int argc, char** argv) {
-    // Call basic test for every marshaller and every codec
 
-    int result;
+    int result=0;
+	std::cout << "Tests for CacheManager" << std::endl;
+    {
+        ConfigurationBuilder builder;
+        builder.addServer().host(argc > 1 ? argv[1] : "127.0.0.1").port(argc > 2 ? atoi(argv[2]) : 11222).protocolVersion(Configuration::PROTOCOL_VERSION_24);
+//        builder.balancingStrategyProducer(transport::MyRoundRobinBalancingStrategy::newInstance);
+        builder.balancingStrategyProducer(nullptr);
+        RemoteCacheManager cacheManager(builder.build(), false);
+        RemoteCache<std::string, std::string> &cachef1 = cacheManager.getCache<std::string, std::string>(false);
+        RemoteCache<std::string, std::string> &cachet1 = cacheManager.getCache<std::string, std::string>(true);
+        RemoteCache<std::string, std::string> &cachenf1 = cacheManager.getCache<std::string, std::string>("namedCache",false);
+        RemoteCache<std::string, std::string> &cachent1 = cacheManager.getCache<std::string, std::string>("namedCache",true);
+
+        RemoteCache<std::string, std::string> &cachet2 = cacheManager.getCache<std::string, std::string>(true);
+        RemoteCache<std::string, std::string> &cachef2 = cacheManager.getCache<std::string, std::string>(false);
+        RemoteCache<std::string, std::string> &cachenf2 = cacheManager.getCache<std::string, std::string>("namedCache",false);
+        RemoteCache<std::string, std::string> &cachent2 = cacheManager.getCache<std::string, std::string>("namedCache",true);
+        if (&cachef1 != &cachef2)
+        {
+            std::cerr << "Got two different cache instances(false): " << &cachef1 << "   " << &cachef2 << std::endl;
+            result=1;
+        }
+        if (&cachet1 != &cachet2)
+        {
+            std::cerr << "Got two different cache instances(false): " << &cachet1 << "   " << &cachet2 << std::endl;
+            result=1;
+        }
+        if (&cachef1 != &cachef2)
+        {
+            std::cerr << "Got two different cache instances(false): " << &cachenf1 << "   " << &cachenf2 << std::endl;
+            result=1;
+        }
+        if (&cachef1 != &cachef2)
+        {
+            std::cerr << "Got two different cache instances(false): " << &cachent1 << "   " << &cachent2 << std::endl;
+            result=1;
+        }
+    }
+    if (result!=0)
+    	return result;
+    std::cout << "PASS: Tests for CacheManager" << std::endl;
+    // Call basic test for every marshaller and every codec
     std::cout << "Basic Test with BasicMarshaller" << std::endl;
     {
         ConfigurationBuilder builder;

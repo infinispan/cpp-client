@@ -766,10 +766,6 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
     portable::counting_ptr<Marshaller<K> > keyMarshaller;
     portable::counting_ptr<Marshaller<V> > valueMarshaller;
 
-    // DEPRECATED: Library code must not use these fields
-    portable::counting_ptr<portable::counted_wrapper<std::shared_ptr<Marshaller<K> > > > keyMarshallerPtr;
-    portable::counting_ptr<portable::counted_wrapper<std::shared_ptr<Marshaller<V> > > > valueMarshallerPtr;
-
   friend class RemoteCacheManager;
 };
 

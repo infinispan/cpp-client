@@ -1,5 +1,11 @@
 #!/bin/bash
 
+if [ "$INFINISPAN_VERSION" == "" ]
+  then
+  echo Please define INFINISPAN_VERSION variable
+  exit 1
+fi
+
 BUILD_DIR=build
 
 wget -N http://downloads.jboss.org/infinispan/${INFINISPAN_VERSION}/infinispan-server-${INFINISPAN_VERSION}-bin.zip 
