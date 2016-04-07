@@ -70,10 +70,11 @@ public class JniTest implements IMethodSelector {
             // omitting RoundRobin* tests
             ServerErrorTest.class,
             ServerRestartTest.class,
-            ServerShutdownTest.class,
+            SizeTest.class,
             SocketTimeoutErrorTest.class,
             SegmentOwnershipLocalTest.class,
-            SegmentOwnershipDistTest.class
+            SegmentOwnershipDistTest.class,
+            ServerShutdownTest.class
             // SslTest.class,                        // SSL not implemented
             // TransportObjectFactoryTest.class,     // omitting
       });
@@ -96,7 +97,8 @@ public class JniTest implements IMethodSelector {
             "HotRodIntegrationTest.testGetWithMetadata",
             "RemoteCacheManagerTest.testGetUndefinedCache",
             "ServerShutdownTest.testServerShutdownWithConnectedClient",
-            "ServerShutdownTest.testServerShutdownWithoutConnectedClient"
+            "ServerShutdownTest.testServerShutdownWithoutConnectedClient",
+            "SizeTest.testPersistentDistributedCacheSize"
       ));
       Set<String> expectedSkips = Collections.emptySet();
 
