@@ -20,6 +20,7 @@
 #include "hotrod/impl/operations/SizeOperation.h"
 #include "hotrod/impl/operations/FaultTolerantPingOperation.h"
 #include "hotrod/impl/operations/ExecuteCmdOperation.h"
+#include "hotrod/impl/operations/QueryOperation.h"
 #include "infinispan/hotrod/Flag.h"
 
 #include <cstring>
@@ -154,6 +155,11 @@ ExecuteCmdOperation* OperationsFactory::newExecuteCmdOperation(
         topologyId, getFlags(), cmdName, values);
 }
 
+QueryOperation* OperationsFactory::newQueryOperation(const QueryRequest& qr)
+{
+	return new QueryOperation(codec, transportFactory, cacheNameBytes,
+	        topologyId, getFlags(), qr);
+}
 
 uint32_t OperationsFactory::getFlags() {
     uint32_t result = flags;
