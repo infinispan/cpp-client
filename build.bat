@@ -37,12 +37,14 @@ set "build_dir=build_win%arch%"
 if "%arch%" == "32" (
   set "JAVA_HOME=%JAVA_HOME_32%"
   set "PROTOBUF_LIBRARY=%PROTOBUF_LIBRARY_32%"
+  set "PROTOBUF_LIBRARY_DLL=%PROTOBUF_LIBRARY_DLL_32%"
   set "full_generator=%~1"
 )
 
 if "%arch%" == "64" (
   set "JAVA_HOME=%JAVA_HOME_64%"
   set "PROTOBUF_LIBRARY=%PROTOBUF_LIBRARY_64%"
+  set "PROTOBUF_LIBRARY_DLL=%PROTOBUF_LIBRARY_DLL_64%"
   set "full_generator=%~1 Win64"
 )
 
@@ -53,7 +55,7 @@ if exist %build_dir% rmdir %build_dir% /s /q
 mkdir %build_dir%
 cd %build_dir%
 
-cmake -G "%full_generator%" -DCPACK_PACKAGE_VERSION_MAJOR=%version.1major% -DCPACK_PACKAGE_VERSION_MINOR=%version.2minor% -DCPACK_PACKAGE_VERSION_PATCH="%version.3micro%.%version.4qualifier%" -DSWIG_DIR=%SWIG_DIR% -DSWIG_EXECUTABLE=%SWIG_EXECUTABLE% -DMVN_PROGRAM=%MVN_PROGRAM% -DPROTOBUF_LIBRARY="%PROTOBUF_LIBRARY%" -DPROTOBUF_INCLUDE_DIR="%PROTOBUF_INCLUDE_DIR%" -DPROTOBUF_PROTOC_EXECUTABLE="%PROTOBUF_PROTOC_EXECUTABLE%" ..
+cmake -G "%full_generator%" -DCPACK_PACKAGE_VERSION_MAJOR=%version.1major% -DCPACK_PACKAGE_VERSION_MINOR=%version.2minor% -DCPACK_PACKAGE_VERSION_PATCH="%version.3micro%.%version.4qualifier%" -DSWIG_DIR=%SWIG_DIR% -DSWIG_EXECUTABLE=%SWIG_EXECUTABLE% -DMVN_PROGRAM=%MVN_PROGRAM% -DPROTOBUF_LIBRARY="%PROTOBUF_LIBRARY%" -DPROTOBUF_LIBRARY_DLL="%PROTOBUF_LIBRARY_DLL%" -DPROTOBUF_INCLUDE_DIR="%PROTOBUF_INCLUDE_DIR%" -DPROTOBUF_PROTOC_EXECUTABLE="%PROTOBUF_PROTOC_EXECUTABLE%" ..
 if %errorlevel% neq 0 goto fail
 
 cmake --build . --config RelWithDebInfo

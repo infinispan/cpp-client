@@ -80,6 +80,8 @@ uint8_t HeaderParams::toOpRespCode(uint8_t code) {
         return HotRodConstants::BULK_GET_KEYS_RESPONSE;
     case HotRodConstants::EXEC_REQUEST:
         return HotRodConstants::EXEC_RESPONSE;
+    case HotRodConstants::QUERY_REQUEST:
+        return HotRodConstants::QUERY_RESPONSE;
     default:
     	std::ostringstream msg;
     	msg << "Unknown operation code: " << opCode;

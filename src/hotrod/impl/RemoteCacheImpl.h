@@ -6,6 +6,9 @@
 #include "hotrod/impl/MetadataValueImpl.h"
 #include "hotrod/impl/VersionedValueImpl.h"
 #include "hotrod/impl/operations/PingOperation.h"
+#include "query.pb.h"
+
+using namespace org::infinispan::query::remote::client;
 
 namespace infinispan {
 namespace hotrod {
@@ -37,7 +40,7 @@ public:
     void  clear();
     uint64_t size();
     std::vector<char> execute(RemoteCacheBase& /*remoteCacheBase*/, std::vector<char> cmdName, const portable::map<std::vector<char>,std::vector<char>>& args);
-
+    QueryResponse query(const QueryRequest & qr);
     operations::PingResult ping();
     CacheTopologyInfo getCacheTopologyInfo();
     void init(operations::OperationsFactory* operationsFactory);

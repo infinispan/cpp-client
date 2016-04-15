@@ -6,6 +6,9 @@
 
 #include <set>
 #include <infinispan/hotrod/portable.h>
+#include <query.pb.h>
+
+using namespace org::infinispan::query::remote::client;
 
 namespace infinispan {
 namespace hotrod {
@@ -42,6 +45,7 @@ class ClearOperation;
 class SizeOperation;
 class FaultTolerantPingOperation;
 class ExecuteCmdOperation;
+class QueryOperation;
 
 
 class OperationsFactory
@@ -91,6 +95,8 @@ class OperationsFactory
 
     ExecuteCmdOperation* newExecuteCmdOperation(
         const std::vector<char>& cmdName, const portable::map<std::vector<char>,std::vector<char>>& values);
+
+    QueryOperation* newQueryOperation(const QueryRequest& qr);
 
     FaultTolerantPingOperation* newFaultTolerantPingOperation();
 
