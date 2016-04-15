@@ -24,6 +24,8 @@
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/extension_set.h>
 #include <google/protobuf/unknown_field_set.h>
+#include <infinispan/hotrod/ImportExport.h>
+
 // @@protoc_insertion_point(includes)
 
 namespace org {
@@ -35,7 +37,7 @@ void  protobuf_AddDesc_org_2finfinispan_2fprotostream_2fmessage_2dwrapping_2epro
 void protobuf_AssignDesc_org_2finfinispan_2fprotostream_2fmessage_2dwrapping_2eproto();
 void protobuf_ShutdownFile_org_2finfinispan_2fprotostream_2fmessage_2dwrapping_2eproto();
 
-class WrappedMessage;
+class HR_EXTERN WrappedMessage;
 
 // ===================================================================
 

@@ -24,6 +24,7 @@
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/extension_set.h>
 #include <google/protobuf/unknown_field_set.h>
+#include <infinispan/hotrod/ImportExport.h>
 // @@protoc_insertion_point(includes)
 
 namespace infinispan {
@@ -35,7 +36,7 @@ void  protobuf_AddDesc_infinispan_2fhotrod_2fprotobuf_2fbase_5ftypes_2eproto();
 void protobuf_AssignDesc_infinispan_2fhotrod_2fprotobuf_2fbase_5ftypes_2eproto();
 void protobuf_ShutdownFile_infinispan_2fhotrod_2fprotobuf_2fbase_5ftypes_2eproto();
 
-class base_types;
+class HR_EXTERN base_types;
 
 // ===================================================================
 

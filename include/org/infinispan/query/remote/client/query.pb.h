@@ -25,6 +25,7 @@
 #include <google/protobuf/extension_set.h>
 #include <google/protobuf/unknown_field_set.h>
 #include "org/infinispan/protostream/message-wrapping.pb.h"
+#include "infinispan/hotrod/ImportExport.h"
 // @@protoc_insertion_point(includes)
 
 namespace org {
@@ -38,11 +39,11 @@ void  protobuf_AddDesc_org_2finfinispan_2fquery_2fremote_2fclient_2fquery_2eprot
 void protobuf_AssignDesc_org_2finfinispan_2fquery_2fremote_2fclient_2fquery_2eproto();
 void protobuf_ShutdownFile_org_2finfinispan_2fquery_2fremote_2fclient_2fquery_2eproto();
 
-class QueryRequest;
-class QueryRequest_NamedParameter;
-class QueryResponse;
-class FilterResult;
-class ContinuousQueryResult;
+class HR_EXPORT QueryRequest;
+class HR_EXPORT QueryRequest_NamedParameter;
+class HR_EXPORT QueryResponse;
+class HR_EXPORT FilterResult;
+class HR_EXPORT ContinuousQueryResult;
 
 // ===================================================================
 
