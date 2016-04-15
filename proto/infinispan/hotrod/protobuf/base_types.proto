@@ -1,0 +1,6 @@
+package infinispan.hotrod.protobuf;
+message base_types {
+    optional int64 i64  = 3;
+    optional int32 i32  = 5;                                                                                                                                                                                                                                                   
+    optional string str = 9;                                                                                                                                                                                                                                                   
+}
