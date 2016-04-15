@@ -42,6 +42,9 @@ endif ("${CMAKE_BINARY_DIR}" STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}")
 
 include_directories ("${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
+find_package(Protobuf REQUIRED)
+include_directories(${PROTOBUF_INCLUDE_DIRS})
+
 # MacOS has a bunch of differences in build tools and process and so we have to turn some things
 # off there by default (for GCC; LLVM will need flags re-evaluated)
 if (APPLE)
@@ -78,11 +81,11 @@ if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   set (COMPILER_FLAGS "-fvisibility=hidden -fvisibility-inlines-hidden -std=c++11")
   if (CMAKE_COMPILER_IS_GNUCXX)
   set (WARNING_FLAGS
-        "${WERROR} -pedantic -Wall -Wextra -Wno-shadow -Wpointer-arith -Wcast-qual -Wcast-align -Wno-long-long -Wvolatile-register-var -Winvalid-pch -Wno-system-headers -Woverloaded-virtual -Wshadow -Wno-variadic-macros")
+        "${WERROR} -pedantic -Wall -Wextra -Wno-shadow -Wpointer-arith -Wcast-qual -Wcast-align -Wno-long-long -Wvolatile-register-var -Winvalid-pch -Wno-system-headers -Woverloaded-virtual -Wno-variadic-macros -Wno-error=shadow")
   endif (CMAKE_COMPILER_IS_GNUCXX)
   if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   set (WARNING_FLAGS
-        "${WERROR} -pedantic -Wall -Wextra -Wno-shadow -Wpointer-arith -Wcast-qual -Wcast-align -Wno-long-long -Wvolatile-register-var -Winvalid-pch -Wno-system-headers -Woverloaded-virtual -Wshadow -Wno-variadic-macros -Wno-error-unused-parameter -Wno-error-cast-align -Wno-error-string-plus-int")
+        "${WERROR} -pedantic -Wall -Wextra -Wno-shadow -Wpointer-arith -Wcast-qual -Wcast-align -Wno-long-long -Wvolatile-register-var -Winvalid-pch -Wno-system-headers -Woverloaded-virtual -Wno-variadic-macros -Wno-error-unused-parameter -Wno-error-cast-align -Wno-error-string-plus-int")
   endif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   if (ENABLE_UNDEFINED_ERROR)
     set (CATCH_UNDEFINED "-Wl,--no-undefined")
@@ -125,6 +128,10 @@ if (ENABLE_VALGRIND)
   configure_file ("${PROJECT_SOURCE_DIR}/CTestCustom.cmake" "${PROJECT_BINARY_DIR}/CTestCustom.cmake" COPYONLY)
 endif (ENABLE_VALGRIND)
 
+set_source_files_properties(message-wrapping.pb.cc PROPERTIES COMPILE_FLAGS -Wno-error=shadow)
+set_source_files_properties(query.pb.cc PROPERTIES COMPILE_FLAGS -Wno-error=shadow)
+set_source_files_properties(base_types.pb.cc PROPERTIES COMPILE_FLAGS -Wno-error=shadow)
+
 if (ENABLE_INTERNAL_TESTING)
 set (internal_test_sources
   src/hotrod/test/Unit.cpp
@@ -144,6 +151,7 @@ else(HOTROD_WINAPI)
 endif(HOTROD_WINAPI)
 
 configure_file(src/hotrod/impl/Version.cpp.in ${CMAKE_BINARY_DIR}/Version.cpp @ONLY)
+file(COPY ${CMAKE_SOURCE_DIR}/test/query_proto DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
 
 if(DEFINED HOTROD_PREBUILT_LIB_DIR)
 
@@ -171,6 +179,9 @@ else(DEFINED HOTROD_PREBUILT_LIB_DIR)
       src/hotrod/api/RemoteCacheManager.cpp
       src/hotrod/api/RemoteCacheBase.cpp
       src/hotrod/api/exceptions.cpp
+      src/hotrod/api/message-wrapping.pb.cc
+      src/hotrod/api/query.pb.cc
+      src/hotrod/api/base_types.pb.cc
       src/hotrod/impl/configuration/Configuration.cpp
       src/hotrod/impl/configuration/ConfigurationBuilder.cpp
       src/hotrod/impl/configuration/ConnectionPoolConfiguration.cpp
@@ -183,6 +194,7 @@ else(DEFINED HOTROD_PREBUILT_LIB_DIR)
       src/hotrod/impl/consistenthash/ConsistentHashV2.cpp
       src/hotrod/impl/consistenthash/SegmentConsistentHash.cpp
       src/hotrod/impl/operations/OperationsFactory.cpp
+      src/hotrod/impl/operations/QueryOperation.cpp
       src/hotrod/impl/operations/PingOperation.cpp
       src/hotrod/impl/operations/GetOperation.cpp
       src/hotrod/impl/operations/PutOperation.cpp
@@ -229,7 +241,7 @@ else(DEFINED HOTROD_PREBUILT_LIB_DIR)
     
     # Build a shared library
     add_library (hotrod SHARED ${library_sources})
-    target_link_libraries (hotrod ${platform_libs})
+    target_link_libraries (hotrod ${platform_libs} ${PROTOBUF_LIBRARIES})
     
     if (WIN32 AND NOT CMAKE_SIZEOF_VOID_P MATCHES "8")
         set (OUTPUT_NAME_SUFFIX "32")
@@ -255,14 +267,29 @@ set_property(TARGET simple PROPERTY CXX_STANDARD 11)
 set_property(TARGET simple PROPERTY CXX_STANDARD_REQUIRED ON)
 set_property(TARGET simple PROPERTY INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/include")
 set_target_properties (simple PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS}")
-target_link_libraries (simple hotrod)
+target_link_libraries (simple hotrod ${platform_libs} ${PROTOBUF_LIBRARIES})
 
 add_executable (simple-static test/Simple.cpp)
 set_property(TARGET simple-static PROPERTY CXX_STANDARD 11)
 set_property(TARGET simple-static PROPERTY CXX_STANDARD_REQUIRED ON)
 set_property(TARGET simple-static PROPERTY INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/include")
 set_target_properties (simple-static PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS} ${STATIC_FLAGS}")
-target_link_libraries (simple-static hotrod-static ${platform_libs})
+target_link_libraries (simple-static hotrod-static ${platform_libs} ${PROTOBUF_LIBRARIES})
+
+add_executable (queryTest test/QueryTest.cpp test/query_proto/addressbook.pb.cc test/query_proto/bank.pb.cc)
+set_property(TARGET queryTest PROPERTY CXX_STANDARD 11)
+set_property(TARGET queryTest PROPERTY CXX_STANDARD_REQUIRED ON)
+set_property(TARGET queryTest PROPERTY INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/include")
+set_target_properties (queryTest PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS}")
+target_link_libraries (queryTest hotrod ${platform_libs} ${PROTOBUF_LIBRARIES})
+
+add_executable (queryTest-static test/QueryTest.cpp test/query_proto/addressbook.pb.cc test/query_proto/bank.pb.cc)
+set_property(TARGET queryTest-static PROPERTY CXX_STANDARD 11)
+set_property(TARGET queryTest-static PROPERTY CXX_STANDARD_REQUIRED ON)
+set_property(TARGET queryTest-static PROPERTY INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/include")
+set_target_properties (queryTest-static PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS} ${STATIC_FLAGS}")
+target_link_libraries (queryTest-static hotrod-static ${platform_libs} ${PROTOBUF_LIBRARIES})
+
 
 if (ENABLE_INTERNAL_TESTING)
     add_executable (unittest test/Unit.cpp)
@@ -271,7 +298,7 @@ if (ENABLE_INTERNAL_TESTING)
 
     add_executable (unittest-static test/Unit.cpp)
     set_target_properties (unittest-static PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS} ${STATIC_FLAGS}")
-    target_link_libraries (unittest-static hotrod-static ${platform_libs})
+    target_link_libraries (unittest-static hotrod-static ${platform_libs} ${PROTOBUF_LIBRARIES})
 endif (ENABLE_INTERNAL_TESTING)
 
 add_executable (itest test/InteractiveTest.cpp)
@@ -307,6 +334,8 @@ else (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.sh") AND (EXISTS "${HOTR
     add_test (probe_port ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/probe_port.py localhost 11222 60)
     add_test (simple simple)
     add_test (simple-static simple-static)
+    add_test (queryTest queryTest)
+    add_test (queryTest-static queryTest-static)
     add_test (stop_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py stop)
 endif (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.sh") AND (EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.bat")))
 

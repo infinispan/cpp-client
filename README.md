@@ -14,7 +14,8 @@ Build prerequisites:
 * Infinispan server distribution (located via JBOSS_HOME or cmake directive)
 * Java (any version compatible with the Infinispan distribution)
 * Python 2.6 or newer
-  
+* Protobuf 2.5.0 
+
 optional: Doxygen
 
 Components needed to use swig tests: 
