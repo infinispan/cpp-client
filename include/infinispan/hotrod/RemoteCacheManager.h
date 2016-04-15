@@ -238,7 +238,7 @@ public:
 					(RemoteCache<K, V> *) remoteCacheMap[key].get();
 			initCache(*rcache, name.c_str(), forceReturnValue);
 			rcache->keyMarshaller.reset(km, kd);
-			rcache->valueMarshaller.reset(km, kd);
+			rcache->valueMarshaller.reset(vm, vd);
 			return *rcache;
 		}
 		RemoteCache<K, V> *rcache =

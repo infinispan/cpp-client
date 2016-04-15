@@ -24,6 +24,7 @@
 #include "hotrod/impl/VersionedOperationResponse.h"
 #include "hotrod/impl/MetadataValueImpl.h"
 #include "hotrod/impl/operations/ExecuteCmdOperation.h"
+#include "hotrod/impl/operations/QueryOperation.h"
 
 #include <iostream>
 
@@ -244,6 +245,11 @@ std::vector<char> RemoteCacheImpl::execute(RemoteCacheBase& /*remoteCacheBase*/,
     std::unique_ptr<ExecuteCmdOperation> op(operationsFactory->newExecuteCmdOperation(cmdNameBytes, args));
     return op->execute();
 
+}
+
+QueryResponse RemoteCacheImpl::query(const QueryRequest &qr) {
+	std::unique_ptr<QueryOperation> op(operationsFactory->newQueryOperation(qr));
+	return op->execute();
 }
 
 CacheTopologyInfo RemoteCacheImpl::getCacheTopologyInfo() {

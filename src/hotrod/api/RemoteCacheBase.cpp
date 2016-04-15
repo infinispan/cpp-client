@@ -3,6 +3,7 @@
 #include "infinispan/hotrod/RemoteCacheBase.h"
 #include "infinispan/hotrod/RemoteCacheManager.h"
 #include "hotrod/impl/RemoteCacheImpl.h"
+#include "query.pb.h"
 
 #include <iostream>
 
@@ -134,6 +135,12 @@ char *RemoteCacheBase::base_execute(RemoteCacheBase& remoteCacheBase, std::strin
     std::copy(resBytes.begin(),resBytes.end(),result);
 	return result;
 }
+
+QueryResponse RemoteCacheBase::base_query(const QueryRequest &qr)
+{
+	return IMPL->query(qr);
+}
+
 CacheTopologyInfo RemoteCacheBase::base_getCacheTopologyInfo() {
 	TRACE("Calling RemoteCache for getCacheTopologyInfo");
 	CacheTopologyInfo c=IMPL->getCacheTopologyInfo();

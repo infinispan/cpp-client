@@ -20,7 +20,7 @@ template <class T> class JBasicMarshaller : public infinispan::hotrod::Marshalle
 class JBasicMarshallerHelper {
 public:
 	// Type managed: SMALL_STRING, INTEGER
-    enum  {MARSHALL_VERSION = 0x03, SMALL_STRING = 0x3e, INTEGER=0x4b};
+    enum  {MARSHALL_VERSION = 0x03, SMALL_STRING = 0x3e, MEDIUM_STRING = 0x3f, INTEGER=0x4b};
     static void noRelease(std::vector<char>*) { /* nothing allocated, nothing to release */ }
     static void release(std::vector<char> *buf) {
         delete buf->data();
@@ -31,7 +31,7 @@ public:
     template <> std::string JBasicMarshallerHelper::unmarshall(char *b) {
         if (b[0]!=JBasicMarshallerHelper::MARSHALL_VERSION)
             throw Exception("JBasicMarshallerHelper: bad version");
-        if (b[1]!=JBasicMarshallerHelper::SMALL_STRING)
+        if ( (b[1]!=JBasicMarshallerHelper::SMALL_STRING) && (b[1]!=JBasicMarshallerHelper::MEDIUM_STRING) )
             throw Exception("JBasicMarshallerHelper: not a string");
         return std::string(b+3,b[2]);
     }
@@ -57,26 +57,66 @@ template <>
 class JBasicMarshaller<std::string> : public infinispan::hotrod::Marshaller<std::string> {
   public:
     void marshall(const std::string& s, std::vector<char>& b) {
-    	char* buf = new char[s.size()+3];
-    	// JBoss preamble
-    	buf[0] = JBasicMarshallerHelper::MARSHALL_VERSION;
-    	buf[1] = JBasicMarshallerHelper::SMALL_STRING;
-    	buf[2]=s.size();
-    	memcpy(buf+3,s.data(),s.size());
-        b.assign(buf, buf+s.size()+3);
-    }
+		if (s.size() <= 0x100) {
+		marshallSmall(s, b);
+		}
+		else
+			marshallMedium(s, b);
+		}
 
     std::string* unmarshall(const std::vector<char>& b) {
         std::string* s = new std::string(b.data()+3, b.size()-3);
         return s;
     }
 
-    static std::string addPreamble(std::string &s) {
-        std::string res("\x03\x3e");
-        res.append(1,s.size());
-        res.append(s);
+static std::string addPreamble(std::string &s) {
+    	std::string res;
+    	if (s.size()<0x100)
+    	{
+		  res = addPreambleSmall(s);
+    	}
+    	else
+    	{
+		  res = addPreambleMedium(s);
+    	}
         return res;
     }
+
+private:
+	static std::string addPreambleSmall(std::string& s) {
+		std::string res("\x03\x3e");
+		res.append(1, s.size());
+		res.append(s);
+		return res;
+	}
+	static std::string addPreambleMedium(std::string& s) {
+		std::string res("\x03\x3f");
+		res.append(1, s.size()>>8);
+		res.append(1, s.size()&& 0xff);
+		res.append(s);
+		return res;
+	}
+
+	void marshallSmall(const std::string& s, std::vector<char>& b) {
+		char* buf = new char[s.size() + 3];
+		// JBoss preamble
+		buf[0] = JBasicMarshallerHelper::MARSHALL_VERSION;
+			buf[1] = JBasicMarshallerHelper::SMALL_STRING;
+		buf[2] = s.size();
+		memcpy(buf + 3, s.data(), s.size());
+		b.assign(buf, buf + s.size() + 3);
+	}
+
+	void marshallMedium(const std::string& s, std::vector<char>& b) {
+		char* buf = new char[s.size() + 4];
+		// JBoss preamble
+		buf[1] = JBasicMarshallerHelper::MEDIUM_STRING;
+		buf[2] = s.size() >> 8;
+		buf[3] = s.size() & 0xff;
+
+		memcpy(buf + 4, s.data(), s.size());
+		b.assign(buf, buf + s.size() + 4);
+	}
 };
 
 template <>
