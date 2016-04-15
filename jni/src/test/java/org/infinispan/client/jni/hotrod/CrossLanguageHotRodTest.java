@@ -140,6 +140,8 @@ public class CrossLanguageHotRodTest extends SingleCacheManagerTest {
    private Method javaGetVersionMethod;
    private Method javaStatsMethod;
    private Method javaGetStatsMapMethod;
+   private Method javaAddServersMethod;
+   private Method javaConfBuildMethod;
 
    @Override
    protected EmbeddedCacheManager createCacheManager() throws Exception {
@@ -191,15 +193,21 @@ public class CrossLanguageHotRodTest extends SingleCacheManagerTest {
           };
 
       Class<?> javaRCMClass = ucl.loadClass("org.infinispan.client.hotrod.RemoteCacheManager");
+      Class javaConfClass = ucl.loadClass("org.infinispan.client.hotrod.configuration.Configuration");
+      Class javaConfBuildClass = ucl.loadClass("org.infinispan.client.hotrod.configuration.ConfigurationBuilder");
       try {
          javaRCMClass.getMethod("getJniManager");
          fail("Could not load Java Hot Rod Client RemoteCacheManager");
       } catch (Exception e) {
          // This should throw an exception
       }
-      Constructor<?> ctor = javaRCMClass.getConstructor(new Class[] { String.class });
+      Constructor<?> ctor = javaRCMClass.getConstructor(new Class[] { javaConfClass });
       javaGetCacheMethod = javaRCMClass.getDeclaredMethod("getCache", new Class[] { String.class });
-      javaRemoteCacheManagerObject = ctor.newInstance("localhost:" + hotrodServer.getPort());
+      javaAddServersMethod= javaConfBuildClass.getDeclaredMethod("addServers", new Class[] { String.class });
+      javaConfBuildMethod = javaConfBuildClass.getDeclaredMethod("build", null);
+      Object newInstance = javaConfBuildClass.getConstructor(null).newInstance();
+      Object invoke = javaAddServersMethod.invoke(newInstance, "localhost:"+hotrodServer.getPort());
+      javaRemoteCacheManagerObject = ctor.newInstance(javaConfBuildMethod.invoke(invoke));
 
       javaCacheObject = javaGetCacheMethod.invoke(javaRemoteCacheManagerObject, DEFAULT_CACHE);
       Class<?> javaRCClass = ucl.loadClass("org.infinispan.client.hotrod.RemoteCache");

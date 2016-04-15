@@ -6,10 +6,10 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.infinispan.client.hotrod.CacheTopologyInfo;
-import org.infinispan.commons.util.concurrent.NotifyingFuture;
 
 public interface RemoteCache<K, V> {
     String getName();
@@ -74,47 +74,48 @@ public interface RemoteCache<K, V> {
 
     boolean replace(K k, V v1, V v2);
 
-    NotifyingFuture<Boolean> replaceAsync(K k, V v1, V v2, long lifespan, TimeUnit lifespanTimeUnit, long maxIdle, TimeUnit maxIdleTimeUnit);
+   CompletableFuture<Boolean> replaceAsync(K k, V v1, V v2, long lifespan, TimeUnit lifespanTimeUnit, long maxIdle,
+         TimeUnit maxIdleTimeUnit);
 
-    NotifyingFuture<V> replaceAsync(K k, V v, long lifespan, TimeUnit lifespanTimeUnit, long maxIdle,
+   CompletableFuture<V> replaceAsync(K k, V v, long lifespan, TimeUnit lifespanTimeUnit, long maxIdle,
             TimeUnit maxIdleTimeUnit);
 
-    NotifyingFuture<Boolean> replaceAsync(K k, V v1, V v2, long lifespan, TimeUnit lifespanTimeUnit);
+   CompletableFuture<Boolean> replaceAsync(K k, V v1, V v2, long lifespan, TimeUnit lifespanTimeUnit);
 
-    NotifyingFuture<V> replaceAsync(K k, V v, long lifespan, TimeUnit lifespanTimeUnit);
+   CompletableFuture<V> replaceAsync(K k, V v, long lifespan, TimeUnit lifespanTimeUnit);
 
-    NotifyingFuture<Boolean> replaceAsync(K k, V v1, V v2);
+   CompletableFuture<Boolean> replaceAsync(K k, V v1, V v2);
 
-    NotifyingFuture<V> replaceAsync(K k, V v);
+   CompletableFuture<V> replaceAsync(K k, V v);
 
-    NotifyingFuture<Boolean> removeAsync(K k, V v);
+   CompletableFuture<Boolean> removeAsync(K k, V v);
 
-    NotifyingFuture<V> removeAsync(K k);
+   CompletableFuture<V> removeAsync(K k);
 
-    NotifyingFuture<V> putIfAbsentAsync(K k, V v, long lifespan, TimeUnit lifespanTimeUnit, long maxIdle,
+   CompletableFuture<V> putIfAbsentAsync(K k, V v, long lifespan, TimeUnit lifespanTimeUnit, long maxIdle,
             TimeUnit maxIdleTimeUnit);
 
-    NotifyingFuture<V> putIfAbsentAsync(K k, V v, long lifespan, TimeUnit lifespanTimeUnit);
+   CompletableFuture<V> putIfAbsentAsync(K k, V v, long lifespan, TimeUnit lifespanTimeUnit);
 
-    NotifyingFuture<V> putIfAbsentAsync(K k, V v);
+   CompletableFuture<V> putIfAbsentAsync(K k, V v);
 
-    NotifyingFuture<V> putAsync(K k, V v, long lifespan, TimeUnit lifespanTimeUnit, long maxIdle,
+   CompletableFuture<V> putAsync(K k, V v, long lifespan, TimeUnit lifespanTimeUnit, long maxIdle,
             TimeUnit maxIdleTimeUnit);
 
-    NotifyingFuture<V> putAsync(K k, V v, long lifespan, TimeUnit lifespanTimeUnit);
+   CompletableFuture<V> putAsync(K k, V v, long lifespan, TimeUnit lifespanTimeUnit);
 
-    NotifyingFuture<V> putAsync(K k, V v);
+   CompletableFuture<V> putAsync(K k, V v);
 
-    NotifyingFuture<Void> putAllAsync(Map<? extends K, ? extends V> map, long lifespan, TimeUnit lifespanTimeUnit,
+   CompletableFuture<Void> putAllAsync(Map<? extends K, ? extends V> map, long lifespan, TimeUnit lifespanTimeUnit,
             long maxIdle, TimeUnit maxIdleUnit);
 
-    NotifyingFuture<Void> putAllAsync(Map<? extends K, ? extends V> map, long arg1, TimeUnit arg2);
+   CompletableFuture<Void> putAllAsync(Map<? extends K, ? extends V> map, long arg1, TimeUnit arg2);
 
-    NotifyingFuture<Void> putAllAsync(Map<? extends K, ? extends V> map);
+   CompletableFuture<Void> putAllAsync(Map<? extends K, ? extends V> map);
 
-    NotifyingFuture<V> getAsync(K k);
+   CompletableFuture<V> getAsync(K k);
 
-    NotifyingFuture<Void> clearAsync();
+   CompletableFuture<Void> clearAsync();
 
     boolean replace(K k, V v1, V v2, long lifespan, TimeUnit lifespanTimeUnit, long maxIdle, TimeUnit maxIdleUnit);
 
@@ -137,11 +138,13 @@ public interface RemoteCache<K, V> {
 
     ServerStatistics stats();
 
-    NotifyingFuture<Boolean> replaceWithVersionAsync(K key, V newValue, long version);
-    NotifyingFuture<Boolean> replaceWithVersionAsync(K key, V newValue, long version, int lifespanSeconds);
-    NotifyingFuture<Boolean> replaceWithVersionAsync(K key, V newValue, long version, int lifespanSeconds, int maxIdleSeconds);
+   CompletableFuture<Boolean> replaceWithVersionAsync(K key, V newValue, long version);
     
-    NotifyingFuture<Boolean> removeWithVersionAsync(K key, long version);
+   CompletableFuture<Boolean> replaceWithVersionAsync(K key, V newValue, long version, int lifespanSeconds);
     
+   CompletableFuture<Boolean> replaceWithVersionAsync(K key, V newValue, long version, int lifespanSeconds,
+         int maxIdleSeconds);
+
+   CompletableFuture<Boolean> removeWithVersionAsync(K key, long version);
     CacheTopologyInfo getCacheTopologyInfo();
 }

@@ -88,7 +88,6 @@ public class JniTest implements IMethodSelector {
             "HotRodIntegrationTest.testReplaceWithVersionWithLifespanAsync",     // async not implemented
             "ClientSocketReadTimeoutTest.testPutTimeout",                        // TODO: TransportException not marshalled correctly
             "RemoteCacheManagerTest.testMarshallerInstance",                     // setting marshaller through configuration builder not implemented
-            "RemoteCacheManagerTest.testUrlAndBooleanConstructor",               // getProperties deprecated, not implemented
             "BulkGetKeysReplTest.testBulkGetAfterLifespanExpire",
             "BulkGetKeysSimpleTest.testBulkGetAfterLifespanExpire",
             "BulkGetReplTest.testBulkGetAfterLifespanExpire",
@@ -98,8 +97,7 @@ public class JniTest implements IMethodSelector {
             "HotRodIntegrationTest.testGetWithMetadata",
             "RemoteCacheManagerTest.testGetUndefinedCache",
             "ServerShutdownTest.testServerShutdownWithConnectedClient",
-            "ServerShutdownTest.testServerShutdownWithoutConnectedClient",
-            "SizeTest.testPersistentDistributedCacheSize"
+            "ServerShutdownTest.testServerShutdownWithoutConnectedClient"
       ));
       Set<String> expectedSkips = Collections.emptySet();
 
