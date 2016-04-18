@@ -42,6 +42,14 @@ endif ("${CMAKE_BINARY_DIR}" STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}")
 
 include_directories ("${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
+find_package(Protobuf REQUIRED)
+include_directories(${PROTOBUF_INCLUDE_DIRS})
+protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS 
+  proto/infinispan/hotrod/protobuf/base_types.proto
+  proto/org/infinispan/protostream/message-wrapping.proto
+  proto/org/infinispan/query/remote/client/query.proto
+)
+
 # MacOS has a bunch of differences in build tools and process and so we have to turn some things
 # off there by default (for GCC; LLVM will need flags re-evaluated)
 if (APPLE)
@@ -78,15 +86,19 @@ if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   set (COMPILER_FLAGS "-fvisibility=hidden -fvisibility-inlines-hidden -std=c++11")
   if (CMAKE_COMPILER_IS_GNUCXX)
   set (WARNING_FLAGS
-        "${WERROR} -pedantic -Wall -Wextra -Wno-shadow -Wpointer-arith -Wcast-qual -Wcast-align -Wno-long-long -Wvolatile-register-var -Winvalid-pch -Wno-system-headers -Woverloaded-virtual -Wshadow -Wno-variadic-macros")
+        "${WERROR} -pedantic -Wall -Wextra -Wno-shadow -Wpointer-arith -Wcast-qual -Wcast-align -Wno-long-long -Wvolatile-register-var -Winvalid-pch -Wno-system-headers -Woverloaded-virtual -Wno-variadic-macros -Wno-error=shadow")
   endif (CMAKE_COMPILER_IS_GNUCXX)
   if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   set (WARNING_FLAGS
-        "${WERROR} -pedantic -Wall -Wextra -Wno-shadow -Wpointer-arith -Wcast-qual -Wcast-align -Wno-long-long -Wvolatile-register-var -Winvalid-pch -Wno-system-headers -Woverloaded-virtual -Wshadow -Wno-variadic-macros -Wno-error-unused-parameter -Wno-error-cast-align -Wno-error-string-plus-int")
+        "${WERROR} -pedantic -Wall -Wextra -Wno-shadow -Wpointer-arith -Wcast-qual -Wcast-align -Wno-long-long -Wvolatile-register-var -Winvalid-pch -Wno-system-headers -Woverloaded-virtual -Wno-variadic-macros -Wno-error-unused-parameter -Wno-error-cast-align -Wno-error-string-plus-int")
   endif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   if (ENABLE_UNDEFINED_ERROR)
     set (CATCH_UNDEFINED "-Wl,--no-undefined")
   endif (ENABLE_UNDEFINED_ERROR)
+
+  set_source_files_properties(message-wrapping.pb.cc PROPERTIES COMPILE_FLAGS -Wno-error=shadow)
+  set_source_files_properties(query.pb.cc PROPERTIES COMPILE_FLAGS -Wno-error=shadow)
+  set_source_files_properties(base_types.pb.cc PROPERTIES COMPILE_FLAGS -Wno-error=shadow)
 
 endif (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 
@@ -222,6 +234,7 @@ else(DEFINED HOTROD_PREBUILT_LIB_DIR)
       src/hotrod/impl/transport/tcp/RoundRobinBalancingStrategy.cpp
       src/hotrod/sys/Runnable.cpp
       src/hotrod/sys/Log.cpp
+      ${PROTO_SRCS}
       ${platform_sources}
       ${CMAKE_BINARY_DIR}/Version.cpp
       ${internal_test_sources}  
@@ -229,7 +242,7 @@ else(DEFINED HOTROD_PREBUILT_LIB_DIR)
     
     # Build a shared library
     add_library (hotrod SHARED ${library_sources})
-    target_link_libraries (hotrod ${platform_libs})
+    target_link_libraries (hotrod ${platform_libs} ${PROTOBUF_LIBRARIES})
     
     if (WIN32 AND NOT CMAKE_SIZEOF_VOID_P MATCHES "8")
         set (OUTPUT_NAME_SUFFIX "32")
