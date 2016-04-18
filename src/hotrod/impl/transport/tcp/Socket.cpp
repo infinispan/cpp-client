@@ -1,7 +1,6 @@
-
-
 #include "hotrod/impl/transport/tcp/Socket.h"
 #include "hotrod/sys/Socket.h"
+#include "hotrod/sys/Log.h"
 
 #include <iostream>
 #include <cstring>
@@ -14,8 +13,8 @@ namespace hotrod {
 
 namespace transport {
 
-Socket::Socket() :
-    socket(sys::Socket::create()), inputStream(*socket), outputStream(*socket)
+Socket::Socket(sys::Socket *_socket) :
+    socket(_socket), inputStream(*socket), outputStream(*socket)
 {}
 
 Socket::~Socket() {
@@ -46,29 +45,27 @@ OutputStream& Socket::getOutputStream() {
     return outputStream;
 }
 
-void InputStream::read(char* buf, size_t size) {
-	char* tmp_buffer = buf;
-	  while (capacity < size) {
-	    if (capacity != 0) {
-	      memcpy(tmp_buffer, ptr, capacity);
-	      tmp_buffer += capacity;
-	      size -= capacity;
-	    }
-	    //if (!hasMore)
-	      //throw HotRodClientException("stream not complete");
-	    capacity = socket.read(&buffer[0],BufferSize);
-	    ptr = &buffer[0];
-	    hasMore = capacity < BufferSize ? false : true;
-	  }
-	  memcpy(tmp_buffer, ptr, size);
-	  ptr += size;
-	  capacity -= size;
+void InputStream::read(char *buf, size_t size) {
+    char *tmp_buffer = buf;
+    while (capacity < size) {
+        if (capacity != 0) {
+            memcpy(tmp_buffer, ptr, capacity);
+            tmp_buffer += capacity;
+            size -= capacity;
+        }
+        capacity = socket.read(&buffer[0], BufferSize);
+        ptr = &buffer[0];
+        hasMore = capacity < BufferSize ? false : true;
+    }
+    memcpy(tmp_buffer, ptr, size);
+    ptr += size;
+    capacity -= size;
 }
 
 char InputStream::read() {
-	  char c;
-	  read(&c,1);
-	  return c;
+    char c;
+    read(&c, 1);
+    return c;
 }
 
 InputStream::InputStream(sys::Socket& s) :

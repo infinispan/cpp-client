@@ -226,6 +226,10 @@ endif(HOTROD_WINAPI)
 configure_file(src/hotrod/impl/Version.cpp.in ${CMAKE_BINARY_DIR}/Version.cpp @ONLY)
 file(COPY ${CMAKE_SOURCE_DIR}/test/query_proto DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
 
+# OpenSSL support
+find_package(OpenSSL)
+include_directories(${OPENSSL_INCLUDE_DIR})
+
 if(DEFINED HOTROD_PREBUILT_LIB_DIR)
 
     find_library(HOTROD_LIBRARY NAMES hotrod PATHS ${HOTROD_PREBUILT_LIB_DIR})
@@ -298,12 +302,15 @@ else(DEFINED HOTROD_PREBUILT_LIB_DIR)
       src/hotrod/impl/transport/tcp/ConnectionPool.cpp
       src/hotrod/impl/transport/tcp/InetSocketAddress.cpp
       src/hotrod/impl/transport/tcp/Socket.cpp
+      src/hotrod/impl/transport/tcp/SSLTcpTransport.cpp
       src/hotrod/impl/transport/tcp/TcpTransport.cpp
       src/hotrod/impl/transport/tcp/TcpTransportFactory.cpp
       src/hotrod/impl/transport/tcp/TransportObjectFactory.cpp
       src/hotrod/impl/transport/tcp/RoundRobinBalancingStrategy.cpp
       src/hotrod/sys/Runnable.cpp
       src/hotrod/sys/Log.cpp
+      src/hotrod/sys/SSLSocket.cpp
+      ${PROTO_SRCS}
       ${platform_sources}
       ${CMAKE_BINARY_DIR}/Version.cpp
       ${internal_test_sources}  
@@ -319,7 +326,7 @@ endif (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     add_library (hotrod SHARED ${library_sources})
     
     set_target_properties(hotrod PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}")
-    target_link_libraries (hotrod ${platform_libs} ${PROTOBUF_LIBRARIES} hotrod_protobuf)
+    target_link_libraries (hotrod ${platform_libs} ${PROTOBUF_LIBRARIES} ${OPENSSL_LIBRARIES} hotrod_protobuf)
     
     if (WIN32 AND NOT CMAKE_SIZEOF_VOID_P MATCHES "8")
         set (OUTPUT_NAME_SUFFIX "32")
@@ -336,6 +343,7 @@ endif (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     add_library (hotrod-static STATIC ${library_sources})
     set_target_properties(hotrod-static PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}" )
     set_target_properties(hotrod-static PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS} ${STATIC_FLAGS}")
+    target_link_libraries (hotrod-static ${OPENSSL_LIBRARIES})
 
 endif(DEFINED HOTROD_PREBUILT_LIB_DIR)
 
@@ -373,6 +381,13 @@ set_target_properties(queryTest-static PROPERTIES COMPILE_DEFINITIONS "${DLLEXPO
 set_target_properties (queryTest-static PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS} ${STATIC_FLAGS}")
 target_link_libraries (queryTest-static hotrod-static ${platform_libs} ${PROTOBUF_LIBRARIES} hotrod_protobuf)
 
+add_executable (simple-tls test/SimpleTLS.cpp)
+set_property(TARGET simple-tls PROPERTY CXX_STANDARD 11)
+set_property(TARGET simple-tls PROPERTY CXX_STANDARD_REQUIRED ON)
+set_property(TARGET simple-tls PROPERTY INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_BINARY_DIR}" "${PROTOBUF_INCLUDE_DIR}")
+set_target_properties (simple-tls PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS}")
+set_target_properties(simple-tls PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT};PROTOBUF_USE_DLLS")
+target_link_libraries (simple-tls hotrod ${platform_libs} hotrod_protobuf)
 
 if (ENABLE_INTERNAL_TESTING)
     add_executable (unittest test/Unit.cpp)
@@ -416,13 +431,17 @@ else (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.sh") AND (EXISTS "${HOTR
         message(FATAL_ERROR "Java not found")
     endif (NOT JAVA_RUNTIME)
     find_package(PythonInterp REQUIRED)
-    add_test (start_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py start ${JAVA_RUNTIME} ${HOTROD_JBOSS_HOME} single)
+    add_test (start_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py start ${JAVA_RUNTIME} ${HOTROD_JBOSS_HOME} standalone.xml)
     add_test (probe_port ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/probe_port.py localhost 11222 60)
     add_test (simple simple)
     add_test (simple-static simple-static)
     add_test (queryTest queryTest)
     add_test (queryTest-static queryTest-static)
     add_test (stop_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py stop)
+    add_test (start_ssl_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py start ${JAVA_RUNTIME} ${HOTROD_JBOSS_HOME} standalone-hotrod-ssl.xml)
+    add_test (probe_ssl_port ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/probe_port.py localhost 11222 60)
+    add_test (simple-tls simple-tls ${CMAKE_CURRENT_SOURCE_DIR}/test/data/infinispan-ca.pem)
+    add_test (stop_ssl_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py stop)
 endif (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.sh") AND (EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.bat")))
 
 if (ENABLE_SWIG_TESTING)
@@ -467,6 +486,7 @@ set (CPACK_SYSTEM_NAME "${PLATFORM}-${PACKAGE_ARCH}")
 set (CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
 set (CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/License.txt")
 set (DOCDIR .)
+message (STATUS "OpenSSL support ${OPENSSL_FOUND}")
 
 file (GLOB includes "${CMAKE_CURRENT_SOURCE_DIR}/include/infinispan/hotrod/*.h")
 install (FILES ${includes} DESTINATION include/infinispan/hotrod)

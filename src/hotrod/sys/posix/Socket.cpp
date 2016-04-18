@@ -46,6 +46,7 @@ class Socket: public infinispan::hotrod::sys::Socket {
     virtual void setTimeout(int timeout);
     virtual size_t read(char *p, size_t n);
     virtual void write(const char *p, size_t n);
+    virtual int getSocket();
   private:
     int fd;
     std::string host;
@@ -232,6 +233,10 @@ void Socket::write(const char *p, size_t length) {
     ssize_t n = send(fd, p, length, sendFlag);
     if (n == -1) throwIOErr (host, port,"write", errno);
     if ((size_t) n != length) throwIOErr (host, port,"write error", 0);
+}
+
+int Socket::getSocket() {
+    return fd;
 }
 
 } /* posix namespace */

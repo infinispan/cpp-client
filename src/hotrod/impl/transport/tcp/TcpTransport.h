@@ -39,14 +39,12 @@ class TcpTransport : public AbstractTransport
     const InetSocketAddress& getServerAddress();
 
   protected:
+    TcpTransport(const InetSocketAddress& address, TransportFactory& factory, sys::Socket *sock);
     //Testing only!
     TcpTransport();
-
-  private:
     Socket socket;
     bool invalid;
     InetSocketAddress* serverAddress;
-
     bool isValid();
 
   friend class TcpTransportFactory;

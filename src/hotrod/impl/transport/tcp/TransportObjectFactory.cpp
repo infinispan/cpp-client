@@ -1,5 +1,4 @@
-
-
+#include <hotrod/impl/transport/tcp/SSLTcpTransport.h>
 #include "hotrod/impl/transport/tcp/TransportObjectFactory.h"
 #include "hotrod/impl/transport/tcp/TcpTransport.h"
 #include "hotrod/impl/transport/tcp/TcpTransportFactory.h"
@@ -20,7 +19,12 @@ TransportObjectFactory::TransportObjectFactory(
 { }
 
 TcpTransport& TransportObjectFactory::makeObject(const InetSocketAddress& address) {
-    return *(new TcpTransport(address, tcpTransportFactory));
+    if(tcpTransportFactory.isSslEnabled()) {
+        return *(new SSLTcpTransport(address, tcpTransportFactory,
+                tcpTransportFactory.getSslServerCAPath(), tcpTransportFactory.getSslServerCAFile(), tcpTransportFactory.getSslClientCertificateFile()));
+    } else {
+        return *(new TcpTransport(address, tcpTransportFactory));
+    }
 }
 
 bool TransportObjectFactory::validateObject(const InetSocketAddress& /*address*/, TcpTransport& transport) {
@@ -39,13 +43,13 @@ void TransportObjectFactory::activateObject(const InetSocketAddress& /*address*/
 void TransportObjectFactory::passivateObject(
     const InetSocketAddress& /*address*/, TcpTransport& /*transport*/)
 {
-  // empty
+    // empty
 }
 
 PingResult TransportObjectFactory::ping(
     TcpTransport& tcpTransport)
 {
-	Topology tid(-1);
+    Topology tid(-1);
     PingOperation po(codec, tid, tcpTransport);
     return po.execute();
 }

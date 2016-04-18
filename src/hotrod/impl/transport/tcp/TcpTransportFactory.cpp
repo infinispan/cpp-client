@@ -20,8 +20,6 @@ using namespace consistenthash;
 
 namespace transport {
 
-
-
 TransportFactory* TransportFactory::newInstance(const Configuration& configuration) {
     return new TcpTransportFactory(configuration);
 }
@@ -47,8 +45,6 @@ void TcpTransportFactory::start(
         balancer.reset(RoundRobinBalancingStrategy::newInstance());
     }
     topologyInfo = new TopologyInfo(defaultTopologyId, initialServers, configuration);
-
-    // TODO: SSL configuration
 
     transportFactory.reset(new TransportObjectFactory(codec, *this));
 
@@ -129,6 +125,22 @@ int TcpTransportFactory::getSoTimeout() {
 
 int TcpTransportFactory::getConnectTimeout() {
     return configuration.getConnectionTimeout();
+}
+
+bool TcpTransportFactory::isSslEnabled() {
+    return configuration.getSslConfiguration().enabled();
+}
+
+const std::string& TcpTransportFactory::getSslServerCAPath() {
+    return configuration.getSslConfiguration().serverCAPath();
+}
+
+const std::string& TcpTransportFactory::getSslServerCAFile() {
+    return configuration.getSslConfiguration().serverCAFile();
+}
+
+const std::string& TcpTransportFactory::getSslClientCertificateFile() {
+    return configuration.getSslConfiguration().clientCertificateFile();
 }
 
 void TcpTransportFactory::createAndPreparePool()

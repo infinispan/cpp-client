@@ -32,6 +32,7 @@ class Socket: public infinispan::hotrod::sys::Socket {
     virtual void setTimeout(int timeout);
     virtual size_t read(char *p, size_t n);
     virtual void write(const char *p, size_t n);
+    virtual int getSocket();
   private:
     SOCKET fd;
     std::string host;
@@ -223,6 +224,10 @@ void Socket::write(const char *p, size_t length) {
     ssize_t n = send(fd, p, (int) length, 0);
     if (n == SOCKET_ERROR) throwIOErr (host, port, "write", WSAGetLastError());
     if ((size_t) n != length) throwIOErr (host, port, "write error incomplete", 0);
+}
+
+int Socket::getSocket() {
+    return (int)fd;
 }
 
 } /* windows namespace */

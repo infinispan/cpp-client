@@ -38,6 +38,10 @@ class TcpTransportFactory : public TransportFactory
     int getMaxRetries();
     int getSoTimeout();
     int getConnectTimeout();
+    bool isSslEnabled();
+    const std::string& getSslServerCAPath();
+    const std::string& getSslServerCAFile();
+    const std::string& getSslClientCertificateFile();
 
     void updateServers(std::vector<InetSocketAddress>& );
     void updateHashFunction(
@@ -46,7 +50,7 @@ class TcpTransportFactory : public TransportFactory
                 int32_t hashSpace,
                 const std::vector<char>& cacheName);
     void updateHashFunction(
-    		std::vector<std::vector<InetSocketAddress>>& segmentOwners,
+            std::vector<std::vector<InetSocketAddress>>& segmentOwners,
             uint32_t &numSegment, uint8_t &hashFunctionVersion,
             const std::vector<char>& cacheName, int topologyId);
     void clearHashFunction(const std::vector<char>& cacheName);
