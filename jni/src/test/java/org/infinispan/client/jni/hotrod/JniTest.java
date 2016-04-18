@@ -97,7 +97,8 @@ public class JniTest implements IMethodSelector {
             "HotRodIntegrationTest.testGetWithMetadata",
             "RemoteCacheManagerTest.testGetUndefinedCache",
             "ServerShutdownTest.testServerShutdownWithConnectedClient",
-            "ServerShutdownTest.testServerShutdownWithoutConnectedClient"
+            "ServerShutdownTest.testServerShutdownWithoutConnectedClient",
+            "SizeTest.testPersistentDistributedCacheSize"
       ));
       Set<String> expectedSkips = Collections.emptySet();
 
