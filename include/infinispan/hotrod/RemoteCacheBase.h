@@ -8,10 +8,13 @@
 #include "infinispan/hotrod/Flag.h"
 #include "infinispan/hotrod/MetadataValue.h"
 #include "infinispan/hotrod/portable.h"
+#include "query.pb.h"
 
 #include <map>
 #include <set>
 #include <vector>
+
+using namespace org::infinispan::query::remote::client;
 
 namespace infinispan {
 namespace hotrod {
@@ -49,6 +52,8 @@ protected:
     HR_EXTERN void  base_withFlags(Flag flag);
     HR_EXTERN char *base_execute(RemoteCacheBase& remoteCacheBase, std::string cmdName,  const std::map<std::string,std::string>& args);
     HR_EXTERN CacheTopologyInfo base_getCacheTopologyInfo();
+    HR_EXTERN QueryResponse base_query(const QueryRequest &qr);
+
 
     RemoteCacheBase() {}
     HR_EXTERN void setMarshallers(void* rc, MarshallHelperFn kf, MarshallHelperFn vf, UnmarshallHelperFn ukf, UnmarshallHelperFn uvf);
