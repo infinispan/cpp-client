@@ -310,7 +310,6 @@ else(DEFINED HOTROD_PREBUILT_LIB_DIR)
       src/hotrod/sys/Runnable.cpp
       src/hotrod/sys/Log.cpp
       src/hotrod/sys/SSLSocket.cpp
-      ${PROTO_SRCS}
       ${platform_sources}
       ${CMAKE_BINARY_DIR}/Version.cpp
       ${internal_test_sources}  
@@ -371,7 +370,7 @@ set_property(TARGET queryTest PROPERTY CXX_STANDARD_REQUIRED ON)
 set_property(TARGET queryTest PROPERTY INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_BINARY_DIR}" "${PROTOBUF_INCLUDE_DIR}")
 set_target_properties (queryTest PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS}")
 set_target_properties(queryTest PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT};PROTOBUF_USE_DLLS")
-target_link_libraries (queryTest hotrod ${platform_libs} hotrod_protobuf)
+target_link_libraries (queryTest hotrod hotrod_protobuf ${platform_libs})
 
 add_executable (queryTest-static test/QueryTest.cpp addressbook.pb.cc bank.pb.cc)
 set_property(TARGET queryTest-static PROPERTY CXX_STANDARD 11)
@@ -387,7 +386,7 @@ set_property(TARGET simple-tls PROPERTY CXX_STANDARD_REQUIRED ON)
 set_property(TARGET simple-tls PROPERTY INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_BINARY_DIR}" "${PROTOBUF_INCLUDE_DIR}")
 set_target_properties (simple-tls PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS}")
 set_target_properties(simple-tls PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT};PROTOBUF_USE_DLLS")
-target_link_libraries (simple-tls hotrod ${platform_libs} hotrod_protobuf)
+target_link_libraries (simple-tls hotrod hotrod_protobuf ${platform_libs})
 
 if (ENABLE_INTERNAL_TESTING)
     add_executable (unittest test/Unit.cpp)
