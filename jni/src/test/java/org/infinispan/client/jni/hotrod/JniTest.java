@@ -24,7 +24,8 @@ public class JniTest implements IMethodSelector {
 	"CacheManagerStoppedTest.testPutAllAsync",
 	"CacheManagerStoppedTest.testPutAsync",
 	"CacheManagerStoppedTest.testReplaceAsync",
-	"CacheManagerStoppedTest.testVersionedRemoveAsync"};
+	"CacheManagerStoppedTest.testVersionedRemoveAsync",
+        "HotRodAsyncReplicationTest.testPutKeyValue"};
 	
    private final static HashSet<String> passOverTestSet = new HashSet<String>(Arrays.asList(passOverTestList));
 	
