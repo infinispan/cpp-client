@@ -11,8 +11,9 @@ BUILD_DIR=build
 wget -N http://downloads.jboss.org/infinispan/${INFINISPAN_VERSION}/infinispan-server-${INFINISPAN_VERSION}-bin.zip 
 
 rm -rf infinispan-server-${INFINISPAN_VERSION}
-unzip infinispan-server-${INFINISPAN_VERSION}-bin.zip
+unzip -q infinispan-server-${INFINISPAN_VERSION}-bin.zip
 export JBOSS_HOME=`pwd`/infinispan-server-${INFINISPAN_VERSION}
+cp test/data/* $JBOSS_HOME/standalone/configuration
 if [  "$1" == "DEBUG" ]
 then
   rm -rf ${BUILD_DIR} &&

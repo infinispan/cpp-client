@@ -43,7 +43,7 @@ class OutputStream
 class Socket
 {
   public:
-    Socket();
+    Socket(sys::Socket *_socket);
     ~Socket();
     void connect(const std::string& host, int port, int timeout);
     void close();
