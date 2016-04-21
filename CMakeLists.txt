@@ -44,7 +44,79 @@ if ("${CMAKE_BINARY_DIR}" STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}")
   message (FATAL_ERROR "You are calling cmake from the source directory. Please create a separate build directory and call cmake from there. See README.md for details.")
 endif ("${CMAKE_BINARY_DIR}" STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}")
 
-include_directories ("${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_SOURCE_DIR}/src")
+include_directories ("${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_SOURCE_DIR}/src" "${CMAKE_CURRENT_BINARY_DIR}")
+
+
+find_package(Protobuf REQUIRED)
+
+
+function(HR_PROTOBUF_GENERATE_CPP SRCS HDRS)
+  if(NOT ARGN)
+    message(SEND_ERROR "Error: PROTOBUF_GENERATE_CPP() called without any proto files")
+    return()
+  endif()
+
+  if(PROTOBUF_GENERATE_CPP_APPEND_PATH)
+    # Create an include path for each file specified
+    foreach(FIL ${ARGN})
+      get_filename_component(ABS_FIL ${FIL} ABSOLUTE)
+      get_filename_component(ABS_PATH ${ABS_FIL} PATH)
+      list(FIND _protobuf_include_path ${ABS_PATH} _contains_already)
+      if(${_contains_already} EQUAL -1)
+          list(APPEND _protobuf_include_path -I ${ABS_PATH})
+      endif()
+    endforeach()
+  else()
+    set(_protobuf_include_path -I ${CMAKE_CURRENT_SOURCE_DIR})
+  endif()
+
+  if(DEFINED PROTOBUF_IMPORT_DIRS)
+    foreach(DIR ${PROTOBUF_IMPORT_DIRS})
+      get_filename_component(ABS_PATH ${DIR} ABSOLUTE)
+      list(FIND _protobuf_include_path ${ABS_PATH} _contains_already)
+      if(${_contains_already} EQUAL -1)
+          list(APPEND _protobuf_include_path -I ${ABS_PATH})
+      endif()
+    endforeach()
+  endif()
+
+  set(${SRCS})
+  set(${HDRS})
+  foreach(FIL ${ARGN})
+    get_filename_component(ABS_FIL ${FIL} ABSOLUTE)
+    get_filename_component(FIL_WE ${FIL} NAME_WE)
+
+    list(APPEND ${SRCS} "${CMAKE_CURRENT_BINARY_DIR}/${FIL_WE}.pb.cc")
+    list(APPEND ${HDRS} "${CMAKE_CURRENT_BINARY_DIR}/${FIL_WE}.pb.h")
+
+    add_custom_command(
+      OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${FIL_WE}.pb.cc"
+             "${CMAKE_CURRENT_BINARY_DIR}/${FIL_WE}.pb.h"
+      COMMAND  ${PROTOBUF_PROTOC_EXECUTABLE}
+      ARGS --cpp_out dllexport_decl=HR_PROTO_EXPORT:${CMAKE_CURRENT_BINARY_DIR} ${_protobuf_include_path} ${ABS_FIL}
+      DEPENDS ${ABS_FIL}
+      COMMENT "Running C++ protocol buffer compiler on ${FIL}"
+      VERBATIM )
+
+  endforeach()
+
+  set_source_files_properties(${${SRCS}} ${${HDRS}} PROPERTIES GENERATED TRUE)
+  set(${SRCS} ${${SRCS}} PARENT_SCOPE)
+  set(${HDRS} ${${HDRS}} PARENT_SCOPE)
+endfunction()
+
+include_directories(${PROTOBUF_INCLUDE_DIRS})
+
+hr_protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS 
+  proto/infinispan/hotrod/protobuf/base_types.proto
+  proto/org/infinispan/protostream/message-wrapping.proto
+  proto/org/infinispan/query/remote/client/query.proto
+)
+
+hr_protobuf_generate_cpp(TEST_PROTO_SRCS TEST_PROTO_HDRS 
+  test/query_proto/addressbook.proto
+  test/query_proto/bank.proto
+)
 
 # MacOS has a bunch of differences in build tools and process and so we have to turn some things
 # off there by default (for GCC; LLVM will need flags re-evaluated)
@@ -75,6 +147,8 @@ option(ENABLE_INTERNAL_TESTING "Compile the library with internal tests (unit te
 option(ENABLE_VALGRIND "Enable running the tests using Valgrind" ${DEFAULT_VALGRIND})
 
 if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  set(DLLEXPORT "HR_PROTO_EXPORT=__attribute__ ((visibility (\"default\")))")
+  set(DLLEXPORT_STATIC "HR_PROTO_EXPORT= ")
   if (ENABLE_WARNING_ERROR)
     set (WERROR "-Werror")
   endif (ENABLE_WARNING_ERROR)
@@ -82,20 +156,26 @@ if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   set (COMPILER_FLAGS "-fvisibility=hidden -fvisibility-inlines-hidden -std=c++11")
   if (CMAKE_COMPILER_IS_GNUCXX)
   set (WARNING_FLAGS
-        "${WERROR} -pedantic -Wall -Wextra -Wno-shadow -Wpointer-arith -Wcast-qual -Wcast-align -Wno-long-long -Wvolatile-register-var -Winvalid-pch -Wno-system-headers -Woverloaded-virtual -Wshadow -Wno-variadic-macros")
+        "${WERROR} -pedantic -Wall -Wextra -Wno-shadow -Wpointer-arith -Wcast-qual -Wcast-align -Wno-long-long -Wvolatile-register-var -Winvalid-pch -Wno-system-headers -Woverloaded-virtual -Wno-variadic-macros -Wno-error=shadow")
   endif (CMAKE_COMPILER_IS_GNUCXX)
   if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   set (WARNING_FLAGS
-        "${WERROR} -pedantic -Wall -Wextra -Wno-shadow -Wpointer-arith -Wcast-qual -Wcast-align -Wno-long-long -Wvolatile-register-var -Winvalid-pch -Wno-system-headers -Woverloaded-virtual -Wshadow -Wno-variadic-macros -Wno-error-unused-parameter -Wno-error-cast-align -Wno-error-string-plus-int")
+        "${WERROR} -pedantic -Wall -Wextra -Wno-shadow -Wpointer-arith -Wcast-qual -Wcast-align -Wno-long-long -Wvolatile-register-var -Winvalid-pch -Wno-system-headers -Woverloaded-virtual -Wno-variadic-macros -Wno-error-unused-parameter -Wno-error-cast-align -Wno-error-string-plus-int")
   endif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   if (ENABLE_UNDEFINED_ERROR)
     set (CATCH_UNDEFINED "-Wl,--no-undefined")
   endif (ENABLE_UNDEFINED_ERROR)
 
+  set_source_files_properties(message-wrapping.pb.cc PROPERTIES COMPILE_FLAGS -Wno-error=shadow)
+  set_source_files_properties(query.pb.cc PROPERTIES COMPILE_FLAGS -Wno-error=shadow)
+  set_source_files_properties(base_types.pb.cc PROPERTIES COMPILE_FLAGS -Wno-error=shadow)
+
 endif (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 
 set (STATIC_FLAGS "-DHOTROD_DECLARE_STATIC")
 if (MSVC)
+   set(DLLEXPORT "HR_PROTO_EXPORT=__declspec(dllexport)")
+   set(DLLEXPORT_STATIC "HR_PROTO_EXPORT= ")
    set (COMPILER_FLAGS "/DNOMINMAX /EHsc")
    set (WARNING_FLAGS "")
 endif (MSVC)
@@ -148,6 +228,11 @@ else(HOTROD_WINAPI)
 endif(HOTROD_WINAPI)
 
 configure_file(src/hotrod/impl/Version.cpp.in ${CMAKE_BINARY_DIR}/Version.cpp @ONLY)
+file(COPY ${CMAKE_SOURCE_DIR}/test/query_proto DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
+
+# OpenSSL support
+find_package(OpenSSL)
+include_directories(${OPENSSL_INCLUDE_DIR})
 
 if(DEFINED HOTROD_PREBUILT_LIB_DIR)
 
@@ -187,6 +272,7 @@ else(DEFINED HOTROD_PREBUILT_LIB_DIR)
       src/hotrod/impl/consistenthash/ConsistentHashV2.cpp
       src/hotrod/impl/consistenthash/SegmentConsistentHash.cpp
       src/hotrod/impl/operations/OperationsFactory.cpp
+      src/hotrod/impl/operations/QueryOperation.cpp
       src/hotrod/impl/operations/PingOperation.cpp
       src/hotrod/impl/operations/GetOperation.cpp
       src/hotrod/impl/operations/PutOperation.cpp
@@ -220,20 +306,30 @@ else(DEFINED HOTROD_PREBUILT_LIB_DIR)
       src/hotrod/impl/transport/tcp/ConnectionPool.cpp
       src/hotrod/impl/transport/tcp/InetSocketAddress.cpp
       src/hotrod/impl/transport/tcp/Socket.cpp
+      src/hotrod/impl/transport/tcp/SSLTcpTransport.cpp
       src/hotrod/impl/transport/tcp/TcpTransport.cpp
       src/hotrod/impl/transport/tcp/TcpTransportFactory.cpp
       src/hotrod/impl/transport/tcp/TransportObjectFactory.cpp
       src/hotrod/impl/transport/tcp/RoundRobinBalancingStrategy.cpp
       src/hotrod/sys/Runnable.cpp
       src/hotrod/sys/Log.cpp
+      src/hotrod/sys/SSLSocket.cpp
       ${platform_sources}
       ${CMAKE_BINARY_DIR}/Version.cpp
       ${internal_test_sources}  
     )
     
+    add_library (hotrod_protobuf STATIC ${PROTO_SRCS})
+    set_target_properties(hotrod_protobuf PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}" )
+if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    set_target_properties(hotrod_protobuf PROPERTIES COMPILE_FLAGS "-fPIC" )
+endif (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    
     # Build a shared library
     add_library (hotrod SHARED ${library_sources})
-    target_link_libraries (hotrod ${platform_libs})
+    
+    set_target_properties(hotrod PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}")
+    target_link_libraries (hotrod ${platform_libs} ${PROTOBUF_LIBRARIES} ${OPENSSL_LIBRARIES} hotrod_protobuf)
     
     if (WIN32 AND NOT CMAKE_SIZEOF_VOID_P MATCHES "8")
         set (OUTPUT_NAME_SUFFIX "32")
@@ -248,7 +344,9 @@ else(DEFINED HOTROD_PREBUILT_LIB_DIR)
     
     # Build a static library
     add_library (hotrod-static STATIC ${library_sources})
+    set_target_properties(hotrod-static PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}" )
     set_target_properties(hotrod-static PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS} ${STATIC_FLAGS}")
+    target_link_libraries (hotrod-static ${OPENSSL_LIBRARIES})
 
 endif(DEFINED HOTROD_PREBUILT_LIB_DIR)
 
@@ -257,28 +355,57 @@ endif(DEFINED HOTROD_PREBUILT_LIB_DIR)
 add_executable (simple test/Simple.cpp)
 set_property(TARGET simple PROPERTY CXX_STANDARD 11)
 set_property(TARGET simple PROPERTY CXX_STANDARD_REQUIRED ON)
-set_property(TARGET simple PROPERTY INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/include")
+set_property(TARGET simple PROPERTY INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_BINARY_DIR}" "${PROTOBUF_INCLUDE_DIR}")
 set_target_properties (simple PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS}")
-target_link_libraries (simple hotrod)
+set_target_properties(simple PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT};PROTOBUF_USE_DLLS")
+target_link_libraries (simple hotrod ${platform_libs} hotrod_protobuf)
 
 add_executable (simple-static test/Simple.cpp)
 set_property(TARGET simple-static PROPERTY CXX_STANDARD 11)
 set_property(TARGET simple-static PROPERTY CXX_STANDARD_REQUIRED ON)
-set_property(TARGET simple-static PROPERTY INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/include")
+set_property(TARGET simple-static PROPERTY INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_BINARY_DIR}" "${PROTOBUF_INCLUDE_DIR}")
 set_target_properties (simple-static PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS} ${STATIC_FLAGS}")
-target_link_libraries (simple-static hotrod-static ${platform_libs})
+set_target_properties(simple-static PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}" )
+target_link_libraries (simple-static hotrod-static ${platform_libs} ${PROTOBUF_LIBRARIES} hotrod_protobuf)
+
+add_executable (queryTest test/QueryTest.cpp addressbook.pb.cc bank.pb.cc)
+set_property(TARGET queryTest PROPERTY CXX_STANDARD 11)
+set_property(TARGET queryTest PROPERTY CXX_STANDARD_REQUIRED ON)
+set_property(TARGET queryTest PROPERTY INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_BINARY_DIR}" "${PROTOBUF_INCLUDE_DIR}")
+set_target_properties (queryTest PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS}")
+set_target_properties(queryTest PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT};PROTOBUF_USE_DLLS")
+target_link_libraries (queryTest hotrod hotrod_protobuf ${platform_libs})
+
+add_executable (queryTest-static test/QueryTest.cpp addressbook.pb.cc bank.pb.cc)
+set_property(TARGET queryTest-static PROPERTY CXX_STANDARD 11)
+set_property(TARGET queryTest-static PROPERTY CXX_STANDARD_REQUIRED ON)
+set_property(TARGET queryTest-static PROPERTY INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_BINARY_DIR}" "${PROTOBUF_INCLUDE_DIR}")
+set_target_properties(queryTest-static PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}" )
+set_target_properties (queryTest-static PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS} ${STATIC_FLAGS}")
+target_link_libraries (queryTest-static hotrod-static ${platform_libs} ${PROTOBUF_LIBRARIES} hotrod_protobuf)
+
+add_executable (simple-tls test/SimpleTLS.cpp)
+set_property(TARGET simple-tls PROPERTY CXX_STANDARD 11)
+set_property(TARGET simple-tls PROPERTY CXX_STANDARD_REQUIRED ON)
+set_property(TARGET simple-tls PROPERTY INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_BINARY_DIR}" "${PROTOBUF_INCLUDE_DIR}")
+set_target_properties (simple-tls PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS}")
+set_target_properties(simple-tls PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT};PROTOBUF_USE_DLLS")
+target_link_libraries (simple-tls hotrod hotrod_protobuf ${platform_libs})
 
 if (ENABLE_INTERNAL_TESTING)
     add_executable (unittest test/Unit.cpp)
+    set_target_properties(unittest PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT};PROTOBUF_USE_DLLS") 
     set_target_properties (unittest PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS}")
     target_link_libraries (unittest hotrod)
 
     add_executable (unittest-static test/Unit.cpp)
+    set_target_properties(unittest-static PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}" )
     set_target_properties (unittest-static PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS} ${STATIC_FLAGS}")
-    target_link_libraries (unittest-static hotrod-static ${platform_libs})
+    target_link_libraries (unittest-static hotrod-static ${platform_libs} ${PROTOBUF_LIBRARIES} hotrod_protobuf)
 endif (ENABLE_INTERNAL_TESTING)
 
 add_executable (itest test/InteractiveTest.cpp)
+    set_target_properties(itest PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT};PROTOBUF_USE_DLLS")
 set_target_properties (itest PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS}")
 target_link_libraries (itest hotrod)
 
@@ -307,11 +434,17 @@ else (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.sh") AND (EXISTS "${HOTR
         message(FATAL_ERROR "Java not found")
     endif (NOT JAVA_RUNTIME)
     find_package(PythonInterp REQUIRED)
-    add_test (start_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py start ${JAVA_RUNTIME} ${HOTROD_JBOSS_HOME} single)
+    add_test (start_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py start ${JAVA_RUNTIME} ${HOTROD_JBOSS_HOME} standalone.xml)
     add_test (probe_port ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/probe_port.py localhost 11222 60)
     add_test (simple simple)
     add_test (simple-static simple-static)
+    add_test (queryTest queryTest)
+    add_test (queryTest-static queryTest-static)
     add_test (stop_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py stop)
+    add_test (start_ssl_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py start ${JAVA_RUNTIME} ${HOTROD_JBOSS_HOME} standalone-hotrod-ssl.xml)
+    add_test (probe_ssl_port ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/probe_port.py localhost 11222 60)
+    add_test (simple-tls simple-tls ${CMAKE_CURRENT_SOURCE_DIR}/test/data/infinispan-ca.pem)
+    add_test (stop_ssl_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py stop)
 endif (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.sh") AND (EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.bat")))
 
 if (ENABLE_SWIG_TESTING)
@@ -360,9 +493,11 @@ if(WIN32)
 else(WIN32)
     set (DOCDIR ${SHARE_INSTALL_PREFIX}/doc/${CMAKE_PROJECT_NAME})
 endif(WIN32)
+message (STATUS "OpenSSL support ${OPENSSL_FOUND}")
 
 file (GLOB includes "${CMAKE_CURRENT_SOURCE_DIR}/include/infinispan/hotrod/*.h")
 install (FILES ${includes} DESTINATION include/infinispan/hotrod)
+install (FILES ${PROTO_HDRS} DESTINATION include/infinispan/hotrod)
 install (FILES "${CMAKE_CURRENT_SOURCE_DIR}/License.txt" "${CMAKE_CURRENT_SOURCE_DIR}/dist/README.md" DESTINATION ${DOCDIR})
 
 if(NOT DEFINED HOTROD_PREBUILT_LIB_DIR)
@@ -370,7 +505,7 @@ if(NOT DEFINED HOTROD_PREBUILT_LIB_DIR)
     set_property(TARGET hotrod PROPERTY CXX_STANDARD_REQUIRED ON)
     set_property(TARGET hotrod-static PROPERTY CXX_STANDARD 11)
     set_property(TARGET hotrod-static PROPERTY CXX_STANDARD_REQUIRED ON)
-    install (TARGETS hotrod hotrod-static DESTINATION lib${LIB_SUFFIX})
+    install (TARGETS hotrod hotrod-static hotrod_protobuf DESTINATION lib${LIB_SUFFIX})
 endif(NOT DEFINED HOTROD_PREBUILT_LIB_DIR)
 
 include (CPack)

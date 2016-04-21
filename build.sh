@@ -7,8 +7,9 @@ BUILD_DIR=build
 wget -N http://download.eng.bos.redhat.com/devel/candidates/JDG/JDG-$JDG_VERSION-$MILESTONE_VERSION/jboss-datagrid-$JDG_VERSION.$MILESTONE_VERSION-server.zip
 
 rm -rf jboss-datagrid-${INFINISPAN_VERSION}
-unzip jboss-datagrid-$JDG_VERSION.$MILESTONE_VERSION-server.zip
+unzip -q jboss-datagrid-$JDG_VERSION.$MILESTONE_VERSION-server.zip
 export JBOSS_HOME=`pwd`/infinispan-server-${INFINISPAN_VERSION}
+cp test/data/* $JBOSS_HOME/standalone/configuration
 if [  "$1" == "DEBUG" ]
 then
   rm -rf ${BUILD_DIR} &&

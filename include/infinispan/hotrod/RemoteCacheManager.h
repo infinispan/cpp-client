@@ -9,6 +9,7 @@
 
 #include <string>
 #include <map>
+#include <memory>
 
 namespace infinispan {
 namespace hotrod {
@@ -114,14 +115,21 @@ public:
      * \return the default RemoteCache to interact with on a remote Infinispan server
      *
      */
-    template <class K, class V> RemoteCache<K, V> getCache(
+    template <class K, class V> RemoteCache<K, V> &getCache(
         bool forceReturnValue = false)
     {
-        RemoteCache<K, V> rcache;
-        initCache(rcache, forceReturnValue);
-        rcache.keyMarshaller.reset(new BasicMarshaller<K>(), &Marshaller<K>::destroy);
-        rcache.valueMarshaller.reset(new BasicMarshaller<V>(), &Marshaller<V>::destroy);
-        return rcache;
+        const std::string key = forceReturnValue ? "/true" : "/false";
+        if (remoteCacheMap.find(key)==remoteCacheMap.end())
+        {
+          RemoteCache<K,V> *pRc= new RemoteCache<K,V>();
+          remoteCacheMap[key]= std::unique_ptr<RemoteCacheBase>(pRc);
+          RemoteCache<K, V> *rcache=(RemoteCache<K, V> *)remoteCacheMap[key].get();
+          initCache(*rcache, forceReturnValue);
+          rcache->keyMarshaller.reset(new BasicMarshaller<K>(), &Marshaller<K>::destroy);
+          rcache->valueMarshaller.reset(new BasicMarshaller<V>(), &Marshaller<V>::destroy);
+          return *rcache;
+        }
+        return *(RemoteCache<K, V> *)remoteCacheMap[key].get();
     }
 
     /**
@@ -139,14 +147,21 @@ public:
      * \return the RemoteCache to interact with on a remote Infinispan server
      *
      */
-    template <class K, class V> RemoteCache<K, V> getCache(
+    template <class K, class V> RemoteCache<K, V> &getCache(
         const std::string& name, bool forceReturnValue = false)
     {
-        RemoteCache<K, V> rcache;
-        initCache(rcache, name.c_str(), forceReturnValue);
-        rcache.keyMarshaller.reset(new BasicMarshaller<K>(), &Marshaller<K>::destroy);
-        rcache.valueMarshaller.reset(new BasicMarshaller<V>(), &Marshaller<V>::destroy);
-        return rcache;
+        const std::string key = forceReturnValue ? name+"/true" : name+"/false";
+        if (remoteCacheMap.find(key)==remoteCacheMap.end())
+        {
+          RemoteCache<K,V> *pRc= new RemoteCache<K,V>();
+          remoteCacheMap[key]= std::unique_ptr<RemoteCacheBase>(pRc);
+          RemoteCache<K, V> *rcache=(RemoteCache<K, V> *)remoteCacheMap[key].get();
+          initCache(*rcache, name.c_str(), forceReturnValue);
+          rcache->keyMarshaller.reset(new BasicMarshaller<K>(), &Marshaller<K>::destroy);
+          rcache->valueMarshaller.reset(new BasicMarshaller<V>(), &Marshaller<V>::destroy);
+          return *rcache;
+        }
+        return *(RemoteCache<K, V> *)remoteCacheMap[key].get();
     }
 
     /**
@@ -168,17 +183,27 @@ public:
      * \return the default RemoteCache to interact with on a remote Infinispan server
      *
      */
-    template <class K, class V> RemoteCache<K, V> getCache(
-        Marshaller<K> *km, void (*kd)(Marshaller<K> *),
-        Marshaller<V> *vm, void (*vd)(Marshaller<V> *),
-        bool forceReturnValue = false)
-    {
-        RemoteCache<K, V> rcache;
-        initCache(rcache, forceReturnValue);
-        rcache.keyMarshaller.reset(km, kd);
-        rcache.valueMarshaller.reset(vm, vd);
-        return rcache;
-    }
+	template<class K, class V> RemoteCache<K, V> &getCache(Marshaller<K> *km,
+			void (*kd)(Marshaller<K> *), Marshaller<V> *vm,
+			void (*vd)(Marshaller<V> *), bool forceReturnValue = false) {
+		const std::string key = forceReturnValue ? "/true" : "/false";
+		if (remoteCacheMap.find(key) == remoteCacheMap.end()) {
+			RemoteCache<K, V> *pRc = new RemoteCache<K, V>();
+			remoteCacheMap[key] = std::unique_ptr < RemoteCacheBase > (pRc);
+			RemoteCache<K, V> *rcache =
+					(RemoteCache<K, V> *) remoteCacheMap[key].get();
+			initCache(*rcache, forceReturnValue);
+			rcache->keyMarshaller.reset(km, kd);
+			rcache->valueMarshaller.reset(km, kd);
+			return *rcache;
+		}
+		RemoteCache<K, V> *rcache =
+				(RemoteCache<K, V> *) remoteCacheMap[key].get();
+		initCache(*rcache, forceReturnValue);
+		rcache->keyMarshaller.reset(km, kd);
+		rcache->valueMarshaller.reset(vm, vd);
+		return *rcache;
+	}
 
     /**
      * Returns RemoteCache for the given key and value marshallers, the cache name and an
@@ -200,47 +225,34 @@ public:
      * \return the RemoteCache to interact with on a remote Infinispan server
      *
      */
-    template <class K, class V> RemoteCache<K, V> getCache(
+    template <class K, class V> RemoteCache<K, V> &getCache(
         Marshaller<K> *km, void (*kd)(Marshaller<K> *),
         Marshaller<V> *vm, void (*vd)(Marshaller<V> *),
         const std::string& name, bool forceReturnValue = false)
     {
-        RemoteCache<K, V> rcache;
-        initCache(rcache, name.c_str(), forceReturnValue);
-        rcache.keyMarshaller.reset(km, kd);
-        rcache.valueMarshaller.reset(vm, vd);
-        return rcache;
+		const std::string key = forceReturnValue ? name+"/true" : name+"/false";
+		if (remoteCacheMap.find(key) == remoteCacheMap.end()) {
+			RemoteCache<K, V> *pRc = new RemoteCache<K, V>();
+			remoteCacheMap[key] = std::unique_ptr < RemoteCacheBase > (pRc);
+			RemoteCache<K, V> *rcache =
+					(RemoteCache<K, V> *) remoteCacheMap[key].get();
+			initCache(*rcache, name.c_str(), forceReturnValue);
+			rcache->keyMarshaller.reset(km, kd);
+			rcache->valueMarshaller.reset(vm, vd);
+			return *rcache;
+		}
+		RemoteCache<K, V> *rcache =
+				(RemoteCache<K, V> *) remoteCacheMap[key].get();
+		initCache(*rcache, name.c_str(), forceReturnValue);
+		rcache->keyMarshaller.reset(km, kd);
+		rcache->valueMarshaller.reset(vm, vd);
+		return *rcache;
     }
 
-    // DEPRECATED
-    template <class K, class V> RemoteCache<K, V> getCache(
-        std::shared_ptr<Marshaller<K> > km, std::shared_ptr<Marshaller<V> > vm,
-        bool forceReturnValue = false)
-    {
-        RemoteCache<K, V> rcache;
-        initCache(rcache, forceReturnValue);
-        rcache.keyMarshallerPtr.reset(new portable::counted_wrapper<std::shared_ptr<Marshaller<K> > >(km), &genericDelete);
-        rcache.valueMarshallerPtr.reset(new portable::counted_wrapper<std::shared_ptr<Marshaller<V> > >(vm), &genericDelete);
-        rcache.keyMarshaller.reset(&*km, &genericNoDelete);
-        rcache.valueMarshaller.reset(&*vm, &genericNoDelete);
-        return rcache;
-    }
-
-    template <class K, class V> RemoteCache<K, V> getCache(
-        std::shared_ptr<Marshaller<K> > km, std::shared_ptr<Marshaller<V> > vm,
-        const std::string& name, bool forceReturnValue = false)
-    {
-        RemoteCache<K, V> rcache;
-        initCache(rcache, name.c_str(), forceReturnValue);
-        rcache.keyMarshallerPtr.reset(new portable::counted_wrapper<std::shared_ptr<Marshaller<K> > >(km), &genericDelete);
-        rcache.valueMarshallerPtr.reset(new portable::counted_wrapper<std::shared_ptr<Marshaller<V> > >(vm), &genericDelete);
-        rcache.keyMarshaller.reset(&*km, &genericNoDelete);
-        rcache.valueMarshaller.reset(&*vm, &genericNoDelete);
-        return rcache;
-    }
 
 private:
     void *impl;
+    std::map<std::string, std::unique_ptr<RemoteCacheBase> > remoteCacheMap;
 
     void init(const portable::map<portable::string, portable::string>& configuration, bool start);
 

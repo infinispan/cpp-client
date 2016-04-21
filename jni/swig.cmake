@@ -54,6 +54,7 @@ set_target_properties(hotrod-swig
     PROPERTIES
     OUTPUT_NAME "hotrod-jni"
     PREFIX "${CMAKE_SHARED_LIBRARY_PREFIX}")
+set_target_properties(hotrod-swig PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT}" )
 
 if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     set_source_files_properties("${JNI_DIR}/src/main/swig/javaJAVA_wrap.cxx" PROPERTIES COMPILE_FLAGS "-w -std=c++11")

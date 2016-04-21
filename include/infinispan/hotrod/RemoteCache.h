@@ -11,6 +11,7 @@
 #include "infinispan/hotrod/VersionedValue.h"
 #include "infinispan/hotrod/Version.h"
 #include "infinispan/hotrod/exceptions.h"
+#include "query.pb.h"
 
 #include <cmath>
 #include <set>
@@ -20,6 +21,7 @@
 #include <vector>
 #include <functional>
 #include <future>
+
 namespace infinispan {
 namespace hotrod {
 
@@ -608,6 +610,18 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
     {
     	return base_execute(*this,name,args);
     }
+
+    /**
+     * Execute a query on server
+     * \param cmdName name of the script
+     * \param args maps of (name,value) arguments
+     * \return byte[] result in dark matter shape
+     */
+    QueryResponse query(const QueryRequest &qr)
+    {
+    	return base_query(qr);
+    }
+
     /**
      * Unsupported operation in this release of Hot Rod client. UnsupportedOperationException is
      * thrown if his method is invoked.
@@ -765,10 +779,6 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
 
     portable::counting_ptr<Marshaller<K> > keyMarshaller;
     portable::counting_ptr<Marshaller<V> > valueMarshaller;
-
-    // DEPRECATED: Library code must not use these fields
-    portable::counting_ptr<portable::counted_wrapper<std::shared_ptr<Marshaller<K> > > > keyMarshallerPtr;
-    portable::counting_ptr<portable::counted_wrapper<std::shared_ptr<Marshaller<V> > > > valueMarshallerPtr;
 
   friend class RemoteCacheManager;
 };

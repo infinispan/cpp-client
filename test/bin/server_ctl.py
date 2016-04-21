@@ -18,7 +18,7 @@ def is_compressed_oops_supported(java):
         return (re.search("Unrecognized VM option 'UseCompressedOops'", error.output) is None)
     return true
 
-def static_java_args(java, jboss_home) :
+def static_java_args(java, jboss_home, config):
     # No luck calling standalone.bat without hanging.
     # This is what the batch file does in the default case for 6.0.0.
     cmd = [java, '-XX:+TieredCompilation', '-XX:+UseCompressedOops',
@@ -28,7 +28,7 @@ def static_java_args(java, jboss_home) :
             '-Dlogging.configuration=file:' + jboss_home + '/standalone/configuration/logging.properties',
             '-jar', jboss_home + '/jboss-modules.jar', '-mp', jboss_home + '/modules',
             '-jaxpmodule', 'javax.xml.jaxp-provider', 'org.jboss.as.standalone', 
-            '-Djboss.home.dir=' + jboss_home]
+            '-Djboss.home.dir=' + jboss_home, '-c', config]
     # This option doesn't work on a 32-bit JVM
 
     if not is_compressed_oops_supported(java):
@@ -40,6 +40,7 @@ def start(args):
     stop(verbose=False)
     java_exe = args[2]
     ispn_server_home = args[3]
+    ispn_server_config = args[4]
 
     # ctest likes to hang waiting for the subprocesses.  Different
     # tricks on Windows or Linux disassociate the daemon server from
@@ -47,14 +48,14 @@ def start(args):
 
     if os.name == 'nt' :
         # Hangs on standalone.bat script.  Call Java directly.
-        jproc = subprocess.Popen(static_java_args(java_exe, ispn_server_home), close_fds=True, creationflags=subprocess.CREATE_NEW_CONSOLE);
+        jproc = subprocess.Popen(static_java_args(java_exe, ispn_server_home, ispn_server_config), close_fds=True, creationflags=subprocess.CREATE_NEW_CONSOLE);
     else:
         startup_script = ispn_server_home + '/bin/' + 'standalone.sh';
         new_env = os.environ.copy()
         # Tell standalone.sh that you want termination signals to get through to the java process
         new_env['LAUNCH_JBOSS_IN_BACKGROUND'] = 'yes'
         server_out = open('server.out', 'w')
-        jproc = subprocess.Popen([startup_script], stdout=server_out, stderr=server_out, close_fds=True, env=new_env);
+        jproc = subprocess.Popen([startup_script, '-c', ispn_server_config], stdout=server_out, stderr=server_out, close_fds=True, env=new_env);
         server_out.close()
 
     output = open('servers.pkl', 'wb')

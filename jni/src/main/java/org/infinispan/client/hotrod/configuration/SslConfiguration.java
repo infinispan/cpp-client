@@ -41,7 +41,7 @@ public class SslConfiguration {
       this.sslContext = sslContext;
       this.trustStoreFileName = trustStoreFileName;
       this.trustStorePassword = trustStorePassword;
-      this.jniSslConfiguration = new org.infinispan.client.hotrod.jni.SslConfiguration();
+      this.jniSslConfiguration = new org.infinispan.client.hotrod.jni.SslConfiguration(this.enabled, null, null, null);
    }
 
    public boolean enabled() {

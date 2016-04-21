@@ -78,7 +78,7 @@ public interface RemoteCache<K, V> {
          TimeUnit maxIdleTimeUnit);
 
    CompletableFuture<V> replaceAsync(K k, V v, long lifespan, TimeUnit lifespanTimeUnit, long maxIdle,
-         TimeUnit maxIdleTimeUnit);
+            TimeUnit maxIdleTimeUnit);
 
    CompletableFuture<Boolean> replaceAsync(K k, V v1, V v2, long lifespan, TimeUnit lifespanTimeUnit);
 
@@ -93,21 +93,21 @@ public interface RemoteCache<K, V> {
    CompletableFuture<V> removeAsync(K k);
 
    CompletableFuture<V> putIfAbsentAsync(K k, V v, long lifespan, TimeUnit lifespanTimeUnit, long maxIdle,
-         TimeUnit maxIdleTimeUnit);
+            TimeUnit maxIdleTimeUnit);
 
    CompletableFuture<V> putIfAbsentAsync(K k, V v, long lifespan, TimeUnit lifespanTimeUnit);
 
    CompletableFuture<V> putIfAbsentAsync(K k, V v);
 
    CompletableFuture<V> putAsync(K k, V v, long lifespan, TimeUnit lifespanTimeUnit, long maxIdle,
-         TimeUnit maxIdleTimeUnit);
+            TimeUnit maxIdleTimeUnit);
 
    CompletableFuture<V> putAsync(K k, V v, long lifespan, TimeUnit lifespanTimeUnit);
 
    CompletableFuture<V> putAsync(K k, V v);
 
    CompletableFuture<Void> putAllAsync(Map<? extends K, ? extends V> map, long lifespan, TimeUnit lifespanTimeUnit,
-         long maxIdle, TimeUnit maxIdleUnit);
+            long maxIdle, TimeUnit maxIdleUnit);
 
    CompletableFuture<Void> putAllAsync(Map<? extends K, ? extends V> map, long arg1, TimeUnit arg2);
 
@@ -139,13 +139,12 @@ public interface RemoteCache<K, V> {
    ServerStatistics stats();
 
    CompletableFuture<Boolean> replaceWithVersionAsync(K key, V newValue, long version);
-
+    
    CompletableFuture<Boolean> replaceWithVersionAsync(K key, V newValue, long version, int lifespanSeconds);
-
+    
    CompletableFuture<Boolean> replaceWithVersionAsync(K key, V newValue, long version, int lifespanSeconds,
          int maxIdleSeconds);
 
    CompletableFuture<Boolean> removeWithVersionAsync(K key, long version);
-
-   CacheTopologyInfo getCacheTopologyInfo();
+    CacheTopologyInfo getCacheTopologyInfo();
 }

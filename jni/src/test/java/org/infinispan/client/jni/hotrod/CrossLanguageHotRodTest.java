@@ -140,6 +140,8 @@ public class CrossLanguageHotRodTest extends SingleCacheManagerTest {
    private Method javaGetVersionMethod;
    private Method javaStatsMethod;
    private Method javaGetStatsMapMethod;
+   private Method javaAddServersMethod;
+   private Method javaConfBuildMethod;
 
    @Override
    protected EmbeddedCacheManager createCacheManager() throws Exception {
@@ -191,24 +193,21 @@ public class CrossLanguageHotRodTest extends SingleCacheManagerTest {
           };
 
       Class<?> javaRCMClass = ucl.loadClass("org.infinispan.client.hotrod.RemoteCacheManager");
+      Class javaConfClass = ucl.loadClass("org.infinispan.client.hotrod.configuration.Configuration");
+      Class javaConfBuildClass = ucl.loadClass("org.infinispan.client.hotrod.configuration.ConfigurationBuilder");
       try {
          javaRCMClass.getMethod("getJniManager");
          fail("Could not load Java Hot Rod Client RemoteCacheManager");
       } catch (Exception e) {
          // This should throw an exception
       }
-      Class<?> javaConfigurationBuilderClass = ucl
-            .loadClass("org.infinispan.client.hotrod.configuration.ConfigurationBuilder");
-      Method addServersMethod = javaConfigurationBuilderClass.getMethod("addServers", new Class[] { String.class });
-      Method buildMethod = javaConfigurationBuilderClass.getMethod("build", new Class[] {});
-      Object javaConfigurationBuilderObject = javaConfigurationBuilderClass.getConstructor().newInstance();
-      javaConfigurationBuilderObject = addServersMethod.invoke(javaConfigurationBuilderObject,
-            "localhost:" + hotrodServer.getPort());
-      Class<?> javaConfigurationClass = ucl.loadClass("org.infinispan.client.hotrod.configuration.Configuration");
-      Object javaConfigurationObject = buildMethod.invoke(javaConfigurationBuilderObject);
-      Constructor<?> ctor = javaRCMClass.getConstructor(new Class[] { javaConfigurationClass });
-      javaRemoteCacheManagerObject = ctor.newInstance(javaConfigurationObject);
+      Constructor<?> ctor = javaRCMClass.getConstructor(new Class[] { javaConfClass });
       javaGetCacheMethod = javaRCMClass.getDeclaredMethod("getCache", new Class[] { String.class });
+      javaAddServersMethod= javaConfBuildClass.getDeclaredMethod("addServers", new Class[] { String.class });
+      javaConfBuildMethod = javaConfBuildClass.getDeclaredMethod("build", null);
+      Object newInstance = javaConfBuildClass.getConstructor(null).newInstance();
+      Object invoke = javaAddServersMethod.invoke(newInstance, "localhost:"+hotrodServer.getPort());
+      javaRemoteCacheManagerObject = ctor.newInstance(javaConfBuildMethod.invoke(invoke));
 
       javaCacheObject = javaGetCacheMethod.invoke(javaRemoteCacheManagerObject, DEFAULT_CACHE);
       Class<?> javaRCClass = ucl.loadClass("org.infinispan.client.hotrod.RemoteCache");

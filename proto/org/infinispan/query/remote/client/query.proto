@@ -1,0 +1,102 @@
+import "message-wrapping.proto";
+
+package org.infinispan.query.remote.client;
+
+/**
+ * @TypeId(1000101)
+ */
+message QueryRequest {
+
+   /**
+    * The query string, expressed in JPA query language.
+    * NOTE: currently only a limited subset of the JPA query language is supported.
+    */
+   required string jpqlString = 1;
+
+   // NOTE: id 2 was used for sort criteria, which is now into the ORDER BY clause inside the jpqlString
+
+   /**
+    * The number of matching results to skip before the first returned result.
+    */
+   optional int64 startOffset = 3;
+
+   /**
+    * Maximum number of matching results to return.
+    */
+   optional int32 maxResults = 4;
+
+   /**
+    * Multiple, optional named parameters. Each name must occur only once.
+    */
+   repeated NamedParameter namedParameters = 5;
+
+   message NamedParameter {
+
+      /**
+       * Parameter name.
+       */
+      required string name = 1;
+
+      /**
+       * Parameter value.
+       */
+      required org.infinispan.protostream.WrappedMessage value = 2;
+   }
+}
+
+/**
+ * @TypeId(1000102)
+ */
+message QueryResponse {
+
+   /**
+    * The number of returned results.
+    */
+   required int32 numResults = 1;
+
+   /**
+    * Indicates presence and size of projections.
+    *
+    *      0 - no projection
+    * 1 .. N - projection with N components
+    *    < 0 - illegal value
+    */
+   required int32 projectionSize = 2;
+
+   /**
+    * The list of matching results. The size should be either numResults, if no projections are used, or numResults *
+    * projectionSize otherwise. If projections are used, then each group of projectionSize consecutive elements
+    * represent together a result.
+    */
+   repeated org.infinispan.protostream.WrappedMessage results = 3;
+
+   required int64 totalResults = 4;
+}
+
+/**
+ * @TypeId(1000103)
+ */
+message FilterResult {
+
+   optional bytes instance = 1;
+
+   repeated org.infinispan.protostream.WrappedMessage projection = 2;
+
+   repeated org.infinispan.protostream.WrappedMessage sortProjection = 3;
+}
+
+/**
+ * @TypeId(1000104)
+ */
+message ContinuousQueryResult {
+
+   required bool isJoining = 1;
+
+   required bytes key = 2;
+
+   /* Only present if joining == true and projection is missing */
+   optional bytes value = 3;
+
+   /* Only present if joining == true and value is missing */
+   repeated org.infinispan.protostream.WrappedMessage projection = 4;
+}

@@ -1,5 +1,3 @@
-
-
 #include "hotrod/impl/operations/PingOperation.h"
 #include "hotrod/impl/protocol/HeaderParams.h"
 #include "hotrod/impl/transport/Transport.h"

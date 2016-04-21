@@ -24,7 +24,8 @@ public class JniTest implements IMethodSelector {
 	"CacheManagerStoppedTest.testPutAllAsync",
 	"CacheManagerStoppedTest.testPutAsync",
 	"CacheManagerStoppedTest.testReplaceAsync",
-	"CacheManagerStoppedTest.testVersionedRemoveAsync"};
+	"CacheManagerStoppedTest.testVersionedRemoveAsync",
+        "HotRodAsyncReplicationTest.testPutKeyValue"};
 	
    private final static HashSet<String> passOverTestSet = new HashSet<String>(Arrays.asList(passOverTestList));
 	
@@ -97,8 +98,7 @@ public class JniTest implements IMethodSelector {
             "HotRodIntegrationTest.testGetWithMetadata",
             "RemoteCacheManagerTest.testGetUndefinedCache",
             "ServerShutdownTest.testServerShutdownWithConnectedClient",
-            "ServerShutdownTest.testServerShutdownWithoutConnectedClient",
-            "SizeTest.testPersistentDistributedCacheSize"
+            "ServerShutdownTest.testServerShutdownWithoutConnectedClient"
       ));
       Set<String> expectedSkips = Collections.emptySet();
 
