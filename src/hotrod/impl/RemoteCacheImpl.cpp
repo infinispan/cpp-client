@@ -239,7 +239,7 @@ void RemoteCacheImpl::assertRemoteCacheManagerIsStarted() {
                  << "Use RemoteCacheManager.start before using the remote cache.");
    }
 }
-std::vector<char> RemoteCacheImpl::execute(RemoteCacheBase& /*remoteCacheBase*/, std::vector<char> cmdNameBytes, const portable::map<std::vector<char>,std::vector<char>>& args) {
+std::vector<char> RemoteCacheImpl::execute(std::vector<char> cmdNameBytes, const std::map<std::vector<char>,std::vector<char>>& args) {
 	assertRemoteCacheManagerIsStarted();
 
     std::unique_ptr<ExecuteCmdOperation> op(operationsFactory->newExecuteCmdOperation(cmdNameBytes, args));

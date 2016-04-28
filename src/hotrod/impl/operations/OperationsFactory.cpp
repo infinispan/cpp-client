@@ -148,7 +148,7 @@ FaultTolerantPingOperation* OperationsFactory::newFaultTolerantPingOperation() {
 }
 
 ExecuteCmdOperation* OperationsFactory::newExecuteCmdOperation(
-    const std::vector<char>& cmdName, const portable::map<std::vector<char>,std::vector<char>>& values)
+    const std::vector<char>& cmdName, const std::map<std::vector<char>,std::vector<char>>& values)
 {
     return new ExecuteCmdOperation(
         codec, transportFactory, cacheNameBytes,

@@ -485,7 +485,7 @@ int main(int argc, char** argv) {
             std::map<std::string,std::string> s;
             std::string argName = std::string("a");
             std::string argValue = std::string("b");
-            // execute() operation wants JBossMarshalling format sometimes
+            // execute() operation needs explicit JBossMarshalling<string> format for argument values
             s.insert(std::pair<std::string, std::string>(argName,JBasicMarshaller<std::string>::addPreamble(argValue)));
             std::string script ("// mode=local,language=javascript\n "
             "var cache = cacheManager.getCache();\n"
@@ -497,18 +497,17 @@ int main(int argc, char** argv) {
             std::string p_script=JBasicMarshaller<std::string>::addPreamble(script);
             RemoteCache<std::string, std::string> scriptCache=cacheManager.getCache<std::string,std::string>("___script_cache",false);
             scriptCache.put(p_script_name, p_script);
-            char* execResult = cache.execute(script_name,s);
+            std::vector<unsigned char> execResult = cache.execute(script_name,s);
 
 
             // We know the remote script returns a string and
             // we use the helper to unmarshall
-            std::string res(JBasicMarshallerHelper::unmarshall<std::string>(execResult));
+            std::string res(JBasicMarshallerHelper::unmarshall<std::string>((char*)execResult.data()));
             if (res.compare("abc")!=0)
             {
                 std::cerr << "fail: cache.exec() returned unexpected result"<< std::endl;
                 return 1;
             }
-            delete(execResult);
         } catch (const Exception& e) {
             std::cout << "is: " << typeid(e).name() << '\n';
             std::cerr << "fail unexpected exception: " << e.what() << std::endl;
@@ -541,7 +540,8 @@ int main(int argc, char** argv) {
             std::map<std::string,std::string> s;
             std::string argName = std::string("a");
             std::string argValue = std::string("b");
-            s.insert(std::pair<std::string, std::string>(argName,argValue));
+            // execute() operation needs explicit JBossMarshalling<string> format for argument values
+            s.insert(std::pair<std::string, std::string>(argName,JBasicMarshaller<std::string>::addPreamble(argValue)));
             std::string script ("// mode=local,language=javascript\n "
             "var cache = cacheManager.getCache();\n"
             "cache.put(\"a\", \"abc\");\n"
@@ -552,17 +552,16 @@ int main(int argc, char** argv) {
                     &Marshaller<std::string>::destroy,
                     vm,
                     &Marshaller<std::string>::destroy,"___script_cache").put(script_name, script);
-            char* execResult = cache.execute(script_name,s);
+            std::vector<unsigned char> execResult = cache.execute(script_name,s);
 
             // We know the remote script returns a string and
             // we use the helper to unmarshall
-            std::string res(JBasicMarshallerHelper::unmarshall<std::string>(execResult));
+            std::string res(JBasicMarshallerHelper::unmarshall<std::string>((char *)execResult.data()));
             if (res.compare("abc")!=0)
             {
                 std::cerr << "fail: cache.exec() returned unexpected result"<< std::endl;
                 return 1;
             }
-            delete(execResult);
         } catch (const Exception& e) {
             std::cout << "is: " << typeid(e).name() << '\n';
             std::cerr << "fail unexpected exception: " << e.what() << std::endl;

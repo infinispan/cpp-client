@@ -24,14 +24,14 @@ protected:
             Topology&                                 topologyId_,
             uint32_t                                         flags_,
             const std::vector<char>&                                   cmdName_,
-            const portable::map<std::vector<char>,std::vector<char>>&   cmdArgs_);
+            const std::map<std::vector<char>,std::vector<char>>&   cmdArgs_);
             std::vector<char> sendExecuteOperation(
                     transport::Transport&     transport,
 					uint8_t                                       opCode,
 					uint8_t                                       opRespCode);
 	std::vector<char> executeOperation(infinispan::hotrod::transport::Transport& transport);
     const std::vector<char>& cmdName;
-    const portable::map<std::vector<char>,std::vector<char>>& cmdArgs;
+    const std::map<std::vector<char>,std::vector<char>>& cmdArgs;
     friend class OperationsFactory;
 };
 
