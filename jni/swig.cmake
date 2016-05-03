@@ -46,7 +46,7 @@ set(CMAKE_SWIG_OUTDIR "${JNI_DIR}/src/main/java/org/infinispan/client/hotrod/jni
 set(CMAKE_SWIG_FLAGS -package "org.infinispan.client.hotrod.jni")
 set_source_files_properties("jni/src/main/swig/java.i" PROPERTIES CPLUSPLUS ON)
 
-swig_add_module(hotrod-swig java "${CMAKE_CURRENT_SOURCE_DIR}/jni/src/main/swig/java.i")
+swig_add_module(hotrod-swig java "${CMAKE_CURRENT_SOURCE_DIR}/jni/src/main/swig/java.i" ${PROTO_HDRS})
 include_directories(${JNI_INCLUDE_DIRS})
 swig_link_libraries(hotrod-swig hotrod)
 

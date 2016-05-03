@@ -130,7 +130,7 @@
                 </drivers>
             </datasources>
         </subsystem>
-        <subsystem xmlns="urn:infinispan:server:core:9.0" default-cache-container="local">
+        <subsystem xmlns="urn:infinispan:server:core:8.3" default-cache-container="local">
             <cache-container name="local" default-cache="default" statistics="true">
                 <global-state/>
                 <local-cache name="default" start="EAGER">
@@ -144,7 +144,7 @@
                 <local-cache name="namedCache" start="EAGER"/>
             </cache-container>
         </subsystem>
-        <subsystem xmlns="urn:infinispan:server:endpoint:9.0">
+        <subsystem xmlns="urn:infinispan:server:endpoint:8.0">
             <hotrod-connector socket-binding="hotrod" cache-container="local">
                 <topology-state-transfer lock-timeout="1000" replication-timeout="5000"/>
                 <encryption security-realm="ApplicationRealm" require-ssl-client-auth="false"/>
