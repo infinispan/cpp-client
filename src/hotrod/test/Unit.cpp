@@ -461,13 +461,15 @@ HR_EXPORT void updateServersTest() {
 HR_EXPORT void runConcurrentCodecWritesTest() {
     Codec10 *testedCodec = NULL;
     Thread** threads = new Thread*[CODEC_TEST_NUMBER_OF_ITERATIONS_PER_TEST];
+    CodecInvoker** ci = new CodecInvoker*[CODEC_TEST_NUMBER_OF_ITERATIONS_PER_TEST];
     testedCodec = (Codec10*)CodecFactory::getCodec(Configuration::PROTOCOL_VERSION_10);
 
     for(int testIterationCounter = 0; testIterationCounter < CODEC_TEST_NUMBER_OF_TESTS; ++testIterationCounter) {
         int expectedIterations = CODEC_TEST_NUMBER_OF_ITERATIONS_PER_TEST * (testIterationCounter + 1);
 
         for(int i = 0; i < CODEC_TEST_NUMBER_OF_ITERATIONS_PER_TEST; ++i) {
-            threads[i] = new Thread(new CodecInvoker(testedCodec));
+        	ci[i] = new CodecInvoker(testedCodec);
+            threads[i] = new Thread(ci[i]);
         }
 
         //make sure all thread are done
@@ -481,12 +483,15 @@ HR_EXPORT void runConcurrentCodecWritesTest() {
         }
 
         for(int i = 0; i < CODEC_TEST_NUMBER_OF_ITERATIONS_PER_TEST; ++i) {
+        	delete ci[i];
             delete threads[i];
             threads[i] = NULL;
+            ci[i] = NULL;
         }
     }
 
     delete[] threads;
+    delete[] ci;
     //The factory controls the lifecycle.
     testedCodec = NULL;
     INFO("runConcurrentCodecWritesTest test passed");
