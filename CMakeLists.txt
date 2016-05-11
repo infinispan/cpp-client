@@ -512,6 +512,24 @@ install (FILES ${includes} DESTINATION include/infinispan/hotrod)
 install (FILES ${PROTO_HDRS} DESTINATION include/infinispan/hotrod)
 install (FILES "${CMAKE_CURRENT_SOURCE_DIR}/License.txt" "${CMAKE_CURRENT_SOURCE_DIR}/dist/README.md" DESTINATION ${DOCDIR})
 
+# Include protobuf library in the distribution
+install (DIRECTORY ${PROTOBUF_INCLUDE_DIRS}/google/protobuf DESTINATION include/google)
+get_filename_component(real_protobuf_library "${PROTOBUF_LIBRARY}" REALPATH)
+get_filename_component(real_protoc_library "${PROTOBUF_PROTOC_LIBRARY}" REALPATH)
+install (FILES ${real_protobuf_library} ${real_protoc_library} ${PROTOBUF_LIBRARY} ${PROTOBUF_PROTOC_LIBRARY} DESTINATION lib${LIB_SUFFIX})
+install (FILES ${PROTOBUF_PROTOC_EXECUTABLE} DESTINATION bin)
+
+# If on windows, include openssl as well
+if(WIN32)
+    install (DIRECTORY ${OPENSSL_INCLUDE_DIR}/openssl DESTINATION include)
+    set (real_openssl_libraries "")
+    foreach (_file ${OPENSSL_LIBRARIES})
+        get_filename_component(_resolvedFile "${_file}" REALPATH)
+        list (APPEND real_openssl_libraries "${_resolvedFile}")
+    endforeach()
+    install (FILES ${real_openssl_libraries} ${OPENSSL_LIBRARIES} DESTINATION lib${LIB_SUFFIX})
+endif(WIN32)
+
 if(NOT DEFINED HOTROD_PREBUILT_LIB_DIR)
     set_property(TARGET hotrod PROPERTY CXX_STANDARD 11)
     set_property(TARGET hotrod PROPERTY CXX_STANDARD_REQUIRED ON)
