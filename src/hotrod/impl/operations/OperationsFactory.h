@@ -94,7 +94,7 @@ class OperationsFactory
     SizeOperation* newSizeOperation();
 
     ExecuteCmdOperation* newExecuteCmdOperation(
-        const std::vector<char>& cmdName, const portable::map<std::vector<char>,std::vector<char>>& values);
+        const std::vector<char>& cmdName, const std::map<std::vector<char>,std::vector<char>>& values);
 
     QueryOperation* newQueryOperation(const QueryRequest& qr);
 

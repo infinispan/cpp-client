@@ -16,7 +16,7 @@ ExecuteCmdOperation::ExecuteCmdOperation(
     Topology&  topologyId_,
     uint32_t          flags_,
     const std::vector<char>&    cmdName_,
-	const portable::map<std::vector<char>,std::vector<char>>&   cmdArgs_)
+	const std::map<std::vector<char>,std::vector<char>>&   cmdArgs_)
 	: RetryOnFailureOperation<std::vector<char>>(
         codec_, transportFactory_, cacheName_, topologyId_, flags_), cmdName(cmdName_), cmdArgs(cmdArgs_)
 {}
@@ -39,10 +39,11 @@ std::vector<char> ExecuteCmdOperation::sendExecuteOperation(
     transport.writeVInt(this->cmdArgs.size());
 
     for (int i=this->cmdArgs.size()-1; i>=0; i--)
+    for (auto it = cmdArgs.begin(); it!=cmdArgs.end(); it++)
     {
         std::vector<char> nameBuf, valBuf;
-    	transport.writeArray(this->cmdArgs.data()[i].key);
-    	transport.writeArray(this->cmdArgs.data()[i].value);
+    	transport.writeArray(it->first);
+    	transport.writeArray(it->second);
     }
     transport.flush();
 

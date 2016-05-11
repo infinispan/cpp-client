@@ -117,29 +117,42 @@ void RemoteCacheBase::base_ping() {
 void RemoteCacheBase::base_withFlags(Flag flags) {
     IMPL->withFlags(flags);
 }
-char *RemoteCacheBase::base_execute(RemoteCacheBase& remoteCacheBase, std::string cmdName, const std::map<std::string,std::string>& args){
+std::vector<unsigned char> RemoteCacheBase::base_execute(const std::string &cmdName, const std::map<std::string,std::string>& args){
 	std::map<std::vector<char>,std::vector<char>> m;
     std::vector<char> cmdNameBuf;
-    std::vector<char> argNameBuf, argValueBuf;
+//    std::vector<char> argNameBuf, argValueBuf;
 	for (std::map<std::string,std::string>::const_iterator it=args.begin(); it!=args.end(); ++it)
 	{
-        baseValueMarshall(&(it->second), argValueBuf);
-        std::vector<char> argNameBytes(it->first.data(),it->first.data()+it->first.size());
-        std::vector<char> argValueBytes(argValueBuf.data(),argValueBuf.data()+argValueBuf.size());
+        std::vector<char> argNameBytes(it->first.begin(),it->first.end());
+        std::vector<char> argValueBytes(it->second.begin(),it->second.end());
         m.insert(std::pair<std::vector<char>,std::vector<char>>(argNameBytes, argValueBytes));
 	}
-	portable::map<std::vector<char>,std::vector<char>> pm(m);
     const std::vector<char> cmdNameBytes((cmdName.data()),(cmdName.data())+cmdName.size());
-	std::vector<char> resBytes= IMPL->execute(remoteCacheBase, cmdNameBytes, pm);
-    char *result = new char[resBytes.size()];
-    std::copy(resBytes.begin(),resBytes.end(),result);
-	return result;
+	std::vector<char> resBytes= IMPL->execute(cmdNameBytes, m);
+
+	std::vector<unsigned char> ures(reinterpret_cast<unsigned char*>(resBytes.data()),reinterpret_cast<unsigned char*>(resBytes.data()+resBytes.size()));
+	return ures;
 }
 
 QueryResponse RemoteCacheBase::base_query(const QueryRequest &qr)
 {
 	return IMPL->query(qr);
 }
+
+std::vector<unsigned char> RemoteCacheBase::base_query_char(std::vector<unsigned char> qr, size_t size)
+{
+	QueryRequest req;
+	req.ParseFromArray(qr.data(),size);
+
+	QueryResponse resp= IMPL->query(req);
+
+	int respSize = resp.ByteSize();
+	std::vector<unsigned char> respToChar(respSize);
+        resp.SerializeToArray(respToChar.data(),respSize);
+	return respToChar;
+}
+
+
 
 CacheTopologyInfo RemoteCacheBase::base_getCacheTopologyInfo() {
 	TRACE("Calling RemoteCache for getCacheTopologyInfo");

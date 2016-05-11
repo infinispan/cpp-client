@@ -39,7 +39,7 @@ public:
     void  stats(portable::map<portable::string,portable::string> &stats);
     void  clear();
     uint64_t size();
-    std::vector<char> execute(RemoteCacheBase& /*remoteCacheBase*/, std::vector<char> cmdName, const portable::map<std::vector<char>,std::vector<char>>& args);
+    std::vector<char> execute(std::vector<char> cmdName, const std::map<std::vector<char>,std::vector<char>>& args);
     QueryResponse query(const QueryRequest & qr);
     operations::PingResult ping();
     CacheTopologyInfo getCacheTopologyInfo();
