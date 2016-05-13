@@ -521,8 +521,7 @@ install (FILES ${PROTOBUF_PROTOC_EXECUTABLE} DESTINATION bin)
 
 # If on windows, include openssl as well
 if(WIN32)
-    install (DIRECTORY ${OPENSSL_INCLUDE_DIR}/openssl DESTINATION include)
-    install (DIRECTORY ${OPENSSL_ROOT_DIR}/bin ${OPENSSL_ROOT_DIR}/lib DESTINATION .)
+    install (DIRECTORY "${OPENSSL_ROOT_DIR}/lib" "${OPENSSL_ROOT_DIR}/bin" "${OPENSSL_ROOT_DIR}/etc" "${OPENSSL_ROOT_DIR}/include" "${OPENSSL_ROOT_DIR}/share" DESTINATION .)
 endif(WIN32)
 
 if(NOT DEFINED HOTROD_PREBUILT_LIB_DIR)
