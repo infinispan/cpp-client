@@ -24,8 +24,7 @@ namespace hotrod {
  *
  */
 // Methods on this class cannot be invoked across library boundary, therefore, it can use STL.
-class ConfigurationBuilder
-    : public Builder<Configuration>
+class ConfigurationBuilder : public Builder<Configuration>
 {
   public:
     ConfigurationBuilder():
@@ -247,9 +246,6 @@ class ConfigurationBuilder
         m_maxRetries = configuration.getMaxRetries();
         return *this;
     }
-
-    // DEPRECATED: use Configuration::PROTOCOL_VERSION_12 instead
-    HR_EXTERN static const char *PROTOCOL_VERSION_12;
 
   private:
     int m_connectionTimeout;
