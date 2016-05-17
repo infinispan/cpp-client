@@ -1,6 +1,5 @@
 #include <infinispan/hotrod/exceptions.h>
 #include <infinispan/hotrod/InetSocketAddress.h>
-#include <infinispan/hotrod/ServerNameId.h>
 #include "hotrod/impl/transport/tcp/TcpTransportFactory.h"
 #include "hotrod/impl/transport/tcp/TcpTransport.h"
 #include "hotrod/impl/transport/tcp/TransportObjectFactory.h"
@@ -50,32 +49,12 @@ void TcpTransportFactory::start(
 
     createAndPreparePool();
 
-    //  update map conversion ServerIdentity/INetSocketAddress
-    std::vector<ServerNameId> serverNames;
-    for (std::vector<InetSocketAddress>::const_iterator it =
-            initialServers.begin(); it != initialServers.end(); ++it) {
-    	const ServerNameId tmp = (ServerNameId)*it;
-    	if (serverNameMap.find(tmp)==serverNameMap.end())
-    	{
-    		serverNameMap.insert(std::make_pair(tmp,InetSocketAddress(*it)));
-    	}
-    	serverNames.push_back(tmp);
-    }
-
-    balancer->setServers(serverNames);
+    balancer->setServers(initialServers);
     pingServers();
  }
 
 Transport& TcpTransportFactory::getTransport(const std::vector<char>& /*cacheName*/) {
-    const InetSocketAddress* server = NULL;
-    {
-        ScopedLock<Mutex> l(lock);
-        std::map<ServerNameId,InetSocketAddress>::iterator it=serverNameMap.find(balancer->nextServer());
-        if (it==serverNameMap.end()){
-          throw Exception("Server not found!");
-        }
-    	server=&it->second;
-    }
+    const InetSocketAddress* server = &balancer->nextServer();
     return borrowTransportFromPool(*server);
 }
 
@@ -227,20 +206,7 @@ void TcpTransportFactory::updateServers(std::vector<InetSocketAddress>& newServe
     // failed servers) are in the pool now. But after this, the pool won't be asked for connections to failed servers,
     // as the balancer will only know about the active servers
 
-    //3. update map conversion ServerIdentity/INetSocketAddress
-    std::vector<ServerNameId> newServerNames;
-    for (std::vector<InetSocketAddress>::const_iterator it =
-            newServers.begin(); it != newServers.end(); ++it) {
-    	const ServerNameId tmp = (ServerNameId)*it;
-    	if (serverNameMap.find(tmp)==serverNameMap.end())
-    	{
-    		serverNameMap.insert(std::make_pair(tmp,InetSocketAddress(*it)));
-    	}
-    	newServerNames.push_back(tmp);
-    }
-
-    topologyInfo->updateServers(newServers);
-    balancer->setServers(newServerNames);
+    balancer->setServers(newServers);
 
     //3. Now just remove failed servers
     for (std::vector<InetSocketAddress>::const_iterator it =

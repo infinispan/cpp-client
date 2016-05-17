@@ -12,7 +12,7 @@ FailOverRequestBalancingStrategy* RoundRobinBalancingStrategy::newInstance() {
 
 RoundRobinBalancingStrategy::RoundRobinBalancingStrategy() : index(0) {}
 
-void RoundRobinBalancingStrategy::setServers(const std::vector<ServerNameId>& s) {
+void RoundRobinBalancingStrategy::setServers(const std::vector<transport::InetSocketAddress>& s) {
     servers = s;
     // keep the old index if possible so that we don't produce more requests for the first server
     if (index >= servers.size()) {
@@ -20,16 +20,16 @@ void RoundRobinBalancingStrategy::setServers(const std::vector<ServerNameId>& s)
     }
 }
 
-const ServerNameId& RoundRobinBalancingStrategy::nextServer() {
-    const ServerNameId& server = getServerByIndex(index++);
+const transport::InetSocketAddress& RoundRobinBalancingStrategy::nextServer() {
+    const transport::InetSocketAddress& server = getServerByIndex(index++);
     if (index >= servers.size()) {
        index = 0;
     }
     return server;
 }
 
-const ServerNameId& RoundRobinBalancingStrategy::getServerByIndex(size_t pos) {
-    const ServerNameId& server = servers[pos];
+const transport::InetSocketAddress& RoundRobinBalancingStrategy::getServerByIndex(size_t pos) {
+    const transport::InetSocketAddress& server = servers[pos];
     return server;
 }
 

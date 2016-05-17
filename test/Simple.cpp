@@ -29,7 +29,7 @@ namespace infinispan {
                     return new MyRoundRobinBalancingStrategy();
                 }
 
-                void setServers(const std::vector<ServerNameId> &s) {
+                void setServers(const std::vector<transport::InetSocketAddress> &s) {
                     servers = s;
                     // keep the old index if possible so that we don't produce more requests for the first server
                     if (index >= servers.size()) {
@@ -39,15 +39,15 @@ namespace infinispan {
 
                 ~MyRoundRobinBalancingStrategy() { }
 
-                const ServerNameId &getServerByIndex(size_t pos) {
-                    const ServerNameId &server = servers[pos];
+                const transport::InetSocketAddress &getServerByIndex(size_t pos) {
+                    const transport::InetSocketAddress &server = servers[pos];
                     return server;
                 }
             private:
-                std::vector<ServerNameId> servers;
+                std::vector<transport::InetSocketAddress> servers;
                 size_t index;
-                const ServerNameId &nextServer() {
-                    const ServerNameId &server = getServerByIndex(index++);
+                const transport::InetSocketAddress &nextServer() {
+                    const transport::InetSocketAddress &server = getServerByIndex(index++);
                     if (index >= servers.size()) {
                         index = 0;
                     }
