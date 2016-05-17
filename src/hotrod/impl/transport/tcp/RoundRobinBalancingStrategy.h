@@ -11,15 +11,15 @@ class RoundRobinBalancingStrategy : public FailOverRequestBalancingStrategy
 {
   public:
 	RoundRobinBalancingStrategy();
-    void setServers(const std::vector<ServerNameId>& servers);
-    const ServerNameId& nextServer();
+    void setServers(const std::vector<transport::InetSocketAddress>& servers);
+    const transport::InetSocketAddress& nextServer();
 	static FailOverRequestBalancingStrategy* newInstance();
 
   private:
-    std::vector<ServerNameId> servers;
+    std::vector<transport::InetSocketAddress> servers;
     size_t index;
 
-    const ServerNameId& getServerByIndex(size_t pos);
+    const transport::InetSocketAddress& getServerByIndex(size_t pos);
 };
 
 }}} // namespace infinispan::hotrod::transport

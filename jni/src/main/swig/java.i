@@ -22,7 +22,7 @@
 #include <infinispan/hotrod/defs.h>
 #include <infinispan/hotrod/ConnectionPoolConfiguration.h>
 #include <infinispan/hotrod/exceptions.h>
-#include <infinispan/hotrod/ServerNameId.h>
+#include <infinispan/hotrod/InetSocketAddress.h>
 #include <infinispan/hotrod/FailOverRequestBalancingStrategy.h>
 #include <infinispan/hotrod/ServerConfiguration.h>
 #include <infinispan/hotrod/SslConfiguration.h>
@@ -36,10 +36,10 @@
 #include <infinispan/hotrod/RemoteCacheManager.h>
 #include <infinispan/hotrod/RemoteCache.h>
 #include <infinispan/hotrod/Marshaller.h>
-#include <infinispan/hotrod/InetSocketAddress.h>
 #include <infinispan/hotrod/CacheTopologyInfo.h>
 
 #include <iostream>
+using namespace infinispan::hotrod;
 %}
 
 %template(MapType) std::map<std::string, std::string>;
@@ -47,12 +47,23 @@
 
 %include "infinispan/hotrod/defs.h"
 %include "infinispan/hotrod/ImportExport.h"
-%include "infinispan/hotrod/ServerNameId.h"
 %include "infinispan/hotrod/FailOverRequestBalancingStrategy.h"
 %include "infinispan/hotrod/Builder.h"
 %include "infinispan/hotrod/ConnectionPoolConfiguration.h"
 %include "infinispan/hotrod/ServerConfiguration.h"
 %include "infinispan/hotrod/SslConfiguration.h"
+
+%immutable infinispan::hotrod::Configuration::PROTOCOL_VERSION_10;
+%immutable infinispan::hotrod::Configuration::PROTOCOL_VERSION_11;
+%immutable infinispan::hotrod::Configuration::PROTOCOL_VERSION_12;
+%immutable infinispan::hotrod::Configuration::PROTOCOL_VERSION_13;
+%immutable infinispan::hotrod::Configuration::PROTOCOL_VERSION_20;
+%immutable infinispan::hotrod::Configuration::PROTOCOL_VERSION_21;
+%immutable infinispan::hotrod::Configuration::PROTOCOL_VERSION_22;
+%immutable infinispan::hotrod::Configuration::PROTOCOL_VERSION_23;
+%immutable infinispan::hotrod::Configuration::PROTOCOL_VERSION_24;
+
+
 %include "infinispan/hotrod/Configuration.h"
 
 %template(Builder_conf) infinispan::hotrod::Builder<infinispan::hotrod::Configuration>;
@@ -60,7 +71,14 @@
 %template(Builder_poolconf) infinispan::hotrod::Builder<infinispan::hotrod::ConnectionPoolConfiguration>;
 %template(Builder_sslconf) infinispan::hotrod::Builder<infinispan::hotrod::SslConfiguration>;
 
-%include "infinispan/hotrod/ServerNameId.h"
+%ignore infinispan::hotrod::transport::InetSocketAddress::operator==;
+%ignore infinispan::hotrod::transport::InetSocketAddress::operator=;
+%ignore operator<<;
+%ignore infinispan::hotrod::transport::operator<<;
+%ignore infinispan::hotrod::transport::InetSocketAddress::operator<;
+%ignore infinispan::hotrod::RemoteCache::operator=;
+
+%include "infinispan/hotrod/InetSocketAddress.h"
 %include "infinispan/hotrod/FailOverRequestBalancingStrategy.h"
 %include "infinispan/hotrod/ConfigurationChildBuilder.h"
 %include "infinispan/hotrod/SslConfigurationBuilder.h"
@@ -74,7 +92,6 @@
 %include "infinispan/hotrod/RemoteCacheManager.h"
 %include "infinispan/hotrod/RemoteCache.h"
 %include "infinispan/hotrod/Marshaller.h"
-%include "infinispan/hotrod/InetSocketAddress.h"
 %include "infinispan/hotrod/CacheTopologyInfo.h"
 
 %include "infinispan/hotrod/exceptions.h"

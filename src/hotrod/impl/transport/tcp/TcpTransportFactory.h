@@ -66,7 +66,6 @@ class TcpTransportFactory : public TransportFactory
     std::shared_ptr<TransportObjectFactory> transportFactory;
     std::shared_ptr<ConnectionPool> connectionPool;
     std::shared_ptr<FailOverRequestBalancingStrategy> balancer;
-    std::map<const ServerNameId,InetSocketAddress> serverNameMap;
     void createAndPreparePool();
     void updateTransportCount();
     void pingServers();

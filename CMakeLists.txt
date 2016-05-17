@@ -261,7 +261,6 @@ else(DEFINED HOTROD_PREBUILT_LIB_DIR)
       src/hotrod/api/RemoteCacheBase.cpp
       src/hotrod/api/exceptions.cpp
       src/hotrod/impl/configuration/Configuration.cpp
-      src/hotrod/impl/configuration/ConfigurationBuilder.cpp
       src/hotrod/impl/configuration/ConnectionPoolConfiguration.cpp
       src/hotrod/impl/RemoteCacheManagerImpl.cpp
       src/hotrod/impl/RemoteCacheImpl.cpp

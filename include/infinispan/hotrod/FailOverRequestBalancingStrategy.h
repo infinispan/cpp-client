@@ -1,22 +1,24 @@
 #ifndef ISPN_HOTROD_TRANSPORT_FAILOVERREQUESTBALANCINGSTRATEGY_H
 #define ISPN_HOTROD_TRANSPORT_FAILOVERREQUESTBALANCINGSTRATEGY_H
 
-#include <infinispan/hotrod/ServerNameId.h>
+#include <infinispan/hotrod/InetSocketAddress.h>
 #include <vector>
 
 namespace infinispan {
 namespace hotrod {
 
+//using infinispan::hotrod::transport::InetSocketAddress;
+
 class FailOverRequestBalancingStrategy
 {
   public:
     typedef FailOverRequestBalancingStrategy* (*ProducerFn)();
-    virtual void setServers(const std::vector<ServerNameId>& servers) = 0;
-    virtual const ServerNameId& nextServer() = 0;
+    virtual void setServers(const std::vector<transport::InetSocketAddress>& servers) = 0;
+    virtual const transport::InetSocketAddress& nextServer() = 0;
 
     virtual ~FailOverRequestBalancingStrategy() {};
   private:
-    std::vector<ServerNameId> servers;
+    std::vector<transport::InetSocketAddress> servers;
     size_t index;
 
 };

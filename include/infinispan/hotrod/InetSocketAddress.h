@@ -2,7 +2,6 @@
 #define ISPN_HOTROD_TRANSPORT_INETSOCKETADDRESS_H
 
 #include "infinispan/hotrod/ImportExport.h"
-#include "infinispan/hotrod/ServerNameId.h"
 
 #include <set>
 #include <string>
@@ -30,10 +29,6 @@ class InetSocketAddress
     HR_EXPORT friend std::ostream& operator<<(std::ostream& os, const InetSocketAddress& isa);
     bool isEmpty() { return port==0 && hostname.empty(); }
 
-    operator ServerNameId () const
-		{
-    	  return std::string(getHostname()+":"+(std::to_string(getPort())));
-		}
   private:
     std::string hostname;
     std::set<std::string> addresses;
