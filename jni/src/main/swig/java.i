@@ -48,7 +48,6 @@ using namespace infinispan::hotrod;
 %include "infinispan/hotrod/defs.h"
 %include "infinispan/hotrod/ImportExport.h"
 %include "infinispan/hotrod/FailOverRequestBalancingStrategy.h"
-%include "infinispan/hotrod/Builder.h"
 %include "infinispan/hotrod/ConnectionPoolConfiguration.h"
 %include "infinispan/hotrod/ServerConfiguration.h"
 %include "infinispan/hotrod/SslConfiguration.h"
@@ -66,10 +65,6 @@ using namespace infinispan::hotrod;
 
 %include "infinispan/hotrod/Configuration.h"
 
-%template(Builder_conf) infinispan::hotrod::Builder<infinispan::hotrod::Configuration>;
-%template(Builder_serverconf) infinispan::hotrod::Builder<infinispan::hotrod::ServerConfiguration>;
-%template(Builder_poolconf) infinispan::hotrod::Builder<infinispan::hotrod::ConnectionPoolConfiguration>;
-%template(Builder_sslconf) infinispan::hotrod::Builder<infinispan::hotrod::SslConfiguration>;
 
 %ignore infinispan::hotrod::transport::InetSocketAddress::operator==;
 %ignore infinispan::hotrod::transport::InetSocketAddress::operator=;
