@@ -9,7 +9,6 @@
 
 #include "infinispan/hotrod/defs.h"
 #include "infinispan/hotrod/ImportExport.h"
-#include "Builder.h"
 #include "Configuration.h"
 #include "ConnectionPoolConfigurationBuilder.h"
 #include "ServerConfigurationBuilder.h"
@@ -24,7 +23,7 @@ namespace hotrod {
  *
  */
 // Methods on this class cannot be invoked across library boundary, therefore, it can use STL.
-class ConfigurationBuilder : public Builder<Configuration>
+class ConfigurationBuilder
 {
   public:
     ConfigurationBuilder():
@@ -42,6 +41,7 @@ class ConfigurationBuilder : public Builder<Configuration>
         __pragma(warning(suppress:4355))
         sslConfigurationBuilder(*this)
         {}
+     virtual void validate() {}
     /**
      * Adds a server to this Configuration. ServerConfigurationBuilder is in turn used
      * to actually configure a server.

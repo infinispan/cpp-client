@@ -10,7 +10,6 @@
 
 #include <string>
 #include "infinispan/hotrod/ImportExport.h"
-#include "Builder.h"
 #include "ServerConfiguration.h"
 #include "ConfigurationChildBuilder.h"
 
@@ -24,12 +23,13 @@ namespace hotrod {
  *
  */
 class ServerConfigurationBuilder
-  : public Builder<ServerConfiguration>, public ConfigurationChildBuilder
+  : public ConfigurationChildBuilder
 {
   public:
     ServerConfigurationBuilder(ConfigurationBuilder& builder_):
         ConfigurationChildBuilder(builder_), m_host("localhost"), m_port(11222) {}
 
+    virtual void validate() {};
 	/***
 	 * Specifies host of remote HotRod server
 	 *

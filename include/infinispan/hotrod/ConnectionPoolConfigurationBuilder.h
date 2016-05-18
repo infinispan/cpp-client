@@ -2,7 +2,6 @@
 #define CONNECTIONPOOLCONFIGURATIONBUILDER_H_
 
 #include "infinispan/hotrod/ImportExport.h"
-#include "Builder.h"
 #include "ConfigurationChildBuilder.h"
 
 namespace infinispan {
@@ -14,7 +13,7 @@ namespace hotrod {
  *
  */
 class ConnectionPoolConfigurationBuilder
-  : public Builder<ConnectionPoolConfiguration>, public ConfigurationChildBuilder
+  : public ConfigurationChildBuilder
 {
   public:
     ConnectionPoolConfigurationBuilder(ConfigurationBuilder &builder):
@@ -32,6 +31,8 @@ class ConnectionPoolConfigurationBuilder
         m_testOnBorrow(false),
         m_testOnReturn(false),
         m_testWhileIdle(true) {}
+
+    virtual void validate() {}
 
     /**
        * Specifies what happens when asking for a connection from a server's pool, and that pool is
