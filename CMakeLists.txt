@@ -518,6 +518,11 @@ get_filename_component(real_protobuf_library "${PROTOBUF_LIBRARY}" REALPATH)
 get_filename_component(real_protoc_library "${PROTOBUF_PROTOC_LIBRARY}" REALPATH)
 install (FILES ${real_protobuf_library} ${real_protoc_library} ${PROTOBUF_LIBRARY} ${PROTOBUF_PROTOC_LIBRARY} DESTINATION lib${LIB_SUFFIX})
 install (FILES ${PROTOBUF_PROTOC_EXECUTABLE} DESTINATION bin)
+if (NOT WIN32)
+    get_filename_component(protobuf_dir "${PROTOBUF_LIBRARY}" DIRECTORY)
+    file(GLOB libproto_glob "${protobuf_dir}/libproto*")
+    install (FILES ${libproto_glob} DESTINATION lib${LIB_SUFFIX})
+endif (NOT WIN32)
 
 # If on windows, include openssl as well
 if(WIN32)
