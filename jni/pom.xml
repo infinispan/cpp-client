@@ -17,7 +17,7 @@
    <description>Infinispan HotRod JNI Wrapper</description>
 
    <properties>
-      <version.org.infinispan>8.3.0-redhat-SNAPSHOT</version.org.infinispan>
+      <version.org.infinispan>8.3.0.ER6-redhat-1</version.org.infinispan>
       <version.org.jboss.logging.processor>1.1.0.Final-redhat-1</version.org.jboss.logging.processor>
       <version.org.jboss.jbossts>4.17.24.Final</version.org.jboss.jbossts>
       <version.org.testng>6.8</version.org.testng>
