@@ -83,12 +83,12 @@ function(HR_PROTOBUF_GENERATE_CPP SRCS HDRS)
     get_filename_component(FIL_WE ${FIL} NAME_WE)
     get_filename_component(DIR ${FIL} PATH)
 
-    list(APPEND ${SRCS} "${CMAKE_CURRENT_BINARY_DIR}/${DIR}/${FIL_WE}.pb.cc")
-    list(APPEND ${HDRS} "${CMAKE_CURRENT_BINARY_DIR}/${DIR}/${FIL_WE}.pb.h")
+    list(APPEND ${SRCS} "${CMAKE_CURRENT_BINARY_DIR}/${FIL_WE}.pb.cc")
+    list(APPEND ${HDRS} "${CMAKE_CURRENT_BINARY_DIR}/${FIL_WE}.pb.h")
 
     add_custom_command(
-      OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${DIR}/${FIL_WE}.pb.cc"
-             "${CMAKE_CURRENT_BINARY_DIR}/${DIR}/${FIL_WE}.pb.h"
+      OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${FIL_WE}.pb.cc"
+             "${CMAKE_CURRENT_BINARY_DIR}/${FIL_WE}.pb.h"
       COMMAND  ${PROTOBUF_PROTOC_EXECUTABLE}
       ARGS --cpp_out dllexport_decl=HR_PROTO_EXPORT:${CMAKE_CURRENT_BINARY_DIR} ${_protobuf_include_path} ${ABS_FIL}
       DEPENDS ${ABS_FIL}
@@ -103,6 +103,12 @@ function(HR_PROTOBUF_GENERATE_CPP SRCS HDRS)
 endfunction()
 
 include_directories(${PROTOBUF_INCLUDE_DIRS})
+
+
+find_package(Protobuf REQUIRED)
+
+
+set (PROTOBUF_IMPORT_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/proto/org/infinispan/protostream)
 
 hr_protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS 
   proto/infinispan/hotrod/protobuf/base_types.proto
@@ -274,10 +280,6 @@ else(DEFINED HOTROD_PREBUILT_LIB_DIR)
 # OpenSSL support
 find_package(OpenSSL)
 include_directories(${OPENSSL_INCLUDE_DIR})
-
-
-find_package(Protobuf REQUIRED)
-
 
     set (library_sources
       src/hotrod/api/RemoteCacheManager.cpp
