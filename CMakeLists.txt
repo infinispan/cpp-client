@@ -147,11 +147,7 @@ if(DEFINED HOTROD_PREBUILT_LIB_DIR)
         message(FATAL_ERROR "Cannot find HotRod Protobuf static library in directory '${HOTROD_PREBUILT_LIB_DIR}'.")
     else("${HOTROD_PROTOBUF_LIBRARY}" STREQUAL "HOTROD_PROTOBUF_LIBRARY-NOTFOUND")
         message("-- Found HotRod Protobuf static library: ${HOTROD_PROTOBUF_LIBRARY}")
-<<<<<<< HEAD
 	add_library(hotrod_protobuf STATIC IMPORTED GLOBAL)
-=======
-        add_library(hotrod_protobuf STATIC IMPORTED GLOBAL)
->>>>>>> c660b4d8781ab2c7812379e299f84f396b045e7d
         set_target_properties(hotrod_protobuf PROPERTIES IMPORTED_LOCATION ${HOTROD_PROTOBUF_LIBRARY})
     endif("${HOTROD_PROTOBUF_LIBRARY}" STREQUAL "HOTROD_PROTOBUF_LIBRARY-NOTFOUND")
 
