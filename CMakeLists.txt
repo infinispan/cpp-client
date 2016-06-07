@@ -44,8 +44,6 @@ if ("${CMAKE_BINARY_DIR}" STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}")
   message (FATAL_ERROR "You are calling cmake from the source directory. Please create a separate build directory and call cmake from there. See README.md for details.")
 endif ("${CMAKE_BINARY_DIR}" STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}")
 
-include_directories ("${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_SOURCE_DIR}/src" "${CMAKE_CURRENT_BINARY_DIR}")
-
 function(HR_PROTOBUF_GENERATE_CPP SRCS HDRS)
   if(NOT ARGN)
     message(SEND_ERROR "Error: PROTOBUF_GENERATE_CPP() called without any proto files")
@@ -83,12 +81,12 @@ function(HR_PROTOBUF_GENERATE_CPP SRCS HDRS)
     get_filename_component(FIL_WE ${FIL} NAME_WE)
     get_filename_component(DIR ${FIL} PATH)
 
-    list(APPEND ${SRCS} "${CMAKE_CURRENT_BINARY_DIR}/${FIL_WE}.pb.cc")
-    list(APPEND ${HDRS} "${CMAKE_CURRENT_BINARY_DIR}/${FIL_WE}.pb.h")
+    list(APPEND ${SRCS} "${CMAKE_CURRENT_BINARY_DIR}/${DIR}/${FIL_WE}.pb.cc")
+    list(APPEND ${HDRS} "${CMAKE_CURRENT_BINARY_DIR}/${DIR}/${FIL_WE}.pb.h")
 
     add_custom_command(
-      OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${FIL_WE}.pb.cc"
-             "${CMAKE_CURRENT_BINARY_DIR}/${FIL_WE}.pb.h"
+	    OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${DIR}/${FIL_WE}.pb.cc"
+	    "${CMAKE_CURRENT_BINARY_DIR}/${DIR}/${FIL_WE}.pb.h"
       COMMAND  ${PROTOBUF_PROTOC_EXECUTABLE}
       ARGS --cpp_out dllexport_decl=HR_PROTO_EXPORT:${CMAKE_CURRENT_BINARY_DIR} ${_protobuf_include_path} ${ABS_FIL}
       DEPENDS ${ABS_FIL}
@@ -102,93 +100,11 @@ function(HR_PROTOBUF_GENERATE_CPP SRCS HDRS)
   set(${HDRS} ${${HDRS}} PARENT_SCOPE)
 endfunction()
 
-include_directories(${PROTOBUF_INCLUDE_DIRS})
 
 
-find_package(Protobuf REQUIRED)
-
-
-set (PROTOBUF_IMPORT_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/proto/org/infinispan/protostream)
-
-hr_protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS 
-  proto/infinispan/hotrod/protobuf/base_types.proto
-  proto/org/infinispan/protostream/message-wrapping.proto
-  proto/org/infinispan/query/remote/client/query.proto
-)
-
-hr_protobuf_generate_cpp(TEST_PROTO_SRCS TEST_PROTO_HDRS 
-  test/query_proto/addressbook.proto
-  test/query_proto/bank.proto
-)
-
-# MacOS has a bunch of differences in build tools and process and so we have to turn some things
-# off there by default (for GCC; LLVM will need flags re-evaluated)
-if (APPLE)
-  set (NOENABLE_UNDEFINED_ERROR ON)
-endif (APPLE)
-
-if(WIN32 AND NOT CYGWIN)
-  # Encourage use of valgrind unless unavailable on the platform
-  set (NOENABLE_VALGRIND ON)
-endif(WIN32 AND NOT CYGWIN)
-
-# Add options here called <whatever> they will turn into "ENABLE_<whatever" and can be
-# overridden on a platform specific basis above by NOENABLE_<whatever>
-set (OPTIONS WARNING_ERROR UNDEFINED_ERROR SWIG_TESTING INTERNAL_TESTING VALGRIND)
-
-foreach (OPTION ${OPTIONS})
-  if (NOT "NOENABLE_${OPTION}")
-    set ("DEFAULT_${OPTION}" ON)
-  endif (NOT "NOENABLE_${OPTION}")
-endforeach (OPTION)
-
-# And add the option here too with help text
-option(ENABLE_WARNING_ERROR "Consider compiler warnings to be errors" ${DEFAULT_WARNING_ERROR})
-option(ENABLE_UNDEFINED_ERROR "Check for unresolved library symbols" ${DEFAULT_UNDEFINED_ERROR})
-option(ENABLE_SWIG_TESTING "Create SWIG Java binding and test structure" ${DEFAULT_SWIG_TESTING})
-option(ENABLE_INTERNAL_TESTING "Compile the library with internal tests (unit tests)" ${DEFAULT_INTERNAL_TESTING})
-option(ENABLE_VALGRIND "Enable running the tests using Valgrind" ${DEFAULT_VALGRIND})
-
-if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  set(DLLEXPORT "HR_PROTO_EXPORT=__attribute__ ((visibility (\"default\")))")
-  set(DLLEXPORT_STATIC "HR_PROTO_EXPORT= ")
-  if (ENABLE_WARNING_ERROR)
-    set (WERROR "-Werror")
-  endif (ENABLE_WARNING_ERROR)
-
-  set (COMPILER_FLAGS "-fvisibility=hidden -fvisibility-inlines-hidden -std=c++11")
-  if (CMAKE_COMPILER_IS_GNUCXX)
-  set (WARNING_FLAGS
-        "${WERROR} -pedantic -Wall -Wextra -Wno-shadow -Wpointer-arith -Wcast-qual -Wcast-align -Wno-long-long -Wvolatile-register-var -Winvalid-pch -Wno-system-headers -Woverloaded-virtual -Wno-variadic-macros -Wno-error=shadow")
-  set (WARNING_FLAGS_NO_PEDANTIC
-        "${WERROR} -Wall -Wextra -Wno-shadow -Wpointer-arith -Wcast-qual -Wcast-align -Wno-long-long -Wvolatile-register-var -Winvalid-pch -Wno-system-headers -Woverloaded-virtual -Wno-variadic-macros -Wno-error=shadow")
-  endif (CMAKE_COMPILER_IS_GNUCXX)
-  if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  set (WARNING_FLAGS_NO_PEDANTIC
-        "${WERROR} -pedantic -Wall -Wextra -Wno-shadow -Wpointer-arith -Wcast-qual -Wcast-align -Wno-long-long -Wvolatile-register-var -Winvalid-pch -Wno-system-headers -Woverloaded-virtual -Wno-variadic-macros -Wno-error-unused-parameter -Wno-error-cast-align -Wno-error-string-plus-int")
-  endif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  if (ENABLE_UNDEFINED_ERROR)
-    set (CATCH_UNDEFINED "-Wl,--no-undefined")
-  endif (ENABLE_UNDEFINED_ERROR)
-
-  set_source_files_properties(message-wrapping.pb.cc PROPERTIES COMPILE_FLAGS -Wno-error=shadow)
-  set_source_files_properties(query.pb.cc PROPERTIES COMPILE_FLAGS -Wno-error=shadow)
-  set_source_files_properties(base_types.pb.cc PROPERTIES COMPILE_FLAGS -Wno-error=shadow)
-
-endif (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-
-set (STATIC_FLAGS "-DHOTROD_DECLARE_STATIC")
-if (MSVC)
-   set(DLLEXPORT "HR_PROTO_EXPORT=__declspec(dllexport)")
-   set(DLLEXPORT_STATIC "HR_PROTO_EXPORT= ")
-   set (COMPILER_FLAGS "/DNOMINMAX /EHsc")
-   set (WARNING_FLAGS "")
-endif (MSVC)
-
-if (NOT DEFINED COMPILER_FLAGS)
-    message(FATAL_ERROR "Compiler flags not set for this build type")
-endif (NOT DEFINED COMPILER_FLAGS)
-#set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMPILER_FLAGS} ${WARNING_FLAGS}")
+# OpenSSL support
+find_package(OpenSSL)
+include_directories(${OPENSSL_INCLUDE_DIR})
 
 if(WIN32 AND NOT CYGWIN)
   # linking against Windows native libraries, including mingw
@@ -201,43 +117,11 @@ else (WIN32 AND NOT CYGWIN)
   set (platform_libs pthread rt)
 endif(WIN32 AND NOT CYGWIN)
 
-if (ENABLE_VALGRIND)
-  find_program(VALGRIND valgrind)
-  if (VALGRIND MATCHES .*-NOTFOUND)
-    message(FATAL_ERROR "Cannot find valgrind in your environment.  Please install valgrind or use NOENABLE_VALGRIND")
-  endif(VALGRIND MATCHES .*-NOTFOUND)
-  set(MEMORYCHECK_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/valgrind CACHE FILEPATH
-      "Hot Rod Valgrind preprocessor" FORCE)
-  set(MEMORYCHECK_COMMAND_OPTIONS
-      "${VALGRIND} --error-exitcode=1 --leak-check=full --num-callers=25 --workaround-gcc296-bugs=yes --demangle=yes"
-      CACHE STRING "Valgrind options" FORCE)
-  configure_file ("${PROJECT_SOURCE_DIR}/CTestCustom.cmake" "${PROJECT_BINARY_DIR}/CTestCustom.cmake" COPYONLY)
-endif (ENABLE_VALGRIND)
-
-if (ENABLE_INTERNAL_TESTING)
-set (internal_test_sources
-  src/hotrod/test/Unit.cpp
-  src/hotrod/test/L3Test.cpp
-  src/hotrod/test/HashTest.cpp
-  src/hotrod/test/ConnectionPoolTest.cpp
-)
-endif (ENABLE_INTERNAL_TESTING)
-
-# Select driver
-if(HOTROD_WINAPI)
-  set (platform_sources src/hotrod/sys/windows/Socket.cpp src/hotrod/sys/windows/Thread.cpp
-           src/hotrod/sys/windows/platform.cpp src/hotrod/sys/windows/Inet.cpp src/hotrod/sys/windows/Time.cpp)
-else(HOTROD_WINAPI)
-  set (platform_sources src/hotrod/sys/posix/Socket.cpp src/hotrod/sys/posix/Thread.cpp
-           src/hotrod/sys/posix/platform.cpp src/hotrod/sys/posix/Mutex.cpp src/hotrod/sys/posix/Inet.cpp src/hotrod/sys/posix/Time.cpp)
-endif(HOTROD_WINAPI)
-
-configure_file(src/hotrod/impl/Version.cpp.in ${CMAKE_BINARY_DIR}/Version.cpp @ONLY)
-file(COPY ${CMAKE_SOURCE_DIR}/test/query_proto DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
-
 if(DEFINED HOTROD_PREBUILT_LIB_DIR)
 
-    find_library(HOTROD_LIBRARY NAMES hotrod PATHS ${HOTROD_PREBUILT_LIB_DIR})
+    set (INCLUDE_FILES_DIR ${HOTROD_PREBUILT_LIB_DIR}/../include)
+
+    find_library(HOTROD_LIBRARY NAMES hotrod PATHS ${HOTROD_PREBUILT_LIB_DIR} NO_DEFAULT_PATH)
     if("${HOTROD_LIBRARY}" STREQUAL "HOTROD_LIBRARY-NOTFOUND")
         message(FATAL_ERROR "Cannot find HotRod dynamic library in directory '${HOTROD_PREBUILT_LIB_DIR}'.")
     else("${HOTROD_LIBRARY}" STREQUAL "HOTROD_LIBRARY-NOTFOUND")
@@ -249,7 +133,7 @@ if(DEFINED HOTROD_PREBUILT_LIB_DIR)
         add_custom_target(copyhrlibs ALL COMMAND ${CMAKE_COMMAND} -E copy_directory ${HOTROD_PREBUILT_LIB_DIR} ${CMAKE_CFG_INTDIR})
     endif("${HOTROD_LIBRARY}" STREQUAL "HOTROD_LIBRARY-NOTFOUND")
 
-    find_library(HOTROD_STATIC_LIBRARY NAMES hotrod-static PATHS ${HOTROD_PREBUILT_LIB_DIR})
+    find_library(HOTROD_STATIC_LIBRARY NAMES hotrod-static.lib PATHS ${HOTROD_PREBUILT_LIB_DIR})
     if("${HOTROD_STATIC_LIBRARY}" STREQUAL "HOTROD_STATIC_LIBRARY-NOTFOUND")
         message(FATAL_ERROR "Cannot find HotRod static library in directory '${HOTROD_PREBUILT_LIB_DIR}'.")
     else("${HOTROD_STATIC_LIBRARY}" STREQUAL "HOTROD_STATIC_LIBRARY-NOTFOUND")
@@ -258,28 +142,35 @@ if(DEFINED HOTROD_PREBUILT_LIB_DIR)
         set_target_properties(hotrod-static PROPERTIES IMPORTED_LOCATION ${HOTROD_STATIC_LIBRARY})
     endif("${HOTROD_STATIC_LIBRARY}" STREQUAL "HOTROD_STATIC_LIBRARY-NOTFOUND")
 
-    find_library(HOTROD_PROTOBUF_LIBRARY NAMES hotrod_protobuf PATHS ${HOTROD_PREBUILT_LIB_DIR})
+    find_library(HOTROD_PROTOBUF_LIBRARY NAMES hotrod_protobuf.lib PATHS ${HOTROD_PREBUILT_LIB_DIR})
     if("${HOTROD_PROTOBUF_LIBRARY}" STREQUAL "HOTROD_PROTOBUF_LIBRARY-NOTFOUND")
         message(FATAL_ERROR "Cannot find HotRod Protobuf static library in directory '${HOTROD_PREBUILT_LIB_DIR}'.")
     else("${HOTROD_PROTOBUF_LIBRARY}" STREQUAL "HOTROD_PROTOBUF_LIBRARY-NOTFOUND")
         message("-- Found HotRod Protobuf static library: ${HOTROD_PROTOBUF_LIBRARY}")
-        add_library(hotrod_protobuf SHARED IMPORTED GLOBAL)
+	add_library(hotrod_protobuf STATIC IMPORTED GLOBAL)
         set_target_properties(hotrod_protobuf PROPERTIES IMPORTED_LOCATION ${HOTROD_PROTOBUF_LIBRARY})
     endif("${HOTROD_PROTOBUF_LIBRARY}" STREQUAL "HOTROD_PROTOBUF_LIBRARY-NOTFOUND")
 
-    find_library(PROTOBUF_LIBRARY NAMES protobuf PATHS ${HOTROD_PREBUILT_LIB_DIR})
+    find_library(PROTOBUF_LIBRARY NAMES libprotobuf PATHS ${HOTROD_PREBUILT_LIB_DIR})
     if("${PROTOBUF_LIBRARY}" STREQUAL "PROTOBUF_LIBRARY-NOTFOUND")
-        message(FATAL_ERROR "Cannot find protobuf static library in directory '${HOTROD_PREBUILT_LIB_DIR}'.")
+        message(FATAL_ERROR "Cannot find libprotobuf static library in directory '${HOTROD_PREBUILT_LIB_DIR}'.")
     else("${PROTOBUF_LIBRARY}" STREQUAL "PROTOBUF_LIBRARY-NOTFOUND")
-        add_library(protobuf STATIC IMPORTED GLOBAL)
-        set_target_properties(protobuf PROPERTIES IMPORTED_LOCATION ${PROTOBUF_LIBRARY})
+        message("-- Found Protobuf static library: ${PROTOBUF_LIBRARY}")
+	add_library(libprotobuf STATIC IMPORTED GLOBAL)
+        set_target_properties(libprotobuf PROPERTIES IMPORTED_LOCATION ${PROTOBUF_LIBRARY})
+	set_target_properties(libprotobuf PROPERTIES IMPORTED_IMPLIB ${PROTOBUF_LIBRARY})
     endif("${PROTOBUF_LIBRARY}" STREQUAL "PROTOBUF_LIBRARY-NOTFOUND")
+
+    set (PROTOBUF_PROTOC_EXECUTABLE ${HOTROD_PREBUILT_LIB_DIR}/../bin/protoc)
+    set (PROTOBUF_INCLUDE_DIR ${HOTROD_PREBUILT_LIB_DIR}/../include)
 
 else(DEFINED HOTROD_PREBUILT_LIB_DIR)
 
-# OpenSSL support
-find_package(OpenSSL)
-include_directories(${OPENSSL_INCLUDE_DIR})
+include_directories ("${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_SOURCE_DIR}/src" "${CMAKE_CURRENT_BINARY_DIR}")
+set (INCLUDE_FILES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../include)
+
+find_package(Protobuf REQUIRED)
+
 
     set (library_sources
       src/hotrod/api/RemoteCacheManager.cpp
@@ -349,6 +240,112 @@ include_directories(${OPENSSL_INCLUDE_DIR})
 if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     set_target_properties(hotrod_protobuf PROPERTIES COMPILE_FLAGS "-fPIC" )
 endif (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+include_directories(${PROTOBUF_INCLUDE_DIRS})
+
+
+set (PROTOBUF_IMPORT_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/proto/org/infinispan/protostream)
+
+hr_protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS 
+  proto/infinispan/hotrod/protobuf/base_types.proto
+  proto/org/infinispan/protostream/message-wrapping.proto
+  proto/org/infinispan/query/remote/client/query.proto
+)
+
+# MacOS has a bunch of differences in build tools and process and so we have to turn some things
+# off there by default (for GCC; LLVM will need flags re-evaluated)
+if (APPLE)
+  set (NOENABLE_UNDEFINED_ERROR ON)
+endif (APPLE)
+
+if(WIN32 AND NOT CYGWIN)
+  # Encourage use of valgrind unless unavailable on the platform
+  set (NOENABLE_VALGRIND ON)
+endif(WIN32 AND NOT CYGWIN)
+
+# Add options here called <whatever> they will turn into "ENABLE_<whatever" and can be
+# overridden on a platform specific basis above by NOENABLE_<whatever>
+set (OPTIONS WARNING_ERROR UNDEFINED_ERROR SWIG_TESTING INTERNAL_TESTING VALGRIND)
+
+foreach (OPTION ${OPTIONS})
+  if (NOT "NOENABLE_${OPTION}")
+    set ("DEFAULT_${OPTION}" ON)
+  endif (NOT "NOENABLE_${OPTION}")
+endforeach (OPTION)
+
+# And add the option here too with help text
+option(ENABLE_WARNING_ERROR "Consider compiler warnings to be errors" ${DEFAULT_WARNING_ERROR})
+option(ENABLE_UNDEFINED_ERROR "Check for unresolved library symbols" ${DEFAULT_UNDEFINED_ERROR})
+option(ENABLE_SWIG_TESTING "Create SWIG Java binding and test structure" ${DEFAULT_SWIG_TESTING})
+option(ENABLE_INTERNAL_TESTING "Compile the library with internal tests (unit tests)" ${DEFAULT_INTERNAL_TESTING})
+option(ENABLE_VALGRIND "Enable running the tests using Valgrind" ${DEFAULT_VALGRIND})
+
+if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  set(DLLEXPORT "HR_PROTO_EXPORT=__attribute__ ((visibility (\"default\")))")
+  set(DLLEXPORT_STATIC "HR_PROTO_EXPORT= ")
+  if (ENABLE_WARNING_ERROR)
+    set (WERROR "-Werror")
+  endif (ENABLE_WARNING_ERROR)
+
+  set (COMPILER_FLAGS "-fvisibility=hidden -fvisibility-inlines-hidden -std=c++11")
+  if (CMAKE_COMPILER_IS_GNUCXX)
+  set (WARNING_FLAGS
+        "${WERROR} -pedantic -Wall -Wextra -Wno-shadow -Wpointer-arith -Wcast-qual -Wcast-align -Wno-long-long -Wvolatile-register-var -Winvalid-pch -Wno-system-headers -Woverloaded-virtual -Wno-variadic-macros -Wno-error=shadow")
+  set (WARNING_FLAGS_NO_PEDANTIC
+        "${WERROR} -Wall -Wextra -Wno-shadow -Wpointer-arith -Wcast-qual -Wcast-align -Wno-long-long -Wvolatile-register-var -Winvalid-pch -Wno-system-headers -Woverloaded-virtual -Wno-variadic-macros -Wno-error=shadow")
+set (NO_UNUSED_FLAGS "-Wno-error=unused-parameter -Wno-unused-parameter")
+  endif (CMAKE_COMPILER_IS_GNUCXX)
+  if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  set (WARNING_FLAGS_NO_PEDANTIC
+        "${WERROR} -pedantic -Wall -Wextra -Wno-shadow -Wpointer-arith -Wcast-qual -Wcast-align -Wno-long-long -Wvolatile-register-var -Winvalid-pch -Wno-system-headers -Woverloaded-virtual -Wno-variadic-macros -Wno-error-unused-parameter -Wno-error-cast-align -Wno-error-string-plus-int")
+  endif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  if (ENABLE_UNDEFINED_ERROR)
+    set (CATCH_UNDEFINED "-Wl,--no-undefined")
+  endif (ENABLE_UNDEFINED_ERROR)
+
+  set_source_files_properties(message-wrapping.pb.cc PROPERTIES COMPILE_FLAGS -Wno-error=shadow)
+  set_source_files_properties(query.pb.cc PROPERTIES COMPILE_FLAGS -Wno-error=shadow)
+  set_source_files_properties(base_types.pb.cc PROPERTIES COMPILE_FLAGS -Wno-error=shadow)
+
+endif (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+
+if (NOT DEFINED COMPILER_FLAGS)
+    message(FATAL_ERROR "Compiler flags not set for this build type")
+endif (NOT DEFINED COMPILER_FLAGS)
+#set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMPILER_FLAGS} ${WARNING_FLAGS}")
+
+if (ENABLE_VALGRIND)
+  find_program(VALGRIND valgrind)
+  if (VALGRIND MATCHES .*-NOTFOUND)
+    message(FATAL_ERROR "Cannot find valgrind in your environment.  Please install valgrind or use NOENABLE_VALGRIND")
+  endif(VALGRIND MATCHES .*-NOTFOUND)
+  set(MEMORYCHECK_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/valgrind CACHE FILEPATH
+      "Hot Rod Valgrind preprocessor" FORCE)
+  set(MEMORYCHECK_COMMAND_OPTIONS
+      "${VALGRIND} --error-exitcode=1 --leak-check=full --num-callers=25 --workaround-gcc296-bugs=yes --demangle=yes"
+      CACHE STRING "Valgrind options" FORCE)
+  configure_file ("${PROJECT_SOURCE_DIR}/CTestCustom.cmake" "${PROJECT_BINARY_DIR}/CTestCustom.cmake" COPYONLY)
+endif (ENABLE_VALGRIND)
+
+if (ENABLE_INTERNAL_TESTING)
+set (internal_test_sources
+  src/hotrod/test/Unit.cpp
+  src/hotrod/test/L3Test.cpp
+  src/hotrod/test/HashTest.cpp
+  src/hotrod/test/ConnectionPoolTest.cpp
+)
+endif (ENABLE_INTERNAL_TESTING)
+
+# Select driver
+if(HOTROD_WINAPI)
+  set (platform_sources src/hotrod/sys/windows/Socket.cpp src/hotrod/sys/windows/Thread.cpp
+           src/hotrod/sys/windows/platform.cpp src/hotrod/sys/windows/Inet.cpp src/hotrod/sys/windows/Time.cpp)
+else(HOTROD_WINAPI)
+  set (platform_sources src/hotrod/sys/posix/Socket.cpp src/hotrod/sys/posix/Thread.cpp
+           src/hotrod/sys/posix/platform.cpp src/hotrod/sys/posix/Mutex.cpp src/hotrod/sys/posix/Inet.cpp src/hotrod/sys/posix/Time.cpp)
+endif(HOTROD_WINAPI)
+
+configure_file(src/hotrod/impl/Version.cpp.in ${CMAKE_BINARY_DIR}/Version.cpp @ONLY)
+file(COPY ${CMAKE_SOURCE_DIR}/test/query_proto DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
     
     # Build a shared library
     add_library (hotrod SHARED ${library_sources})
@@ -375,56 +372,80 @@ endif (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 
 endif(DEFINED HOTROD_PREBUILT_LIB_DIR)
 
+set (STATIC_FLAGS "-DHOTROD_DECLARE_STATIC")
+if (MSVC)
+   set(DLLEXPORT "HR_PROTO_EXPORT=__declspec(dllexport)")
+   set(DLLIMPORT "HR_PROTO_EXPORT=__declspec(dllimport)")
+   set(DLLEXPORT_STATIC "HR_PROTO_EXPORT= ")
+   set (COMPILER_FLAGS "/DNOMINMAX /EHsc")
+   set (WARNING_FLAGS "")
+endif (MSVC)
+
+hr_protobuf_generate_cpp(TEST_PROTO_SRCS TEST_PROTO_HDRS 
+  test/query_proto/addressbook.proto
+  test/query_proto/bank.proto
+)
+
+
 # TESTS
 
 add_executable (simple test/Simple.cpp)
+target_include_directories(simple PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
+	"${INCLUDE_FILES_DIR}"
+                                     "${CMAKE_CURRENT_BINARY_DIR}"
+                                     "${PROTOBUF_INCLUDE_DIR}")
 set_property(TARGET simple PROPERTY CXX_STANDARD 11)
 set_property(TARGET simple PROPERTY CXX_STANDARD_REQUIRED ON)
-set_property(TARGET simple PROPERTY INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_BINARY_DIR}" "${PROTOBUF_INCLUDE_DIR}")
-set_target_properties(simple PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT};PROTOBUF_USE_DLLS")
-set_target_properties (simple PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${STATIC_FLAGS} -Wno-error=unused-parameter -Wno-unused-parameter")
-target_link_libraries (simple hotrod ${platform_libs} hotrod_protobuf)
+set_target_properties(simple PROPERTIES COMPILE_DEFINITIONS "${DLLIMPORT};PROTOBUF_USE_DLLS")
+set_target_properties (simple PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${NO_UNUSED_FLAGS}")
+target_link_libraries (simple hotrod_protobuf libprotobuf hotrod ${platform_libs})
 
 add_executable (simple-static test/Simple.cpp)
+target_include_directories(simple-static PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
+	"${INCLUDE_FILES_DIR}"
+                                     "${CMAKE_CURRENT_BINARY_DIR}"
+                                     "${PROTOBUF_INCLUDE_DIR}")
 set_property(TARGET simple-static PROPERTY CXX_STANDARD 11)
 set_property(TARGET simple-static PROPERTY CXX_STANDARD_REQUIRED ON)
-set_property(TARGET simple-static PROPERTY INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_BINARY_DIR}" "${PROTOBUF_INCLUDE_DIR}")
-set_target_properties (simple-static PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${STATIC_FLAGS} -Wno-error=unused-parameter -Wno-unused-parameter")
+set_target_properties (simple-static PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${STATIC_FLAGS} ${NO_UNUSED_FLAGS}")
 set_target_properties(simple-static PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}" )
-target_link_libraries (simple-static hotrod-static ${platform_libs} ${PROTOBUF_LIBRARY} hotrod_protobuf ssl crypto ${OPENSSL_LIBRARIES})
+target_link_libraries (simple-static hotrod-static hotrod_protobuf libprotobuf ${OPENSSL_LIBRARIES} ${platform_libs})
 
-add_executable (queryTest test/QueryTest.cpp ${TEST_PROTO_SRCS})
+add_executable (queryTest test/QueryTest.cpp ${TEST_PROTO_SRCS} ${PROTO_SRCS})
 target_include_directories(queryTest PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
-                                     "${CMAKE_CURRENT_SOURCE_DIR}/include"
+	"${INCLUDE_FILES_DIR}"
+	"${INCLUDE_FILES_DIR}/infinispan/hotrod"
                                      "${CMAKE_CURRENT_BINARY_DIR}"
                                      "${PROTOBUF_INCLUDE_DIR}")
 set_property(TARGET queryTest PROPERTY CXX_STANDARD 11)
 set_property(TARGET queryTest PROPERTY CXX_STANDARD_REQUIRED ON)
-set_target_properties (queryTest PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} -Wno-error=unused-parameter -Wno-unused-parameter")
-set_target_properties(queryTest PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT};PROTOBUF_USE_DLLS")
-target_link_libraries (queryTest hotrod hotrod_protobuf ${platform_libs} ${PROTOBUF_LIBRARY})
+set_target_properties (queryTest PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${NO_UNUSED_FLAGS}")
+set_target_properties(queryTest PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}")
+target_link_libraries (queryTest libprotobuf hotrod_protobuf hotrod ${platform_libs})
 
-add_executable (queryTest-static test/QueryTest.cpp ${TEST_PROTO_SRCS})
+add_executable (queryTest-static ${TEST_PROTO_SRCS} test/QueryTest.cpp)
 target_include_directories(queryTest-static PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
-                                     "${CMAKE_CURRENT_SOURCE_DIR}/include"
+	"${INCLUDE_FILES_DIR}"
+	"${INCLUDE_FILES_DIR}/infinispan/hotrod"
                                      "${CMAKE_CURRENT_BINARY_DIR}"
                                      "${PROTOBUF_INCLUDE_DIR}")
 set_property(TARGET queryTest-static PROPERTY CXX_STANDARD 11)
 set_property(TARGET queryTest-static PROPERTY CXX_STANDARD_REQUIRED ON)
 set_target_properties(queryTest-static PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}" )
-set_target_properties (queryTest-static PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${STATIC_FLAGS} -Wno-error=unused-parameter -Wno-unused-parameter")
-target_link_libraries (queryTest-static hotrod-static ${platform_libs} ${PROTOBUF_LIBRARIES} hotrod_protobuf ${PROTOBUF_LIBRARY} ssl crypto ${OPENSSL_LIBRARIES})
+set_target_properties (queryTest-static PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${STATIC_FLAGS} ${NO_UNUSED_FLAGS}")
+target_link_libraries (queryTest-static libprotobuf hotrod_protobuf hotrod-static ${OPENSSL_LIBRARIES} ${platform_libs})
 
 add_executable (simple-tls test/SimpleTLS.cpp)
-target_include_directories(queryTest PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
-                                     "${CMAKE_CURRENT_SOURCE_DIR}/include"
+target_include_directories(simple-tls PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
+	"${INCLUDE_FILES_DIR}"
+	"${INCLUDE_FILES_DIR}/infinispan/hotrod"
                                      "${CMAKE_CURRENT_BINARY_DIR}"
                                      "${PROTOBUF_INCLUDE_DIR}")
 set_property(TARGET simple-tls PROPERTY CXX_STANDARD 11)
 set_property(TARGET simple-tls PROPERTY CXX_STANDARD_REQUIRED ON)
-set_target_properties(simple-tls PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT};PROTOBUF_USE_DLLS")
-set_target_properties (simple-tls PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} -Wno-error=unused-parameter -Wno-unused-parameter")
-target_link_libraries (simple-tls hotrod hotrod_protobuf ssl crypto ${platform_libs})
+set_target_properties(simple-tls PROPERTIES COMPILE_DEFINITIONS "${DLLIMPORT};PROTOBUF_USE_DLLS")
+set_target_properties (simple-tls PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${NO_UNUSED_FLAGS}")
+target_link_libraries (simple-tls hotrod_protobuf hotrod ${platform_libs} ${OPENSSL_LIBRARIES})
 
 if (ENABLE_INTERNAL_TESTING)
     add_executable (unittest test/Unit.cpp)
@@ -435,15 +456,18 @@ if (ENABLE_INTERNAL_TESTING)
     add_executable (unittest-static test/Unit.cpp)
     set_target_properties(unittest-static PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}" )
     set_target_properties (unittest-static PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS} ${STATIC_FLAGS}")
-    target_link_libraries (unittest-static hotrod-static ssl crypto ${platform_libs} ${PROTOBUF_LIBRARIES} hotrod_protobuf ${OPENSSL_LIBRARIES})
+    target_link_libraries (unittest-static hotrod-static hotrod_protobuf libprotobuf ${OPENSSL_LIBRARIES} ${platform_libs})
 endif (ENABLE_INTERNAL_TESTING)
 
 add_executable (itest test/InteractiveTest.cpp)
-add_dependencies(itest ${PROTO_SRCS})
+target_include_directories(itest PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
+	"${INCLUDE_FILES_DIR}"
+                                     "${CMAKE_CURRENT_BINARY_DIR}"
+                                     "${PROTOBUF_INCLUDE_DIR}")
 target_include_directories(itest PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto")
-set_target_properties(itest PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT};PROTOBUF_USE_DLLS")
-set_target_properties (itest PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} -Wno-error=unused-parameter -Wno-unused-parameter")
-target_link_libraries (itest hotrod ssl crypto)
+set_target_properties(itest PROPERTIES COMPILE_DEFINITIONS "${DLLIMPORT};PROTOBUF_USE_DLLS")
+set_target_properties (itest PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${NO_UNUSED_FLAGS}")
+target_link_libraries (itest hotrod_protobuf hotrod ${OPENSSL_LIBRARIES} ${platform_libs})
 
 # the CTest include must be after the MEMORYCHECK settings are processed
 include (CTest)
