@@ -143,6 +143,15 @@ set (NO_UNUSED_FLAGS "-Wno-error=unused-parameter -Wno-unused-parameter")
   set_source_files_properties(base_types.pb.cc PROPERTIES COMPILE_FLAGS -Wno-error=shadow)
 
 endif (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+
+if (MSVC)
+   set(DLLEXPORT "HR_PROTO_EXPORT=__declspec(dllexport)")
+   set(DLLIMPORT "HR_PROTO_EXPORT=__declspec(dllimport)")
+   set(DLLEXPORT_STATIC "HR_PROTO_EXPORT= ")
+   set (COMPILER_FLAGS "/DNOMINMAX /EHsc")
+   set (WARNING_FLAGS "")
+endif (MSVC)
+
 find_package(Protobuf REQUIRED)
 set (STATIC_FLAGS "-DHOTROD_DECLARE_STATIC")
 
@@ -193,8 +202,6 @@ if(DEFINED HOTROD_PREBUILT_LIB_DIR)
     endif("${HR_PROTOBUF_LIBRARY}" STREQUAL "HR_PROTOBUF_LIBRARY-NOTFOUND")
 
     set (PROTOBUF_PROTOC_EXECUTABLE ${HOTROD_PREBUILT_LIB_DIR}/../bin/protoc)
-    set (PROTOBUF_PROTOC_EXECUTABLE /usr/local/bin/protoc)
-    set (PROTOBUF_PROTOC_NO_PATH 1)
 # OpenSSL support
     set (PROTOBUF_INCLUDE_DIR ${HOTROD_PREBUILT_LIB_DIR}/../include)
 
@@ -294,13 +301,17 @@ hr_protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS
   proto/org/infinispan/query/remote/client/query.proto
 )
 
+include_directories(${PROTOBUF_INCLUDE_DIRS})
     
     add_library (hotrod_protobuf STATIC ${PROTO_SRCS})
     set_target_properties(hotrod_protobuf PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}" )
 if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     set_target_properties(hotrod_protobuf PROPERTIES COMPILE_FLAGS "-fPIC" )
 endif (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-include_directories(${PROTOBUF_INCLUDE_DIRS})
+target_include_directories(hotrod_protobuf PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
+	"${INCLUDE_FILES_DIR}"
+                                     "${CMAKE_CURRENT_BINARY_DIR}"
+                                     "${PROTOBUF_INCLUDE_DIR}")
 
 # MacOS has a bunch of differences in build tools and process and so we have to turn some things
 # off there by default (for GCC; LLVM will need flags re-evaluated)
@@ -374,14 +385,6 @@ file(COPY ${CMAKE_SOURCE_DIR}/test/query_proto DESTINATION "${CMAKE_CURRENT_BINA
     target_link_libraries (hotrod-static ${platform_libs}  ${HR_PROTOBUF_LIBRARY} ${OPENSSL_LIBRARIES} hotrod_protobuf)
 
 endif(DEFINED HOTROD_PREBUILT_LIB_DIR)
-
-if (MSVC)
-   set(DLLEXPORT "HR_PROTO_EXPORT=__declspec(dllexport)")
-   set(DLLIMPORT "HR_PROTO_EXPORT=__declspec(dllimport)")
-   set(DLLEXPORT_STATIC "HR_PROTO_EXPORT= ")
-   set (COMPILER_FLAGS "/DNOMINMAX /EHsc")
-   set (WARNING_FLAGS "")
-endif (MSVC)
 
 hr_protobuf_generate_cpp(TEST_PROTO_SRCS TEST_PROTO_HDRS 
   test/query_proto/addressbook.proto
