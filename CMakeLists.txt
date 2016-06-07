@@ -517,7 +517,7 @@ install (DIRECTORY ${PROTOBUF_INCLUDE_DIRS}/google/protobuf DESTINATION include/
 get_filename_component(real_protobuf_library "${PROTOBUF_LIBRARY}" REALPATH)
 get_filename_component(real_protoc_library "${PROTOBUF_PROTOC_LIBRARY}" REALPATH)
 install (FILES ${real_protobuf_library} ${real_protoc_library} ${PROTOBUF_LIBRARY} ${PROTOBUF_PROTOC_LIBRARY} DESTINATION lib${LIB_SUFFIX})
-install (FILES ${PROTOBUF_PROTOC_EXECUTABLE} DESTINATION bin)
+install (PROGRAMS ${PROTOBUF_PROTOC_EXECUTABLE} DESTINATION bin)
 if (NOT WIN32)
     get_filename_component(protobuf_dir "${PROTOBUF_LIBRARY}" PATH)
     file(GLOB libproto_glob "${protobuf_dir}/libproto*")
@@ -526,7 +526,7 @@ endif (NOT WIN32)
 
 # If on windows, include openssl as well
 if(WIN32)
-    install (DIRECTORY "${OPENSSL_ROOT_DIR}/lib" "${OPENSSL_ROOT_DIR}/bin" "${OPENSSL_ROOT_DIR}/etc" "${OPENSSL_ROOT_DIR}/include" "${OPENSSL_ROOT_DIR}/share" DESTINATION .)
+    install (DIRECTORY "${OPENSSL_ROOT_DIR}/lib" "${OPENSSL_ROOT_DIR}/bin" "${OPENSSL_ROOT_DIR}/etc" "${OPENSSL_ROOT_DIR}/include" "${OPENSSL_ROOT_DIR}/share" DESTINATION . USE_SOURCE_PERMISSIONS)
 endif(WIN32)
 
 if(NOT DEFINED HOTROD_PREBUILT_LIB_DIR)
