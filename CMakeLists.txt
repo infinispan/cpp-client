@@ -80,13 +80,11 @@ function(HR_PROTOBUF_GENERATE_CPP SRCS HDRS)
     get_filename_component(ABS_FIL ${FIL} ABSOLUTE)
     get_filename_component(FIL_WE ${FIL} NAME_WE)
     get_filename_component(DIR ${FIL} PATH)
-
-    list(APPEND ${SRCS} "${CMAKE_CURRENT_BINARY_DIR}/${DIR}/${FIL_WE}.pb.cc")
-    list(APPEND ${HDRS} "${CMAKE_CURRENT_BINARY_DIR}/${DIR}/${FIL_WE}.pb.h")
-
+    list(APPEND ${SRCS} "${CMAKE_CURRENT_BINARY_DIR}/${FIL_WE}.pb.cc")
+    list(APPEND ${HDRS} "${CMAKE_CURRENT_BINARY_DIR}/${FIL_WE}.pb.h")
     add_custom_command(
-	    OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${DIR}/${FIL_WE}.pb.cc"
-	    "${CMAKE_CURRENT_BINARY_DIR}/${DIR}/${FIL_WE}.pb.h"
+	    OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${FIL_WE}.pb.cc"
+	    "${CMAKE_CURRENT_BINARY_DIR}/${FIL_WE}.pb.h"
       COMMAND  ${PROTOBUF_PROTOC_EXECUTABLE}
       ARGS --cpp_out dllexport_decl=HR_PROTO_EXPORT:${CMAKE_CURRENT_BINARY_DIR} ${_protobuf_include_path} ${ABS_FIL}
       DEPENDS ${ABS_FIL}
@@ -117,6 +115,37 @@ else (WIN32 AND NOT CYGWIN)
   set (platform_libs pthread rt)
 endif(WIN32 AND NOT CYGWIN)
 
+if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  set(DLLEXPORT "HR_PROTO_EXPORT=__attribute__ ((visibility (\"default\")))")
+  set(DLLEXPORT_STATIC "HR_PROTO_EXPORT= ")
+  if (ENABLE_WARNING_ERROR)
+    set (WERROR "-Werror")
+  endif (ENABLE_WARNING_ERROR)
+
+  set (COMPILER_FLAGS "-fvisibility=hidden -fvisibility-inlines-hidden -std=c++11")
+  if (CMAKE_COMPILER_IS_GNUCXX)
+  set (WARNING_FLAGS
+        "${WERROR} -pedantic -Wall -Wextra -Wno-shadow -Wpointer-arith -Wcast-qual -Wcast-align -Wno-long-long -Wvolatile-register-var -Winvalid-pch -Wno-system-headers -Woverloaded-virtual -Wno-variadic-macros -Wno-error=shadow")
+  set (WARNING_FLAGS_NO_PEDANTIC
+        "${WERROR} -Wall -Wextra -Wno-shadow -Wpointer-arith -Wcast-qual -Wcast-align -Wno-long-long -Wvolatile-register-var -Winvalid-pch -Wno-system-headers -Woverloaded-virtual -Wno-variadic-macros -Wno-error=shadow")
+set (NO_UNUSED_FLAGS "-Wno-error=unused-parameter -Wno-unused-parameter")
+  endif (CMAKE_COMPILER_IS_GNUCXX)
+  if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  set (WARNING_FLAGS_NO_PEDANTIC
+        "${WERROR} -pedantic -Wall -Wextra -Wno-shadow -Wpointer-arith -Wcast-qual -Wcast-align -Wno-long-long -Wvolatile-register-var -Winvalid-pch -Wno-system-headers -Woverloaded-virtual -Wno-variadic-macros -Wno-error-unused-parameter -Wno-error-cast-align -Wno-error-string-plus-int")
+  endif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  if (ENABLE_UNDEFINED_ERROR)
+    set (CATCH_UNDEFINED "-Wl,--no-undefined")
+  endif (ENABLE_UNDEFINED_ERROR)
+
+  set_source_files_properties(message-wrapping.pb.cc PROPERTIES COMPILE_FLAGS -Wno-error=shadow)
+  set_source_files_properties(query.pb.cc PROPERTIES COMPILE_FLAGS -Wno-error=shadow)
+  set_source_files_properties(base_types.pb.cc PROPERTIES COMPILE_FLAGS -Wno-error=shadow)
+
+endif (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+find_package(Protobuf REQUIRED)
+set (STATIC_FLAGS "-DHOTROD_DECLARE_STATIC")
+
 if(DEFINED HOTROD_PREBUILT_LIB_DIR)
 
     set (INCLUDE_FILES_DIR ${HOTROD_PREBUILT_LIB_DIR}/../include)
@@ -133,7 +162,7 @@ if(DEFINED HOTROD_PREBUILT_LIB_DIR)
         add_custom_target(copyhrlibs ALL COMMAND ${CMAKE_COMMAND} -E copy_directory ${HOTROD_PREBUILT_LIB_DIR} ${CMAKE_CFG_INTDIR})
     endif("${HOTROD_LIBRARY}" STREQUAL "HOTROD_LIBRARY-NOTFOUND")
 
-    find_library(HOTROD_STATIC_LIBRARY NAMES hotrod-static.lib PATHS ${HOTROD_PREBUILT_LIB_DIR})
+    find_library(HOTROD_STATIC_LIBRARY NAMES hotrod-static PATHS ${HOTROD_PREBUILT_LIB_DIR})
     if("${HOTROD_STATIC_LIBRARY}" STREQUAL "HOTROD_STATIC_LIBRARY-NOTFOUND")
         message(FATAL_ERROR "Cannot find HotRod static library in directory '${HOTROD_PREBUILT_LIB_DIR}'.")
     else("${HOTROD_STATIC_LIBRARY}" STREQUAL "HOTROD_STATIC_LIBRARY-NOTFOUND")
@@ -142,7 +171,7 @@ if(DEFINED HOTROD_PREBUILT_LIB_DIR)
         set_target_properties(hotrod-static PROPERTIES IMPORTED_LOCATION ${HOTROD_STATIC_LIBRARY})
     endif("${HOTROD_STATIC_LIBRARY}" STREQUAL "HOTROD_STATIC_LIBRARY-NOTFOUND")
 
-    find_library(HOTROD_PROTOBUF_LIBRARY NAMES hotrod_protobuf.lib PATHS ${HOTROD_PREBUILT_LIB_DIR})
+    find_library(HOTROD_PROTOBUF_LIBRARY NAMES hotrod_protobuf PATHS ${HOTROD_PREBUILT_LIB_DIR})
     if("${HOTROD_PROTOBUF_LIBRARY}" STREQUAL "HOTROD_PROTOBUF_LIBRARY-NOTFOUND")
         message(FATAL_ERROR "Cannot find HotRod Protobuf static library in directory '${HOTROD_PREBUILT_LIB_DIR}'.")
     else("${HOTROD_PROTOBUF_LIBRARY}" STREQUAL "HOTROD_PROTOBUF_LIBRARY-NOTFOUND")
@@ -150,18 +179,23 @@ if(DEFINED HOTROD_PREBUILT_LIB_DIR)
 	add_library(hotrod_protobuf STATIC IMPORTED GLOBAL)
         set_target_properties(hotrod_protobuf PROPERTIES IMPORTED_LOCATION ${HOTROD_PROTOBUF_LIBRARY})
     endif("${HOTROD_PROTOBUF_LIBRARY}" STREQUAL "HOTROD_PROTOBUF_LIBRARY-NOTFOUND")
-
-    find_library(PROTOBUF_LIBRARY NAMES libprotobuf PATHS ${HOTROD_PREBUILT_LIB_DIR})
-    if("${PROTOBUF_LIBRARY}" STREQUAL "PROTOBUF_LIBRARY-NOTFOUND")
-        message(FATAL_ERROR "Cannot find libprotobuf static library in directory '${HOTROD_PREBUILT_LIB_DIR}'.")
-    else("${PROTOBUF_LIBRARY}" STREQUAL "PROTOBUF_LIBRARY-NOTFOUND")
-        message("-- Found Protobuf static library: ${PROTOBUF_LIBRARY}")
-	add_library(libprotobuf STATIC IMPORTED GLOBAL)
-        set_target_properties(libprotobuf PROPERTIES IMPORTED_LOCATION ${PROTOBUF_LIBRARY})
-	set_target_properties(libprotobuf PROPERTIES IMPORTED_IMPLIB ${PROTOBUF_LIBRARY})
-    endif("${PROTOBUF_LIBRARY}" STREQUAL "PROTOBUF_LIBRARY-NOTFOUND")
+    find_library(HR_PROTOBUF_LIBRARY NAMES hr_protobuf PATHS ${HOTROD_PREBUILT_LIB_DIR}
+            PATH_SUFFIXES .a .lib
+            NO_SYSTEM_ENVIRONMENT_PATH NO_DEFAULT_PATH
+            NO_CMAKE_SYSTEM_ENVIRONMENT_PATH NO_CMAKE_DEFAULT_PATH)
+    if("${HR_PROTOBUF_LIBRARY}" STREQUAL "HR_PROTOBUF_LIBRARY-NOTFOUND")
+        message(FATAL_ERROR "Cannot find hr_protobuf static library in directory '${HOTROD_PREBUILT_LIB_DIR}'.")
+    else("${HR_PROTOBUF_LIBRARY}" STREQUAL "HR_PROTOBUF_LIBRARY-NOTFOUND")
+        message("-- Found Protobuf static library: ${HR_PROTOBUF_LIBRARY}")
+	add_library(hr_protobuf STATIC IMPORTED GLOBAL)
+        set_target_properties(hr_protobuf PROPERTIES IMPORTED_LOCATION ${HR_PROTOBUF_LIBRARY})
+	set_target_properties(hr_protobuf PROPERTIES IMPORTED_IMPLIB ${HR_PROTOBUF_LIBRARY})
+    endif("${HR_PROTOBUF_LIBRARY}" STREQUAL "HR_PROTOBUF_LIBRARY-NOTFOUND")
 
     set (PROTOBUF_PROTOC_EXECUTABLE ${HOTROD_PREBUILT_LIB_DIR}/../bin/protoc)
+    set (PROTOBUF_PROTOC_EXECUTABLE /usr/local/bin/protoc)
+    set (PROTOBUF_PROTOC_NO_PATH 1)
+# OpenSSL support
     set (PROTOBUF_INCLUDE_DIR ${HOTROD_PREBUILT_LIB_DIR}/../include)
 
 else(DEFINED HOTROD_PREBUILT_LIB_DIR)
@@ -169,7 +203,25 @@ else(DEFINED HOTROD_PREBUILT_LIB_DIR)
 include_directories ("${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_SOURCE_DIR}/src" "${CMAKE_CURRENT_BINARY_DIR}")
 set (INCLUDE_FILES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 
-find_package(Protobuf REQUIRED)
+
+# Select driver
+if(HOTROD_WINAPI)
+  set (platform_sources src/hotrod/sys/windows/Socket.cpp src/hotrod/sys/windows/Thread.cpp
+           src/hotrod/sys/windows/platform.cpp src/hotrod/sys/windows/Inet.cpp src/hotrod/sys/windows/Time.cpp)
+else(HOTROD_WINAPI)
+  set (platform_sources src/hotrod/sys/posix/Socket.cpp src/hotrod/sys/posix/Thread.cpp
+           src/hotrod/sys/posix/platform.cpp src/hotrod/sys/posix/Mutex.cpp src/hotrod/sys/posix/Inet.cpp src/hotrod/sys/posix/Time.cpp)
+endif(HOTROD_WINAPI)
+
+if(ENABLE_INTERNAL_TESTING)
+set (internal_test_sources
+  src/hotrod/test/Unit.cpp
+  src/hotrod/test/L3Test.cpp
+  src/hotrod/test/HashTest.cpp
+  src/hotrod/test/ConnectionPoolTest.cpp
+)
+endif(ENABLE_INTERNAL_TESTING)
+
 
 
     set (library_sources
@@ -231,9 +283,17 @@ find_package(Protobuf REQUIRED)
       src/hotrod/sys/Log.cpp
       src/hotrod/sys/SSLSocket.cpp
       ${platform_sources}
+      ${internal_test_sources} 
       ${CMAKE_BINARY_DIR}/Version.cpp
-      ${internal_test_sources}  
     )
+
+
+hr_protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS 
+  proto/infinispan/hotrod/protobuf/base_types.proto
+  proto/org/infinispan/protostream/message-wrapping.proto
+  proto/org/infinispan/query/remote/client/query.proto
+)
+
     
     add_library (hotrod_protobuf STATIC ${PROTO_SRCS})
     set_target_properties(hotrod_protobuf PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}" )
@@ -241,15 +301,6 @@ if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     set_target_properties(hotrod_protobuf PROPERTIES COMPILE_FLAGS "-fPIC" )
 endif (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 include_directories(${PROTOBUF_INCLUDE_DIRS})
-
-
-set (PROTOBUF_IMPORT_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/proto/org/infinispan/protostream)
-
-hr_protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS 
-  proto/infinispan/hotrod/protobuf/base_types.proto
-  proto/org/infinispan/protostream/message-wrapping.proto
-  proto/org/infinispan/query/remote/client/query.proto
-)
 
 # MacOS has a bunch of differences in build tools and process and so we have to turn some things
 # off there by default (for GCC; LLVM will need flags re-evaluated)
@@ -276,37 +327,7 @@ endforeach (OPTION)
 option(ENABLE_WARNING_ERROR "Consider compiler warnings to be errors" ${DEFAULT_WARNING_ERROR})
 option(ENABLE_UNDEFINED_ERROR "Check for unresolved library symbols" ${DEFAULT_UNDEFINED_ERROR})
 option(ENABLE_SWIG_TESTING "Create SWIG Java binding and test structure" ${DEFAULT_SWIG_TESTING})
-option(ENABLE_INTERNAL_TESTING "Compile the library with internal tests (unit tests)" ${DEFAULT_INTERNAL_TESTING})
 option(ENABLE_VALGRIND "Enable running the tests using Valgrind" ${DEFAULT_VALGRIND})
-
-if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  set(DLLEXPORT "HR_PROTO_EXPORT=__attribute__ ((visibility (\"default\")))")
-  set(DLLEXPORT_STATIC "HR_PROTO_EXPORT= ")
-  if (ENABLE_WARNING_ERROR)
-    set (WERROR "-Werror")
-  endif (ENABLE_WARNING_ERROR)
-
-  set (COMPILER_FLAGS "-fvisibility=hidden -fvisibility-inlines-hidden -std=c++11")
-  if (CMAKE_COMPILER_IS_GNUCXX)
-  set (WARNING_FLAGS
-        "${WERROR} -pedantic -Wall -Wextra -Wno-shadow -Wpointer-arith -Wcast-qual -Wcast-align -Wno-long-long -Wvolatile-register-var -Winvalid-pch -Wno-system-headers -Woverloaded-virtual -Wno-variadic-macros -Wno-error=shadow")
-  set (WARNING_FLAGS_NO_PEDANTIC
-        "${WERROR} -Wall -Wextra -Wno-shadow -Wpointer-arith -Wcast-qual -Wcast-align -Wno-long-long -Wvolatile-register-var -Winvalid-pch -Wno-system-headers -Woverloaded-virtual -Wno-variadic-macros -Wno-error=shadow")
-set (NO_UNUSED_FLAGS "-Wno-error=unused-parameter -Wno-unused-parameter")
-  endif (CMAKE_COMPILER_IS_GNUCXX)
-  if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  set (WARNING_FLAGS_NO_PEDANTIC
-        "${WERROR} -pedantic -Wall -Wextra -Wno-shadow -Wpointer-arith -Wcast-qual -Wcast-align -Wno-long-long -Wvolatile-register-var -Winvalid-pch -Wno-system-headers -Woverloaded-virtual -Wno-variadic-macros -Wno-error-unused-parameter -Wno-error-cast-align -Wno-error-string-plus-int")
-  endif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  if (ENABLE_UNDEFINED_ERROR)
-    set (CATCH_UNDEFINED "-Wl,--no-undefined")
-  endif (ENABLE_UNDEFINED_ERROR)
-
-  set_source_files_properties(message-wrapping.pb.cc PROPERTIES COMPILE_FLAGS -Wno-error=shadow)
-  set_source_files_properties(query.pb.cc PROPERTIES COMPILE_FLAGS -Wno-error=shadow)
-  set_source_files_properties(base_types.pb.cc PROPERTIES COMPILE_FLAGS -Wno-error=shadow)
-
-endif (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 
 if (NOT DEFINED COMPILER_FLAGS)
     message(FATAL_ERROR "Compiler flags not set for this build type")
@@ -326,24 +347,6 @@ if (ENABLE_VALGRIND)
   configure_file ("${PROJECT_SOURCE_DIR}/CTestCustom.cmake" "${PROJECT_BINARY_DIR}/CTestCustom.cmake" COPYONLY)
 endif (ENABLE_VALGRIND)
 
-if (ENABLE_INTERNAL_TESTING)
-set (internal_test_sources
-  src/hotrod/test/Unit.cpp
-  src/hotrod/test/L3Test.cpp
-  src/hotrod/test/HashTest.cpp
-  src/hotrod/test/ConnectionPoolTest.cpp
-)
-endif (ENABLE_INTERNAL_TESTING)
-
-# Select driver
-if(HOTROD_WINAPI)
-  set (platform_sources src/hotrod/sys/windows/Socket.cpp src/hotrod/sys/windows/Thread.cpp
-           src/hotrod/sys/windows/platform.cpp src/hotrod/sys/windows/Inet.cpp src/hotrod/sys/windows/Time.cpp)
-else(HOTROD_WINAPI)
-  set (platform_sources src/hotrod/sys/posix/Socket.cpp src/hotrod/sys/posix/Thread.cpp
-           src/hotrod/sys/posix/platform.cpp src/hotrod/sys/posix/Mutex.cpp src/hotrod/sys/posix/Inet.cpp src/hotrod/sys/posix/Time.cpp)
-endif(HOTROD_WINAPI)
-
 configure_file(src/hotrod/impl/Version.cpp.in ${CMAKE_BINARY_DIR}/Version.cpp @ONLY)
 file(COPY ${CMAKE_SOURCE_DIR}/test/query_proto DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
     
@@ -351,7 +354,7 @@ file(COPY ${CMAKE_SOURCE_DIR}/test/query_proto DESTINATION "${CMAKE_CURRENT_BINA
     add_library (hotrod SHARED ${library_sources})
     
     set_target_properties(hotrod PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}")
-    target_link_libraries (hotrod ${platform_libs} ${PROTOBUF_LIBRARIES} ${OPENSSL_LIBRARIES} hotrod_protobuf)
+    target_link_libraries (hotrod ${platform_libs}  ${HR_PROTOBUF_LIBRARY} ${OPENSSL_LIBRARIES} hotrod_protobuf)
     
     if (WIN32 AND NOT CMAKE_SIZEOF_VOID_P MATCHES "8")
         set (OUTPUT_NAME_SUFFIX "32")
@@ -360,7 +363,7 @@ file(COPY ${CMAKE_SOURCE_DIR}/test/query_proto DESTINATION "${CMAKE_CURRENT_BINA
     endif (WIN32 AND NOT CMAKE_SIZEOF_VOID_P MATCHES "8")
     
     set_target_properties (hotrod PROPERTIES OUTPUT_NAME "hotrod${OUTPUT_NAME_SUFFIX}")
-    set_target_properties (hotrod PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS}")
+    set_target_properties (hotrod PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${NO_UNUSED_FLAGS}")
     set_target_properties (hotrod PROPERTIES LINK_FLAGS "${CATCH_UNDEFINED}")
     set_target_properties (hotrod PROPERTIES SOVERSION "1.0")
     
@@ -368,11 +371,10 @@ file(COPY ${CMAKE_SOURCE_DIR}/test/query_proto DESTINATION "${CMAKE_CURRENT_BINA
     add_library (hotrod-static STATIC ${library_sources})
     set_target_properties(hotrod-static PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}" )
     set_target_properties(hotrod-static PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS} ${STATIC_FLAGS}")
-    target_link_libraries (hotrod-static ${OPENSSL_LIBRARIES})
+    target_link_libraries (hotrod-static ${platform_libs}  ${HR_PROTOBUF_LIBRARY} ${OPENSSL_LIBRARIES} hotrod_protobuf)
 
 endif(DEFINED HOTROD_PREBUILT_LIB_DIR)
 
-set (STATIC_FLAGS "-DHOTROD_DECLARE_STATIC")
 if (MSVC)
    set(DLLEXPORT "HR_PROTO_EXPORT=__declspec(dllexport)")
    set(DLLIMPORT "HR_PROTO_EXPORT=__declspec(dllimport)")
@@ -396,9 +398,9 @@ target_include_directories(simple PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query
                                      "${PROTOBUF_INCLUDE_DIR}")
 set_property(TARGET simple PROPERTY CXX_STANDARD 11)
 set_property(TARGET simple PROPERTY CXX_STANDARD_REQUIRED ON)
-set_target_properties(simple PROPERTIES COMPILE_DEFINITIONS "${DLLIMPORT};PROTOBUF_USE_DLLS")
+set_target_properties(simple PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}")
 set_target_properties (simple PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${NO_UNUSED_FLAGS}")
-target_link_libraries (simple hotrod_protobuf libprotobuf hotrod ${platform_libs})
+target_link_libraries (simple hotrod hotrod_protobuf ${HR_PROTOBUF_LIBRARY} ${platform_libs})
 
 add_executable (simple-static test/Simple.cpp)
 target_include_directories(simple-static PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
@@ -409,7 +411,7 @@ set_property(TARGET simple-static PROPERTY CXX_STANDARD 11)
 set_property(TARGET simple-static PROPERTY CXX_STANDARD_REQUIRED ON)
 set_target_properties (simple-static PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${STATIC_FLAGS} ${NO_UNUSED_FLAGS}")
 set_target_properties(simple-static PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}" )
-target_link_libraries (simple-static hotrod-static hotrod_protobuf libprotobuf ${OPENSSL_LIBRARIES} ${platform_libs})
+target_link_libraries (simple-static hotrod-static hotrod_protobuf ${HR_PROTOBUF_LIBRARY} ${OPENSSL_LIBRARIES} ${platform_libs})
 
 add_executable (queryTest test/QueryTest.cpp ${TEST_PROTO_SRCS} ${PROTO_SRCS})
 target_include_directories(queryTest PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
@@ -421,7 +423,7 @@ set_property(TARGET queryTest PROPERTY CXX_STANDARD 11)
 set_property(TARGET queryTest PROPERTY CXX_STANDARD_REQUIRED ON)
 set_target_properties (queryTest PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${NO_UNUSED_FLAGS}")
 set_target_properties(queryTest PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}")
-target_link_libraries (queryTest libprotobuf hotrod_protobuf hotrod ${platform_libs})
+target_link_libraries (queryTest ${HR_PROTOBUF_LIBRARY} hotrod_protobuf hotrod ${platform_libs})
 
 add_executable (queryTest-static ${TEST_PROTO_SRCS} test/QueryTest.cpp)
 target_include_directories(queryTest-static PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
@@ -433,7 +435,7 @@ set_property(TARGET queryTest-static PROPERTY CXX_STANDARD 11)
 set_property(TARGET queryTest-static PROPERTY CXX_STANDARD_REQUIRED ON)
 set_target_properties(queryTest-static PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}" )
 set_target_properties (queryTest-static PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${STATIC_FLAGS} ${NO_UNUSED_FLAGS}")
-target_link_libraries (queryTest-static libprotobuf hotrod_protobuf hotrod-static ${OPENSSL_LIBRARIES} ${platform_libs})
+target_link_libraries (queryTest-static hotrod-static hotrod_protobuf ${HR_PROTOBUF_LIBRARY} ${OPENSSL_LIBRARIES} ${platform_libs})
 
 add_executable (simple-tls test/SimpleTLS.cpp)
 target_include_directories(simple-tls PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
@@ -443,21 +445,21 @@ target_include_directories(simple-tls PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/q
                                      "${PROTOBUF_INCLUDE_DIR}")
 set_property(TARGET simple-tls PROPERTY CXX_STANDARD 11)
 set_property(TARGET simple-tls PROPERTY CXX_STANDARD_REQUIRED ON)
-set_target_properties(simple-tls PROPERTIES COMPILE_DEFINITIONS "${DLLIMPORT};PROTOBUF_USE_DLLS")
+set_target_properties(simple-tls PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}")
 set_target_properties (simple-tls PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${NO_UNUSED_FLAGS}")
-target_link_libraries (simple-tls hotrod_protobuf hotrod ${platform_libs} ${OPENSSL_LIBRARIES})
+target_link_libraries (simple-tls hotrod hotrod_protobuf ${HR_PROTOBUF_LIBRARY} ${platform_libs} ${OPENSSL_LIBRARIES})
 
-if (ENABLE_INTERNAL_TESTING)
+if(ENABLE_INTERNAL_TESTING)
     add_executable (unittest test/Unit.cpp)
-    set_target_properties(unittest PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT};PROTOBUF_USE_DLLS") 
+    set_target_properties(unittest PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}") 
     set_target_properties (unittest PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS}")
     target_link_libraries (unittest hotrod)
 
     add_executable (unittest-static test/Unit.cpp)
     set_target_properties(unittest-static PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}" )
     set_target_properties (unittest-static PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS} ${STATIC_FLAGS}")
-    target_link_libraries (unittest-static hotrod-static hotrod_protobuf libprotobuf ${OPENSSL_LIBRARIES} ${platform_libs})
-endif (ENABLE_INTERNAL_TESTING)
+    target_link_libraries (unittest-static hotrod-static hotrod_protobuf ${HR_PROTOBUF_LIBRARY} ${OPENSSL_LIBRARIES} ${platform_libs})
+endif(ENABLE_INTERNAL_TESTING)
 
 add_executable (itest test/InteractiveTest.cpp)
 target_include_directories(itest PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
@@ -465,17 +467,17 @@ target_include_directories(itest PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_
                                      "${CMAKE_CURRENT_BINARY_DIR}"
                                      "${PROTOBUF_INCLUDE_DIR}")
 target_include_directories(itest PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto")
-set_target_properties(itest PROPERTIES COMPILE_DEFINITIONS "${DLLIMPORT};PROTOBUF_USE_DLLS")
+set_target_properties(itest PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}")
 set_target_properties (itest PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${NO_UNUSED_FLAGS}")
-target_link_libraries (itest hotrod_protobuf hotrod ${OPENSSL_LIBRARIES} ${platform_libs})
+target_link_libraries (itest hotrod hotrod_protobuf ${HR_PROTOBUF_LIBRARY} ${OPENSSL_LIBRARIES} ${platform_libs})
 
 # the CTest include must be after the MEMORYCHECK settings are processed
 include (CTest)
 
-if (ENABLE_INTERNAL_TESTING)
+if(ENABLE_INTERNAL_TESTING)
     add_test (unittest unittest)
     add_test (unittest-static unittest-static)
-endif (ENABLE_INTERNAL_TESTING)    
+endif(ENABLE_INTERNAL_TESTING)    
 
 find_package(Java)
 
@@ -563,12 +565,12 @@ install (FILES "${CMAKE_CURRENT_SOURCE_DIR}/License.txt" "${CMAKE_CURRENT_SOURCE
 
 # Include protobuf library in the distribution
 install (DIRECTORY ${PROTOBUF_INCLUDE_DIRS}/google/protobuf DESTINATION include/google)
-get_filename_component(real_protobuf_library "${PROTOBUF_LIBRARY}" REALPATH)
+get_filename_component(real_protobuf_library "${HR_PROTOBUF_LIBRARY}" REALPATH)
 get_filename_component(real_protoc_library "${PROTOBUF_PROTOC_LIBRARY}" REALPATH)
-install (FILES ${real_protobuf_library} ${real_protoc_library} ${PROTOBUF_LIBRARY} ${PROTOBUF_PROTOC_LIBRARY} DESTINATION lib${LIB_SUFFIX})
+install (FILES ${real_protobuf_library} ${real_protoc_library} ${HR_PROTOBUF_LIBRARY} ${PROTOBUF_PROTOC_LIBRARY} DESTINATION lib${LIB_SUFFIX})
 install (FILES ${PROTOBUF_PROTOC_EXECUTABLE} DESTINATION bin)
 if (NOT WIN32)
-    get_filename_component(protobuf_dir "${PROTOBUF_LIBRARY}" PATH)
+    get_filename_component(protobuf_dir "${HR_PROTOBUF_LIBRARY}" PATH)
     file(GLOB libproto_glob "${protobuf_dir}/libproto*")
     install (FILES ${libproto_glob} DESTINATION lib${LIB_SUFFIX})
 endif (NOT WIN32)
