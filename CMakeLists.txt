@@ -100,9 +100,6 @@ endfunction()
 
 
 
-# OpenSSL support
-find_package(OpenSSL)
-include_directories(${OPENSSL_INCLUDE_DIR})
 
 if(WIN32 AND NOT CYGWIN)
   # linking against Windows native libraries, including mingw
@@ -157,55 +154,126 @@ set (STATIC_FLAGS "-DHOTROD_DECLARE_STATIC")
 
 if(DEFINED HOTROD_PREBUILT_LIB_DIR)
 
-    set (INCLUDE_FILES_DIR ${HOTROD_PREBUILT_LIB_DIR}/../include)
+    
+    if (DEFINED HOTROD_USE_CMAKE_PREFIX)
+        set(CMAKE_PREFIX_PATH "${HOTROD_PREBUILT_LIB_DIR}")
+            message("---- Searching in prefix: ${CMAKE_PREFIX_PATH}")
+    
+        find_program(PROTOC_EXECUTABLE NAMES protoc)
+        if("${PROTOC_EXECUTABLE}" STREQUAL "PROTOC_EXECUTABLE-NOTFOUND")
+            message(FATAL_ERROR "Cannot find Protobuf compiler executable in directory '${HOTROD_PREBUILT_LIB_DIR}/bin'.")
+        else("${PROTOC_EXECUTABLE}" STREQUAL "PROTOC_EXECUTABLE-NOTFOUND")
+            message("-- Found Protobuf compiler executable: ${PROTOC_EXECUTABLE}")
+            set (PROTOBUF_PROTOC_EXECUTABLE ${PROTOC_EXECUTABLE})
+        endif("${PROTOC_EXECUTABLE}" STREQUAL "PROTOC_EXECUTABLE-NOTFOUND")
+        
+        # On Windows Protobuf libraries have a "lib" prefix
+        if(WIN32)
+            SET(CMAKE_FIND_LIBRARY_PREFIXES "lib")
+        endif(WIN32)
+    
+        find_library(PROTOBUF_LIBRARY NAMES protobuf)
+        if("${PROTOBUF_LIBRARY}" STREQUAL "PROTOBUF_LIBRARY-NOTFOUND")
+            message(FATAL_ERROR "Cannot find Protobuf dynamic library in directory '${HOTROD_PREBUILT_LIB_DIR}/lib64 or ${HOTROD_PREBUILT_LIB_DIR}/lib'.")
+        else("${PROTOBUF_LIBRARY}" STREQUAL "PROTOBUF_LIBRARY-NOTFOUND")
+            message("-- Found Protobuf dynamic library: ${PROTOBUF_LIBRARY}")
+            add_library(protobuf SHARED IMPORTED GLOBAL)
+            set_target_properties(protobuf PROPERTIES IMPORTED_LOCATION ${PROTOBUF_LIBRARY})
+        endif("${PROTOBUF_LIBRARY}" STREQUAL "PROTOBUF_LIBRARY-NOTFOUND")
+    
+        find_library(PROTOBUF_PROTOC_LIBRARY NAMES protoc)
+        if("${PROTOBUF_PROTOC_LIBRARY}" STREQUAL "PROTOBUF_PROTOC_LIBRARY-NOTFOUND")
+            message(FATAL_ERROR "Cannot find Protobuf compiler library in directory '${HOTROD_PREBUILT_LIB_DIR}/lib64 or ${HOTROD_PREBUILT_LIB_DIR}/lib'.")
+        else("${PROTOBUF_PROTOC_LIBRARY}" STREQUAL "PROTOBUF_PROTOC_LIBRARY-NOTFOUND")
+            message("-- Found Protobuf compiler library: ${PROTOBUF_PROTOC_LIBRARY}")
+            add_library(protoc SHARED IMPORTED GLOBAL)
+            set_target_properties(protoc PROPERTIES IMPORTED_LOCATION ${PROTOBUF_PROTOC_LIBRARY})
+        endif("${PROTOBUF_PROTOC_LIBRARY}" STREQUAL "PROTOBUF_PROTOC_LIBRARY-NOTFOUND")
+        
+        set(PROTOBUF_LIBRARIES ${PROTOBUF_LIBRARY} ${PROTOBUF_PROTOC_LIBRARY})
+        
+        # On Windows HotRod libraries don't have a "lib" prefix
+        if(WIN32)
+            SET(CMAKE_FIND_LIBRARY_PREFIXES "")
+        endif(WIN32)
+        
+        find_library(HOTROD_PROTOBUF_LIBRARY NAMES hotrod_protobuf)
+        if("${HOTROD_PROTOBUF_LIBRARY}" STREQUAL "HOTROD_PROTOBUF_LIBRARY-NOTFOUND")
+            message(FATAL_ERROR "Cannot find HotRod protobuf static library in directory '${HOTROD_PREBUILT_LIB_DIR}/lib64 or ${HOTROD_PREBUILT_LIB_DIR}/lib'.")
+        else("${HOTROD_PROTOBUF_LIBRARY}" STREQUAL "HOTROD_PROTOBUF_LIBRARY-NOTFOUND")
+            message("-- Found HotRod protobuf static library: ${HOTROD_PROTOBUF_LIBRARY}")
+            add_library(hotrod_protobuf STATIC IMPORTED GLOBAL)
+            set_target_properties(hotrod_protobuf PROPERTIES IMPORTED_LOCATION ${HOTROD_PROTOBUF_LIBRARY})
+        endif("${HOTROD_PROTOBUF_LIBRARY}" STREQUAL "HOTROD_PROTOBUF_LIBRARY-NOTFOUND")
+  
+        set (PROTOBUF_INCLUDE_DIR ${HOTROD_PREBUILT_LIB_DIR}/include)
+        message("-- Found Protobuf include directory: ${PROTOBUF_INCLUDE_DIR}")
+        include_directories(${PROTOBUF_INCLUDE_DIR})
+        include_directories(${HOTROD_PREBUILT_LIB_DIR}/include/infinispan/hotrod)
+      
+        set(PROTOBUF_GENERATE_CPP_APPEND_PATH true)
 
-    find_library(HOTROD_LIBRARY NAMES hotrod PATHS ${HOTROD_PREBUILT_LIB_DIR} NO_DEFAULT_PATH)
-    if("${HOTROD_LIBRARY}" STREQUAL "HOTROD_LIBRARY-NOTFOUND")
-        message(FATAL_ERROR "Cannot find HotRod dynamic library in directory '${HOTROD_PREBUILT_LIB_DIR}'.")
-    else("${HOTROD_LIBRARY}" STREQUAL "HOTROD_LIBRARY-NOTFOUND")
-        message("-- Found HotRod dynamic library: ${HOTROD_LIBRARY}")
-        add_library(hotrod SHARED IMPORTED GLOBAL)
-        set_target_properties(hotrod PROPERTIES IMPORTED_LOCATION ${HOTROD_LIBRARY})
-        set_target_properties(hotrod PROPERTIES IMPORTED_IMPLIB ${HOTROD_LIBRARY})
-        # Copy pre-built libraries to the build directory
-        add_custom_target(copyhrlibs ALL COMMAND ${CMAKE_COMMAND} -E copy_directory ${HOTROD_PREBUILT_LIB_DIR} ${CMAKE_CFG_INTDIR})
-    endif("${HOTROD_LIBRARY}" STREQUAL "HOTROD_LIBRARY-NOTFOUND")
+    else (DEFINED HOTROD_USE_CMAKE_PREFIX)
+        set (INCLUDE_FILES_DIR ${HOTROD_PREBUILT_LIB_DIR}/../include)
+    
+        find_library(HOTROD_LIBRARY NAMES hotrod PATHS ${HOTROD_PREBUILT_LIB_DIR} NO_DEFAULT_PATH)
+        if("${HOTROD_LIBRARY}" STREQUAL "HOTROD_LIBRARY-NOTFOUND")
+            message(FATAL_ERROR "Cannot find HotRod dynamic library in directory '${HOTROD_PREBUILT_LIB_DIR}'.")
+        else("${HOTROD_LIBRARY}" STREQUAL "HOTROD_LIBRARY-NOTFOUND")
+            message("-- Found HotRod dynamic library: ${HOTROD_LIBRARY}")
+            add_library(hotrod SHARED IMPORTED GLOBAL)
+            set_target_properties(hotrod PROPERTIES IMPORTED_LOCATION ${HOTROD_LIBRARY})
+            set_target_properties(hotrod PROPERTIES IMPORTED_IMPLIB ${HOTROD_LIBRARY})
+            # Copy pre-built libraries to the build directory
+            add_custom_target(copyhrlibs ALL COMMAND ${CMAKE_COMMAND} -E copy_directory ${HOTROD_PREBUILT_LIB_DIR} ${CMAKE_CFG_INTDIR})
+        endif("${HOTROD_LIBRARY}" STREQUAL "HOTROD_LIBRARY-NOTFOUND")
+    
+        find_library(HOTROD_STATIC_LIBRARY NAMES hotrod-static PATHS ${HOTROD_PREBUILT_LIB_DIR})
+        if("${HOTROD_STATIC_LIBRARY}" STREQUAL "HOTROD_STATIC_LIBRARY-NOTFOUND")
+            message(FATAL_ERROR "Cannot find HotRod static library in directory '${HOTROD_PREBUILT_LIB_DIR}'.")
+        else("${HOTROD_STATIC_LIBRARY}" STREQUAL "HOTROD_STATIC_LIBRARY-NOTFOUND")
+            message("-- Found HotRod static library: ${HOTROD_STATIC_LIBRARY}")
+            add_library(hotrod-static STATIC IMPORTED GLOBAL)
+            set_target_properties(hotrod-static PROPERTIES IMPORTED_LOCATION ${HOTROD_STATIC_LIBRARY})
+        endif("${HOTROD_STATIC_LIBRARY}" STREQUAL "HOTROD_STATIC_LIBRARY-NOTFOUND")
+    
+        find_library(HOTROD_PROTOBUF_LIBRARY NAMES hotrod_protobuf PATHS ${HOTROD_PREBUILT_LIB_DIR})
+        if("${HOTROD_PROTOBUF_LIBRARY}" STREQUAL "HOTROD_PROTOBUF_LIBRARY-NOTFOUND")
+            message(FATAL_ERROR "Cannot find HotRod Protobuf static library in directory '${HOTROD_PREBUILT_LIB_DIR}'.")
+        else("${HOTROD_PROTOBUF_LIBRARY}" STREQUAL "HOTROD_PROTOBUF_LIBRARY-NOTFOUND")
+            message("-- Found HotRod Protobuf static library: ${HOTROD_PROTOBUF_LIBRARY}")
+	  add_library(hotrod_protobuf STATIC IMPORTED GLOBAL)
+            set_target_properties(hotrod_protobuf PROPERTIES IMPORTED_LOCATION ${HOTROD_PROTOBUF_LIBRARY})
+        endif("${HOTROD_PROTOBUF_LIBRARY}" STREQUAL "HOTROD_PROTOBUF_LIBRARY-NOTFOUND")
+  
+        find_library(HR_PROTOBUF_LIBRARY NAMES libprotobuf.a protobuf.lib protobuf  PATHS ${HOTROD_PREBUILT_LIB_DIR}
+                NO_SYSTEM_ENVIRONMENT_PATH NO_DEFAULT_PATH
+                NO_CMAKE_SYSTEM_ENVIRONMENT_PATH NO_CMAKE_DEFAULT_PATH)
+        if("${HR_PROTOBUF_LIBRARY}" STREQUAL "HR_PROTOBUF_LIBRARY-NOTFOUND")
+            message(FATAL_ERROR "Cannot find protobuf static library in directory '${HOTROD_PREBUILT_LIB_DIR}'.")
+        else("${HR_PROTOBUF_LIBRARY}" STREQUAL "HR_PROTOBUF_LIBRARY-NOTFOUND")
+            message("-- Found Protobuf static library: ${HR_PROTOBUF_LIBRARY}")
+	    add_library(protobuf STATIC IMPORTED GLOBAL)
+            set_target_properties(protobuf PROPERTIES IMPORTED_LOCATION ${HR_PROTOBUF_LIBRARY})
+	    set_target_properties(protobuf PROPERTIES IMPORTED_IMPLIB ${HR_PROTOBUF_LIBRARY})
+        endif("${HR_PROTOBUF_LIBRARY}" STREQUAL "HR_PROTOBUF_LIBRARY-NOTFOUND")
+        if(MSVC)
 
-    find_library(HOTROD_STATIC_LIBRARY NAMES hotrod-static PATHS ${HOTROD_PREBUILT_LIB_DIR})
-    if("${HOTROD_STATIC_LIBRARY}" STREQUAL "HOTROD_STATIC_LIBRARY-NOTFOUND")
-        message(FATAL_ERROR "Cannot find HotRod static library in directory '${HOTROD_PREBUILT_LIB_DIR}'.")
-    else("${HOTROD_STATIC_LIBRARY}" STREQUAL "HOTROD_STATIC_LIBRARY-NOTFOUND")
-        message("-- Found HotRod static library: ${HOTROD_STATIC_LIBRARY}")
-        add_library(hotrod-static STATIC IMPORTED GLOBAL)
-        set_target_properties(hotrod-static PROPERTIES IMPORTED_LOCATION ${HOTROD_STATIC_LIBRARY})
-    endif("${HOTROD_STATIC_LIBRARY}" STREQUAL "HOTROD_STATIC_LIBRARY-NOTFOUND")
+        else(MSVC)
+          find_package(OpenSSL)
+          include_directories(${OPENSSL_INCLUDE_DIR})
+        endif(MSVC)
+         
 
-    find_library(HOTROD_PROTOBUF_LIBRARY NAMES hotrod_protobuf PATHS ${HOTROD_PREBUILT_LIB_DIR})
-    if("${HOTROD_PROTOBUF_LIBRARY}" STREQUAL "HOTROD_PROTOBUF_LIBRARY-NOTFOUND")
-        message(FATAL_ERROR "Cannot find HotRod Protobuf static library in directory '${HOTROD_PREBUILT_LIB_DIR}'.")
-    else("${HOTROD_PROTOBUF_LIBRARY}" STREQUAL "HOTROD_PROTOBUF_LIBRARY-NOTFOUND")
-        message("-- Found HotRod Protobuf static library: ${HOTROD_PROTOBUF_LIBRARY}")
-	add_library(hotrod_protobuf STATIC IMPORTED GLOBAL)
-        set_target_properties(hotrod_protobuf PROPERTIES IMPORTED_LOCATION ${HOTROD_PROTOBUF_LIBRARY})
-    endif("${HOTROD_PROTOBUF_LIBRARY}" STREQUAL "HOTROD_PROTOBUF_LIBRARY-NOTFOUND")
-    find_library(HR_PROTOBUF_LIBRARY NAMES hr_protobuf PATHS ${HOTROD_PREBUILT_LIB_DIR}
-            PATH_SUFFIXES .a .lib
-            NO_SYSTEM_ENVIRONMENT_PATH NO_DEFAULT_PATH
-            NO_CMAKE_SYSTEM_ENVIRONMENT_PATH NO_CMAKE_DEFAULT_PATH)
-    if("${HR_PROTOBUF_LIBRARY}" STREQUAL "HR_PROTOBUF_LIBRARY-NOTFOUND")
-        message(FATAL_ERROR "Cannot find hr_protobuf static library in directory '${HOTROD_PREBUILT_LIB_DIR}'.")
-    else("${HR_PROTOBUF_LIBRARY}" STREQUAL "HR_PROTOBUF_LIBRARY-NOTFOUND")
-        message("-- Found Protobuf static library: ${HR_PROTOBUF_LIBRARY}")
-	add_library(hr_protobuf STATIC IMPORTED GLOBAL)
-        set_target_properties(hr_protobuf PROPERTIES IMPORTED_LOCATION ${HR_PROTOBUF_LIBRARY})
-	set_target_properties(hr_protobuf PROPERTIES IMPORTED_IMPLIB ${HR_PROTOBUF_LIBRARY})
-    endif("${HR_PROTOBUF_LIBRARY}" STREQUAL "HR_PROTOBUF_LIBRARY-NOTFOUND")
-
-    set (PROTOBUF_PROTOC_EXECUTABLE ${HOTROD_PREBUILT_LIB_DIR}/../bin/protoc)
-# OpenSSL support
-    set (PROTOBUF_INCLUDE_DIR ${HOTROD_PREBUILT_LIB_DIR}/../include)
-
+    
+        set (PROTOBUF_PROTOC_EXECUTABLE ${HOTROD_PREBUILT_LIB_DIR}/../bin/protoc)
+        set (PROTOBUF_INCLUDE_DIR ${HOTROD_PREBUILT_LIB_DIR}/../include)
+    endif (DEFINED HOTROD_USE_CMAKE_PREFIX)
 else(DEFINED HOTROD_PREBUILT_LIB_DIR)
+
+# OpenSSL support
+find_package(OpenSSL)
+include_directories(${OPENSSL_INCLUDE_DIR})
 
 include_directories ("${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_SOURCE_DIR}/src" "${CMAKE_CURRENT_BINARY_DIR}")
 set (INCLUDE_FILES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../include)
@@ -365,7 +433,8 @@ file(COPY ${CMAKE_SOURCE_DIR}/test/query_proto DESTINATION "${CMAKE_CURRENT_BINA
     add_library (hotrod SHARED ${library_sources})
     
     set_target_properties(hotrod PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}")
-    target_link_libraries (hotrod ${platform_libs}  ${HR_PROTOBUF_LIBRARY} ${OPENSSL_LIBRARIES} hotrod_protobuf)
+    target_link_libraries (hotrod ${platform_libs}  ${OPENSSL_LIBRARIES})
+    add_dependencies(hotrod hotrod_protobuf)
     
     if (WIN32 AND NOT CMAKE_SIZEOF_VOID_P MATCHES "8")
         set (OUTPUT_NAME_SUFFIX "32")
