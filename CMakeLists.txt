@@ -258,16 +258,64 @@ if(DEFINED HOTROD_PREBUILT_LIB_DIR)
 	    set_target_properties(protobuf PROPERTIES IMPORTED_IMPLIB ${HR_PROTOBUF_LIBRARY})
             set(PROTOBUF_LIBRARY ${HR_PROTOBUF_LIBRARY})
         endif("${HR_PROTOBUF_LIBRARY}" STREQUAL "HR_PROTOBUF_LIBRARY-NOTFOUND")
-        if(MSVC)
+  
+        find_library(HR_PROTOBUF_PROTOC_LIBRARY NAMES protoc libprotoc PATHS ${HOTROD_PREBUILT_LIB_DIR}
+                NO_SYSTEM_ENVIRONMENT_PATH NO_DEFAULT_PATH
+                NO_CMAKE_SYSTEM_ENVIRONMENT_PATH NO_CMAKE_DEFAULT_PATH)
+        if("${HR_PROTOBUF_PROTOC_LIBRARY}" STREQUAL "HR_PROTOBUF_PROTOC_LIBRARY-NOTFOUND")
+            message(FATAL_ERROR "Cannot find protobuf static library in directory '${HOTROD_PREBUILT_LIB_DIR}'.")
+        else("${HR_PROTOBUF_PROTOC_LIBRARY}" STREQUAL "HR_PROTOBUF_PROTOC_LIBRARY-NOTFOUND")
+            message("-- Found Protobuf static library: ${HR_PROTOBUF_PROTOC_LIBRARY}")
+	    add_library(protoc STATIC IMPORTED GLOBAL)
+            set_target_properties(protoc PROPERTIES IMPORTED_LOCATION ${HR_PROTOBUF_PROTOC_LIBRARY})
+	    set_target_properties(protoc PROPERTIES IMPORTED_IMPLIB ${HR_PROTOBUF_PROTOC_LIBRARY})
+            set(PROTOBUF_PROTOC_LIBRARY ${HR_PROTOBUF_PROTOC_LIBRARY})
+        endif("${HR_PROTOBUF_PROTOC_LIBRARY}" STREQUAL "HR_PROTOBUF_PROTOC_LIBRARY-NOTFOUND")
 
+        if(MSVC)
+		find_library(SSLEAY32_LIBRARY NAMES ssleay32 PATHS ${HOTROD_PREBUILT_LIB_DIR})
+		if("${SSLEAY32_LIBRARY}" STREQUAL "SSLEAY32_LIBRARY-NOTFOUND")
+            message(FATAL_ERROR "Cannot find ssleay32 library in directory '${HOTROD_PREBUILT_LIB_DIR}'.")
+    else("${SSLEAY32_LIBRARY}" STREQUAL "SSLEAY32_LIBRARY-NOTFOUND")
+	    message("-- Found ssleay32 static library: ${SSLEAY32_LIBRARY}")
+            add_library(ssleay32 STATIC IMPORTED GLOBAL)
+	    set_target_properties(ssleay32 PROPERTIES IMPORTED_LOCATION ${SSLEAY32_LIBRARY})
+    endif("${SSLEAY32_LIBRARY}" STREQUAL "SSLEAY32_LIBRARY-NOTFOUND")
+
+    find_library(LIBEAY32_LIBRARY NAMES libeay32 PATHS ${HOTROD_PREBUILT_LIB_DIR})
+    if("${LIBEAY32_LIBRARY}" STREQUAL "LIBEAY32_LIBRARY-NOTFOUND")
+            message(FATAL_ERROR "Cannot find libeay32 library in directory '${HOTROD_PREBUILT_LIB_DIR}'.")
+    else("${LIBEAY32_LIBRARY}" STREQUAL "LIBEAY32_LIBRARY-NOTFOUND")
+	    message("-- Found libeay32 static library: ${LIBEAY32_LIBRARY}")
+	  add_library(libeay32 STATIC IMPORTED GLOBAL)
+	  set_target_properties(libeay32 PROPERTIES IMPORTED_LOCATION ${LIBEAY32_LIBRARY})
+  endif("${LIBEAY32_LIBRARY}" STREQUAL "LIBEAY32_LIBRARY-NOTFOUND")
+        set(OPENSSL_LIBRARIES  ${LIBEAY32_LIBRARY} ${SSLEAY32_LIBRARY})
+find_path(OPENSSL_INCLUDE_DIR
+  NAMES
+    openssl/ssl.h
+  HINTS
+  ${HOTROD_PREBUILT_LIB_DIR}/..
+  PATH_SUFFIXES
+    include
+)
+    if("${OPENSSL_INCLUDE_DIR}" STREQUAL "OPENSSL_INCLUDE_DIR-NOTFOUND")
+            message(FATAL_ERROR "Cannot find openssl/ssl.h file in '${HOTROD_PREBUILT_LIB_DIR}/..'.")
+    else("${OPENSSL_INCLUDE_DIR}" STREQUAL "OPENSSL_INCLUDE_DIR-NOTFOUND")
+	    message("-- Found openssl/ssl.h file in '${OPENSSL_INCLUDE_DIR}'.")
+          include_directories(${OPENSSL_INCLUDE_DIR})
+    endif("${OPENSSL_INCLUDE_DIR}" STREQUAL "OPENSSL_INCLUDE_DIR-NOTFOUND")
         else(MSVC)
           find_package(OpenSSL)
           include_directories(${OPENSSL_INCLUDE_DIR})
         endif(MSVC)
          
 
-    
-        set (PROTOBUF_PROTOC_EXECUTABLE ${HOTROD_PREBUILT_LIB_DIR}/../bin/protoc)
+        if(UNIX) 
+            set (PROTOBUF_PROTOC_EXECUTABLE ${HOTROD_PREBUILT_LIB_DIR}/../bin/protoc)
+        else(UNIX) 
+            set (PROTOBUF_PROTOC_EXECUTABLE ${HOTROD_PREBUILT_LIB_DIR}/../bin/protoc.exe)
+        endif(UNIX) 
         set (PROTOBUF_INCLUDE_DIR ${HOTROD_PREBUILT_LIB_DIR}/../include)
     endif (DEFINED HOTROD_USE_CMAKE_PREFIX)
 else(DEFINED HOTROD_PREBUILT_LIB_DIR)
@@ -370,7 +418,7 @@ hr_protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS
   proto/org/infinispan/query/remote/client/query.proto
 )
 
-include_directories(${PROTOBUF_INCLUDE_DIRS})
+include_directories(${PROTOBUF_INCLUDE_DIR})
     
     add_library (hotrod_protobuf STATIC ${PROTO_SRCS})
     set_target_properties(hotrod_protobuf PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}" )
@@ -650,7 +698,7 @@ endif (NOT WIN32)
 
 # If on windows, include openssl as well
 if(WIN32)
-    install (DIRECTORY "${OPENSSL_ROOT_DIR}/lib" "${OPENSSL_ROOT_DIR}/bin" "${OPENSSL_ROOT_DIR}/etc" "${OPENSSL_ROOT_DIR}/include" "${OPENSSL_ROOT_DIR}/share" DESTINATION .)
+    install (DIRECTORY "${OPENSSL_ROOT_DIR}/lib" "${OPENSSL_ROOT_DIR}/bin" "${OPENSSL_ROOT_DIR}/exp" "${OPENSSL_ROOT_DIR}/include" "${OPENSSL_ROOT_DIR}/share" DESTINATION .)
 endif(WIN32)
 
 if(NOT DEFINED HOTROD_PREBUILT_LIB_DIR)
