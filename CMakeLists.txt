@@ -256,6 +256,7 @@ if(DEFINED HOTROD_PREBUILT_LIB_DIR)
 	    add_library(protobuf STATIC IMPORTED GLOBAL)
             set_target_properties(protobuf PROPERTIES IMPORTED_LOCATION ${HR_PROTOBUF_LIBRARY})
 	    set_target_properties(protobuf PROPERTIES IMPORTED_IMPLIB ${HR_PROTOBUF_LIBRARY})
+            set(PROTOBUF_LIBRARY ${HR_PROTOBUF_LIBRARY})
         endif("${HR_PROTOBUF_LIBRARY}" STREQUAL "HR_PROTOBUF_LIBRARY-NOTFOUND")
         if(MSVC)
 
@@ -427,7 +428,6 @@ if (ENABLE_VALGRIND)
 endif (ENABLE_VALGRIND)
 
 configure_file(src/hotrod/impl/Version.cpp.in ${CMAKE_BINARY_DIR}/Version.cpp @ONLY)
-file(COPY ${CMAKE_SOURCE_DIR}/test/query_proto DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
     
     # Build a shared library
     add_library (hotrod SHARED ${library_sources})
@@ -453,6 +453,8 @@ file(COPY ${CMAKE_SOURCE_DIR}/test/query_proto DESTINATION "${CMAKE_CURRENT_BINA
     target_link_libraries (hotrod-static ${platform_libs}  ${PROTOBUF_LIBRARY} ${OPENSSL_LIBRARIES} hotrod_protobuf)
 
 endif(DEFINED HOTROD_PREBUILT_LIB_DIR)
+
+file(COPY ${CMAKE_SOURCE_DIR}/test/query_proto DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
 
 hr_protobuf_generate_cpp(TEST_PROTO_SRCS TEST_PROTO_HDRS 
   test/query_proto/addressbook.proto
