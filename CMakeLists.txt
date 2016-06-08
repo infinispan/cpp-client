@@ -375,7 +375,7 @@ include_directories(${PROTOBUF_INCLUDE_DIRS})
     add_library (hotrod_protobuf STATIC ${PROTO_SRCS})
     set_target_properties(hotrod_protobuf PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}" )
 if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    set_target_properties(hotrod_protobuf PROPERTIES COMPILE_FLAGS "-fPIC" )
+    set_target_properties(hotrod_protobuf PROPERTIES COMPILE_FLAGS "-fPIC ${WARNING_FLAGS}" )
 endif (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 target_include_directories(hotrod_protobuf PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
 	"${INCLUDE_FILES_DIR}"
