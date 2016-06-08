@@ -259,18 +259,18 @@ if(DEFINED HOTROD_PREBUILT_LIB_DIR)
             set(PROTOBUF_LIBRARY ${HR_PROTOBUF_LIBRARY})
         endif("${HR_PROTOBUF_LIBRARY}" STREQUAL "HR_PROTOBUF_LIBRARY-NOTFOUND")
   
-        find_library(HR_PROTOBUF_PROTOC_LIBRARY NAMES protoc libprotoc PATHS ${HOTROD_PREBUILT_LIB_DIR}
-                NO_SYSTEM_ENVIRONMENT_PATH NO_DEFAULT_PATH
-                NO_CMAKE_SYSTEM_ENVIRONMENT_PATH NO_CMAKE_DEFAULT_PATH)
-        if("${HR_PROTOBUF_PROTOC_LIBRARY}" STREQUAL "HR_PROTOBUF_PROTOC_LIBRARY-NOTFOUND")
-            message(FATAL_ERROR "Cannot find protobuf static library in directory '${HOTROD_PREBUILT_LIB_DIR}'.")
-        else("${HR_PROTOBUF_PROTOC_LIBRARY}" STREQUAL "HR_PROTOBUF_PROTOC_LIBRARY-NOTFOUND")
-            message("-- Found Protobuf static library: ${HR_PROTOBUF_PROTOC_LIBRARY}")
-	    add_library(protoc STATIC IMPORTED GLOBAL)
-            set_target_properties(protoc PROPERTIES IMPORTED_LOCATION ${HR_PROTOBUF_PROTOC_LIBRARY})
-	    set_target_properties(protoc PROPERTIES IMPORTED_IMPLIB ${HR_PROTOBUF_PROTOC_LIBRARY})
-            set(PROTOBUF_PROTOC_LIBRARY ${HR_PROTOBUF_PROTOC_LIBRARY})
-        endif("${HR_PROTOBUF_PROTOC_LIBRARY}" STREQUAL "HR_PROTOBUF_PROTOC_LIBRARY-NOTFOUND")
+        #find_library(HR_PROTOBUF_PROTOC_LIBRARY NAMES protoc libprotoc PATHS ${HOTROD_PREBUILT_LIB_DIR}
+        #        NO_SYSTEM_ENVIRONMENT_PATH NO_DEFAULT_PATH
+        #        NO_CMAKE_SYSTEM_ENVIRONMENT_PATH NO_CMAKE_DEFAULT_PATH)
+        #if("${HR_PROTOBUF_PROTOC_LIBRARY}" STREQUAL "HR_PROTOBUF_PROTOC_LIBRARY-NOTFOUND")
+        #    message(FATAL_ERROR "Cannot find protoc library in directory '${HOTROD_PREBUILT_LIB_DIR}'.")
+        #else("${HR_PROTOBUF_PROTOC_LIBRARY}" STREQUAL "HR_PROTOBUF_PROTOC_LIBRARY-NOTFOUND")
+        #    message("-- Found Protoc static library: ${HR_PROTOBUF_PROTOC_LIBRARY}")
+	#    add_library(protoc STATIC IMPORTED GLOBAL)
+        #    set_target_properties(protoc PROPERTIES IMPORTED_LOCATION ${HR_PROTOBUF_PROTOC_LIBRARY})
+	#    set_target_properties(protoc PROPERTIES IMPORTED_IMPLIB ${HR_PROTOBUF_PROTOC_LIBRARY})
+        #    set(PROTOBUF_PROTOC_LIBRARY ${HR_PROTOBUF_PROTOC_LIBRARY})
+        #endif("${HR_PROTOBUF_PROTOC_LIBRARY}" STREQUAL "HR_PROTOBUF_PROTOC_LIBRARY-NOTFOUND")
 
         if(MSVC)
 		find_library(SSLEAY32_LIBRARY NAMES ssleay32 PATHS ${HOTROD_PREBUILT_LIB_DIR})
@@ -455,6 +455,7 @@ endforeach (OPTION)
 option(ENABLE_WARNING_ERROR "Consider compiler warnings to be errors" ${DEFAULT_WARNING_ERROR})
 option(ENABLE_UNDEFINED_ERROR "Check for unresolved library symbols" ${DEFAULT_UNDEFINED_ERROR})
 option(ENABLE_SWIG_TESTING "Create SWIG Java binding and test structure" ${DEFAULT_SWIG_TESTING})
+option(ENABLE_INTERNAL_TESTING "Compile the library with internal tests (unit tests)" ${DEFAULT_INTERNAL_TESTING})
 option(ENABLE_VALGRIND "Enable running the tests using Valgrind" ${DEFAULT_VALGRIND})
 
 if (NOT DEFINED COMPILER_FLAGS)
@@ -572,11 +573,21 @@ target_link_libraries (simple-tls hotrod hotrod_protobuf ${PROTOBUF_LIBRARY} ${p
 
 if(ENABLE_INTERNAL_TESTING)
     add_executable (unittest test/Unit.cpp)
+target_include_directories(unittest PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
+	"${INCLUDE_FILES_DIR}"
+	"${INCLUDE_FILES_DIR}/infinispan/hotrod"
+                                     "${CMAKE_CURRENT_BINARY_DIR}"
+                                     "${PROTOBUF_INCLUDE_DIR}")
     set_target_properties(unittest PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}") 
     set_target_properties (unittest PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS}")
     target_link_libraries (unittest hotrod hotrod_protobuf ${PROTOBUF_LIBRARY})
 
     add_executable (unittest-static test/Unit.cpp)
+target_include_directories(unittest-static PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
+	"${INCLUDE_FILES_DIR}"
+	"${INCLUDE_FILES_DIR}/infinispan/hotrod"
+                                     "${CMAKE_CURRENT_BINARY_DIR}"
+                                     "${PROTOBUF_INCLUDE_DIR}")
     set_target_properties(unittest-static PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}" )
     set_target_properties (unittest-static PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS} ${STATIC_FLAGS}")
     target_link_libraries (unittest-static hotrod-static hotrod_protobuf ${PROTOBUF_LIBRARY} ${OPENSSL_LIBRARIES} ${platform_libs})
