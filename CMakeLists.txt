@@ -433,7 +433,7 @@ file(COPY ${CMAKE_SOURCE_DIR}/test/query_proto DESTINATION "${CMAKE_CURRENT_BINA
     add_library (hotrod SHARED ${library_sources})
     
     set_target_properties(hotrod PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}")
-    target_link_libraries (hotrod ${platform_libs}  ${OPENSSL_LIBRARIES})
+    target_link_libraries (hotrod ${platform_libs}  ${OPENSSL_LIBRARIES} hotrod_protobuf)
     add_dependencies(hotrod hotrod_protobuf)
     
     if (WIN32 AND NOT CMAKE_SIZEOF_VOID_P MATCHES "8")
@@ -451,7 +451,7 @@ file(COPY ${CMAKE_SOURCE_DIR}/test/query_proto DESTINATION "${CMAKE_CURRENT_BINA
     add_library (hotrod-static STATIC ${library_sources})
     set_target_properties(hotrod-static PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}" )
     set_target_properties(hotrod-static PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS} ${STATIC_FLAGS}")
-    target_link_libraries (hotrod-static ${platform_libs}  ${HR_PROTOBUF_LIBRARY} ${OPENSSL_LIBRARIES} hotrod_protobuf)
+    target_link_libraries (hotrod-static ${platform_libs}  ${PROTOBUF_LIBRARY} ${OPENSSL_LIBRARIES} hotrod_protobuf)
 
 endif(DEFINED HOTROD_PREBUILT_LIB_DIR)
 
@@ -472,7 +472,7 @@ set_property(TARGET simple PROPERTY CXX_STANDARD 11)
 set_property(TARGET simple PROPERTY CXX_STANDARD_REQUIRED ON)
 set_target_properties(simple PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}")
 set_target_properties (simple PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${NO_UNUSED_FLAGS}")
-target_link_libraries (simple hotrod hotrod_protobuf ${HR_PROTOBUF_LIBRARY} ${platform_libs})
+target_link_libraries (simple hotrod hotrod_protobuf ${PROTOBUF_LIBRARY} ${platform_libs})
 
 add_executable (simple-static test/Simple.cpp)
 target_include_directories(simple-static PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
@@ -483,9 +483,9 @@ set_property(TARGET simple-static PROPERTY CXX_STANDARD 11)
 set_property(TARGET simple-static PROPERTY CXX_STANDARD_REQUIRED ON)
 set_target_properties (simple-static PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${STATIC_FLAGS} ${NO_UNUSED_FLAGS}")
 set_target_properties(simple-static PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}" )
-target_link_libraries (simple-static hotrod-static hotrod_protobuf ${HR_PROTOBUF_LIBRARY} ${OPENSSL_LIBRARIES} ${platform_libs})
+target_link_libraries (simple-static hotrod-static hotrod_protobuf ${PROTOBUF_LIBRARY} ${OPENSSL_LIBRARIES} ${platform_libs})
 
-add_executable (queryTest test/QueryTest.cpp ${TEST_PROTO_SRCS} ${PROTO_SRCS})
+add_executable (queryTest test/QueryTest.cpp ${TEST_PROTO_SRCS})
 target_include_directories(queryTest PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
 	"${INCLUDE_FILES_DIR}"
 	"${INCLUDE_FILES_DIR}/infinispan/hotrod"
@@ -495,7 +495,7 @@ set_property(TARGET queryTest PROPERTY CXX_STANDARD 11)
 set_property(TARGET queryTest PROPERTY CXX_STANDARD_REQUIRED ON)
 set_target_properties (queryTest PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${NO_UNUSED_FLAGS}")
 set_target_properties(queryTest PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}")
-target_link_libraries (queryTest ${HR_PROTOBUF_LIBRARY} hotrod_protobuf hotrod ${platform_libs})
+target_link_libraries (queryTest hotrod hotrod_protobuf  ${PROTOBUF_LIBRARY} ${platform_libs})
 
 add_executable (queryTest-static ${TEST_PROTO_SRCS} test/QueryTest.cpp)
 target_include_directories(queryTest-static PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
@@ -507,7 +507,7 @@ set_property(TARGET queryTest-static PROPERTY CXX_STANDARD 11)
 set_property(TARGET queryTest-static PROPERTY CXX_STANDARD_REQUIRED ON)
 set_target_properties(queryTest-static PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}" )
 set_target_properties (queryTest-static PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${STATIC_FLAGS} ${NO_UNUSED_FLAGS}")
-target_link_libraries (queryTest-static hotrod-static hotrod_protobuf ${HR_PROTOBUF_LIBRARY} ${OPENSSL_LIBRARIES} ${platform_libs})
+target_link_libraries (queryTest-static hotrod-static hotrod_protobuf ${PROTOBUF_LIBRARY} ${OPENSSL_LIBRARIES} ${platform_libs})
 
 add_executable (simple-tls test/SimpleTLS.cpp)
 target_include_directories(simple-tls PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
@@ -519,18 +519,18 @@ set_property(TARGET simple-tls PROPERTY CXX_STANDARD 11)
 set_property(TARGET simple-tls PROPERTY CXX_STANDARD_REQUIRED ON)
 set_target_properties(simple-tls PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}")
 set_target_properties (simple-tls PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${NO_UNUSED_FLAGS}")
-target_link_libraries (simple-tls hotrod hotrod_protobuf ${HR_PROTOBUF_LIBRARY} ${platform_libs} ${OPENSSL_LIBRARIES})
+target_link_libraries (simple-tls hotrod hotrod_protobuf ${PROTOBUF_LIBRARY} ${platform_libs} ${OPENSSL_LIBRARIES})
 
 if(ENABLE_INTERNAL_TESTING)
     add_executable (unittest test/Unit.cpp)
     set_target_properties(unittest PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}") 
     set_target_properties (unittest PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS}")
-    target_link_libraries (unittest hotrod)
+    target_link_libraries (unittest hotrod hotrod_protobuf ${PROTOBUF_LIBRARY})
 
     add_executable (unittest-static test/Unit.cpp)
     set_target_properties(unittest-static PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}" )
     set_target_properties (unittest-static PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS} ${STATIC_FLAGS}")
-    target_link_libraries (unittest-static hotrod-static hotrod_protobuf ${HR_PROTOBUF_LIBRARY} ${OPENSSL_LIBRARIES} ${platform_libs})
+    target_link_libraries (unittest-static hotrod-static hotrod_protobuf ${PROTOBUF_LIBRARY} ${OPENSSL_LIBRARIES} ${platform_libs})
 endif(ENABLE_INTERNAL_TESTING)
 
 add_executable (itest test/InteractiveTest.cpp)
@@ -541,7 +541,7 @@ target_include_directories(itest PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_
 target_include_directories(itest PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto")
 set_target_properties(itest PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}")
 set_target_properties (itest PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${NO_UNUSED_FLAGS}")
-target_link_libraries (itest hotrod hotrod_protobuf ${HR_PROTOBUF_LIBRARY} ${OPENSSL_LIBRARIES} ${platform_libs})
+target_link_libraries (itest hotrod hotrod_protobuf ${PROTOBUF_LIBRARY} ${OPENSSL_LIBRARIES} ${platform_libs})
 
 # the CTest include must be after the MEMORYCHECK settings are processed
 include (CTest)
@@ -637,12 +637,12 @@ install (FILES "${CMAKE_CURRENT_SOURCE_DIR}/License.txt" "${CMAKE_CURRENT_SOURCE
 
 # Include protobuf library in the distribution
 install (DIRECTORY ${PROTOBUF_INCLUDE_DIRS}/google/protobuf DESTINATION include/google)
-get_filename_component(real_protobuf_library "${HR_PROTOBUF_LIBRARY}" REALPATH)
+get_filename_component(real_protobuf_library "${PROTOBUF_LIBRARY}" REALPATH)
 get_filename_component(real_protoc_library "${PROTOBUF_PROTOC_LIBRARY}" REALPATH)
-install (FILES ${real_protobuf_library} ${real_protoc_library} ${HR_PROTOBUF_LIBRARY} ${PROTOBUF_PROTOC_LIBRARY} DESTINATION lib${LIB_SUFFIX})
+install (FILES ${real_protobuf_library} ${real_protoc_library} ${PROTOBUF_LIBRARY} ${PROTOBUF_PROTOC_LIBRARY} DESTINATION lib${LIB_SUFFIX})
 install (FILES ${PROTOBUF_PROTOC_EXECUTABLE} DESTINATION bin)
 if (NOT WIN32)
-    get_filename_component(protobuf_dir "${HR_PROTOBUF_LIBRARY}" PATH)
+    get_filename_component(protobuf_dir "${PROTOBUF_LIBRARY}" PATH)
     file(GLOB libproto_glob "${protobuf_dir}/libproto*")
     install (FILES ${libproto_glob} DESTINATION lib${LIB_SUFFIX})
 endif (NOT WIN32)
