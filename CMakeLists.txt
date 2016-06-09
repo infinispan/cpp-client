@@ -1,6 +1,9 @@
 cmake_minimum_required (VERSION 2.6)
 
 project (infinispan-hotrod-cpp C CXX)
+IF (${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} GREATER 3.1)
+  cmake_policy(SET CMP0054 OLD)
+ENDIF (${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} GREATER 3.1)
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     # require at least gcc 4.8
@@ -150,6 +153,34 @@ if (MSVC)
 endif (MSVC)
 
 set (STATIC_FLAGS "-DHOTROD_DECLARE_STATIC")
+
+# MacOS has a bunch of differences in build tools and process and so we have to turn some things
+# off there by default (for GCC; LLVM will need flags re-evaluated)
+if (APPLE)
+  set (NOENABLE_UNDEFINED_ERROR ON)
+endif (APPLE)
+
+if(WIN32 AND NOT CYGWIN)
+  # Encourage use of valgrind unless unavailable on the platform
+  set (NOENABLE_VALGRIND ON)
+endif(WIN32 AND NOT CYGWIN)
+
+# Add options here called <whatever> they will turn into "ENABLE_<whatever" and can be
+# overridden on a platform specific basis above by NOENABLE_<whatever>
+set (OPTIONS WARNING_ERROR UNDEFINED_ERROR SWIG_TESTING INTERNAL_TESTING VALGRIND)
+
+foreach (OPTION ${OPTIONS})
+  if (NOT "NOENABLE_${OPTION}")
+    set ("DEFAULT_${OPTION}" ON)
+  endif (NOT "NOENABLE_${OPTION}")
+endforeach (OPTION)
+
+# And add the option here too with help text
+option(ENABLE_WARNING_ERROR "Consider compiler warnings to be errors" ${DEFAULT_WARNING_ERROR})
+option(ENABLE_UNDEFINED_ERROR "Check for unresolved library symbols" ${DEFAULT_UNDEFINED_ERROR})
+option(ENABLE_SWIG_TESTING "Create SWIG Java binding and test structure" ${DEFAULT_SWIG_TESTING})
+option(ENABLE_INTERNAL_TESTING "Compile the library with internal tests (unit tests)" ${DEFAULT_INTERNAL_TESTING})
+option(ENABLE_VALGRIND "Enable running the tests using Valgrind" ${DEFAULT_VALGRIND})
 
 if(DEFINED HOTROD_PREBUILT_LIB_DIR)
     set(PROTOBUF_GENERATE_CPP_APPEND_PATH true)
@@ -455,34 +486,6 @@ configure_file(src/hotrod/impl/Version.cpp.in ${CMAKE_BINARY_DIR}/Version.cpp @O
     target_link_libraries (hotrod-static ${platform_libs}  ${PROTOBUF_LIBRARY} ${OPENSSL_LIBRARIES} hotrod_protobuf)
 
 endif(DEFINED HOTROD_PREBUILT_LIB_DIR)
-
-# MacOS has a bunch of differences in build tools and process and so we have to turn some things
-# off there by default (for GCC; LLVM will need flags re-evaluated)
-if (APPLE)
-  set (NOENABLE_UNDEFINED_ERROR ON)
-endif (APPLE)
-
-if(WIN32 AND NOT CYGWIN)
-  # Encourage use of valgrind unless unavailable on the platform
-  set (NOENABLE_VALGRIND ON)
-endif(WIN32 AND NOT CYGWIN)
-
-# Add options here called <whatever> they will turn into "ENABLE_<whatever" and can be
-# overridden on a platform specific basis above by NOENABLE_<whatever>
-set (OPTIONS WARNING_ERROR UNDEFINED_ERROR SWIG_TESTING INTERNAL_TESTING VALGRIND)
-
-foreach (OPTION ${OPTIONS})
-  if (NOT "NOENABLE_${OPTION}")
-    set ("DEFAULT_${OPTION}" ON)
-  endif (NOT "NOENABLE_${OPTION}")
-endforeach (OPTION)
-
-# And add the option here too with help text
-option(ENABLE_WARNING_ERROR "Consider compiler warnings to be errors" ${DEFAULT_WARNING_ERROR})
-option(ENABLE_UNDEFINED_ERROR "Check for unresolved library symbols" ${DEFAULT_UNDEFINED_ERROR})
-option(ENABLE_SWIG_TESTING "Create SWIG Java binding and test structure" ${DEFAULT_SWIG_TESTING})
-option(ENABLE_INTERNAL_TESTING "Compile the library with internal tests (unit tests)" ${DEFAULT_INTERNAL_TESTING})
-option(ENABLE_VALGRIND "Enable running the tests using Valgrind" ${DEFAULT_VALGRIND})
 
 if (NOT DEFINED COMPILER_FLAGS)
     message(FATAL_ERROR "Compiler flags not set for this build type")

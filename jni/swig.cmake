@@ -53,7 +53,7 @@ if(DEFINED HOTROD_PREBUILT_LIB_DIR)
     include_directories(${HOTROD_PREBUILT_LIB_DIR}/../include)
     include_directories(${PROTOBUF_INCLUDE_DIR})
 endif(DEFINED HOTROD_PREBUILT_LIB_DIR)
-swig_link_libraries(hotrod-swig hotrod)
+swig_link_libraries(hotrod-swig hotrod hotrod_protobuf ${PROTOBUF_LIBRARY})
 
 set_target_properties(hotrod-swig
     PROPERTIES
