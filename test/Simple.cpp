@@ -488,7 +488,7 @@ int main(int argc, char** argv) {
             // execute() operation needs explicit JBossMarshalling<string> format for argument values
             s.insert(std::pair<std::string, std::string>(argName,JBasicMarshaller<std::string>::addPreamble(argValue)));
             std::string script ("// mode=local,language=javascript\n "
-            "var cache = cacheManager.getCache();\n"
+            "var cache = cacheManager.getCache(\"namedCache\");\n"
             "cache.put(\"a\", \"abc\");\n"
             "cache.put(\"b\", \"b\");\n"
             "cache.get(\"a\");\n");
@@ -543,7 +543,7 @@ int main(int argc, char** argv) {
             // execute() operation needs explicit JBossMarshalling<string> format for argument values
             s.insert(std::pair<std::string, std::string>(argName,JBasicMarshaller<std::string>::addPreamble(argValue)));
             std::string script ("// mode=local,language=javascript\n "
-            "var cache = cacheManager.getCache();\n"
+            "var cache = cacheManager.getCache(\"namedCache\");\n"
             "cache.put(\"a\", \"abc\");\n"
             "cache.put(\"b\", \"b\");\n"
             "cache.get(\"a\");\n");
