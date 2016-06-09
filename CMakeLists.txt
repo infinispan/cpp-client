@@ -1,8 +1,9 @@
 cmake_minimum_required (VERSION 2.6)
 
 project (infinispan-hotrod-cpp C CXX)
-
-cmake_policy(SET CMP0054 OLD)
+IF (${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} GREATER 3.1)
+  cmake_policy(SET CMP0054 OLD)
+ENDIF (${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} GREATER 3.1)
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     # require at least gcc 4.8
