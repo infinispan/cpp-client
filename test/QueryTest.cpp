@@ -60,9 +60,9 @@ int main(int argc, char** argv) {
 
     auto *testkm = new BasicTypesProtoStreamMarshaller<int>();
     auto *testvm = new ProtoStreamMarshaller<sample_bank_account::User>();
-
     RemoteCache<int, sample_bank_account::User> testCache = cacheManager.getCache<int, sample_bank_account::User>(
     		testkm, &Marshaller<int>::destroy, testvm, &Marshaller<sample_bank_account::User>::destroy, "namedCache", false);
+    testCache.clear();
     sample_bank_account::User_Address a;
     sample_bank_account::User user1;
     user1.set_id(3);
