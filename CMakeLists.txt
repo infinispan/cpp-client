@@ -149,15 +149,14 @@ if (MSVC)
    set (WARNING_FLAGS "")
 endif (MSVC)
 
-find_package(Protobuf REQUIRED)
 set (STATIC_FLAGS "-DHOTROD_DECLARE_STATIC")
 
 if(DEFINED HOTROD_PREBUILT_LIB_DIR)
+    set(PROTOBUF_GENERATE_CPP_APPEND_PATH true)
 
-    
     if (DEFINED HOTROD_USE_CMAKE_PREFIX)
         set(CMAKE_PREFIX_PATH "${HOTROD_PREBUILT_LIB_DIR}")
-            message("---- Searching in prefix: ${CMAKE_PREFIX_PATH}")
+        message("---- Searching in prefix: ${CMAKE_PREFIX_PATH}")
     
         find_program(PROTOC_EXECUTABLE NAMES protoc)
         if("${PROTOC_EXECUTABLE}" STREQUAL "PROTOC_EXECUTABLE-NOTFOUND")
@@ -209,12 +208,11 @@ if(DEFINED HOTROD_PREBUILT_LIB_DIR)
         set (PROTOBUF_INCLUDE_DIR ${HOTROD_PREBUILT_LIB_DIR}/include)
         message("-- Found Protobuf include directory: ${PROTOBUF_INCLUDE_DIR}")
         include_directories(${PROTOBUF_INCLUDE_DIR})
-        include_directories(${HOTROD_PREBUILT_LIB_DIR}/include/infinispan/hotrod)
+        include_directories(${HOTROD_PREBUILT_LIB_DIR}/include)
       
-        set(PROTOBUF_GENERATE_CPP_APPEND_PATH true)
-
     else (DEFINED HOTROD_USE_CMAKE_PREFIX)
         set (INCLUDE_FILES_DIR ${HOTROD_PREBUILT_LIB_DIR}/../include)
+        include_directories(${INCLUDE_FILES_DIR})
     
         find_library(HOTROD_LIBRARY NAMES hotrod PATHS ${HOTROD_PREBUILT_LIB_DIR} NO_DEFAULT_PATH)
         if("${HOTROD_LIBRARY}" STREQUAL "HOTROD_LIBRARY-NOTFOUND")
@@ -319,6 +317,7 @@ find_path(OPENSSL_INCLUDE_DIR
         set (PROTOBUF_INCLUDE_DIR ${HOTROD_PREBUILT_LIB_DIR}/../include)
     endif (DEFINED HOTROD_USE_CMAKE_PREFIX)
 else(DEFINED HOTROD_PREBUILT_LIB_DIR)
+find_package(Protobuf REQUIRED)
 
 # OpenSSL support
 find_package(OpenSSL)
@@ -430,6 +429,33 @@ target_include_directories(hotrod_protobuf PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/t
                                      "${CMAKE_CURRENT_BINARY_DIR}"
                                      "${PROTOBUF_INCLUDE_DIR}")
 
+configure_file(src/hotrod/impl/Version.cpp.in ${CMAKE_BINARY_DIR}/Version.cpp @ONLY)
+    
+    # Build a shared library
+    add_library (hotrod SHARED ${library_sources})
+    
+    set_target_properties(hotrod PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}")
+    target_link_libraries (hotrod ${platform_libs}  ${OPENSSL_LIBRARIES} hotrod_protobuf ${PROTOBUF_LIBRARY})
+    
+    if (WIN32 AND NOT CMAKE_SIZEOF_VOID_P MATCHES "8")
+        set (OUTPUT_NAME_SUFFIX "32")
+    else (WIN32 AND NOT CMAKE_SIZEOF_VOID_P MATCHES "8")
+        set (OUTPUT_NAME_SUFFIX "")
+    endif (WIN32 AND NOT CMAKE_SIZEOF_VOID_P MATCHES "8")
+    
+    set_target_properties (hotrod PROPERTIES OUTPUT_NAME "hotrod${OUTPUT_NAME_SUFFIX}")
+    set_target_properties (hotrod PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${NO_UNUSED_FLAGS}")
+    set_target_properties (hotrod PROPERTIES LINK_FLAGS "${CATCH_UNDEFINED}")
+    set_target_properties (hotrod PROPERTIES SOVERSION "1.0")
+    
+    # Build a static library
+    add_library (hotrod-static STATIC ${library_sources})
+    set_target_properties(hotrod-static PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}" )
+    set_target_properties(hotrod-static PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS} ${STATIC_FLAGS}")
+    target_link_libraries (hotrod-static ${platform_libs}  ${PROTOBUF_LIBRARY} ${OPENSSL_LIBRARIES} hotrod_protobuf)
+
+endif(DEFINED HOTROD_PREBUILT_LIB_DIR)
+
 # MacOS has a bunch of differences in build tools and process and so we have to turn some things
 # off there by default (for GCC; LLVM will need flags re-evaluated)
 if (APPLE)
@@ -475,33 +501,6 @@ if (ENABLE_VALGRIND)
       CACHE STRING "Valgrind options" FORCE)
   configure_file ("${PROJECT_SOURCE_DIR}/CTestCustom.cmake" "${PROJECT_BINARY_DIR}/CTestCustom.cmake" COPYONLY)
 endif (ENABLE_VALGRIND)
-
-configure_file(src/hotrod/impl/Version.cpp.in ${CMAKE_BINARY_DIR}/Version.cpp @ONLY)
-    
-    # Build a shared library
-    add_library (hotrod SHARED ${library_sources})
-    
-    set_target_properties(hotrod PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}")
-    target_link_libraries (hotrod ${platform_libs}  ${OPENSSL_LIBRARIES} hotrod_protobuf ${PROTOBUF_LIBRARY})
-    
-    if (WIN32 AND NOT CMAKE_SIZEOF_VOID_P MATCHES "8")
-        set (OUTPUT_NAME_SUFFIX "32")
-    else (WIN32 AND NOT CMAKE_SIZEOF_VOID_P MATCHES "8")
-        set (OUTPUT_NAME_SUFFIX "")
-    endif (WIN32 AND NOT CMAKE_SIZEOF_VOID_P MATCHES "8")
-    
-    set_target_properties (hotrod PROPERTIES OUTPUT_NAME "hotrod${OUTPUT_NAME_SUFFIX}")
-    set_target_properties (hotrod PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${NO_UNUSED_FLAGS}")
-    set_target_properties (hotrod PROPERTIES LINK_FLAGS "${CATCH_UNDEFINED}")
-    set_target_properties (hotrod PROPERTIES SOVERSION "1.0")
-    
-    # Build a static library
-    add_library (hotrod-static STATIC ${library_sources})
-    set_target_properties(hotrod-static PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}" )
-    set_target_properties(hotrod-static PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS} ${STATIC_FLAGS}")
-    target_link_libraries (hotrod-static ${platform_libs}  ${PROTOBUF_LIBRARY} ${OPENSSL_LIBRARIES} hotrod_protobuf)
-
-endif(DEFINED HOTROD_PREBUILT_LIB_DIR)
 
 file(COPY ${CMAKE_SOURCE_DIR}/test/query_proto DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
 
