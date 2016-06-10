@@ -88,6 +88,10 @@ foreach(loop_var ${CMAKE_CONFIGURATION_TYPES})
 	set(JAVA_LIBRARY_PATH "${JAVA_LIBRARY_PATH}${CLASSPATH_SEPARATOR}${loop_var}")
 endforeach(loop_var)
 
+if(DEFINED HOTROD_PREBUILT_LIB_DIR)
+        set(JAVA_LIBRARY_PATH "${JAVA_LIBRARY_PATH}${CLASSPATH_SEPARATOR}${HOTROD_PREBUILT_LIB_DIR}")
+endif(DEFINED HOTROD_PREBUILT_LIB_DIR)
+
 add_test(swig ${JAVA_RUNTIME} 
     -ea 
     "-Djava.net.preferIPv4Stack=true"
