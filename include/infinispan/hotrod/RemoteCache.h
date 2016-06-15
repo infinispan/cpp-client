@@ -220,7 +220,7 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      * \return a future containing a pointer to the previous value stored in the cache for the given key or null
      *
      */
-    V* putAsync(const K& key, const V& val, uint64_t lifespan, TimeUnit lifespanUnit, std::function<V* (V*)> success=nullptr, std::function<V* (std::exception&)> fail=nullptr) {
+    std::future<V*> putAsync(const K& key, const V& val, uint64_t lifespan, TimeUnit lifespanUnit, std::function<V* (V*)> success=nullptr, std::function<V* (std::exception&)> fail=nullptr) {
     	auto pKey=&key, pVal=&val;
     	auto f= [=] { return this->put(*pKey,*pVal,lifespan,lifespanUnit); };
    	    return goAsync(f,success,fail);
@@ -234,7 +234,7 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      * \return a future containing a pointer to the previous value stored in the cache for the given key or null
      *
      */
-    V* putAsync(const K& key, const V& val, uint64_t lifespan, TimeUnit lifespanUnit, uint64_t maxIdle, TimeUnit maxIdleUnit, std::function<V* (V*)> success=nullptr, std::function<V* (std::exception&)> fail=nullptr) {
+    std::future<V*> putAsync(const K& key, const V& val, uint64_t lifespan, TimeUnit lifespanUnit, uint64_t maxIdle, TimeUnit maxIdleUnit, std::function<V* (V*)> success=nullptr, std::function<V* (std::exception&)> fail=nullptr) {
 		auto pKey=&key, pVal=&val;
     	auto f= [=] { this->put(*pKey,*pVal,lifespan, lifespanUnit,maxIdle,maxIdleUnit); };
     	return goAsync(f,success,fail);
