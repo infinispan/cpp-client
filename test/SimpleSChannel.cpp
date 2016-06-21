@@ -7,23 +7,21 @@
 #include <stdlib.h>
 #include <iostream>
 #include <memory>
-#include <typeinfo>
-#include <thread>
-#include <future>
-#include <chrono>
 
 // For CTest: return 0 if all tests pass, non-zero otherwise.
 
 using namespace infinispan::hotrod;
-
 int main(int argc, char** argv) {
-    std::cout << "TLS Test" << std::endl;
-
+    std::cout << "SChannel Test" << std::endl;
+	if (argc < 2) {
+		std::cerr << "Usage: " << argv[0] << " ca_path [client_ca_file]" << std::endl;
+		return 1;
+	}
     ConfigurationBuilder builder;
     builder.addServer().host("127.0.0.1").port(11222).protocolVersion(Configuration::PROTOCOL_VERSION_24);
-    builder.ssl().enable().serverCAFile("infinispan-ca.pem");
+    builder.ssl().enable().serverCAFile(argv[1]);
     if (argc > 2) {
-        std::cout << "Using supplied client certificate" << std::endl;
+        std::cout << "Using " << argv[1] << " as certificate" << std::endl;
         builder.ssl().clientCertificateFile(argv[2]);
     }
     RemoteCacheManager cacheManager(builder.build(), false);
@@ -35,7 +33,6 @@ int main(int argc, char** argv) {
     cache.clear();
     std::string k1("key13");
     std::string v1("boron");
-
     cache.put(k1, v1);
     std::unique_ptr<std::string> rv(cache.get(k1));
     if (rv->compare(v1)) {
@@ -43,7 +40,6 @@ int main(int argc, char** argv) {
         return 1;
     }
     cacheManager.stop();
-
     return 0;
 }
 

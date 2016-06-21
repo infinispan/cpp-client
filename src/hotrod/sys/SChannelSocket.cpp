@@ -17,8 +17,12 @@
 
 SCHANNEL_CRED SchannelCred;
 PCCERT_CONTEXT pRemoteCertContext = NULL;
+DWORD   dwProtocol = SP_PROT_TLS1; // SP_PROT_TLS1; // SP_PROT_PCT1; SP_PROT_SSL2; SP_PROT_SSL3; 0=default
+ALG_ID  aiKeyExch = 0; // = default; CALG_DH_EPHEM; CALG_RSA_KEYX;
+CredHandle hClientCreds;
 
 using namespace infinispan::hotrod::sys;
+HCERTSTORE SChannelSocket::hMyCertStore = NULL;
 SChannelSocket::SChannelInitializer::SChannelInitializer() {
 	WSADATA wsaData;
 	g_pSSPI=InitSecurityInterface();
@@ -190,6 +194,7 @@ static INT connectToServer(std::string host, int iPortNumber, SOCKET * pSocket)
 
 	return SEC_E_OK;
 }
+
 /*****************************************************************************/
 void SChannelSocket::getNewClientCredentials(PSecurityFunctionTable g_pSSPI, CredHandle *phCreds, CtxtHandle *phContext)
 {
@@ -226,9 +231,11 @@ void SChannelSocket::getNewClientCredentials(PSecurityFunctionTable g_pSSPI, Cre
 			CERT_CHAIN_FIND_BY_ISSUER,
 			&FindByIssuerPara,
 			pChainContext);
-		if (pChainContext == NULL) { printf("Error 0x%x finding cert chain\n", GetLastError()); break; }
-
-		printf("\ncertificate chain found\n");
+		if (pChainContext == NULL) 
+		{ 
+			ERROR("Error 0x%x finding cert chain\n", GetLastError()); break;
+		}
+		DEBUG("\ncertificate chain found\n");
 
 		// Get pointer to leaf certificate context.
 		pCertContext = pChainContext->rgpChain[0]->rgpElement[0]->pCertContext;
@@ -248,14 +255,14 @@ void SChannelSocket::getNewClientCredentials(PSecurityFunctionTable g_pSSPI, Cre
 			&hCreds,                // (out) Cred Handle
 			&tsExpiry);            // (out) Lifetime (optional)
 		isCredsInitialized = true;
-		if (Status != SEC_E_OK) { printf("**** Error 0x%x returned by AcquireCredentialsHandle\n", Status); continue; }
-
-		printf("\nnew schannel credential created\n");
-
+		if (Status != SEC_E_OK) 
+		{ 
+			ERROR("**** Error 0x%x returned by AcquireCredentialsHandle\n", Status);
+			continue;
+		}
+		DEBUG("\nnew schannel credential created\n");
 		g_pSSPI->FreeCredentialsHandle(phCreds); // Destroy the old credentials.
-
 		*phCreds = hCreds;
-
 	}
 }
 /*****************************************************************************/
@@ -789,7 +796,50 @@ void SChannelSocket::connect(const std::string & host, int port, int timeout)
 		is.seekg(0, is.beg);
 	    BYTE * certificate = new BYTE[length];
 		is.read((char *)certificate, length);
-		PCCERT_CONTEXT pCertContext = CertCreateCertificateContext(X509_ASN_ENCODING, certificate, length);
+
+
+		PCCERT_CONTEXT pCertContext;
+
+		// If a user name is specified, then attempt to find a client
+		// certificate. Otherwise, just create a NULL credential.
+		if (!m_clientCertificateFile.empty())
+		{
+			// Open the "MY" certificate store, where IE stores client certificates.
+			// Windows maintains 4 stores -- MY, CA, ROOT, SPC.
+			if (hMyCertStore == NULL)
+			{
+				hMyCertStore = CertOpenSystemStore(0, "MY");
+				if (!hMyCertStore)
+				{
+					printf("**** Error 0x%x returned by CertOpenSystemStore\n", GetLastError());
+					logAndThrow(host, port, "ERROR");
+				}
+			}
+
+
+			// Find client certificate. Note that this sample just searches for a
+			// certificate that contains the user name somewhere in the subject name.
+			// A real application should be a bit less casual.
+			pCertContext = CertFindCertificateInStore(hMyCertStore,                     // hCertStore
+				X509_ASN_ENCODING,             // dwCertEncodingType
+				0,                                             // dwFindFlags
+				CERT_FIND_SUBJECT_STR_A
+				,// dwFindType
+				m_clientCertificateFile.c_str(),       // *pvFindPara
+				NULL);                                 // pPrevCertContext
+		
+			if (pCertContext == NULL)
+			{
+				ERROR("**** Error 0x%x returned by CertFindCertificateInStore\n", GetLastError());
+				if (GetLastError() == CRYPT_E_NOT_FOUND) 
+					ERROR("CRYPT_E_NOT_FOUND - property doesn't exist\n");
+				logAndThrow(host, port, "ERROR");
+			}
+		}
+		else
+		{
+			pCertContext = CertCreateCertificateContext(X509_ASN_ENCODING, certificate, length);
+		}
 		ZeroMemory(&SchannelCred, sizeof(SchannelCred));
 		SchannelCred.dwVersion = SCHANNEL_CRED_VERSION;
 		if (pCertContext)
@@ -880,6 +930,7 @@ void SChannelSocket::connect(const std::string & host, int port, int timeout)
 
 	}
 }
+
 void SChannelSocket::close()
 {
 	
@@ -921,18 +972,16 @@ SECURITY_STATUS SChannelSocket::readDecrypt(PSecurityFunctionTable g_pSSPI, SOCK
 // http://msdn.microsoft.com/en-us/library/aa375211(VS.85).aspx
 
 {
-	SecBuffer                ExtraBuffer;
-	SecBuffer                *pDataBuffer, *pExtraBuffer;
+	SecBuffer          ExtraBuffer;
+	SecBuffer          *pDataBuffer, *pExtraBuffer;
 
 	SECURITY_STATUS    scRet;            // unsigned long cbBuffer;    // Size of the buffer, in bytes
-	SecBufferDesc        Message;        // unsigned long BufferType;  // Type of the buffer (below)
-	SecBuffer                Buffers[4];    // void    SEC_FAR * pvBuffer;   // Pointer to the buffer
+	SecBufferDesc      Message;        // unsigned long BufferType;  // Type of the buffer (below)
+	SecBuffer          Buffers[4];    // void    SEC_FAR * pvBuffer;   // Pointer to the buffer
 
-	DWORD                        cbIoBuffer, cbData, length;
-	unsigned char                        buff[4096];
+	DWORD              cbIoBuffer, cbData, length;
+	unsigned char      buff[4096];
 	int i;
-
-
 
 	// Read data from server until done.
 	*read_counter = 0;
@@ -963,26 +1012,24 @@ SECURITY_STATUS SChannelSocket::readDecrypt(PSecurityFunctionTable g_pSSPI, SOCK
 			else // success
 			{
 				DEBUG("%d bytes of (encrypted) application data received\n", cbData);
-				//if (fVerbose) { PrintHexDump(cbData, pbIoBuffer + cbIoBuffer); printf("\n"); }
 				cbIoBuffer += cbData;
 			}
 		}
 
-
 		// Decrypt the received data.
 		Buffers[0].pvBuffer = buff;
 		Buffers[0].cbBuffer = cbIoBuffer;
-		Buffers[0].BufferType = SECBUFFER_DATA;  // Initial Type of the buffer 1
-		Buffers[1].BufferType = SECBUFFER_EMPTY; // Initial Type of the buffer 2
-		Buffers[2].BufferType = SECBUFFER_EMPTY; // Initial Type of the buffer 3
-		Buffers[3].BufferType = SECBUFFER_EMPTY; // Initial Type of the buffer 4
+		Buffers[0].BufferType = SECBUFFER_DATA;             // Initial Type of the buffer 1
+		Buffers[1].BufferType = SECBUFFER_EMPTY;            // Initial Type of the buffer 2
+		Buffers[2].BufferType = SECBUFFER_EMPTY;            // Initial Type of the buffer 3
+		Buffers[3].BufferType = SECBUFFER_EMPTY;            // Initial Type of the buffer 4
 
-		Message.ulVersion = SECBUFFER_VERSION;    // Version number
-		Message.cBuffers = 4;                                    // Number of buffers - must contain four SecBuffer structures.
-		Message.pBuffers = Buffers;                        // Pointer to array of buffers
+		Message.ulVersion = SECBUFFER_VERSION;              // Version number
+		Message.cBuffers = 4;                               // Number of buffers - must contain four SecBuffer structures.
+		Message.pBuffers = Buffers;                         // Pointer to array of buffers
 		scRet = g_pSSPI->DecryptMessage(phContext, &Message, 0, NULL);
-		if (scRet == SEC_I_CONTEXT_EXPIRED) break; // Server signalled end of session
-												   //      if( scRet == SEC_E_INCOMPLETE_MESSAGE - Input buffer has partial encrypted record, read more
+		if (scRet == SEC_I_CONTEXT_EXPIRED) break;          // Server signalled end of session
+//      if( scRet == SEC_E_INCOMPLETE_MESSAGE - Input buffer has partial encrypted record, read more
 		if (scRet != SEC_E_OK &&
 			scRet != SEC_I_RENEGOTIATE &&
 			scRet != SEC_I_CONTEXT_EXPIRED)
@@ -991,8 +1038,6 @@ SECURITY_STATUS SChannelSocket::readDecrypt(PSecurityFunctionTable g_pSSPI, SOCK
 			//DisplaySECError((DWORD)scRet);
 			return scRet;
 		}
-
-
 
 		// Locate data and (optional) extra buffers.
 		pDataBuffer = NULL;
@@ -1054,52 +1099,48 @@ static DWORD EncryptSend(PSecurityFunctionTable g_pSSPI, SOCKET Socket, CtxtHand
 // http://msdn.microsoft.com/en-us/library/aa375378(VS.85).aspx
 // The encrypted message is encrypted in place, overwriting the original contents of its buffer.
 {
-	SECURITY_STATUS    scRet;            // unsigned long cbBuffer;    // Size of the buffer, in bytes
-	SecBufferDesc        Message;        // unsigned long BufferType;  // Type of the buffer (below)
-	SecBuffer                Buffers[4];    // void    SEC_FAR * pvBuffer;   // Pointer to the buffer
-	DWORD                        cbMessage, cbData;
-	PBYTE                        pbMessage;
+	SECURITY_STATUS			scRet;				// unsigned long cbBuffer;    // Size of the buffer, in bytes
+	SecBufferDesc			Message;			// unsigned long BufferType;  // Type of the buffer (below)
+	SecBuffer               Buffers[4];			// void    SEC_FAR * pvBuffer;   // Pointer to the buffer
+	DWORD                   cbMessage, cbData;
+	PBYTE                   pbMessage;
 
-
-	pbMessage = pbIoBuffer + Sizes.cbHeader; // Offset by "header size"
+	pbMessage = pbIoBuffer + Sizes.cbHeader;	// Offset by "header size"
 	cbMessage = (DWORD)len;
-	//printf("Sending %d bytes of plaintext:", cbMessage); PrintText(cbMessage, pbMessage);
-	//if (fVerbose) { PrintHexDump(cbMessage, pbMessage); printf("\n"); }
-
 
 	// Encrypt the HTTP request.
-	Buffers[0].pvBuffer = pbIoBuffer;                                // Pointer to buffer 1
+	Buffers[0].pvBuffer = pbIoBuffer;                            // Pointer to buffer 1
 	Buffers[0].cbBuffer = Sizes.cbHeader;                        // length of header
-	Buffers[0].BufferType = SECBUFFER_STREAM_HEADER;    // Type of the buffer
+	Buffers[0].BufferType = SECBUFFER_STREAM_HEADER;		     // Type of the buffer
 
-	Buffers[1].pvBuffer = pbMessage;                                // Pointer to buffer 2
-	Buffers[1].cbBuffer = cbMessage;                                // length of the message
-	Buffers[1].BufferType = SECBUFFER_DATA;                        // Type of the buffer
+	Buffers[1].pvBuffer = pbMessage;                             // Pointer to buffer 2
+	Buffers[1].cbBuffer = cbMessage;                             // length of the message
+	Buffers[1].BufferType = SECBUFFER_DATA;                      // Type of the buffer
 
-	Buffers[2].pvBuffer = pbMessage + cbMessage;        // Pointer to buffer 3
-	Buffers[2].cbBuffer = Sizes.cbTrailer;                    // length of the trailor
+	Buffers[2].pvBuffer = pbMessage + cbMessage;         // Pointer to buffer 3
+	Buffers[2].cbBuffer = Sizes.cbTrailer;               // length of the trailor
 	Buffers[2].BufferType = SECBUFFER_STREAM_TRAILER;    // Type of the buffer
 
 	Buffers[3].pvBuffer = SECBUFFER_EMPTY;                    // Pointer to buffer 4
 	Buffers[3].cbBuffer = SECBUFFER_EMPTY;                    // length of buffer 4
-	Buffers[3].BufferType = SECBUFFER_EMPTY;                    // Type of the buffer 4
+	Buffers[3].BufferType = SECBUFFER_EMPTY;                  // Type of the buffer 4
 
 
 	Message.ulVersion = SECBUFFER_VERSION;    // Version number
-	Message.cBuffers = 4;                                    // Number of buffers - must contain four SecBuffer structures.
-	Message.pBuffers = Buffers;                        // Pointer to array of buffers
+	Message.cBuffers = 4;                     // Number of buffers - must contain four SecBuffer structures.
+	Message.pBuffers = Buffers;               // Pointer to array of buffers
 	scRet = g_pSSPI->EncryptMessage(phContext, 0, &Message, 0); // must contain four SecBuffer structures.
-	if (FAILED(scRet)) { printf("**** Error 0x%x returned by EncryptMessage\n", scRet); return scRet; }
-
+	if (FAILED(scRet)) 
+	{ 
+		printf("**** Error 0x%x returned by EncryptMessage\n", scRet); return scRet;
+	}
 
 	// Send the encrypted data to the server.                                            len                                                                         flags
 	cbData = send(Socket, (const char *)pbIoBuffer, Buffers[0].cbBuffer + Buffers[1].cbBuffer + Buffers[2].cbBuffer, 0);
 
 	printf("%d bytes of encrypted data sent\n", cbData);
 	//if (fVerbose) { PrintHexDump(cbData, pbIoBuffer); printf("\n"); }
-
 	return cbData; // send( Socket, pbIoBuffer,    Sizes.cbHeader + strlen(pbMessage) + Sizes.cbTrailer,  0 );
-
 }
 
 void SChannelSocket::write(const char * p, size_t length)

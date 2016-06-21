@@ -45,7 +45,7 @@ namespace infinispan {
 				boolean isContextInitialized = false;
 				boolean isCredsInitialized = false;
 				boolean onlyVerified = false;
-				HCERTSTORE hMyCertStore = NULL;
+				static HCERTSTORE hMyCertStore;
 				class SChannelInitializer
 				{
 				public:

@@ -93,11 +93,12 @@ class SslConfigurationBuilder
         return *this;
     }
 
-  private:
+private:
     bool m_enabled;
     std::string m_serverCAPath;
     std::string m_serverCAFile;
     std::string m_clientCertificateFile;
+	
 };
 
 }}
