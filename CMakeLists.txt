@@ -306,45 +306,11 @@ if(DEFINED HOTROD_PREBUILT_LIB_DIR)
         #    set(PROTOBUF_PROTOC_LIBRARY ${HR_PROTOBUF_PROTOC_LIBRARY})
         #endif("${HR_PROTOBUF_PROTOC_LIBRARY}" STREQUAL "HR_PROTOBUF_PROTOC_LIBRARY-NOTFOUND")
 
-        if(MSVC)
-		find_library(SSLEAY32_LIBRARY NAMES ssleay32 PATHS ${HOTROD_PREBUILT_LIB_DIR})
-		if("${SSLEAY32_LIBRARY}" STREQUAL "SSLEAY32_LIBRARY-NOTFOUND")
-            message(FATAL_ERROR "Cannot find ssleay32 library in directory '${HOTROD_PREBUILT_LIB_DIR}'.")
-    else("${SSLEAY32_LIBRARY}" STREQUAL "SSLEAY32_LIBRARY-NOTFOUND")
-	    message("-- Found ssleay32 static library: ${SSLEAY32_LIBRARY}")
-            add_library(ssleay32 STATIC IMPORTED GLOBAL)
-	    set_target_properties(ssleay32 PROPERTIES IMPORTED_LOCATION ${SSLEAY32_LIBRARY})
-    endif("${SSLEAY32_LIBRARY}" STREQUAL "SSLEAY32_LIBRARY-NOTFOUND")
-
-    find_library(LIBEAY32_LIBRARY NAMES libeay32 PATHS ${HOTROD_PREBUILT_LIB_DIR})
-    if("${LIBEAY32_LIBRARY}" STREQUAL "LIBEAY32_LIBRARY-NOTFOUND")
-            message(FATAL_ERROR "Cannot find libeay32 library in directory '${HOTROD_PREBUILT_LIB_DIR}'.")
-    else("${LIBEAY32_LIBRARY}" STREQUAL "LIBEAY32_LIBRARY-NOTFOUND")
-	    message("-- Found libeay32 static library: ${LIBEAY32_LIBRARY}")
-	  add_library(libeay32 STATIC IMPORTED GLOBAL)
-	  set_target_properties(libeay32 PROPERTIES IMPORTED_LOCATION ${LIBEAY32_LIBRARY})
-  endif("${LIBEAY32_LIBRARY}" STREQUAL "LIBEAY32_LIBRARY-NOTFOUND")
-        set(OPENSSL_LIBRARIES  ${LIBEAY32_LIBRARY} ${SSLEAY32_LIBRARY})
-find_path(OPENSSL_INCLUDE_DIR
-  NAMES
-    openssl/ssl.h
-  HINTS
-  ${HOTROD_PREBUILT_LIB_DIR}/..
-  PATH_SUFFIXES
-    include
-)
-    if("${OPENSSL_INCLUDE_DIR}" STREQUAL "OPENSSL_INCLUDE_DIR-NOTFOUND")
-            message(FATAL_ERROR "Cannot find openssl/ssl.h file in '${HOTROD_PREBUILT_LIB_DIR}/..'.")
-    else("${OPENSSL_INCLUDE_DIR}" STREQUAL "OPENSSL_INCLUDE_DIR-NOTFOUND")
-	    message("-- Found openssl/ssl.h file in '${OPENSSL_INCLUDE_DIR}'.")
-          include_directories(${OPENSSL_INCLUDE_DIR})
-    endif("${OPENSSL_INCLUDE_DIR}" STREQUAL "OPENSSL_INCLUDE_DIR-NOTFOUND")
-        else(MSVC)
-          find_package(OpenSSL)
-          include_directories(${OPENSSL_INCLUDE_DIR})
-        endif(MSVC)
+	if(NOT DEFINED WIN32)
+            find_package(OpenSSL)
+            include_directories(${OPENSSL_INCLUDE_DIR})
+    endif(NOT DEFINED WIN32)
          
-
         if(UNIX) 
             set (PROTOBUF_PROTOC_EXECUTABLE ${HOTROD_PREBUILT_LIB_DIR}/../bin/protoc)
         else(UNIX) 
@@ -356,9 +322,10 @@ else(DEFINED HOTROD_PREBUILT_LIB_DIR)
 find_package(Protobuf REQUIRED)
 
 # OpenSSL support
-find_package(OpenSSL)
-include_directories(${OPENSSL_INCLUDE_DIR})
-
+if(NOT DEFINED WIN32)
+    find_package(OpenSSL)
+    include_directories(${OPENSSL_INCLUDE_DIR})
+endif(NOT DEFINED WIN32)
 include_directories ("${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_SOURCE_DIR}/src" "${CMAKE_CURRENT_BINARY_DIR}")
 set (INCLUDE_FILES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 
@@ -379,6 +346,17 @@ set (internal_test_sources
   src/hotrod/test/HashTest.cpp
   src/hotrod/test/ConnectionPoolTest.cpp
 )
+if(WIN32)
+set (socket_impl
+      src/hotrod/impl/transport/tcp/SChannelTcpTransport.cpp
+      src/hotrod/sys/SChannelSocket.cpp
+      )
+else(WIN32)
+set (socket_impl
+      src/hotrod/impl/transport/tcp/SSLTcpTransport.cpp
+      src/hotrod/sys/SSLSocket.cpp
+      )
+endif(WIN32)
 endif(ENABLE_INTERNAL_TESTING)
 
     set (library_sources
@@ -430,14 +408,13 @@ endif(ENABLE_INTERNAL_TESTING)
       src/hotrod/impl/transport/tcp/ConnectionPool.cpp
       src/hotrod/impl/transport/tcp/InetSocketAddress.cpp
       src/hotrod/impl/transport/tcp/Socket.cpp
-      src/hotrod/impl/transport/tcp/SSLTcpTransport.cpp
       src/hotrod/impl/transport/tcp/TcpTransport.cpp
       src/hotrod/impl/transport/tcp/TcpTransportFactory.cpp
       src/hotrod/impl/transport/tcp/TransportObjectFactory.cpp
       src/hotrod/impl/transport/tcp/RoundRobinBalancingStrategy.cpp
       src/hotrod/sys/Runnable.cpp
       src/hotrod/sys/Log.cpp
-      src/hotrod/sys/SSLSocket.cpp
+      ${socket_impl}
       ${platform_sources}
       ${internal_test_sources}  
       ${CMAKE_BINARY_DIR}/Version.cpp
@@ -559,17 +536,31 @@ set_target_properties(queryTest-static PROPERTIES COMPILE_DEFINITIONS "${DLLEXPO
 set_target_properties (queryTest-static PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${STATIC_FLAGS} ${NO_UNUSED_FLAGS}")
 target_link_libraries (queryTest-static hotrod-static hotrod_protobuf ${PROTOBUF_LIBRARY} ${OPENSSL_LIBRARIES} ${platform_libs})
 
-add_executable (simple-tls test/SimpleTLS.cpp)
-target_include_directories(simple-tls PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
-	"${INCLUDE_FILES_DIR}"
-	"${INCLUDE_FILES_DIR}/infinispan/hotrod"
-                                     "${CMAKE_CURRENT_BINARY_DIR}"
-                                     "${PROTOBUF_INCLUDE_DIR}")
-set_property(TARGET simple-tls PROPERTY CXX_STANDARD 11)
-set_property(TARGET simple-tls PROPERTY CXX_STANDARD_REQUIRED ON)
-set_target_properties(simple-tls PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}")
-set_target_properties (simple-tls PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${NO_UNUSED_FLAGS}")
-target_link_libraries (simple-tls hotrod hotrod_protobuf ${PROTOBUF_LIBRARY} ${platform_libs} ${OPENSSL_LIBRARIES})
+if(WIN32)
+    add_executable (simple-schannel test/SimpleSChannel.cpp)
+    target_include_directories(simple-schannel PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
+	    "${INCLUDE_FILES_DIR}"
+	    "${INCLUDE_FILES_DIR}/infinispan/hotrod"
+                                         "${CMAKE_CURRENT_BINARY_DIR}"
+                                         "${PROTOBUF_INCLUDE_DIR}")
+    set_property(TARGET simple-schannel PROPERTY CXX_STANDARD 11)
+    set_property(TARGET simple-schannel PROPERTY CXX_STANDARD_REQUIRED ON)
+    set_target_properties(simple-schannel PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}")
+    set_target_properties (simple-schannel PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${NO_UNUSED_FLAGS}")
+    target_link_libraries (simple-schannel hotrod hotrod_protobuf ${PROTOBUF_LIBRARY} ${platform_libs} ${OPENSSL_LIBRARIES})
+else(WIN32)
+    add_executable (simple-tls test/SimpleTLS.cpp)
+    target_include_directories(simple-tls PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
+	    "${INCLUDE_FILES_DIR}"
+	    "${INCLUDE_FILES_DIR}/infinispan/hotrod"
+                                         "${CMAKE_CURRENT_BINARY_DIR}"
+                                         "${PROTOBUF_INCLUDE_DIR}")
+    set_property(TARGET simple-tls PROPERTY CXX_STANDARD 11)
+    set_property(TARGET simple-tls PROPERTY CXX_STANDARD_REQUIRED ON)
+    set_target_properties(simple-tls PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}")
+    set_target_properties (simple-tls PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${NO_UNUSED_FLAGS}")
+    target_link_libraries (simple-tls hotrod hotrod_protobuf ${PROTOBUF_LIBRARY} ${platform_libs} ${OPENSSL_LIBRARIES})
+endif(WIN32)
 
 if (ENABLE_INTERNAL_TESTING)
     add_executable (unittest test/Unit.cpp)
@@ -637,7 +628,11 @@ else (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.sh") AND (EXISTS "${HOTR
     add_test (stop_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py stop)
     add_test (start_ssl_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py start ${JAVA_RUNTIME} ${HOTROD_JBOSS_HOME} standalone-hotrod-ssl.xml)
     add_test (probe_ssl_port ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/probe_port.py localhost 11222 60)
+if(WIN32)
+    add_test (simple-schannel simple-schannel ${CMAKE_CURRENT_SOURCE_DIR}/test/data/infinispan-ca.pem)
+else(WIN32)
     add_test (simple-tls simple-tls ${CMAKE_CURRENT_SOURCE_DIR}/test/data/infinispan-ca.pem)
+endif(WIN32)
     add_test (stop_ssl_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py stop)
 endif (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.sh") AND (EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.bat")))
 
@@ -707,10 +702,6 @@ if (NOT WIN32)
     install (FILES ${libproto_glob} DESTINATION lib${LIB_SUFFIX})
 endif (NOT WIN32)
 
-# If on windows, include openssl as well
-if(WIN32)
-    install (DIRECTORY "${OPENSSL_ROOT_DIR}/lib" "${OPENSSL_ROOT_DIR}/bin" "${OPENSSL_ROOT_DIR}/exp" "${OPENSSL_ROOT_DIR}/include" DESTINATION .)
-endif(WIN32)
 if(NOT DEFINED HOTROD_PREBUILT_LIB_DIR)
     set_property(TARGET hotrod PROPERTY CXX_STANDARD 11)
     set_property(TARGET hotrod PROPERTY CXX_STANDARD_REQUIRED ON)
