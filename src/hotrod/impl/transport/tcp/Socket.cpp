@@ -53,7 +53,7 @@ void InputStream::read(char *buf, size_t size) {
             tmp_buffer += capacity;
             size -= capacity;
         }
-        capacity = socket.read(&buffer[0], BufferSize);
+        capacity = socket.read(&buffer[0], size < BufferSize ? size : BufferSize);
         ptr = &buffer[0];
         hasMore = capacity < BufferSize ? false : true;
     }

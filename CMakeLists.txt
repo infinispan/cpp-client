@@ -431,6 +431,7 @@ endif(ENABLE_INTERNAL_TESTING)
       src/hotrod/impl/transport/tcp/InetSocketAddress.cpp
       src/hotrod/impl/transport/tcp/Socket.cpp
       src/hotrod/impl/transport/tcp/SSLTcpTransport.cpp
+      src/hotrod/impl/transport/tcp/SChannelTcpTransport.cpp
       src/hotrod/impl/transport/tcp/TcpTransport.cpp
       src/hotrod/impl/transport/tcp/TcpTransportFactory.cpp
       src/hotrod/impl/transport/tcp/TransportObjectFactory.cpp
@@ -438,6 +439,7 @@ endif(ENABLE_INTERNAL_TESTING)
       src/hotrod/sys/Runnable.cpp
       src/hotrod/sys/Log.cpp
       src/hotrod/sys/SSLSocket.cpp
+      src/hotrod/sys/SChannelSocket.cpp
       ${platform_sources}
       ${internal_test_sources}  
       ${CMAKE_BINARY_DIR}/Version.cpp
