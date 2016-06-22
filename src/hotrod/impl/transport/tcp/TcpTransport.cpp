@@ -93,9 +93,8 @@ uint64_t TcpTransport::readVLong() {
 
 std::vector<char> TcpTransport::readBytes(uint32_t size) {
     if (size) {
-        char* b = new char[size];
-        socket.getInputStream().read(b, size);
-        std::vector<char> hrb(b,b+size);
+        std::vector<char> hrb(size);
+        socket.getInputStream().read(hrb.data(), size);
         return hrb;
     }
     return std::vector<char>();
