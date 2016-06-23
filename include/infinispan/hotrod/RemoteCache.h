@@ -521,7 +521,6 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      */
     std::future<void> replaceWithVersionAsync(const K& key, const V& val,
             uint64_t version, uint64_t lifespan, uint64_t maxIdle, std::function<V* (V*)> success=nullptr, std::function<void (std::exception&)> fail=nullptr) {
-    	auto pMap = &pMap;
     	auto f = [=] { this->replaceWithVersion(&key, &val, version, lifespan, maxIdle); };
     	return goAsync(f,success,fail);
     }
@@ -547,6 +546,20 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
     bool removeWithVersion(const K& key, uint64_t version) {
         return base_removeWithVersion(&key, version);
     }
+
+    /**
+     * Asynchronous version of removeWithVersion()
+     *	See the synchronous doc for parameters not explained here
+     * \param success function to be executed on success
+     * \param fail function to be executed if exceptions occur
+     * \return a future containing a bool. True if the entry has been removed
+     *
+     */
+    std::future<bool> removeWithVersionAsync(const K& key, uint64_t version, std::function<V* (V*)> success=nullptr, std::function<void (std::exception&)> fail=nullptr) {
+    	auto f = [=] { this->removeWithVersion(&key, version); };
+    	return goAsync(f,success,fail);
+    }
+
     /**
      *  Returns the std::pair with value and VersionedValue associated with
      *  the supplied key parameter or a default initialized std::pair if it

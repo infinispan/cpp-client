@@ -144,6 +144,7 @@ using namespace infinispan::hotrod;
 %ignore goAsync;
 %ignore putAllAsync;
 %ignore replaceWithVersionAsync;
+%ignore removeWithVersionAsync;
 
 //%shared_ptr(RelayShrPointer)
 
