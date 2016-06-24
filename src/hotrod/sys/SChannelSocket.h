@@ -46,6 +46,7 @@ namespace infinispan {
 				boolean isCredsInitialized = false;
 				boolean onlyVerified = false;
 				static HCERTSTORE hMyCertStore;
+				PBYTE      recvBuff;
 				class SChannelInitializer
 				{
 				public:

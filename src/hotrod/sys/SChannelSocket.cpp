@@ -927,13 +927,18 @@ void SChannelSocket::connect(const std::string & host, int port, int timeout)
 		initializer.g_pSSPI->QueryContextAttributes(&hContext, SECPKG_ATTR_STREAM_SIZES, &Sizes);
 		auto cbIoBufferLength = Sizes.cbHeader + Sizes.cbMaximumMessage + Sizes.cbTrailer;
 		pbRBuffer = (PBYTE)LocalAlloc(LMEM_FIXED, cbIoBufferLength);
+		pbWBuffer = (PBYTE)LocalAlloc(LMEM_FIXED, cbIoBufferLength);
+		recvBuff = (PBYTE)LocalAlloc(LMEM_FIXED, cbIoBufferLength);
 
 	}
 }
 
 void SChannelSocket::close()
 {
-	
+	cleanup();
+	LocalFree(recvBuff);
+	LocalFree(pbWBuffer);
+	LocalFree(pbRBuffer);
 }
 
 void SChannelSocket::setTcpNoDelay(bool tcpNoDelay)
@@ -964,13 +969,6 @@ void throwIOErr(const std::string& host, int port, const char *msg, int errnum) 
 
 /*****************************************************************************/
 SECURITY_STATUS SChannelSocket::readDecrypt(PSecurityFunctionTable g_pSSPI, SOCKET Socket, PCredHandle phCreds, CtxtHandle * phContext, PBYTE pbIoBuffer, const DWORD bufsize, size_t *read_counter)
-
-// calls recv() - blocking socket read
-// http://msdn.microsoft.com/en-us/library/ms740121(VS.85).aspx
-
-// The encrypted message is decrypted in place, overwriting the original contents of its buffer.
-// http://msdn.microsoft.com/en-us/library/aa375211(VS.85).aspx
-
 {
 	SecBuffer          ExtraBuffer;
 	SecBuffer          *pDataBuffer, *pExtraBuffer;
@@ -980,7 +978,6 @@ SECURITY_STATUS SChannelSocket::readDecrypt(PSecurityFunctionTable g_pSSPI, SOCK
 	SecBuffer          Buffers[4];    // void    SEC_FAR * pvBuffer;   // Pointer to the buffer
 
 	DWORD              cbIoBuffer, cbData, length;
-	unsigned char      buff[4096];
 	int i;
 
 	// Read data from server until done.
@@ -991,7 +988,7 @@ SECURITY_STATUS SChannelSocket::readDecrypt(PSecurityFunctionTable g_pSSPI, SOCK
 	{
 		if (cbIoBuffer == 0 || scRet == SEC_E_INCOMPLETE_MESSAGE) // get the data
 		{
-			cbData = recv(Socket, (char *) buff, bufsize, 0);
+			cbData = recv(Socket, (char *) recvBuff, bufsize, 0);
 			if (cbData == SOCKET_ERROR)
 			{
 				ERROR("**** Error %d reading data from server\n", WSAGetLastError());
@@ -1017,7 +1014,7 @@ SECURITY_STATUS SChannelSocket::readDecrypt(PSecurityFunctionTable g_pSSPI, SOCK
 		}
 
 		// Decrypt the received data.
-		Buffers[0].pvBuffer = buff;
+		Buffers[0].pvBuffer = recvBuff;
 		Buffers[0].cbBuffer = cbIoBuffer;
 		Buffers[0].BufferType = SECBUFFER_DATA;             // Initial Type of the buffer 1
 		Buffers[1].BufferType = SECBUFFER_EMPTY;            // Initial Type of the buffer 2
@@ -1034,7 +1031,7 @@ SECURITY_STATUS SChannelSocket::readDecrypt(PSecurityFunctionTable g_pSSPI, SOCK
 			scRet != SEC_I_RENEGOTIATE &&
 			scRet != SEC_I_CONTEXT_EXPIRED)
 		{
-			printf("**** DecryptMessage ");
+			ERROR("**** Error DecryptMessage ");
 			//DisplaySECError((DWORD)scRet);
 			return scRet;
 		}
@@ -1063,14 +1060,15 @@ SECURITY_STATUS SChannelSocket::readDecrypt(PSecurityFunctionTable g_pSSPI, SOCK
 		*/
 
 
-		memcpy(pbIoBuffer+*read_counter, pDataBuffer->pvBuffer, pDataBuffer->cbBuffer);
+		MoveMemory(pbIoBuffer+*read_counter, pDataBuffer->pvBuffer, pDataBuffer->cbBuffer);
 		*read_counter += pDataBuffer->cbBuffer;
 
 		// Move any "extra" data to the input buffer.
 		if (pExtraBuffer)
 		{
-			MoveMemory(buff, pExtraBuffer->pvBuffer, pExtraBuffer->cbBuffer);
+			MoveMemory(recvBuff, pExtraBuffer->pvBuffer, pExtraBuffer->cbBuffer);
 			cbIoBuffer = pExtraBuffer->cbBuffer; // printf("cbIoBuffer= %d  \n", cbIoBuffer);
+
 		}
 		else
 			cbIoBuffer = 0;
@@ -1138,7 +1136,7 @@ static DWORD EncryptSend(PSecurityFunctionTable g_pSSPI, SOCKET Socket, CtxtHand
 	// Send the encrypted data to the server.                                            len                                                                         flags
 	cbData = send(Socket, (const char *)pbIoBuffer, Buffers[0].cbBuffer + Buffers[1].cbBuffer + Buffers[2].cbBuffer, 0);
 
-	printf("%d bytes of encrypted data sent\n", cbData);
+	DEBUG("%d bytes of encrypted data sent\n", cbData);
 	//if (fVerbose) { PrintHexDump(cbData, pbIoBuffer); printf("\n"); }
 	return cbData; // send( Socket, pbIoBuffer,    Sizes.cbHeader + strlen(pbMessage) + Sizes.cbTrailer,  0 );
 }
@@ -1149,9 +1147,8 @@ void SChannelSocket::write(const char * p, size_t length)
 	SecPkgContext_StreamSizes Sizes;
 	initializer.g_pSSPI->QueryContextAttributes(&hContext, SECPKG_ATTR_STREAM_SIZES, &Sizes);
 	auto cbIoBufferLength = Sizes.cbHeader + Sizes.cbMaximumMessage + Sizes.cbTrailer;
-	pbIoBuffer = (PBYTE)LocalAlloc(LMEM_FIXED, cbIoBufferLength);
-	memcpy(pbIoBuffer+Sizes.cbHeader, p, length);
-	EncryptSend(initializer.g_pSSPI, Client_Socket, &hContext, pbIoBuffer, length, Sizes);
+	memcpy(pbWBuffer+Sizes.cbHeader, p, length);
+	EncryptSend(initializer.g_pSSPI, Client_Socket, &hContext, pbWBuffer, length, Sizes);
 }
 
 size_t SChannelSocket::read(char * p, size_t length)
