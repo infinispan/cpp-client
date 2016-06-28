@@ -1,4 +1,5 @@
 #include <hotrod/impl/transport/tcp/SSLTcpTransport.h>
+#include <hotrod/impl/transport/tcp/SChannelTcpTransport.h>
 #include "hotrod/impl/transport/tcp/TransportObjectFactory.h"
 #include "hotrod/impl/transport/tcp/TcpTransport.h"
 #include "hotrod/impl/transport/tcp/TcpTransportFactory.h"
@@ -20,9 +21,15 @@ TransportObjectFactory::TransportObjectFactory(
 
 TcpTransport& TransportObjectFactory::makeObject(const InetSocketAddress& address) {
     if(tcpTransportFactory.isSslEnabled()) {
+#if !defined _WIN32 && !defined _WIN64
         return *(new SSLTcpTransport(address, tcpTransportFactory,
                 tcpTransportFactory.getSslServerCAPath(), tcpTransportFactory.getSslServerCAFile(), tcpTransportFactory.getSslClientCertificateFile()));
-    } else {
+#else
+return *(new SChannelTcpTransport(address, tcpTransportFactory,
+	tcpTransportFactory.getSslServerCAPath(), tcpTransportFactory.getSslServerCAFile(), tcpTransportFactory.getSslClientCertificateFile()));
+#endif
+
+	} else {
         return *(new TcpTransport(address, tcpTransportFactory));
     }
 }
