@@ -13,7 +13,7 @@ import org.infinispan.commons.configuration.Builder;
  * @author Tristan Tarrant
  * @since 5.3
  */
-public class ConnectionPoolConfigurationBuilder extends AbstractConfigurationChildBuilder implements Builder<ConnectionPoolConfiguration> {
+public class ConnectionPoolConfigurationBuilder extends AbstractConfigurationChildBuilder {
    private ExhaustedAction exhaustedAction = ExhaustedAction.WAIT;
    private boolean lifo = true;
    private int maxActive = -1;
@@ -209,34 +209,6 @@ public class ConnectionPoolConfigurationBuilder extends AbstractConfigurationChi
       testOnBorrow(typed.getBooleanProperty("testOnBorrow", testOnBorrow));
       testOnReturn(typed.getBooleanProperty("testOnReturn", testOnReturn));
       testWhileIdle(typed.getBooleanProperty("testWhileIdle", testWhileIdle));
-      return this;
-   }
-
-   @Override
-   public void validate() {
-      this.jniConnectionPoolConfigurationBuilder.validate();
-   }
-
-   @Override
-   public ConnectionPoolConfiguration create() {
-      return new ConnectionPoolConfiguration(this.jniConnectionPoolConfigurationBuilder.create());
-   }
-
-   @Override
-   public ConnectionPoolConfigurationBuilder read(ConnectionPoolConfiguration template) {
-      exhaustedAction(template.exhaustedAction());
-      lifo(template.lifo());
-      maxActive(template.maxActive());
-      maxTotal(template.maxTotal());
-      maxWait(template.maxWait());
-      maxIdle(template.maxIdle());
-      minIdle(template.minIdle());
-      numTestsPerEvictionRun(template.numTestsPerEvictionRun());
-      timeBetweenEvictionRuns(template.timeBetweenEvictionRuns());
-      minEvictableIdleTime(template.minEvictableIdleTime());
-      testOnBorrow(template.testOnBorrow());
-      testOnReturn(template.testOnReturn());
-      testWhileIdle(template.testWhileIdle());
       return this;
    }
 
