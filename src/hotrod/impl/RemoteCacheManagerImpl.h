@@ -27,6 +27,8 @@ class RemoteCacheManagerImpl
     void stop();
     bool isStarted();
     const Configuration& getConfiguration();
+    ClusterStatus switchOnFailoverCluster();
+    ClusterStatus switchOnMainCluster();
 
   private:
     sys::Mutex lock;

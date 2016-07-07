@@ -139,4 +139,14 @@ PingResult RemoteCacheManagerImpl::ping(RemoteCacheImpl& remoteCache) {
     return remoteCache.ping();
 }
 
+ClusterStatus RemoteCacheManagerImpl::switchOnFailoverCluster()
+{
+	return transportFactory->switchOnFailoverCluster();
+}
+
+ClusterStatus RemoteCacheManagerImpl::switchOnMainCluster()
+{
+	return transportFactory->switchOnMainCluster();
+}
+
 }} // namespace infinispan::hotrod

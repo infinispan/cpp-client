@@ -5,6 +5,7 @@
 #include "hotrod/impl/transport/Transport.h"
 #include "hotrod/impl/Topology.h"
 #include "hotrod/impl/TopologyInfo.h"
+#include "infinispan/hotrod/Flag.h"
 #include <vector>
 #include <set>
 #include <map>
@@ -28,13 +29,15 @@ class InetSocketAddress;
 
 class TransportFactory
 {
+  friend class infinispan::hotrod::RemoteCacheManagerImpl;
   public:
     virtual void start(protocol::Codec& codec, int defaultTopologyId) = 0;
     virtual void destroy() = 0;
 
     virtual Transport& getTransport(const std::vector<char>& cacheName) = 0;
     virtual Transport& getTransport(const std::vector<char>& key, const std::vector<char>& cacheName) = 0;
-
+    virtual ClusterStatus switchOnFailoverCluster() = 0;
+    virtual ClusterStatus switchOnMainCluster() = 0;
     virtual void releaseTransport(Transport& transport) = 0;
     virtual void invalidateTransport(
         const InetSocketAddress& serverAddress, Transport* transport) = 0;
@@ -89,7 +92,6 @@ class TransportFactory
 
   private:
     static TransportFactory* newInstance(const Configuration& config);
-  friend class infinispan::hotrod::RemoteCacheManagerImpl;
 };
 
 }}} // namespace infinispan::hotrod::transport

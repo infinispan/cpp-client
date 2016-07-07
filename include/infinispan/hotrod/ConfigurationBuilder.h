@@ -42,7 +42,8 @@ class ConfigurationBuilder
         sslConfigurationBuilder()
         {}
      void validate() {}
-    /**
+
+     /**
      * Adds a server to this Configuration. ServerConfigurationBuilder is in turn used
      * to actually configure a server.
      *
@@ -52,6 +53,19 @@ class ConfigurationBuilder
         m_servers.push_back(ServerConfigurationBuilder());
         return m_servers[m_servers.size() - 1];
     }
+
+
+   /**
+    * Adds a failover cluster server to this Configuration. ServerConfigurationBuilder is in turn used
+    * to actually configure a server.
+    *
+    *\return ServerConfigurationBuilder instance to be used for server configuration
+    */
+   ServerConfigurationBuilder& addFailoverServer() {
+       m_failover_servers.push_back(ServerConfigurationBuilder());
+       return m_failover_servers[m_failover_servers.size() - 1];
+   }
+
 
     /**
      * Adds multiple servers to this Configuration. ConfigurationBuilder is in turn used
@@ -213,12 +227,20 @@ class ConfigurationBuilder
             servers.push_back(ServerConfigurationBuilder().create());
         }
 
+        std::vector<ServerConfiguration> failover_servers;
+        if (m_failover_servers.size() > 0) {
+            for (std::vector<ServerConfigurationBuilder>::iterator it = m_failover_servers.begin(); it < m_failover_servers.end(); it++) {
+                failover_servers.push_back(it->create());
+            }
+        }
+
         return Configuration(m_protocolVersion,
             connectionPoolConfigurationBuilder.create(),
             m_connectionTimeout,
             m_forceReturnValue,
             m_keySizeEstimate,
             servers,
+            failover_servers,
             m_socketTimeout,
             sslConfigurationBuilder.create(),
             m_tcpNoDelay,
@@ -253,6 +275,7 @@ class ConfigurationBuilder
     int m_keySizeEstimate;
     std::string m_protocolVersion;
     std::vector<ServerConfigurationBuilder> m_servers;
+    std::vector<ServerConfigurationBuilder> m_failover_servers;
     int m_socketTimeout;
     bool m_tcpNoDelay;
     int m_valueSizeEstimate;
