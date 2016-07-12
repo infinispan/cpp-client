@@ -211,16 +211,22 @@ void Socket::setTimeout(int timeout) {
 
 size_t Socket::read(char *p, size_t length) {
     ssize_t n = recv(fd, p, (int) length, 0);
-	if (n == 0)
-	{
-		throwIOErr(host, port, "no read", 0);
-	}
+    if (n == 0)
+    {
+        throwIOErr(host, port, "no read", 0);
+    }
     if (n != SOCKET_ERROR)
+    {
         return n;
+    }
     else if (WSAGetLastError() == WSAETIMEDOUT)
+    {
         throwIOErr(host, port, "timeout", 0);
+    }
     else
+    {
         throwIOErr(host, port, "read", WSAGetLastError());
+    }
     throw std::exception("Never reached");
 }
 
