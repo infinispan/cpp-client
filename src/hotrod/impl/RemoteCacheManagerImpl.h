@@ -7,11 +7,14 @@
 #include "hotrod/impl/transport/TransportFactory.h"
 #include "hotrod/impl/operations/PingOperation.h"
 #include "hotrod/sys/Mutex.h"
+#include "hotrod/impl/event/ClientListenerNotifier.h"
 
 #include <map>
 
+using namespace infinispan::hotrod::event;
 namespace infinispan {
 namespace hotrod {
+
 
 class RemoteCacheManagerImpl
 {
@@ -31,6 +34,10 @@ class RemoteCacheManagerImpl
     ClusterStatus clusterSwitch(std::string clusterName);
 
 
+	ClientListenerNotifier*& getListenerNotifier() {
+		return listenerNotifier;
+	}
+
   private:
     sys::Mutex lock;
     bool started;
@@ -43,6 +50,7 @@ class RemoteCacheManagerImpl
 
     operations::PingResult ping(RemoteCacheImpl& remoteCache);
     std::shared_ptr<transport::TransportFactory> transportFactory;
+    ClientListenerNotifier *listenerNotifier;
 
     void startRemoteCache(RemoteCacheImpl& remoteCache, bool forceReturnValue);
 };

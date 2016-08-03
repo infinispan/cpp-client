@@ -15,7 +15,9 @@
 #pragma warning(pop)
 #endif
 
+#include "infinispan/hotrod/ClientListener.h"
 using namespace org::infinispan::query::remote::client;
+using namespace infinispan::hotrod::event;
 
 namespace infinispan {
 namespace hotrod {
@@ -30,6 +32,11 @@ class Transport;
 
 namespace protocol {
 class Codec;
+}
+
+namespace event
+{
+class ClientListenerNotifier;
 }
 
 namespace operations {
@@ -53,6 +60,7 @@ class SizeOperation;
 class FaultTolerantPingOperation;
 class ExecuteCmdOperation;
 class QueryOperation;
+class AddClientListenerOperation;
 
 
 class OperationsFactory
@@ -106,6 +114,8 @@ class OperationsFactory
     QueryOperation* newQueryOperation(const QueryRequest& qr);
 
     FaultTolerantPingOperation* newFaultTolerantPingOperation();
+
+    AddClientListenerOperation* newAddClientListenerOperation(ClientListener *listener, ClientListenerNotifier& listenerNotifier, const std::vector<std::vector<char> > filterFactoryParam, const std::vector<std::vector<char> > converterFactoryParams);
 
     void addFlags(uint32_t flags);
     void setFlags(uint32_t flags);
