@@ -24,6 +24,8 @@
 #include <infinispan/hotrod/exceptions.h>
 #include <infinispan/hotrod/InetSocketAddress.h>
 #include <infinispan/hotrod/FailOverRequestBalancingStrategy.h>
+#include <infinispan/hotrod/EventMarshaller.h>
+#include <infinispan/hotrod/JBasicEventMarshaller.h>
 #include <infinispan/hotrod/ServerConfiguration.h>
 #include <infinispan/hotrod/SslConfiguration.h>
 #include <infinispan/hotrod/Configuration.h>
@@ -48,6 +50,8 @@ using namespace infinispan::hotrod;
 %include "infinispan/hotrod/defs.h"
 %include "infinispan/hotrod/ImportExport.h"
 %include "infinispan/hotrod/FailOverRequestBalancingStrategy.h"
+%include "infinispan/hotrod/EventMarshaller.h"
+%include "infinispan/hotrod/JBasicEventMarshaller.h"
 %include "infinispan/hotrod/ConnectionPoolConfiguration.h"
 %include "infinispan/hotrod/ServerConfiguration.h"
 %include "infinispan/hotrod/SslConfiguration.h"

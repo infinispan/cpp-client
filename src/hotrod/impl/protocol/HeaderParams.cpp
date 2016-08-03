@@ -94,4 +94,8 @@ HeaderParams& HeaderParams::setTopologyAge(int topologyAge_) {
 	return *this;
 }
 
+uint64_t HeaderParams::getMessageId()
+{
+	return messageId;
+}
 }}} // namespace

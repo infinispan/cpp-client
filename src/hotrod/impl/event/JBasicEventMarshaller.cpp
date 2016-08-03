@@ -20,6 +20,28 @@ JBasicEventMarshaller::~JBasicEventMarshaller() {
 	// TODO Auto-generated destructor stub
 }
 
+void JBasicEventMarshaller::unmarshall(std::vector<char>&, std::string&)
+{
+	// TODO implements
+}
+void JBasicEventMarshaller::unmarshall(std::vector<char>&, int&)
+{
+	// TODO implements
+}
+
+std::vector<char> JBasicEventMarshaller::marshall(std::string)
+{
+	// TODO implements
+	return std::vector<char>();
+}
+
+std::vector<char> JBasicEventMarshaller::marshall(int)
+{
+	// TODO implements
+	return std::vector<char>();
+}
+
+
 } /* namespace event */
 } /* namespace hotrod */
 } /* namespace infinispan */

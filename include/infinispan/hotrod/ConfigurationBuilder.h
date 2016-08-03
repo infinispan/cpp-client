@@ -9,10 +9,13 @@
 
 #include "infinispan/hotrod/defs.h"
 #include "infinispan/hotrod/ImportExport.h"
+#include "infinispan/hotrod/EventMarshaller.h"
 #include "Configuration.h"
 #include "ConnectionPoolConfigurationBuilder.h"
 #include "ServerConfigurationBuilder.h"
 #include "SslConfigurationBuilder.h"
+
+using namespace infinispan::hotrod::event;
 
 namespace infinispan {
 namespace hotrod {
@@ -224,7 +227,8 @@ class ConfigurationBuilder
             m_tcpNoDelay,
             m_valueSizeEstimate,
             m_maxRetries,
-            m_balancingStrategyProducer);
+            m_balancingStrategyProducer,
+			m_eventMarshaller);
 
     }
 
@@ -244,6 +248,7 @@ class ConfigurationBuilder
         m_keySizeEstimate = configuration.getKeySizeEstimate();
         m_valueSizeEstimate = configuration.getValueSizeEstimate();
         m_maxRetries = configuration.getMaxRetries();
+        m_eventMarshaller = configuration.getEventMarshaller();
         return *this;
     }
 
@@ -261,6 +266,9 @@ class ConfigurationBuilder
 
     ConnectionPoolConfigurationBuilder connectionPoolConfigurationBuilder;
     SslConfigurationBuilder sslConfigurationBuilder;
+    JBasicEventMarshaller m_defaultEventMarshaller;
+
+    EventMarshaller &m_eventMarshaller=m_defaultEventMarshaller;
 };
 
 inline ServerConfigurationBuilder &ConfigurationChildBuilder::addServer() {

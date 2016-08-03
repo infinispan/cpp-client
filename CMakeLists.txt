@@ -415,6 +415,8 @@ endif(ENABLE_INTERNAL_TESTING)
       src/hotrod/impl/operations/SizeOperation.cpp
       src/hotrod/impl/operations/FaultTolerantPingOperation.cpp
       src/hotrod/impl/operations/ExecuteCmdOperation.cpp
+      src/hotrod/impl/operations/AddClientListenerOperation.cpp
+      src/hotrod/impl/event/ClientListenerNotifier.cpp
       src/hotrod/impl/protocol/HeaderParams.cpp
       src/hotrod/impl/protocol/Codec10.cpp
       src/hotrod/impl/protocol/Codec11.cpp
@@ -438,6 +440,7 @@ endif(ENABLE_INTERNAL_TESTING)
       src/hotrod/sys/Runnable.cpp
       src/hotrod/sys/Log.cpp
       src/hotrod/sys/SSLSocket.cpp
+      src/hotrod/impl/event/JBasicEventMarshaller.cpp
       ${platform_sources}
       ${internal_test_sources}  
       ${CMAKE_BINARY_DIR}/Version.cpp

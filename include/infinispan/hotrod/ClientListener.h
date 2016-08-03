@@ -9,6 +9,9 @@
 #define INCLUDE_INFINISPAN_HOTROD_CLIENTLISTENER_H_
 #include <vector>
 
+namespace infinispan {
+namespace hotrod {
+namespace event {
 struct ClientListener
 {
 	std::vector<char> filterFactoryName;
@@ -17,6 +20,7 @@ struct ClientListener
 	bool includeCurrentState = false;
 };
 
+}}}
 
 
 #endif /* INCLUDE_INFINISPAN_HOTROD_CLIENTLISTENER_H_ */

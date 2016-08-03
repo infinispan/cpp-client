@@ -8,7 +8,7 @@
 #ifndef SRC_HOTROD_IMPL_OPERATIONS_ADDCLIENTLISTENEROPERATION_H_
 #define SRC_HOTROD_IMPL_OPERATIONS_ADDCLIENTLISTENEROPERATION_H_
 
-#include "hotrod/impl/ClientListenerNotifier.h"
+#include <hotrod/impl/event/ClientListenerNotifier.h>
 #include "hotrod/impl/operations/RetryOnFailureOperation.h"
 #include "hotrod/impl/protocol/Codec.h"
 

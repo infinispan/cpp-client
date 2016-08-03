@@ -227,4 +227,67 @@ void Codec20::writeExpirationParams(transport::Transport& t,uint64_t lifespan, u
     t.writeVInt(mInt);
 }
 
+void Codec20::writeClientListenerParams(transport::Transport& t, const ClientListener &clientListener,
+		const std::vector<std::vector<char> > &filterFactoryParams, const std::vector<std::vector<char> > &converterFactoryParams) const
+{
+    t.writeByte((short)(clientListener.includeCurrentState ? 1 : 0));
+    this->writeNamedFactory(t,clientListener.filterFactoryName, filterFactoryParams);
+    this->writeNamedFactory(t, clientListener.converterFactoryName, converterFactoryParams);
+}
+
+void Codec20::writeNamedFactory(transport::Transport &t, const std::vector<char> &factoryName, const std::vector<std::vector<char> > & params) const
+{
+   t.writeArray(factoryName);
+   if (!factoryName.empty()) {
+      // A named factory was written, how many parameters?
+      if (!params.empty()) {
+         t.writeByte((short) params.size());
+         for (auto item: params)
+            t.writeArray(item);
+      } else {
+         t.writeByte((short) 0);
+      }
+   }
+}
+
+char Codec20::getAddEventListenerResponseType(transport::Transport &transport, uint64_t &messageId) const
+{
+    uint8_t magic = transport.readByte();
+    if (magic != HotRodConstants::RESPONSE_MAGIC) {
+        std::ostringstream message;
+        message << std::hex << std::setfill('0');
+        message << "Invalid magic number. Expected 0x" << std::setw(2) << static_cast<unsigned>(HotRodConstants::RESPONSE_MAGIC) << " and received 0x" << std::setw(2) << static_cast<unsigned>(magic);
+        throw InvalidResponseException(message.str());
+    }
+    uint64_t receivedMessageId = transport.readVLong();
+    uint8_t receivedOpCode = transport.readByte();
+    messageId=receivedMessageId;
+    return receivedOpCode;
+}
+void Codec20::processEvent() const
+{
+  //TODO implement
+}
+
+uint8_t Codec20::readPartialHeader(transport::Transport &transport, HeaderParams &params, uint8_t receivedOpCode) const
+{
+    uint8_t status = transport.readByte();
+    readNewTopologyIfPresent(transport, params);
+
+    // Now that all headers values have been read, check the error responses.
+    // This avoids situations where an exceptional return ends up with
+    // the socket containing data from previous request responses.
+    if (receivedOpCode != params.opRespCode) {
+      if (receivedOpCode == HotRodConstants::ERROR_RESPONSE) {
+        checkForErrorsInResponseStatus(transport, params, status);
+        }
+        std::ostringstream message;
+        message << "Invalid response operation. Expected " << std::hex <<
+            (int) params.opRespCode << " and received " << std::hex << (int) receivedOpCode;
+        throw InvalidResponseException(message.str());
+    }
+
+    return status;
+}
+
 }}} // namespace infinispan::hotrod::protocol

@@ -8,13 +8,15 @@
 #ifndef INCLUDE_INFINISPAN_HOTROD_JBASICEVENTMARSHALLER_H_
 #define INCLUDE_INFINISPAN_HOTROD_JBASICEVENTMARSHALLER_H_
 
-#include <infinispan/hotrod/EventMarshaller.h>
-
+#include "infinispan/hotrod/ImportExport.h"
+#include "infinispan/hotrod/EventMarshaller.h"
+#include <vector>
+#include <string>
 namespace infinispan {
 namespace hotrod {
 namespace event {
 
-class JBasicEventMarshaller: public EventMarshaller {
+class HR_EXPORT JBasicEventMarshaller: public EventMarshaller {
 public:
 	JBasicEventMarshaller();
 	virtual ~JBasicEventMarshaller();

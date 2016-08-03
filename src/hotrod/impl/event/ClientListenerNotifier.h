@@ -10,12 +10,25 @@
 
 namespace infinispan {
 namespace hotrod {
+namespace operations {
+	class AddClientListenerOperation;
+}}}
+
+
+namespace infinispan {
+namespace hotrod {
 namespace event {
+
+using  namespace infinispan::hotrod::operations;
 
 class ClientListenerNotifier {
 public:
 	ClientListenerNotifier();
 	virtual ~ClientListenerNotifier();
+	void addClientListener(AddClientListenerOperation* const) const
+	{
+
+	}
 };
 
 } /* namespace event */

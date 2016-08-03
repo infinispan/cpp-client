@@ -56,7 +56,7 @@ template<class T> class RetryOnFailureOperation : public HotRodOperation<T>
        return retryCount <= transportFactory->getMaxRetries();
     }
 
-    void releaseTransport(transport::Transport* transport) {
+    virtual void releaseTransport(transport::Transport* transport) {
         if (transport) {
             transportFactory->releaseTransport(*transport);
         }

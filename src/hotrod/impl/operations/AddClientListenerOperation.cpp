@@ -56,6 +56,32 @@ char AddClientListenerOperation::executeOperation(transport::Transport& transpor
     protocol::HeaderParams params = this->writeHeader(transport, ADD_CLIENT_LISTENER_REQUEST);
     transport.writeArray(listenerId);
     codec.writeClientListenerParams(transport, clientListener, filterFactoryParams, converterFactoryParams);
+    transport.flush();
+    listenerNotifier.addClientListener(this);
+    bool readComplete = false;
+    uint64_t respMessageId = 0;
+    do
+    {
+    	uint8_t respOpCode = codec.getAddEventListenerResponseType(transport, respMessageId);
+    	switch (codec.getAddEventListenerResponseType(transport, respMessageId))
+    	{
+    	case CACHE_ENTRY_CREATED_EVENT_RESPONSE:
+    	case CACHE_ENTRY_EXPIRED_EVENT_RESPONSE:
+    	case CACHE_ENTRY_MODIFIED_EVENT_RESPONSE:
+    	case CACHE_ENTRY_REMOVED_EVENT_RESPONSE:
+    		codec.processEvent();
+    		break;
+    	default:
+    	    if (respMessageId != params.getMessageId() && respMessageId != 0) {
+    	        std::ostringstream message;
+    	        message << "Invalid message id. Expected " <<
+    	            params.getMessageId() << " and received " << respMessageId;
+    	        throw InvalidResponseException(message.str());
+    	    }
+    		codec.readPartialHeader(transport, params, respOpCode);
+    		readComplete=true;
+    	}
+    } while (readComplete);
     return 0;
 
 }

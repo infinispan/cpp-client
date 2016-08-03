@@ -11,6 +11,8 @@
 #include "ServerConfiguration.h"
 #include "SslConfiguration.h"
 #include "infinispan/hotrod/FailOverRequestBalancingStrategy.h"
+#include "infinispan/hotrod/JBasicEventMarshaller.h"
+
 
 namespace infinispan {
 namespace hotrod {
@@ -46,13 +48,15 @@ class Configuration
             bool _tcpNoDelay,
             int _valueSizeEstimate,
             int _maxRetries,
-            FailOverRequestBalancingStrategy::ProducerFn bsp=0):
+            FailOverRequestBalancingStrategy::ProducerFn bsp=0,
+			const event::EventMarshaller &eventMarshaller = event::JBasicEventMarshaller()):
                 protocolVersion(_protocolVersion), protocolVersionPtr(),
                 connectionPoolConfiguration(_connectionPoolConfiguration),
                 connectionTimeout(_connectionTimeout), forceReturnValue(_forceReturnValue),
                 keySizeEstimate(_keySizeEstimate), servers(_serversConfiguration),
                 socketTimeout(_socketTimeout), sslConfiguration(_sslConfiguration),tcpNoDelay(_tcpNoDelay),
-                valueSizeEstimate(_valueSizeEstimate), maxRetries(_maxRetries), balancingStrategyProducer(bsp) {}
+                valueSizeEstimate(_valueSizeEstimate), maxRetries(_maxRetries), balancingStrategyProducer(bsp),
+				eventMarshaller(eventMarshaller) {}
 
     /**
      * DEPRECATED. Use getProtocolVersionCString().
@@ -152,6 +156,8 @@ class Configuration
 
     HR_EXTERN FailOverRequestBalancingStrategy::ProducerFn getBalancingStrategy() const;
 
+    HR_EXTERN const event::EventMarshaller &getEventMarshaller() const;
+
 private:
     portable::string protocolVersion;
     portable::local_ptr<std::string> protocolVersionPtr;
@@ -166,6 +172,7 @@ private:
     int valueSizeEstimate;
     int maxRetries;
     FailOverRequestBalancingStrategy::ProducerFn balancingStrategyProducer;
+    const event::EventMarshaller &eventMarshaller;
 
     static void deleteString(std::string *str) { delete str; }
 };

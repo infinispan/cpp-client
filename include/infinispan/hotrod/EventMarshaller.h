@@ -7,6 +7,8 @@
 
 #ifndef INCLUDE_INFINISPAN_HOTROD_EVENTMARSHALLER_H_
 #define INCLUDE_INFINISPAN_HOTROD_EVENTMARSHALLER_H_
+#include <vector>
+#include <string>
 
 namespace infinispan {
 namespace hotrod {
@@ -21,8 +23,9 @@ public:
 	virtual std::vector<char> marshall(std::string) = 0;
 	virtual std::vector<char> marshall(int) = 0;
 
-	virtual ~EventMarshaller();
+	virtual ~EventMarshaller() {};
 };
+
 
 }}}
 

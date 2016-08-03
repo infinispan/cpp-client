@@ -25,20 +25,26 @@ RemoteCacheManagerImpl::RemoteCacheManagerImpl(bool start_)
 	if (start_) start();
 }
 
-RemoteCacheManagerImpl::RemoteCacheManagerImpl(const std::map<std::string,std::string>& properties, bool start_)
-  : started(false),
-    configuration(ConfigurationBuilder().build()), codec(0),
-	defaultCacheTopologyId(protocol::HotRodConstants::DEFAULT_CACHE_TOPOLOGY)
+Configuration buildConfig(const std::map<std::string,std::string>& properties)
 {
   std::map<std::string,std::string>::const_iterator server_prop;
   server_prop = properties.find(ISPN_CLIENT_HOTROD_SERVER_LIST);
   if(server_prop != properties.end()) {
       std::string serverList = server_prop->second;
-      configuration = ConfigurationBuilder().addServers(serverList).build();
+      return ConfigurationBuilder().addServers(serverList).build();
   }
+  return ConfigurationBuilder().build();
+}
 
+RemoteCacheManagerImpl::RemoteCacheManagerImpl(const std::map<std::string,std::string>& properties, bool start_)
+  : started(false),
+    configuration(buildConfig(properties)), codec(0),
+	defaultCacheTopologyId(protocol::HotRodConstants::DEFAULT_CACHE_TOPOLOGY)
+{
   if (start_) start();
 }
+
+
 
 RemoteCacheManagerImpl::RemoteCacheManagerImpl(const Configuration& configuration_, bool start_)
   : started(false),
