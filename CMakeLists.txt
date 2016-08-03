@@ -599,8 +599,8 @@ endif (ENABLE_INTERNAL_TESTING)
 add_executable (itest test/InteractiveTest.cpp)
 target_include_directories(itest PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
 	"${INCLUDE_FILES_DIR}"
-                                     "${CMAKE_CURRENT_BINARY_DIR}"
-                                     "${PROTOBUF_INCLUDE_DIR}")
+	"${CMAKE_CURRENT_BINARY_DIR}"
+	"${PROTOBUF_INCLUDE_DIR}")
 target_include_directories(itest PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto")
 set_target_properties(itest PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}")
 set_target_properties (itest PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${NO_UNUSED_FLAGS}")
