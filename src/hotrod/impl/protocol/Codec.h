@@ -31,7 +31,7 @@ class Codec
 
     virtual std::vector<char> returnPossiblePrevValue(transport::Transport& t, uint8_t status, uint32_t flags) const = 0;
     virtual void writeExpirationParams(transport::Transport& t,uint64_t lifespan, uint64_t maxIdle) const = 0;
-    virtual void writeClientListenerParams(transport::Transport& t, const ClientListener &clientListener,
+    virtual void writeClientListenerParams(transport::Transport& t, const ClientListener *clientListener,
     		const std::vector<std::vector<char> > &filterFactoryParams, const std::vector<std::vector<char> > &converterFactoryParams) const = 0;
     virtual char getAddEventListenerResponseType(transport::Transport &transport, uint64_t &messageId) const = 0;
     virtual void processEvent() const = 0;

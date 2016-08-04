@@ -20,6 +20,11 @@ ClientListenerNotifier::~ClientListenerNotifier() {
 	// TODO Auto-generated destructor stub
 }
 
+ClientListenerNotifier* ClientListenerNotifier::create(Codec &, const EventMarshaller &)
+{
+	return new ClientListenerNotifier();
+}
+
 } /* namespace event */
 } /* namespace hotrod */
 } /* namespace infinispan */

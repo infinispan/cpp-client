@@ -240,7 +240,7 @@ void Codec10::writeExpirationParams(transport::Transport& t,uint64_t lifespan, u
     t.writeVInt(mInt);
 }
 
-void Codec10::writeClientListenerParams(transport::Transport& , const ClientListener &,
+void Codec10::writeClientListenerParams(transport::Transport& , const ClientListener *,
 		const std::vector<std::vector<char> > &, const std::vector<std::vector<char> > &) const
 {
 

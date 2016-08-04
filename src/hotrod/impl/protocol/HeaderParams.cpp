@@ -82,6 +82,8 @@ uint8_t HeaderParams::toOpRespCode(uint8_t code) {
         return HotRodConstants::EXEC_RESPONSE;
     case HotRodConstants::QUERY_REQUEST:
         return HotRodConstants::QUERY_RESPONSE;
+    case HotRodConstants::ADD_CLIENT_LISTENER_REQUEST:
+    	return HotRodConstants::ADD_CLIENT_LISTENER_RESPONSE;
     default:
     	std::ostringstream msg;
     	msg << "Unknown operation code: " << opCode;

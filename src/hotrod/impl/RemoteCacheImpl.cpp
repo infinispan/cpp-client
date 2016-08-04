@@ -25,6 +25,7 @@
 #include "hotrod/impl/MetadataValueImpl.h"
 #include "hotrod/impl/operations/ExecuteCmdOperation.h"
 #include "hotrod/impl/operations/QueryOperation.h"
+#include "hotrod/impl/operations/AddClientListenerOperation.h"
 
 #include <iostream>
 
@@ -256,6 +257,11 @@ CacheTopologyInfo RemoteCacheImpl::getCacheTopologyInfo() {
 	return operationsFactory->getCacheTopologyInfo();
 }
 
+void RemoteCacheImpl::addClientListener(ClientListener* clientListener, const std::vector<std::vector<char> > filterFactoryParam, const std::vector<std::vector<char> > converterFactoryParams)
+{
+    std::unique_ptr<AddClientListenerOperation> op(operationsFactory->newAddClientListenerOperation(clientListener, *remoteCacheManager.getListenerNotifier(), filterFactoryParam, converterFactoryParams));
+    op->execute();
+}
 
 }
 } /* namespace */

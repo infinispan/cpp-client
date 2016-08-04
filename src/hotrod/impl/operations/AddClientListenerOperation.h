@@ -23,11 +23,11 @@ namespace operations {
 
 class AddClientListenerOperation: public RetryOnFailureOperation<char> {
 public:
-	AddClientListenerOperation(Codec &codec, std::shared_ptr<TransportFactory> transportFactory,
+	AddClientListenerOperation(const Codec &codec, std::shared_ptr<TransportFactory> transportFactory,
         std::vector<char> cacheName, Topology& topologyId, int flags,
-        ClientListenerNotifier listenerNotifier, const ClientListener &clientListener,
-		std::vector<std::vector<char> > &filterFactoryParams,
-		std::vector<std::vector<char> > &converterFactoryParams)
+        ClientListenerNotifier listenerNotifier, const ClientListener *clientListener,
+		std::vector<std::vector<char> > filterFactoryParams,
+		std::vector<std::vector<char> > converterFactoryParams)
                            : RetryOnFailureOperation<char>(codec, transportFactory, cacheName, topologyId, flags),
 							 listenerId(generateV4UUID()), clientListener(clientListener), filterFactoryParams(filterFactoryParams), converterFactoryParams(converterFactoryParams),
 							 cacheName(cacheName), listenerNotifier(listenerNotifier)
@@ -38,9 +38,9 @@ public:
 	virtual ~AddClientListenerOperation();
     char executeOperation(transport::Transport& transport);
 	const std::vector<char> listenerId;
-    const ClientListener &clientListener;
-    const std::vector<std::vector<char> > &filterFactoryParams;
-    const std::vector<std::vector<char> > &converterFactoryParams;
+    const ClientListener *clientListener;
+    const std::vector<std::vector<char> > filterFactoryParams;
+    const std::vector<std::vector<char> > converterFactoryParams;
 
 private:
     const std::vector<char> cacheName;

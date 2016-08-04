@@ -21,9 +21,11 @@
 #include "hotrod/impl/operations/FaultTolerantPingOperation.h"
 #include "hotrod/impl/operations/ExecuteCmdOperation.h"
 #include "hotrod/impl/operations/QueryOperation.h"
+#include "hotrod/impl/operations/AddClientListenerOperation.h"
 #include "infinispan/hotrod/Flag.h"
 
 #include <cstring>
+#include <vector>
 
 namespace infinispan {
 namespace hotrod {
@@ -168,6 +170,12 @@ uint32_t OperationsFactory::getFlags() {
     }
     flags = 0;
     return result;
+}
+
+AddClientListenerOperation* OperationsFactory::newAddClientListenerOperation(ClientListener* listener, ClientListenerNotifier& listenerNotifier,const std::vector<std::vector<char> > filterFactoryParam, const std::vector<std::vector<char> > converterFactoryParams) {
+   return new AddClientListenerOperation(codec, transportFactory,
+         cacheNameBytes, topologyId, getFlags(), listenerNotifier,
+         listener,  filterFactoryParam, converterFactoryParams);
 }
 
 void OperationsFactory::addFlags(uint32_t f) {

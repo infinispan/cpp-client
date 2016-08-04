@@ -30,7 +30,7 @@ class Codec20 : public Codec
 
     std::vector<char> returnPossiblePrevValue(transport::Transport& t, uint8_t status, uint32_t flags) const;
     void writeExpirationParams(transport::Transport& t,uint64_t lifespan, uint64_t maxIdle) const;
-    virtual void writeClientListenerParams(transport::Transport& t, const ClientListener &clientListener,
+    virtual void writeClientListenerParams(transport::Transport& t, const ClientListener *clientListener,
     		const std::vector<std::vector<char> > &filterFactoryParams, const std::vector<std::vector<char> > &converterFactoryParams) const;
     void writeNamedFactory(transport::Transport &transport, const std::vector<char> &factoryName, const std::vector<std::vector<char> > & params) const;
     virtual char getAddEventListenerResponseType(transport::Transport &transport, uint64_t &messageId) const;

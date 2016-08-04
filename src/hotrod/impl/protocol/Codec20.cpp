@@ -227,12 +227,12 @@ void Codec20::writeExpirationParams(transport::Transport& t,uint64_t lifespan, u
     t.writeVInt(mInt);
 }
 
-void Codec20::writeClientListenerParams(transport::Transport& t, const ClientListener &clientListener,
+void Codec20::writeClientListenerParams(transport::Transport& t, const ClientListener *clientListener,
 		const std::vector<std::vector<char> > &filterFactoryParams, const std::vector<std::vector<char> > &converterFactoryParams) const
 {
-    t.writeByte((short)(clientListener.includeCurrentState ? 1 : 0));
-    this->writeNamedFactory(t,clientListener.filterFactoryName, filterFactoryParams);
-    this->writeNamedFactory(t, clientListener.converterFactoryName, converterFactoryParams);
+    t.writeByte((short)(clientListener->includeCurrentState ? 1 : 0));
+    this->writeNamedFactory(t,clientListener->filterFactoryName, filterFactoryParams);
+    this->writeNamedFactory(t, clientListener->converterFactoryName, converterFactoryParams);
 }
 
 void Codec20::writeNamedFactory(transport::Transport &t, const std::vector<char> &factoryName, const std::vector<std::vector<char> > & params) const

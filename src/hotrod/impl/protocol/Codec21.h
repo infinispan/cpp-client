@@ -22,7 +22,7 @@ public:
     {
     }
 
-    virtual void writeClientListenerParams(transport::Transport& t, const ClientListener &clientListener,
+    virtual void writeClientListenerParams(transport::Transport& t, const ClientListener *clientListener,
     		const std::vector<std::vector<char> > &filterFactoryParams, const std::vector<std::vector<char> > &converterFactoryParams) const;
 
 friend class CodecFactory;

@@ -26,6 +26,7 @@ public:
         delete buf->data();
     }
     template <class T> static T unmarshall(char *);
+    template <typename T> static std::vector<char> marshall(T);
 };
 
     template <> std::string JBasicMarshallerHelper::unmarshall(char *b) {
@@ -49,6 +50,18 @@ public:
         return result;
     }
 
+    template <> std::vector<char> JBasicMarshallerHelper::marshall(int v)
+    {
+    	auto vec = std::vector<char>(6);
+    	vec[0]=JBasicMarshallerHelper::MARSHALL_VERSION;
+    	vec[1]= JBasicMarshallerHelper::INTEGER;
+    	for (auto i=5; i>1; i--)
+    	{
+    		vec[i] = v & 0xFF;
+    		v >>=8;
+    	}
+    	return vec;
+    }
 
 
 // Specialization for std::string:

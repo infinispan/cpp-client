@@ -12,6 +12,7 @@
 #include "infinispan/hotrod/Version.h"
 #include "infinispan/hotrod/exceptions.h"
 #include "query.pb.h"
+#include "infinispan/hotrod/ClientListener.h"
 
 #include <cmath>
 #include <set>
@@ -707,6 +708,11 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      */
     void ping() {
         base_ping();
+    }
+
+    void addClientListener(ClientListener* clientListener, const std::vector<std::vector<char> > filterFactoryParams= std::vector<std::vector<char> >(0), const std::vector<std::vector<char> > converterFactoryParams= std::vector<std::vector<char> >(0))
+    {
+    	base_addClientListener(clientListener, filterFactoryParams, converterFactoryParams);
     }
 
     CacheTopologyInfo getCacheTopologyInfo(){

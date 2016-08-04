@@ -58,12 +58,12 @@ char AddClientListenerOperation::executeOperation(transport::Transport& transpor
     codec.writeClientListenerParams(transport, clientListener, filterFactoryParams, converterFactoryParams);
     transport.flush();
     listenerNotifier.addClientListener(this);
-    bool readComplete = false;
+    bool readMore = true;
     uint64_t respMessageId = 0;
     do
     {
     	uint8_t respOpCode = codec.getAddEventListenerResponseType(transport, respMessageId);
-    	switch (codec.getAddEventListenerResponseType(transport, respMessageId))
+    	switch (respOpCode)
     	{
     	case CACHE_ENTRY_CREATED_EVENT_RESPONSE:
     	case CACHE_ENTRY_EXPIRED_EVENT_RESPONSE:
@@ -79,9 +79,9 @@ char AddClientListenerOperation::executeOperation(transport::Transport& transpor
     	        throw InvalidResponseException(message.str());
     	    }
     		codec.readPartialHeader(transport, params, respOpCode);
-    		readComplete=true;
+    		readMore=false;
     	}
-    } while (readComplete);
+    } while (readMore);
     return 0;
 
 }
