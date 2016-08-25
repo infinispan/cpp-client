@@ -1,3 +1,4 @@
+#include <hotrod/impl/operations/AddCacheClientListenerOperation.h>
 #include <hotrod/impl/Topology.h>
 #include "hotrod/impl/operations/OperationsFactory.h"
 #include "hotrod/impl/protocol/CodecFactory.h"
@@ -21,7 +22,6 @@
 #include "hotrod/impl/operations/FaultTolerantPingOperation.h"
 #include "hotrod/impl/operations/ExecuteCmdOperation.h"
 #include "hotrod/impl/operations/QueryOperation.h"
-#include "hotrod/impl/operations/AddClientListenerOperation.h"
 #include "infinispan/hotrod/Flag.h"
 
 #include <cstring>
@@ -172,7 +172,7 @@ uint32_t OperationsFactory::getFlags() {
     return result;
 }
 
-AddClientListenerOperation* OperationsFactory::newAddClientListenerOperation(ClientListener* listener, ClientListenerNotifier& listenerNotifier,const std::vector<std::vector<char> > filterFactoryParam, const std::vector<std::vector<char> > converterFactoryParams) {
+AddClientListenerOperation* OperationsFactory::newAddClientListenerOperation(ClientListener& listener, ClientListenerNotifier& listenerNotifier,const std::vector<std::vector<char> > filterFactoryParam, const std::vector<std::vector<char> > converterFactoryParams) {
    return new AddClientListenerOperation(codec, transportFactory,
          cacheNameBytes, topologyId, getFlags(), listenerNotifier,
          listener,  filterFactoryParam, converterFactoryParams);

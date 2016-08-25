@@ -3,6 +3,7 @@
 
 
 
+#include <infinispan/hotrod/ClientListener.h>
 #include "infinispan/hotrod/RemoteCacheBase.h"
 #include "infinispan/hotrod/Marshaller.h"
 #include "infinispan/hotrod/Flag.h"
@@ -12,8 +13,6 @@
 #include "infinispan/hotrod/Version.h"
 #include "infinispan/hotrod/exceptions.h"
 #include "query.pb.h"
-#include "infinispan/hotrod/ClientListener.h"
-
 #include <cmath>
 #include <set>
 #include <map>
@@ -710,7 +709,7 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
         base_ping();
     }
 
-    void addClientListener(ClientListener* clientListener, const std::vector<std::vector<char> > filterFactoryParams= std::vector<std::vector<char> >(0), const std::vector<std::vector<char> > converterFactoryParams= std::vector<std::vector<char> >(0))
+    void addClientListener(ClientListener& clientListener, std::vector<std::vector<char> > filterFactoryParams, std::vector<std::vector<char> > converterFactoryParams)
     {
     	base_addClientListener(clientListener, filterFactoryParams, converterFactoryParams);
     }

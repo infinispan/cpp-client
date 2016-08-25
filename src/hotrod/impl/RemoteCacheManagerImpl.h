@@ -1,14 +1,13 @@
 #ifndef ISPN_HOTROD_REMOTECACHEMANAGERIMPL_H
 #define ISPN_HOTROD_REMOTECACHEMANAGERIMPL_H
 
+#include <hotrod/impl/event/ClientListenerNotifier.h>
 #include "infinispan/hotrod/Configuration.h"
 #include "hotrod/impl/RemoteCacheImpl.h"
 #include "hotrod/impl/protocol/Codec.h"
 #include "hotrod/impl/transport/TransportFactory.h"
 #include "hotrod/impl/operations/PingOperation.h"
 #include "hotrod/sys/Mutex.h"
-#include "hotrod/impl/event/ClientListenerNotifier.h"
-
 #include <map>
 
 using namespace infinispan::hotrod::event;

@@ -2,12 +2,12 @@
 #define ISPN_HOTROD_OPERATIONS_OPERATIONSFACTORY_H
 
 #include <infinispan/hotrod/CacheTopologyInfo.h>
+#include <infinispan/hotrod/ClientListener.h>
 #include "infinispan/hotrod/Flag.h"
 
 #include <set>
 #include <infinispan/hotrod/portable.h>
 #include <query.pb.h>
-#include "infinispan/hotrod/ClientListener.h"
 using namespace org::infinispan::query::remote::client;
 using namespace infinispan::hotrod::event;
 
@@ -107,7 +107,7 @@ class OperationsFactory
 
     FaultTolerantPingOperation* newFaultTolerantPingOperation();
 
-    AddClientListenerOperation* newAddClientListenerOperation(ClientListener *listener, ClientListenerNotifier& listenerNotifier, const std::vector<std::vector<char> > filterFactoryParam, const std::vector<std::vector<char> > converterFactoryParams);
+    AddClientListenerOperation* newAddClientListenerOperation(ClientListener& listener, ClientListenerNotifier& listenerNotifier, const std::vector<std::vector<char> > filterFactoryParam, const std::vector<std::vector<char> > converterFactoryParams);
 
     void addFlags(uint32_t flags);
     void setFlags(uint32_t flags);

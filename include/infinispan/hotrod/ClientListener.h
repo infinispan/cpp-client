@@ -7,17 +7,41 @@
 
 #ifndef INCLUDE_INFINISPAN_HOTROD_CLIENTLISTENER_H_
 #define INCLUDE_INFINISPAN_HOTROD_CLIENTLISTENER_H_
+
+#include <hotrod/impl/event/ClientEvent.h>
+#include "infinispan/hotrod/ImportExport.h"
 #include <vector>
+#include <list>
+#include <functional>
+
+using namespace infinispan::hotrod;
 
 namespace infinispan {
 namespace hotrod {
+
+namespace transport {
+class Transport;
+}
+
+namespace protocol {
+class Codec20;
+}
+class RemoteCacheBase;
+template <class K, class V>
+class RemoteCache;
+
 namespace event {
-struct ClientListener
+
+class ClientListener
 {
+public:
+	bool includeCurrentState = false;
 	std::vector<char> filterFactoryName;
 	std::vector<char> converterFactoryName;
 	bool useRawData = false ;
-	bool includeCurrentState = false;
+	virtual void processEvent(ClientCacheEntryCreatedEvent<std::vector<char>>, std::vector<char >listId, uint8_t isCustom) const = 0;
+	virtual void processEvent(ClientEvent::Type t, std::vector<char >listId, uint8_t isCustom, uint8_t isRetried, transport::Transport& transport, const protocol::Codec20& codec20) const  =0;
+	virtual ~ClientListener() {}
 };
 
 }}}

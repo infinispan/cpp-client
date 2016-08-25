@@ -5,7 +5,7 @@
  *      Author: rigazilla
  */
 
-#include <hotrod/impl/operations/AddClientListenerOperation.h>
+#include <hotrod/impl/operations/AddCacheClientListenerOperation.h>
 #include <random>
 
 
@@ -55,35 +55,63 @@ char AddClientListenerOperation::executeOperation(transport::Transport& transpor
 {
     protocol::HeaderParams params = this->writeHeader(transport, ADD_CLIENT_LISTENER_REQUEST);
     transport.writeArray(listenerId);
-    codec.writeClientListenerParams(transport, clientListener, filterFactoryParams, converterFactoryParams);
+    const Codec20& codec20 = dynamic_cast<const Codec20&>(codec);
+    codec20.writeClientListenerParams(transport, clientListener, filterFactoryParams, converterFactoryParams);
     transport.flush();
-    listenerNotifier.addClientListener(this);
+    listenerNotifier.addClientListener(listenerId, clientListener, cacheName, transport, codec20);
     bool readMore = true;
     uint64_t respMessageId = 0;
     do
     {
-    	uint8_t respOpCode = codec.getAddEventListenerResponseType(transport, respMessageId);
-    	switch (respOpCode)
+    	uint8_t respOpCode = codec20.readAddEventListenerResponseType(transport, respMessageId);
+    	// The response contains immediate event to process
+    	if (isEvent(respOpCode))
     	{
-    	case CACHE_ENTRY_CREATED_EVENT_RESPONSE:
-    	case CACHE_ENTRY_EXPIRED_EVENT_RESPONSE:
-    	case CACHE_ENTRY_MODIFIED_EVENT_RESPONSE:
-    	case CACHE_ENTRY_REMOVED_EVENT_RESPONSE:
-    		codec.processEvent();
-    		break;
-    	default:
-    	    if (respMessageId != params.getMessageId() && respMessageId != 0) {
-    	        std::ostringstream message;
-    	        message << "Invalid message id. Expected " <<
-    	            params.getMessageId() << " and received " << respMessageId;
-    	        throw InvalidResponseException(message.str());
-    	    }
-    		codec.readPartialHeader(transport, params, respOpCode);
-    		readMore=false;
+		    std::vector<char> listId=codec20.readEventListenerId(transport);
+		    uint8_t isCustom = codec20.readEventIsCustomFlag(transport);
+		    uint8_t isRetried = codec20.readEventIsRetriedFlag(transport);
+		    if (isCustom != 0)
+		    {
+		    	ClientCacheEntryCustomEvent ev = codec20.readCustomEvent(transport);
+		    }
+        	switch (respOpCode)
+        	{
+        	    case CACHE_ENTRY_CREATED_EVENT_RESPONSE:
+        	    {
+        	    	ClientCacheEntryCreatedEvent<std::vector<char>> marshEvent = codec20.readCreatedEvent(transport, isRetried);
+        	    	clientListener.processEvent(marshEvent, listId, isCustom);
+        	    	//clientListener.processEvent(listId, isCustom, isRetried, transport, codec20);
+        	    }
+    		    break;
+        	    case CACHE_ENTRY_EXPIRED_EVENT_RESPONSE:
+        	    case CACHE_ENTRY_MODIFIED_EVENT_RESPONSE:
+        	    case CACHE_ENTRY_REMOVED_EVENT_RESPONSE:
+        	    break;
+        	    default:
+        	    	break;
+        	}
+    	}
+        else
+        {
+        	if (respMessageId != params.getMessageId() && respMessageId != 0) {
+        	    std::ostringstream message;
+        	    message << "Invalid message id. Expected " <<
+        	        params.getMessageId() << " and received " << respMessageId;
+        	    throw InvalidResponseException(message.str());
+        	}
+        	uint8_t status = codec20.readPartialHeader(transport, params, respOpCode);
+        	if (HotRodConstants::isSuccess(status))
+        	{
+        		listenerNotifier.startClientListener(listenerId);
+        	}
+        	else
+        	{
+        		listenerNotifier.removeClientListener(listenerId);
+        	}
+        	readMore=false;
     	}
     } while (readMore);
     return 0;
-
 }
 
 
