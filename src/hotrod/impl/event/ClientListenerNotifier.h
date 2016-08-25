@@ -38,7 +38,7 @@ public:
 	void removeClientListener(const std::vector<char> listenerId);
 	void startClientListener(const std::vector<char> listenerId);
 	static ClientListenerNotifier* create();
-
+	void stop();
 protected:
 	ClientListenerNotifier();
 private:

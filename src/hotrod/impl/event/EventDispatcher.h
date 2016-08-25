@@ -17,6 +17,7 @@
 #include <map>
 #include <tuple>
 #include <thread>
+#include <iostream>
 
 using namespace infinispan::hotrod::protocol;
 using namespace infinispan::hotrod::transport;
@@ -30,8 +31,9 @@ template <class T> using X =  std::function<void(T)>;
 
 class EventDispatcher {
 public:
-	EventDispatcher(const std::vector<char> listenerId, const ClientListener& cl, std::vector<char> cacheName, Transport& t, const Codec20& codec20) : listenerId(listenerId), cl(cl), cacheName(cacheName), transport(t), codec20(codec20) {}
-	virtual ~EventDispatcher() {};
+	EventDispatcher(const std::vector<char> listenerId, const ClientListener& cl, std::vector<char> cacheName, Transport& t, const Codec20& codec20) : listenerId(listenerId), cl(cl), cacheName(cacheName), transport(t), codec20(codec20)
+    {std::cout << "EventDispatcher()" << std::endl;}
+	virtual ~EventDispatcher() { std::cout << "~EventDispatcher()" << std::endl;};
     void run();
     void start();
     void stop();

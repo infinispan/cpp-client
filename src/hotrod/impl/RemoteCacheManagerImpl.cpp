@@ -74,7 +74,8 @@ void RemoteCacheManagerImpl::stop() {
 	if (started) {
         transportFactory->destroy();
         started = false;
-        delete listenerNotifier;
+    	if  (listenerNotifier)
+    		listenerNotifier->stop();
     }
 }
 

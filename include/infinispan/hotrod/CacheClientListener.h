@@ -43,10 +43,10 @@ public:
 	void add_listener(std::function<void(ClientCacheEntryExpiredEvent)> callback) {
 		expiredCallbacks.push_back(callback);
 	}
-	void add_listener(std::function<void(ClientCacheEntryModifiedEvent)> callback) {
+	void add_listener(std::function<void(ClientCacheEntryModifiedEvent<K>)> callback) {
 		modifiedCallbacks.push_back(callback);
 	}
-	void add_listener(std::function<void(ClientCacheEntryRemovedEvent)> callback) {
+	void add_listener(std::function<void(ClientCacheEntryRemovedEvent<K>)> callback) {
 		removedCallbacks.push_back(callback);
 	}
 	void add_listener(std::function<void(ClientCacheEntryCustomEvent)> callback) {
@@ -65,31 +65,35 @@ public:
 		  }
 	}
 
-
-	virtual void processEvent(ClientEvent::Type t, std::vector<char >listId, uint8_t isCustom, uint8_t isRetried, transport::Transport& transport, const protocol::Codec20& codec20) const
+	virtual void processEvent(ClientCacheEntryModifiedEvent<std::vector<char>> marshEv, std::vector<char >listId, uint8_t isCustom) const
 	{
-	  switch (t)
-	  {
-	  case ClientEvent::Type::CLIENT_CACHE_ENTRY_CREATED:
-	  {
-		  K* key = (K*)cache.baseKeyUnmarshall(transport.readArray());
-          int64_t version = transport.readLong();
-		  ClientCacheEntryCreatedEvent<K> ev(*key, version, isRetried);
-		  for (auto callable: createdCallbacks)
+		ClientCacheEntryModifiedEvent<K> typedEvent(*(K*)cache.baseKeyUnmarshall(marshEv.getKey()), marshEv.getVersion(), marshEv.isCommandRetried());
+		  for (auto callable: modifiedCallbacks)
+		  {
+			  callable(typedEvent);
+		  }
+	}
+
+	virtual void processEvent(ClientCacheEntryRemovedEvent<std::vector<char>> marshEv, std::vector<char >listId, uint8_t isCustom) const
+	{
+		ClientCacheEntryRemovedEvent<K> typedEvent(*(K*)cache.baseKeyUnmarshall(marshEv.getKey()), marshEv.isCommandRetried());
+		  for (auto callable: removedCallbacks)
+		  {
+			  callable(typedEvent);
+		  }
+	}
+	virtual void processEvent(ClientCacheEntryCustomEvent ev, std::vector<char >listId, uint8_t isCustom) const
+	{
+		  for (auto callable: customCallbacks)
 		  {
 			  callable(ev);
 		  }
-	  }
-		  break;
-	  default:
-		  break;
-	  }
 	}
 private:
 	std::list<std::function<void(ClientCacheEntryCreatedEvent<K>)>> createdCallbacks;
 	std::list<std::function<void(ClientCacheEntryExpiredEvent)>> expiredCallbacks;
-	std::list<std::function<void(ClientCacheEntryModifiedEvent)>> modifiedCallbacks;
-	std::list<std::function<void(ClientCacheEntryRemovedEvent)>> removedCallbacks;
+	std::list<std::function<void(ClientCacheEntryModifiedEvent<K>)>> modifiedCallbacks;
+	std::list<std::function<void(ClientCacheEntryRemovedEvent<K>)>> removedCallbacks;
 	std::list<std::function<void(ClientCacheEntryCustomEvent)>> customCallbacks;
 	std::list<std::function<void(ClientCacheFailoverEvent)>> failoverCallbacks;
 };

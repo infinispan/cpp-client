@@ -72,6 +72,44 @@ private:
 	   const bool commandRetried;
 };
 
+template <class K>
+class ClientCacheEntryModifiedEvent : public ClientEvent {
+public:
+	   ClientCacheEntryModifiedEvent(K key, uint64_t version, int commandRetried) : key(key), version(version), commandRetried(commandRetried!=0) {}
+
+   /**
+    * Modified cache entry's key.
+    * @return an instance of the key with which a cache entry has been
+    * modified in the remote server(s).
+    */
+	   K getKey() { return key; }
+
+   /**
+    * Provides access to the version of the modified cache entry. This version
+    * can be used to invoke conditional operations on the server, such as
+    * {@link org.infinispan.client.hotrod.RemoteCache#replaceWithVersion(Object, Object, long)}
+    * or {@link org.infinispan.client.hotrod.RemoteCache#removeWithVersion(Object, long)}
+    *
+    * @return a long containing the version of the modified cache entry.
+    */
+	   uint64_t getVersion() { return version; }
+
+   /**
+    * This will be true if the write command that caused this had to be retried
+    * again due to a topology change.  This could be a sign that this event
+    * has been duplicated or another event was dropped and replaced
+    * (eg: ModifiedEvent replaced CreateEvent)
+    *
+    * @return Whether the command that caused this event was retried
+    */
+	   bool isCommandRetried() { return commandRetried; }
+   uint8_t getType() { return CLIENT_CACHE_ENTRY_MODIFIED; }
+private:
+	   const K key;
+	   const uint64_t version;
+	   const bool commandRetried;
+};
+
 class ClientCacheEntryExpiredEvent : public ClientEvent {
 public:
    /**
@@ -83,46 +121,16 @@ public:
    uint8_t getType() { return CLIENT_CACHE_ENTRY_EXPIRED; }
 };
 
-class ClientCacheEntryModifiedEvent : public ClientEvent {
-
-   /**
-    * Modifiedcache entry's key.
-    * @return an instance of the key with which a cache entry has been
-    * modified in the remote server(s).
-    */
-   void* getKey();
-
-   /**
-    * Provides access to the version of the modified cache entry. This version
-    * can be used to invoke conditional operations on the server, such as
-    * {@link org.infinispan.client.hotrod.RemoteCache#replaceWithVersion(Object, Object, long)}
-    * or {@link org.infinispan.client.hotrod.RemoteCache#removeWithVersion(Object, long)}
-    *
-    * @return a long containing the version of the modified cache entry.
-    */
-   long getVersion();
-
-   /**
-    * This will be true if the write command that caused this had to be retried
-    * again due to a topology change.  This could be a sign that this event
-    * has been duplicated or another event was dropped and replaced
-    * (eg: ModifiedEvent replaced CreateEvent)
-    *
-    * @return Whether the command that caused this event was retried
-    */
-   bool isCommandRetried();
-   uint8_t getType() { return CLIENT_CACHE_ENTRY_MODIFIED; }
-
-};
-
+template <class K>
 class ClientCacheEntryRemovedEvent : ClientEvent {
-
+public:
+	   ClientCacheEntryRemovedEvent(K key, int commandRetried) : key(key), commandRetried(commandRetried!=0) {}
    /**
     * Created cache entry's key.
     * @return an instance of the key with which a cache entry has been
     * created in remote server.
     */
-   void* getKey();
+	   K getKey() { return key; }
 
    /**
     * This will be true if the write command that caused this had to be retried
@@ -132,9 +140,11 @@ class ClientCacheEntryRemovedEvent : ClientEvent {
     *
     * @return Whether the command that caused this event was retried
     */
-   bool isCommandRetried();
+	   bool isCommandRetried() { return commandRetried; }
    uint8_t getType() { return CLIENT_CACHE_ENTRY_REMOVED; }
-
+private:
+   const K key;
+   const bool commandRetried;
 };
 
 class ClientCacheEntryCustomEvent : ClientEvent {
