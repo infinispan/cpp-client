@@ -323,15 +323,25 @@ ClientCacheEntryExpiredEvent Codec20::processExpiredEvent(transport::Transport &
 	ClientCacheEntryExpiredEvent e;
 	return e;
 }
-ClientCacheEntryModifiedEvent Codec20::processModifiedEvent(transport::Transport &transport) const
-{
-	ClientCacheEntryModifiedEvent e;
-	return e;
-}
 
 ClientCacheEntryCreatedEvent<std::vector<char>> Codec20::readCreatedEvent(transport::Transport &transport, uint8_t isRetried) const
 {
-	return ClientCacheEntryCreatedEvent<std::vector<char>>(transport.readArray(), transport.readLong(), isRetried);
+	std::vector<char> key = transport.readArray();
+	uint64_t version = transport.readLong();
+	return ClientCacheEntryCreatedEvent<std::vector<char>>(key, version, isRetried);
+}
+
+ClientCacheEntryModifiedEvent<std::vector<char>> Codec20::readModifiedEvent(transport::Transport &transport, uint8_t isRetried) const
+{
+	std::vector<char> key = transport.readArray();
+	uint64_t version = transport.readLong();
+	return ClientCacheEntryModifiedEvent<std::vector<char>>(key, version, isRetried);
+}
+
+ClientCacheEntryRemovedEvent<std::vector<char>> Codec20::readRemovedEvent(transport::Transport &transport, uint8_t isRetried) const
+{
+	std::vector<char> key = transport.readArray();
+	return ClientCacheEntryRemovedEvent<std::vector<char>>(key, isRetried);
 }
 
 void Codec20::processEvent() const

@@ -73,23 +73,34 @@ char AddClientListenerOperation::executeOperation(transport::Transport& transpor
 		    if (isCustom != 0)
 		    {
 		    	ClientCacheEntryCustomEvent ev = codec20.readCustomEvent(transport);
+		    	clientListener.processEvent(ev, listId, isCustom);
 		    }
-        	switch (respOpCode)
-        	{
-        	    case CACHE_ENTRY_CREATED_EVENT_RESPONSE:
-        	    {
-        	    	ClientCacheEntryCreatedEvent<std::vector<char>> marshEvent = codec20.readCreatedEvent(transport, isRetried);
-        	    	clientListener.processEvent(marshEvent, listId, isCustom);
-        	    	//clientListener.processEvent(listId, isCustom, isRetried, transport, codec20);
-        	    }
-    		    break;
-        	    case CACHE_ENTRY_EXPIRED_EVENT_RESPONSE:
-        	    case CACHE_ENTRY_MODIFIED_EVENT_RESPONSE:
-        	    case CACHE_ENTRY_REMOVED_EVENT_RESPONSE:
-        	    break;
-        	    default:
-        	    	break;
-        	}
+		    else
+		    {
+				switch (respOpCode) {
+				case CACHE_ENTRY_CREATED_EVENT_RESPONSE: {
+					ClientCacheEntryCreatedEvent<std::vector<char>> marshEvent =
+							codec20.readCreatedEvent(transport, isRetried);
+					clientListener.processEvent(marshEvent, listId, isCustom);
+				}
+					break;
+				case CACHE_ENTRY_MODIFIED_EVENT_RESPONSE: {
+					ClientCacheEntryModifiedEvent<std::vector<char>> marshEvent =
+							codec20.readModifiedEvent(transport, isRetried);
+					clientListener.processEvent(marshEvent, listId, isCustom);
+				}
+					break;
+				case CACHE_ENTRY_REMOVED_EVENT_RESPONSE: {
+					ClientCacheEntryRemovedEvent<std::vector<char>> marshEvent =
+							codec20.readRemovedEvent(transport, isRetried);
+					clientListener.processEvent(marshEvent, listId, isCustom);
+				}
+				case CACHE_ENTRY_EXPIRED_EVENT_RESPONSE:
+					break;
+				default:
+					break;
+				}
+			}
     	}
         else
         {

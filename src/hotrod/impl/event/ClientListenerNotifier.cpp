@@ -34,6 +34,14 @@ void ClientListenerNotifier::addClientListener(const std::vector<char> listenerI
 	eventDispatchers.insert(std::make_pair(listenerId, ed));
 }
 
+void ClientListenerNotifier::stop()
+{
+	for(auto& kv : eventDispatchers)
+	{
+		kv.second.stop();
+	}
+}
+
 void ClientListenerNotifier::removeClientListener(const std::vector<char> listenerId)
 {
 	eventDispatchers.erase(listenerId);
