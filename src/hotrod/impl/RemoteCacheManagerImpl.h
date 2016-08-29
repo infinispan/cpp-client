@@ -29,6 +29,8 @@ class RemoteCacheManagerImpl
     void stop();
     bool isStarted();
     const Configuration& getConfiguration();
+    ClusterStatus switchOnFailoverCluster();
+    ClusterStatus switchOnMainCluster();
 
 	ClientListenerNotifier*& getListenerNotifier() {
 		return listenerNotifier;

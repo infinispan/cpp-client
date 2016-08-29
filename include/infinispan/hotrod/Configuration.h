@@ -58,6 +58,27 @@ class Configuration
                 valueSizeEstimate(_valueSizeEstimate), maxRetries(_maxRetries), balancingStrategyProducer(bsp),
 				eventMarshaller(eventMarshaller) {}
 
+    Configuration(const std::string &_protocolVersion,
+            const ConnectionPoolConfiguration& _connectionPoolConfiguration,
+            int _connectionTimeout,
+            bool _forceReturnValue,
+            int _keySizeEstimate,
+            std::vector<ServerConfiguration> _serversConfiguration,
+            std::vector<ServerConfiguration> _failoverServersConfiguration,
+            int _socketTimeout,
+            const SslConfiguration _sslConfiguration,
+            bool _tcpNoDelay,
+            int _valueSizeEstimate,
+            int _maxRetries,
+            FailOverRequestBalancingStrategy::ProducerFn bsp=0):
+                protocolVersion(_protocolVersion), protocolVersionPtr(),
+                connectionPoolConfiguration(_connectionPoolConfiguration),
+                connectionTimeout(_connectionTimeout), forceReturnValue(_forceReturnValue),
+                keySizeEstimate(_keySizeEstimate), servers(_serversConfiguration),
+				failover_servers(_failoverServersConfiguration),
+                socketTimeout(_socketTimeout), sslConfiguration(_sslConfiguration),tcpNoDelay(_tcpNoDelay),
+                valueSizeEstimate(_valueSizeEstimate), maxRetries(_maxRetries), balancingStrategyProducer(bsp) {}
+
     /**
      * DEPRECATED. Use getProtocolVersionCString().
      * In the future, this should return either const char * or std::string
@@ -120,6 +141,16 @@ class Configuration
     }
 
     /**
+     * Returns the vector of the failover server configurations where each server configuration instance
+     * describes a HotRod server address and port.
+     *
+     *\return vector of server configurations
+     */
+    std::vector<ServerConfiguration> getFailoverServersConfiguration() const {
+        return failover_servers.std_vector();
+    }
+
+    /**
      * Returns socket timeout of underlying TCP connection(s)
      *
      *\return socket timeout in milliseconds
@@ -166,6 +197,7 @@ private:
     bool forceReturnValue;
     int keySizeEstimate;
     portable::vector<ServerConfiguration> servers;
+    portable::vector<ServerConfiguration> failover_servers;
     int socketTimeout;
     SslConfiguration sslConfiguration;
     bool tcpNoDelay;

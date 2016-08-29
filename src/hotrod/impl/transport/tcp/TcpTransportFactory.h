@@ -23,7 +23,7 @@ class InetSocketAddress;
 class TcpTransportFactory : public TransportFactory
 {
   public:
-    TcpTransportFactory(const Configuration& config) : configuration(config), maxRetries(config.getMaxRetries()) {};
+    TcpTransportFactory(const Configuration& config) : configuration(config), maxRetries(config.getMaxRetries()), onFailover(false) {};
     void start(protocol::Codec& codec, int defaultTopologyId);
     void destroy();
 
@@ -33,7 +33,8 @@ class TcpTransportFactory : public TransportFactory
     void releaseTransport(Transport& transport);
     void invalidateTransport(
         const InetSocketAddress& address, Transport* transport);
-
+    ClusterStatus switchOnFailoverCluster();
+    ClusterStatus switchOnMainCluster();
     bool isTcpNoDelay();
     int getMaxRetries();
     int getSoTimeout();
@@ -71,6 +72,7 @@ class TcpTransportFactory : public TransportFactory
     void pingServers();
     Transport& borrowTransportFromPool(const InetSocketAddress& server);
     ConnectionPool* getConnectionPool();
+    bool onFailover;
 };
 
 }}} // namespace infinispan::hotrod::transport

@@ -249,6 +249,20 @@ public:
 		return *rcache;
     }
 
+    /**
+     * Switch the client on the failover cluster
+     *
+     * \return ClusterStatus::SWITCHED or ClusterStatus::ALREADY_SWITCHED if already on failover cluster
+     */
+    ClusterStatus switchOnFailoverCluster();
+
+    /**
+     * Switch the client on the main cluster
+     *
+     * \return ClusterStatus::SWITCHED or ClusterStatus::ALREADY_SWITCHED if already on main cluster
+     */
+    ClusterStatus switchOnMainCluster();
+
 
 private:
     void *impl;

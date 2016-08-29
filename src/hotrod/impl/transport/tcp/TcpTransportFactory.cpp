@@ -89,6 +89,74 @@ void TcpTransportFactory::invalidateTransport(
     pool->invalidateObject(serverAddress, dynamic_cast<TcpTransport*>(transport));
 }
 
+ClusterStatus TcpTransportFactory::switchOnFailoverCluster()
+{
+	if (this->onFailover)
+		return ALREADY_SWITCHED;
+    auto configuredServers = configuration.getFailoverServersConfiguration();
+	if (configuredServers.size()==0)
+	{
+		return NOT_SWITCHED;
+	}
+	ScopedLock<Mutex> l(lock);
+	topologyAge = 0;
+    initialServers.clear();
+    for (auto iter = configuredServers.begin();
+        iter != configuredServers.end(); iter++)
+    {
+        initialServers.push_back(InetSocketAddress(iter->getHostCString(), iter->getPort()));
+    }
+
+    auto producerFn=configuration.getBalancingStrategy();
+    if (producerFn!= nullptr) {
+        balancer.reset((*producerFn)());
+    }
+    else
+    {
+        balancer.reset(RoundRobinBalancingStrategy::newInstance());
+    }
+    topologyInfo->updateServers(initialServers);
+
+    createAndPreparePool();
+
+    balancer->setServers(initialServers);
+    pingServers();
+    this->onFailover=true;
+    return SWITCHED;
+}
+
+ClusterStatus TcpTransportFactory::switchOnMainCluster()
+{
+	if (!this->onFailover)
+		return ALREADY_SWITCHED;
+	ScopedLock<Mutex> l(lock);
+	topologyAge = 0;
+    auto configuredServers = configuration.getServersConfiguration();
+    initialServers.clear();
+    for (auto iter = configuredServers.begin();
+        iter != configuredServers.end(); iter++)
+    {
+        initialServers.push_back(InetSocketAddress(iter->getHostCString(), iter->getPort()));
+    }
+
+    auto producerFn=configuration.getBalancingStrategy();
+    if (producerFn!= nullptr) {
+        balancer.reset((*producerFn)());
+    }
+    else
+    {
+        balancer.reset(RoundRobinBalancingStrategy::newInstance());
+    }
+    topologyInfo->updateServers(initialServers);
+
+    createAndPreparePool();
+
+    balancer->setServers(initialServers);
+    pingServers();
+    this->onFailover=false;
+    return SWITCHED;
+}
+
 bool TcpTransportFactory::isTcpNoDelay() {
     return configuration.isTcpNoDelay();
 }
@@ -144,7 +212,7 @@ void TcpTransportFactory::pingServers() {
             transportFactory->ping(*transport);
             connectionPool->returnObject(*iter, *transport);
         } catch (const Exception &e) {
-            TRACE("Initial ping has thrown an exception when pinging %s:%d : %s",
+            ERROR("Initial ping has thrown an exception when pinging %s:%d : %s",
                 iter->getHostname().c_str(), iter->getPort(), e.what());
             // Ping's objective is to retrieve a potentially newer
             // version of the Hot Rod cluster topology, so ignore
