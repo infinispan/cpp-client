@@ -16,7 +16,6 @@ namespace operations {
 class ExecuteCmdOperation : public RetryOnFailureOperation<std::vector<char> >
 {
 protected:
-    infinispan::hotrod::transport::Transport& getTransport(int retryCount);
     ExecuteCmdOperation(
             const infinispan::hotrod::protocol::Codec&       codec_,
             std::shared_ptr<transport::TransportFactory> transportFactory_,

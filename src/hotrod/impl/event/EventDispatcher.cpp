@@ -32,7 +32,7 @@ void EventDispatcher::stop()
 void EventDispatcher::run() {
 	  try {
 		while (1) {
-			uint64_t messageId;
+			//uint64_t messageId;
 			EventHeaderParams params = codec20.readEventHeader(transport);
 			if (!(HotRodConstants::isEvent(params.opCode))) {
 				// TODO handle error in some way

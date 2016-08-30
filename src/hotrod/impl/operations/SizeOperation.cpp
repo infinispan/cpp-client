@@ -17,11 +17,6 @@ SizeOperation::SizeOperation(
         codec_, transportFactory_, cacheName_, topologyId_, flags_)
 {}
 
-Transport& SizeOperation::getTransport(int /*retryCount*/)
-{
-        return RetryOnFailureOperation<uint64_t>::transportFactory->getTransport(cacheName);
-}
-
 uint64_t SizeOperation::executeOperation(infinispan::hotrod::transport::Transport& transport)
 {
     TRACE("Executing size(flags=%u)", flags);

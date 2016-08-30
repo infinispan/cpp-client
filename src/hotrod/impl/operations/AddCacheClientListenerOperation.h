@@ -36,7 +36,7 @@ public:
 							 cacheName(cacheName)
 							 {};
     virtual void releaseTransport(transport::Transport* transport);
-    virtual transport::Transport& getTransport(int retryCount);
+    virtual transport::Transport& getTransport(int retryCount, const std::set<transport::InetSocketAddress>& failedServers);
     transport::Transport& getDedicatedTransport();
 	virtual ~AddClientListenerOperation();
 	char executeOperation(transport::Transport& transport);

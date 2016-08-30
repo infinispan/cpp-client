@@ -17,11 +17,12 @@ template<class T> class RetryOnFailureOperation : public HotRodOperation<T>
   public:
     T execute() {
         int retryCount = 0;
+        std::set<transport::InetSocketAddress> failedServers;
         while (shouldRetry(retryCount)) {
             transport::Transport* transport = NULL;
             try {
                 // Transport retrieval should be retried
-                transport = &getTransport(retryCount);
+                transport = &getTransport(retryCount, failedServers);
                 const T& result = executeOperation(*transport);
                 releaseTransport(transport);
                 return result;
@@ -30,6 +31,7 @@ template<class T> class RetryOnFailureOperation : public HotRodOperation<T>
                 // instance is no longer usable and should be destroyed
                 //std::cout << "Transport: " << ((transport::TcpTransport*)transport)->getServerAddress().getPort() << std::endl;
             	transport::InetSocketAddress isa(te.getHostCString(),te.getPort());
+            	failedServers.insert(isa);
                 transportFactory->invalidateTransport(isa, transport);
                 logErrorAndThrowExceptionIfNeeded(retryCount, te);
             } catch (const RemoteNodeSuspectException& rnse) {
@@ -81,7 +83,11 @@ template<class T> class RetryOnFailureOperation : public HotRodOperation<T>
         }
     }
 
-    virtual transport::Transport& getTransport(int retryCount) = 0;
+    virtual transport::Transport& getTransport(int /*retryCount*/, const std::set<transport::InetSocketAddress>& failedServers)
+    {
+            return transportFactory->getTransport(this->cacheName, failedServers);
+    }
+
     virtual T executeOperation(transport::Transport& transport) = 0;
 
     virtual ~RetryOnFailureOperation() {}

@@ -41,9 +41,9 @@ void AddClientListenerOperation::releaseTransport(transport::Transport* )
 {
 }
 
-transport::Transport& AddClientListenerOperation::getTransport(int )
+transport::Transport& AddClientListenerOperation::getTransport(int, const std::set<transport::InetSocketAddress>& failedServers)
 {
-	dedicatedTransport= &(this->transportFactory->getTransport(this->cacheName));
+	dedicatedTransport= &(this->transportFactory->getTransport(this->cacheName, failedServers));
 	return *dedicatedTransport;
 }
 

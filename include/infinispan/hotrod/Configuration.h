@@ -36,28 +36,6 @@ class Configuration
     HR_EXTERN static const char* PROTOCOL_VERSION_23;
     HR_EXTERN static const char* PROTOCOL_VERSION_24;
 
-
-    Configuration(const std::string &_protocolVersion,
-            const ConnectionPoolConfiguration& _connectionPoolConfiguration,
-            int _connectionTimeout,
-            bool _forceReturnValue,
-            int _keySizeEstimate,
-            std::vector<ServerConfiguration> _serversConfiguration,
-            int _socketTimeout,
-            const SslConfiguration _sslConfiguration,
-            bool _tcpNoDelay,
-            int _valueSizeEstimate,
-            int _maxRetries,
-            FailOverRequestBalancingStrategy::ProducerFn bsp=0,
-			const event::EventMarshaller &eventMarshaller = event::JBasicEventMarshaller()):
-                protocolVersion(_protocolVersion), protocolVersionPtr(),
-                connectionPoolConfiguration(_connectionPoolConfiguration),
-                connectionTimeout(_connectionTimeout), forceReturnValue(_forceReturnValue),
-                keySizeEstimate(_keySizeEstimate), servers(_serversConfiguration),
-                socketTimeout(_socketTimeout), sslConfiguration(_sslConfiguration),tcpNoDelay(_tcpNoDelay),
-                valueSizeEstimate(_valueSizeEstimate), maxRetries(_maxRetries), balancingStrategyProducer(bsp),
-				eventMarshaller(eventMarshaller) {}
-
     Configuration(const std::string &_protocolVersion,
             const ConnectionPoolConfiguration& _connectionPoolConfiguration,
             int _connectionTimeout,
@@ -70,14 +48,16 @@ class Configuration
             bool _tcpNoDelay,
             int _valueSizeEstimate,
             int _maxRetries,
-            FailOverRequestBalancingStrategy::ProducerFn bsp=0):
+            FailOverRequestBalancingStrategy::ProducerFn bsp=0,
+            const event::EventMarshaller &eventMarshaller = event::JBasicEventMarshaller()):
                 protocolVersion(_protocolVersion), protocolVersionPtr(),
                 connectionPoolConfiguration(_connectionPoolConfiguration),
                 connectionTimeout(_connectionTimeout), forceReturnValue(_forceReturnValue),
                 keySizeEstimate(_keySizeEstimate), servers(_serversConfiguration),
-				failover_servers(_failoverServersConfiguration),
+                failover_servers(_failoverServersConfiguration),
                 socketTimeout(_socketTimeout), sslConfiguration(_sslConfiguration),tcpNoDelay(_tcpNoDelay),
-                valueSizeEstimate(_valueSizeEstimate), maxRetries(_maxRetries), balancingStrategyProducer(bsp) {}
+                valueSizeEstimate(_valueSizeEstimate), maxRetries(_maxRetries), balancingStrategyProducer(bsp),
+                eventMarshaller(eventMarshaller) {}
 
     /**
      * DEPRECATED. Use getProtocolVersionCString().

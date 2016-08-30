@@ -318,7 +318,7 @@ ClientCacheEntryCustomEvent Codec20::readCustomEvent(transport::Transport &trans
 	return e;
 }
 
-ClientCacheEntryExpiredEvent Codec20::processExpiredEvent(transport::Transport &transport) const
+ClientCacheEntryExpiredEvent Codec20::processExpiredEvent(transport::Transport& /*transport*/) const
 {
 	ClientCacheEntryExpiredEvent e;
 	return e;

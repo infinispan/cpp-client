@@ -29,10 +29,6 @@ public:
 					_queryRequest) {}
 	virtual ~QueryOperation();
 
-	transport::Transport& getTransport(int /*retryCount*/) {
-			return this->transportFactory->getTransport(this->cacheName);
-	}
-
 	QueryResponse executeOperation(transport::Transport &t) {
         std::unique_ptr<protocol::HeaderParams> params(
             &(this->writeHeader(t, QUERY_REQUEST)));
