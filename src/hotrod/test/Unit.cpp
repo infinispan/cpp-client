@@ -79,6 +79,13 @@ public:
 
     }
 
+    virtual bool targets(const InetSocketAddress& /*arg*/) const
+    {
+    	// Used for Failover event. No event in this test
+    	return false;
+    }
+
+
 protected:
     void writeBytes(const std::vector<char> &bytes) {
         UNUSED(bytes);

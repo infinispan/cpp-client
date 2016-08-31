@@ -31,6 +31,7 @@ public:
 	void removeClientListener(const std::vector<char> listenerId);
 	void startClientListener(const std::vector<char> listenerId);
 	static ClientListenerNotifier* create();
+	void failoverClientListeners(const std::vector<transport::InetSocketAddress>& failedServers);
 	void stop();
 protected:
 	ClientListenerNotifier();

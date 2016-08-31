@@ -34,6 +34,9 @@ public:
 	EventDispatcher(const std::vector<char> listenerId, const ClientListener& cl, std::vector<char> cacheName, Transport& t, const Codec20& codec20) : listenerId(listenerId), cl(cl), cacheName(cacheName), transport(t), codec20(codec20)
     {std::cout << "EventDispatcher()" << std::endl;}
 	virtual ~EventDispatcher() { std::cout << "~EventDispatcher()" << std::endl;};
+	const Transport& getTransport() {
+		return transport;
+	}
     void run();
     void start();
     void stop();

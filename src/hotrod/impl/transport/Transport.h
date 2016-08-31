@@ -9,6 +9,7 @@ namespace hotrod {
 namespace transport {
 
 class TransportFactory;
+class InetSocketAddress;
 
 class Transport
 {
@@ -35,6 +36,7 @@ class Transport
     virtual void invalidate() = 0;
 
     virtual TransportFactory& getTransportFactory() = 0;
+    virtual bool targets(const InetSocketAddress&) const = 0;
 
     virtual ~Transport() {}
 };

@@ -24,7 +24,7 @@ TransportFactory* TransportFactory::newInstance(const Configuration& configurati
 }
 
 void TcpTransportFactory::start(
-    Codec& codec, int defaultTopologyId)
+    Codec& codec, int defaultTopologyId, ClientListenerNotifier* listenerNotifier)
 {
 	ScopedLock<Mutex> l(lock);
 	topologyAge = 0;
@@ -51,6 +51,7 @@ void TcpTransportFactory::start(
 
     balancer->setServers(initialServers);
     pingServers();
+    this->listenerNotifier = listenerNotifier;
  }
 
 transport::Transport& TcpTransportFactory::getTransport(const std::vector<char>& /*cacheName*/, const std::set<transport::InetSocketAddress>& failedServers) {
@@ -115,13 +116,17 @@ ClusterStatus TcpTransportFactory::switchOnFailoverCluster()
     {
         balancer.reset(RoundRobinBalancingStrategy::newInstance());
     }
+
+    // Consider all the current server as failed
+    auto failedServers = topologyInfo->getServers();
+
     topologyInfo->updateServers(initialServers);
 
     createAndPreparePool();
-
     balancer->setServers(initialServers);
     pingServers();
     this->onFailover=true;
+    listenerNotifier->failoverClientListeners(failedServers);
     return SWITCHED;
 }
 

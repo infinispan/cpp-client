@@ -35,8 +35,11 @@ class TcpTransport : public AbstractTransport
     void release();
     void invalidate();
     void destroy();
-
-    const InetSocketAddress& getServerAddress();
+    virtual bool targets(const InetSocketAddress& arg) const
+    {
+    	return arg==getServerAddress();
+    }
+    const InetSocketAddress& getServerAddress() const;
 
   protected:
     TcpTransport(const InetSocketAddress& address, TransportFactory& factory, sys::Socket *sock);

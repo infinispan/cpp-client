@@ -24,7 +24,7 @@ class TcpTransportFactory : public TransportFactory
 {
   public:
     TcpTransportFactory(const Configuration& config) : configuration(config), maxRetries(config.getMaxRetries()), onFailover(false) {};
-    void start(protocol::Codec& codec, int defaultTopologyId);
+    void start(protocol::Codec& codec, int defaultTopologyId, ClientListenerNotifier* );
     void destroy();
 
     transport::Transport& getTransport(const std::vector<char>& cacheName, const std::set<transport::InetSocketAddress>& failedServers);
@@ -73,6 +73,7 @@ class TcpTransportFactory : public TransportFactory
     Transport& borrowTransportFromPool(const InetSocketAddress& server);
     ConnectionPool* getConnectionPool();
     bool onFailover;
+    ClientListenerNotifier* listenerNotifier;
 };
 
 }}} // namespace infinispan::hotrod::transport

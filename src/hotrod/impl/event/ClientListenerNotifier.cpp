@@ -7,6 +7,7 @@
 
 #include <hotrod/impl/event/ClientListenerNotifier.h>
 #include "hotrod/impl/event/EventDispatcher.h"
+#include "infinispan/hotrod/InetSocketAddress.h"
 #include <vector>
 
 
@@ -32,6 +33,19 @@ void ClientListenerNotifier::addClientListener(const std::vector<char> listenerI
 {
 	EventDispatcher ed(listenerId, clientListener, cacheName, t, codec20);
 	eventDispatchers.insert(std::make_pair(listenerId, ed));
+}
+
+void ClientListenerNotifier::failoverClientListeners(const std::vector<transport::InetSocketAddress>& failedServers)
+{
+	for (auto server: failedServers)
+	{
+		for (auto edPair : eventDispatchers)
+		{
+			if (edPair.second.getTransport().targets(server))
+			{
+			}
+		}
+	}
 }
 
 void ClientListenerNotifier::stop()

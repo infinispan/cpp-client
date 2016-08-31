@@ -123,7 +123,7 @@ bool TcpTransport::isValid(){
     return !invalid;
 }
 
-const InetSocketAddress& TcpTransport::getServerAddress() {
+const InetSocketAddress& TcpTransport::getServerAddress() const {
    return *serverAddress;
 }
 
