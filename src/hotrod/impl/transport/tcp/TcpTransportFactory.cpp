@@ -116,7 +116,6 @@ ClusterStatus TcpTransportFactory::switchOnFailoverCluster()
     {
         balancer.reset(RoundRobinBalancingStrategy::newInstance());
     }
-
     // Consider all the current server as failed
     auto failedServers = topologyInfo->getServers();
 
@@ -152,6 +151,9 @@ ClusterStatus TcpTransportFactory::switchOnMainCluster()
     {
         balancer.reset(RoundRobinBalancingStrategy::newInstance());
     }
+    // Consider all the current server as failed
+    auto failedServers = topologyInfo->getServers();
+
     topologyInfo->updateServers(initialServers);
 
     createAndPreparePool();
@@ -159,6 +161,7 @@ ClusterStatus TcpTransportFactory::switchOnMainCluster()
     balancer->setServers(initialServers);
     pingServers();
     this->onFailover=false;
+    listenerNotifier->failoverClientListeners(failedServers);
     return SWITCHED;
 }
 

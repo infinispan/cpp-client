@@ -31,8 +31,8 @@ template <class T> using X =  std::function<void(T)>;
 
 class EventDispatcher {
 public:
-	EventDispatcher(const std::vector<char> listenerId, const ClientListener& cl, std::vector<char> cacheName, Transport& t, const Codec20& codec20) : listenerId(listenerId), cl(cl), cacheName(cacheName), transport(t), codec20(codec20)
-    {std::cout << "EventDispatcher()" << std::endl;}
+	EventDispatcher(const std::vector<char> listenerId, const ClientListener& cl, std::vector<char> cacheName, Transport& t, const Codec20& codec20, void* addClientListenerOpPtr) : listenerId(listenerId), cl(cl), operationPtr(addClientListenerOpPtr), cacheName(cacheName), transport(t), codec20(codec20)
+    {}
 	virtual ~EventDispatcher() { std::cout << "~EventDispatcher()" << std::endl;};
 	const Transport& getTransport() {
 		return transport;
@@ -40,10 +40,11 @@ public:
     void run();
     void start();
     void stop();
-
-private:
 	const std::vector<char> listenerId;
 	const ClientListener& cl;
+	void* const operationPtr;
+
+private:
 	std::vector<char> cacheName;
 	Transport& transport;
 	const Codec20& codec20;

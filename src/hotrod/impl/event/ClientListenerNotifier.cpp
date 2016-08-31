@@ -8,8 +8,11 @@
 #include <hotrod/impl/event/ClientListenerNotifier.h>
 #include "hotrod/impl/event/EventDispatcher.h"
 #include "infinispan/hotrod/InetSocketAddress.h"
+#include "hotrod/impl/operations/AddCacheClientListenerOperation.h"
 #include <vector>
 
+
+using namespace infinispan::hotrod::operations;
 
 namespace infinispan {
 namespace hotrod {
@@ -29,9 +32,9 @@ ClientListenerNotifier* ClientListenerNotifier::create()
 	return new ClientListenerNotifier();
 }
 
-void ClientListenerNotifier::addClientListener(const std::vector<char> listenerId, const ClientListener& clientListener, const std::vector<char> cacheName, Transport& t, const Codec20& codec20)
+void ClientListenerNotifier::addClientListener(const std::vector<char> listenerId, const ClientListener& clientListener, const std::vector<char> cacheName, Transport& t, const Codec20& codec20, void* operationPtr)
 {
-	EventDispatcher ed(listenerId, clientListener, cacheName, t, codec20);
+	EventDispatcher ed(listenerId, clientListener, cacheName, t, codec20, operationPtr);
 	eventDispatchers.insert(std::make_pair(listenerId, ed));
 }
 
@@ -43,6 +46,11 @@ void ClientListenerNotifier::failoverClientListeners(const std::vector<transport
 		{
 			if (edPair.second.getTransport().targets(server))
 			{
+				removeClientListener(edPair.second.listenerId);
+				edPair.second.cl.processFailoverEvent();
+				auto op = (AddClientListenerOperation*)edPair.second.operationPtr;
+				// Add the listener to the failover servers
+				op->execute();
 			}
 		}
 	}

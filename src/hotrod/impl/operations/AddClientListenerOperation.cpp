@@ -58,7 +58,7 @@ char AddClientListenerOperation::executeOperation(transport::Transport& transpor
     const Codec20& codec20 = dynamic_cast<const Codec20&>(codec);
     codec20.writeClientListenerParams(transport, clientListener, filterFactoryParams, converterFactoryParams);
     transport.flush();
-    listenerNotifier.addClientListener(listenerId, clientListener, cacheName, transport, codec20);
+    listenerNotifier.addClientListener(listenerId, clientListener, cacheName, transport, codec20, (void*)this);
     bool readMore = true;
     uint64_t respMessageId = 0;
     do
