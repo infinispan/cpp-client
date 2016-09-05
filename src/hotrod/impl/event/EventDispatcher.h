@@ -31,9 +31,15 @@ template <class T> using X =  std::function<void(T)>;
 
 class EventDispatcher {
 public:
-	EventDispatcher(const std::vector<char> listenerId, const ClientListener& cl, std::vector<char> cacheName, Transport& t, const Codec20& codec20, void* addClientListenerOpPtr) : listenerId(listenerId), cl(cl), operationPtr(addClientListenerOpPtr), cacheName(cacheName), transport(t), codec20(codec20)
+	EventDispatcher(const std::vector<char> listenerId, const ClientListener& cl, std::vector<char> cacheName, Transport& t, const Codec20& codec20, void* addClientListenerOpPtr, const std::function<void()> &recoveryCallback) : listenerId(listenerId), cl(cl), operationPtr(addClientListenerOpPtr), cacheName(cacheName), transport(t), codec20(codec20), status(0), recoveryCallback(recoveryCallback)
     {}
-	virtual ~EventDispatcher() { std::cout << "~EventDispatcher()" << std::endl;};
+	virtual ~EventDispatcher() {
+		if (status!=99)
+			{
+			  // Thread is still running, try to close the transport below
+			  //transport.invalidate();
+			}
+	}
 	const Transport& getTransport() {
 		return transport;
 	}
@@ -49,6 +55,8 @@ private:
 	Transport& transport;
 	const Codec20& codec20;
 	std::shared_ptr<std::thread> p_thread;
+	int status;
+	const std::function<void()> &recoveryCallback;
 };
 
 } /* namespace event */

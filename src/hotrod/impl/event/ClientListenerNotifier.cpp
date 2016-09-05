@@ -32,9 +32,10 @@ ClientListenerNotifier* ClientListenerNotifier::create()
 	return new ClientListenerNotifier();
 }
 
-void ClientListenerNotifier::addClientListener(const std::vector<char> listenerId, const ClientListener& clientListener, const std::vector<char> cacheName, Transport& t, const Codec20& codec20, void* operationPtr)
+void ClientListenerNotifier::addClientListener(const std::vector<char> listenerId, const ClientListener& clientListener, const std::vector<char> cacheName, Transport& t, const Codec20& codec20, void* operationPtr, const std::function<void()> &recoveryCallback)
 {
-	EventDispatcher ed(listenerId, clientListener, cacheName, t, codec20, operationPtr);
+	std::cout << "ClientListenerNotifier::addClientListener(" << &t << ")"<< std::endl;
+	EventDispatcher ed(listenerId, clientListener, cacheName, t, codec20, operationPtr, recoveryCallback);
 	eventDispatchers.insert(std::make_pair(listenerId, ed));
 }
 
@@ -42,12 +43,12 @@ void ClientListenerNotifier::failoverClientListeners(const std::vector<transport
 {
 	for (auto server: failedServers)
 	{
-		for (auto edPair : eventDispatchers)
+		for (auto &edPair : eventDispatchers)
 		{
 			if (edPair.second.getTransport().targets(server))
 			{
-				removeClientListener(edPair.second.listenerId);
-				edPair.second.cl.processFailoverEvent();
+				//removeClientListener(edPair.second.listenerId);
+//				edPair.second.cl.processFailoverEvent();
 				auto op = (AddClientListenerOperation*)edPair.second.operationPtr;
 				// Add the listener to the failover servers
 				op->execute();

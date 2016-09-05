@@ -74,6 +74,7 @@ transport::Transport& TcpTransportFactory::getTransport(const std::vector<char>&
 }
 
 void TcpTransportFactory::releaseTransport(Transport& transport) {
+	std::cout << "releaseTransport(" << &transport << ")" << std::endl;
     ConnectionPool* pool = getConnectionPool();
     TcpTransport& tcpTransport = dynamic_cast<TcpTransport&>(transport);
     if (!tcpTransport.isValid()) {
@@ -92,6 +93,7 @@ void TcpTransportFactory::invalidateTransport(
 
 ClusterStatus TcpTransportFactory::switchOnFailoverCluster()
 {
+	std::cout << "switchOnFailoverCluster()" << std::endl;
 	if (this->onFailover)
 		return ALREADY_SWITCHED;
     auto configuredServers = configuration.getFailoverServersConfiguration();
@@ -99,6 +101,7 @@ ClusterStatus TcpTransportFactory::switchOnFailoverCluster()
 	{
 		return NOT_SWITCHED;
 	}
+	connectionPool->close();
 	ScopedLock<Mutex> l(lock);
 	topologyAge = 0;
     initialServers.clear();
@@ -125,7 +128,7 @@ ClusterStatus TcpTransportFactory::switchOnFailoverCluster()
     balancer->setServers(initialServers);
     pingServers();
     this->onFailover=true;
-    listenerNotifier->failoverClientListeners(failedServers);
+    //listenerNotifier->failoverClientListeners(failedServers);
     return SWITCHED;
 }
 
@@ -133,6 +136,7 @@ ClusterStatus TcpTransportFactory::switchOnMainCluster()
 {
 	if (!this->onFailover)
 		return ALREADY_SWITCHED;
+	connectionPool->close();
 	ScopedLock<Mutex> l(lock);
 	topologyAge = 0;
     auto configuredServers = configuration.getServersConfiguration();
@@ -161,7 +165,7 @@ ClusterStatus TcpTransportFactory::switchOnMainCluster()
     balancer->setServers(initialServers);
     pingServers();
     this->onFailover=false;
-    listenerNotifier->failoverClientListeners(failedServers);
+    //listenerNotifier->failoverClientListeners(failedServers);
     return SWITCHED;
 }
 

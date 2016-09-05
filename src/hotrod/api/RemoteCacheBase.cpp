@@ -161,9 +161,9 @@ CacheTopologyInfo RemoteCacheBase::base_getCacheTopologyInfo() {
 	return c;
 }
 
-void RemoteCacheBase::base_addClientListener(ClientListener& clientListener, const std::vector<std::vector<char> > filterFactoryParam, const std::vector<std::vector<char> > converterFactoryParams)
+void RemoteCacheBase::base_addClientListener(ClientListener& clientListener, const std::vector<std::vector<char> > filterFactoryParam, const std::vector<std::vector<char> > converterFactoryParams, const std::function<void()> &recoveryCallback)
 {
-	IMPL->addClientListener(clientListener, filterFactoryParam, converterFactoryParams);
+	IMPL->addClientListener(clientListener, filterFactoryParam, converterFactoryParams, recoveryCallback);
 }
 
 }

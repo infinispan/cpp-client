@@ -17,8 +17,11 @@ Socket::Socket(sys::Socket *_socket) :
     socket(_socket), inputStream(*socket), outputStream(*socket)
 {}
 
+Socket::Socket(const Socket& s) : socket(s.socket), inputStream(*socket), outputStream(*socket)
+{
+}
 Socket::~Socket() {
-    delete socket;
+	  std::cout << "Socket::~Socket("<<this << ")" << std::endl;
 }
 
 void Socket::connect(const std::string& host, int port, int timeout) {
@@ -27,6 +30,7 @@ void Socket::connect(const std::string& host, int port, int timeout) {
 
 void Socket::close() {
     socket->close();
+    socket.reset();
 }
 
 void Socket::setTcpNoDelay(bool tcpNoDelay) {

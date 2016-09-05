@@ -3,7 +3,7 @@
 
 #include <cstdint>
 #include <vector>
-
+#include <iostream>
 namespace infinispan {
 namespace hotrod {
 namespace transport {
@@ -33,12 +33,12 @@ class Transport
     virtual std::string readString() = 0;
 
     virtual void release() = 0;
-    virtual void invalidate() = 0;
+    virtual void setValid(bool valid) = 0;
 
     virtual TransportFactory& getTransportFactory() = 0;
     virtual bool targets(const InetSocketAddress&) const = 0;
-
-    virtual ~Transport() {}
+    virtual Transport* clone() = 0;
+    virtual ~Transport() { std::cout << " ~Transport(" << this << ")" << std::endl;}
 };
 
 }}} // namespace infinispan::hotrod::transport

@@ -216,6 +216,7 @@ void ConnectionPool::returnObject(const InetSocketAddress& key, TcpTransport& va
 
 void ConnectionPool::clear() {
     sys::ScopedLock<sys::Mutex> l(lock);
+    std::cout << "ConnectionPool::clear()" << std::endl;
     clear(idle);
     clear(busy);
     totalIdle = 0;
@@ -223,6 +224,7 @@ void ConnectionPool::clear() {
 }
 
 void ConnectionPool::clear(std::map<InetSocketAddress, TransportQueuePtr>& queue) {
+    std::cout << "ConnectionPool::clear(map, que)" << std::endl;
     for (std::map<InetSocketAddress, TransportQueuePtr>::iterator it = queue.begin(); it != queue.end(); ++it) {
         clear(it->first, it->second);
     }
@@ -231,6 +233,7 @@ void ConnectionPool::clear(std::map<InetSocketAddress, TransportQueuePtr>& queue
 
 void ConnectionPool::clear(const InetSocketAddress& key) {
     sys::ScopedLock<sys::Mutex> l(lock);
+    std::cout << "ConnectionPool::clear(sock)" << std::endl;
     TransportQueuePtr idleQ = idle[key];
     if (!idleQ)
     	return;
@@ -242,6 +245,7 @@ void ConnectionPool::clear(const InetSocketAddress& key) {
 void ConnectionPool::clear(const InetSocketAddress& key, TransportQueuePtr queue) {
 	if (!queue)
 		return;
+    std::cout << "ConnectionPool::clear(inet, que)" << std::endl;
     while (queue->size() > 0) {
         TcpTransport* transport = queue->pop();
         factory->destroyObject(key, *transport);

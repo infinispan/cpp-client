@@ -75,7 +75,7 @@ public:
 
     }
 
-    void invalidate() {
+    void setValid(bool valid) {
 
     }
 
@@ -85,6 +85,11 @@ public:
     	return false;
     }
 
+    virtual Transport* clone()
+    {
+    	// Used for Failover event. No event in this test
+    	return nullptr;
+    }
 
 protected:
     void writeBytes(const std::vector<char> &bytes) {

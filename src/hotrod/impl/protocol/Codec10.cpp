@@ -193,7 +193,7 @@ std::map<InetSocketAddress, std::set<int32_t> > Codec10::computeNewHashes(
                 // If error, the body of the message just contains a message
                 std::string msgFromServer = transport.readString();
                 if (invalidate) {
-                    transport.invalidate();
+                    transport.setValid(false);
                 }
                 if (msgFromServer.find("SuspectException") != std::string::npos ||
                     msgFromServer.find("SuspectedException") != std::string::npos) {

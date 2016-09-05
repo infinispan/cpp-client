@@ -30,14 +30,13 @@ public:
         std::vector<char> cacheName, Topology& topologyId, int flags,
         ClientListenerNotifier &listenerNotifier, const ClientListener& clientListener,
 		std::vector<std::vector<char> > filterFactoryParams,
-		std::vector<std::vector<char> > converterFactoryParams)
+		std::vector<std::vector<char> > converterFactoryParams, const std::function<void()> &recoveryCallback)
                            : RetryOnFailureOperation<char>(codec, transportFactory, cacheName, topologyId, flags), listenerNotifier(listenerNotifier),
 							 listenerId(generateV4UUID()), clientListener(clientListener), filterFactoryParams(filterFactoryParams), converterFactoryParams(converterFactoryParams),
-							 cacheName(cacheName)
+							 recoveryCallback(recoveryCallback), cacheName(cacheName)
 							 {};
     virtual void releaseTransport(transport::Transport* transport);
     virtual transport::Transport& getTransport(int retryCount, const std::set<transport::InetSocketAddress>& failedServers);
-    transport::Transport& getDedicatedTransport();
 	virtual ~AddClientListenerOperation();
 	char executeOperation(transport::Transport& transport);
     ClientListenerNotifier& listenerNotifier;
@@ -45,7 +44,7 @@ public:
     const ClientListener& clientListener;
     const std::vector<std::vector<char> > filterFactoryParams;
     const std::vector<std::vector<char> > converterFactoryParams;
-
+    const std::function<void()> &recoveryCallback;
 private:
     const std::vector<char> cacheName;
     std::vector<char> generateV4UUID();
