@@ -38,7 +38,6 @@ class Transport
     virtual TransportFactory& getTransportFactory() = 0;
     virtual bool targets(const InetSocketAddress&) const = 0;
     virtual Transport* clone() = 0;
-    virtual ~Transport() { std::cout << " ~Transport(" << this << ")" << std::endl;}
 };
 
 }}} // namespace infinispan::hotrod::transport

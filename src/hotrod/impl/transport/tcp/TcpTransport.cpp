@@ -114,7 +114,6 @@ void TcpTransport::release() {
 }
 
 void TcpTransport::destroy() {
-	std::cout << "TcpTransport::destroy("<< this << ")" << std::endl;
 	this->setValid(false);
     socket.close();
 }
@@ -134,7 +133,6 @@ void TcpTransport::setValid(bool valid)
 }
 Transport* TcpTransport::clone()
 {
-	std::cout << "TcpTransport::clone()" << std::endl;
 	return new TcpTransport(*this);
 }
 

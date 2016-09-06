@@ -20,9 +20,6 @@ Socket::Socket(sys::Socket *_socket) :
 Socket::Socket(const Socket& s) : socket(s.socket), inputStream(*socket), outputStream(*socket)
 {
 }
-Socket::~Socket() {
-	  std::cout << "Socket::~Socket("<<this << ")" << std::endl;
-}
 
 void Socket::connect(const std::string& host, int port, int timeout) {
     socket->connect(host, port, timeout);

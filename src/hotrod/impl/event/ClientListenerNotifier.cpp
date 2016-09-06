@@ -34,7 +34,6 @@ ClientListenerNotifier* ClientListenerNotifier::create()
 
 void ClientListenerNotifier::addClientListener(const std::vector<char> listenerId, const ClientListener& clientListener, const std::vector<char> cacheName, Transport& t, const Codec20& codec20, void* operationPtr, const std::function<void()> &recoveryCallback)
 {
-	std::cout << "ClientListenerNotifier::addClientListener(" << &t << ")"<< std::endl;
 	EventDispatcher ed(listenerId, clientListener, cacheName, t, codec20, operationPtr, recoveryCallback);
 	eventDispatchers.insert(std::make_pair(listenerId, ed));
 }

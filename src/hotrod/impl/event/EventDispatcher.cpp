@@ -37,13 +37,9 @@ void EventDispatcher::run() {
 		try {
 			while (1) {
 				//uint64_t messageId;
-				std::cout << "run(" << this << "); while" << std::endl;
 				status = 1;
-				std::cout << "reading(" << &transport << ")" << std::endl;
-				std::cout << "transport is valid = " << (dynamic_cast<TcpTransport&>(transport).isValid() ? 1 : 0) << std::endl;
 				EventHeaderParams params = codec20.readEventHeader(transport);
 				status = 2;
-				std::cout << "run(); read" << std::endl;
 				if (!(HotRodConstants::isEvent(params.opCode))) {
 					// TODO handle error in some way
 					break;
@@ -82,15 +78,11 @@ void EventDispatcher::run() {
 			}
 		} catch (TransportException& ex) {
 
-			std::cout << "EXCEPTION: " << ex.getErrnum() << " : " << ex.what() << std::endl;
 			if (ex.getErrnum() == EINTR) {
 				// count a retry
 				bool b = dynamic_cast<TcpTransport&>(transport).isValid();
 				if (retryCount++ <= 2 && b)
 					continue;
-			}
-			if (*ex.what() == 'r') {
-				std::cout << "r" << ex.what() << std::endl;
 			}
 			transport.setValid(false);
 

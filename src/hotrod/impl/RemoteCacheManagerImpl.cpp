@@ -120,7 +120,6 @@ RemoteCacheImpl *RemoteCacheManagerImpl::createRemoteCache(
     }
     catch (...)
     {
-        std::cout << "Deleting rcache" << std::endl;
         delete rcache;
         throw;
     }

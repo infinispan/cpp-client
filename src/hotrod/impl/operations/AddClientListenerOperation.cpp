@@ -16,11 +16,6 @@ namespace operations {
 
 
 
-AddClientListenerOperation::~AddClientListenerOperation() {
-	// TODO Auto-generated destructor stub
-	std::cout << "AddClientListenerOperation::~AddClientListenerOperation()" << std::endl;
-}
-
 /* This function generate an random ID that seems a V4 UUID
  * it's not an implementation of UUID v4
  */
@@ -41,7 +36,6 @@ std::vector<char> AddClientListenerOperation::generateV4UUID()
 
 void AddClientListenerOperation::releaseTransport(transport::Transport* )
 {
-	std::cout << "Do nothing" << std::endl;
 }
 
 transport::Transport& AddClientListenerOperation::getTransport(int, const std::set<transport::InetSocketAddress>& failedServers)
@@ -52,27 +46,22 @@ transport::Transport& AddClientListenerOperation::getTransport(int, const std::s
 
 char AddClientListenerOperation::executeOperation(transport::Transport& transport)
 {
-	std::cout << "AddClientListenerOperation::executeOperation("<< &transport << ")" << std::endl;
     protocol::HeaderParams params = this->writeHeader(transport, ADD_CLIENT_LISTENER_REQUEST);
     transport.writeArray(listenerId);
     const Codec20& codec20 = dynamic_cast<const Codec20&>(codec);
     codec20.writeClientListenerParams(transport, clientListener, filterFactoryParams, converterFactoryParams);
     transport.flush();
     listenerNotifier.addClientListener(listenerId, clientListener, cacheName, transport, codec20, (void*)this, recoveryCallback);
-    std::cout << ".";
     bool readMore = true;
     uint64_t respMessageId = 0;
     try
     {
     do
     {
-        std::cout << "*";
     	uint8_t respOpCode = codec20.readAddEventListenerResponseType(transport, respMessageId);
-        std::cout << ".";
     	// The response contains immediate event to process
     	if (isEvent(respOpCode))
     	{
-            std::cout << "+";
 		    std::vector<char> listId=codec20.readEventListenerId(transport);
 		    uint8_t isCustom = codec20.readEventIsCustomFlag(transport);
 		    uint8_t isRetried = codec20.readEventIsRetriedFlag(transport);
@@ -111,7 +100,6 @@ char AddClientListenerOperation::executeOperation(transport::Transport& transpor
     	}
         else
         {
-            std::cout << "-";
         	if (respMessageId != params.getMessageId() && respMessageId != 0) {
         	    std::ostringstream message;
         	    message << "Invalid message id. Expected " <<

@@ -37,7 +37,6 @@ public:
 							 {};
     virtual void releaseTransport(transport::Transport* transport);
     virtual transport::Transport& getTransport(int retryCount, const std::set<transport::InetSocketAddress>& failedServers);
-	virtual ~AddClientListenerOperation();
 	char executeOperation(transport::Transport& transport);
     ClientListenerNotifier& listenerNotifier;
 	const std::vector<char> listenerId;

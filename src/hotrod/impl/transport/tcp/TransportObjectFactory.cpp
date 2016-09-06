@@ -32,7 +32,6 @@ bool TransportObjectFactory::validateObject(const InetSocketAddress& /*address*/
 }
 
 void TransportObjectFactory::destroyObject(const InetSocketAddress& /*address*/, TcpTransport& transport) {
-    std::cout << "TransportObjectFactory::destroyObject()" << std::endl;
     transport.destroy();
     delete &transport;
 }

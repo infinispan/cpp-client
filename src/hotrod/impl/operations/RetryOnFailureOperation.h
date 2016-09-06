@@ -23,16 +23,12 @@ template<class T> class RetryOnFailureOperation : public HotRodOperation<T>
             try {
                 // Transport retrieval should be retried
                 transport = &getTransport(retryCount, failedServers);
-                std::cout << " exec("<< this <<")" << std::endl;
                 const T& result = executeOperation(*transport);
-                std::cout << " exec OK("<< this <<")" << std::endl;
                 releaseTransport(transport);
                 return result;
             } catch (const TransportException& te) {
-                std::cout << " exec NOT OK("<< this <<")" << std::endl;
                 // Invalidate transport since this exception means that this
                 // instance is no longer usable and should be destroyed
-                //std::cout << "Transport: " << ((transport::TcpTransport*)transport)->getServerAddress().getPort() << std::endl;
             	transport::InetSocketAddress isa(te.getHostCString(),te.getPort());
             	failedServers.insert(isa);
                 transportFactory->invalidateTransport(isa, transport);

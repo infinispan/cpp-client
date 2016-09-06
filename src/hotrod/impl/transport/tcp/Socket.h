@@ -46,7 +46,6 @@ class Socket
   public:
     Socket(sys::Socket *_socket);
     Socket(const Socket& s);
-    ~Socket();
     void connect(const std::string& host, int port, int timeout);
     void close();
     void setTcpNoDelay(bool tcpNoDelay);

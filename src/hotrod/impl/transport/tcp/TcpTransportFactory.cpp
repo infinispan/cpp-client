@@ -74,7 +74,6 @@ transport::Transport& TcpTransportFactory::getTransport(const std::vector<char>&
 }
 
 void TcpTransportFactory::releaseTransport(Transport& transport) {
-	std::cout << "releaseTransport(" << &transport << ")" << std::endl;
     ConnectionPool* pool = getConnectionPool();
     TcpTransport& tcpTransport = dynamic_cast<TcpTransport&>(transport);
     if (!tcpTransport.isValid()) {
@@ -93,7 +92,6 @@ void TcpTransportFactory::invalidateTransport(
 
 ClusterStatus TcpTransportFactory::switchOnFailoverCluster()
 {
-	std::cout << "switchOnFailoverCluster()" << std::endl;
 	if (this->onFailover)
 		return ALREADY_SWITCHED;
     auto configuredServers = configuration.getFailoverServersConfiguration();
