@@ -25,7 +25,8 @@ int main(int argc, char** argv) {
     }
     {
       ConfigurationBuilder builder;
-      builder.addServer().host("127.0.0.1").port(11222).protocolVersion(Configuration::PROTOCOL_VERSION_24);
+      builder.addServer().host("127.0.0.1").port(11222);
+      builder.protocolVersion(Configuration::PROTOCOL_VERSION_24);
       builder.ssl().enable().serverCAFile(argv[1]);
       if (argc > 2) {
           std::cout << "Using supplied client certificate" << std::endl;
@@ -54,7 +55,8 @@ int main(int argc, char** argv) {
     // in case of fail this test has no clean exit.
     {
       ConfigurationBuilder builder;
-      builder.addServer().host("127.0.0.1").port(11222).protocolVersion(Configuration::PROTOCOL_VERSION_24);
+      builder.addServer().host("127.0.0.1").port(11222);
+      builder.protocolVersion(Configuration::PROTOCOL_VERSION_24);
       RemoteCacheManager cacheManager(builder.build(), false);
       BasicMarshaller<std::string> *km = new BasicMarshaller<std::string>();
       BasicMarshaller<std::string> *vm = new BasicMarshaller<std::string>();
