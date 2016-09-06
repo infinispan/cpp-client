@@ -276,7 +276,6 @@ public class ConfigurationBuilder implements ConfigurationChildBuilder, Builder<
 
    @Override
    public void validate() {
-      this.jniConfigurationBuilder.connectionPool().validate();
       this.jniConfigurationBuilder.ssl().validate();
       asyncExecutorFactory.validate();
    }
@@ -311,7 +310,6 @@ public class ConfigurationBuilder implements ConfigurationChildBuilder, Builder<
       this.classLoader = new WeakReference<ClassLoader>(template.classLoader());
       this.asyncExecutorFactory.read(template.asyncExecutorFactory());
       this.balancingStrategy = template.balancingStrategy();
-      this.connectionPool.read(template.connectionPool());
       this.connectionTimeout(template.connectionTimeout());
       for (int i = 0; i < consistentHashImpl.length; i++) {
          this.consistentHashImpl[i] = template.consistentHashImpl()[i];

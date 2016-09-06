@@ -75,7 +75,6 @@ using namespace infinispan::hotrod;
 
 %include "infinispan/hotrod/InetSocketAddress.h"
 %include "infinispan/hotrod/FailOverRequestBalancingStrategy.h"
-%include "infinispan/hotrod/ConfigurationChildBuilder.h"
 %include "infinispan/hotrod/SslConfigurationBuilder.h"
 %include "infinispan/hotrod/ServerConfigurationBuilder.h"
 %include "infinispan/hotrod/ConnectionPoolConfigurationBuilder.h"

@@ -2,7 +2,6 @@
 #define SSLCONFIGURATIONBUILDER_H_
 
 #include "infinispan/hotrod/ImportExport.h"
-#include "ConfigurationChildBuilder.h"
 
 
 namespace infinispan {
@@ -10,22 +9,21 @@ namespace hotrod {
 
 
 class SslConfigurationBuilder
-  : public ConfigurationChildBuilder
 {
   public:
-    SslConfigurationBuilder(ConfigurationBuilder& builder): 
-        ConfigurationChildBuilder(builder), m_enabled(false), m_serverCAPath(), m_serverCAFile(), m_clientCertificateFile() {}
-    virtual SslConfiguration create() {
+    SslConfigurationBuilder():
+        m_enabled(false), m_serverCAPath(), m_serverCAFile(), m_clientCertificateFile() {}
+    SslConfiguration create() {
         return SslConfiguration(m_enabled, m_serverCAPath, m_serverCAFile, m_clientCertificateFile);
     }
-    virtual SslConfigurationBuilder& read(SslConfiguration& configuration) {
+    SslConfigurationBuilder& read(SslConfiguration& configuration) {
         m_enabled = configuration.enabled();
         m_serverCAPath = configuration.serverCAPath();
         m_serverCAFile = configuration.serverCAFile();
         m_clientCertificateFile = configuration.clientCertificateFile();
         return *this;
     }
-    virtual void validate() {};
+    void validate() {};
     
     /***
      * Enables SSL support

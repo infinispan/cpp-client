@@ -426,7 +426,8 @@ int main(int argc, char** argv) {
 	std::cout << "Tests for CacheManager" << std::endl;
     {
         ConfigurationBuilder builder;
-        builder.addServer().host(argc > 1 ? argv[1] : "127.0.0.1").port(argc > 2 ? atoi(argv[2]) : 11222).protocolVersion(Configuration::PROTOCOL_VERSION_24);
+        builder.addServer().host(argc > 1 ? argv[1] : "127.0.0.1").port(argc > 2 ? atoi(argv[2]) : 11222);
+        builder.protocolVersion(Configuration::PROTOCOL_VERSION_24);
 //        builder.balancingStrategyProducer(transport::MyRoundRobinBalancingStrategy::newInstance);
         builder.balancingStrategyProducer(nullptr);
         RemoteCacheManager cacheManager(builder.build(), false);
@@ -467,7 +468,8 @@ int main(int argc, char** argv) {
     std::cout << "Basic Test with BasicMarshaller" << std::endl;
     {
         ConfigurationBuilder builder;
-        builder.addServer().host(argc > 1 ? argv[1] : "127.0.0.1").port(argc > 2 ? atoi(argv[2]) : 11222).protocolVersion(Configuration::PROTOCOL_VERSION_24);
+        builder.addServer().host(argc > 1 ? argv[1] : "127.0.0.1").port(argc > 2 ? atoi(argv[2]) : 11222);
+        builder.protocolVersion(Configuration::PROTOCOL_VERSION_24);
 //        builder.balancingStrategyProducer(transport::MyRoundRobinBalancingStrategy::newInstance);
         builder.balancingStrategyProducer(nullptr);
         RemoteCacheManager cacheManager(builder.build(), false);
@@ -525,7 +527,8 @@ int main(int argc, char** argv) {
         ConfigurationBuilder builder;
         //        builder.balancingStrategyProducer(transport::MyRoundRobinBalancingStrategy::newInstance);
                 builder.balancingStrategyProducer(nullptr);
-        builder.addServer().host(argc > 1 ? argv[1] : "127.0.0.1").port(argc > 2 ? atoi(argv[2]) : 11222).protocolVersion(Configuration::PROTOCOL_VERSION_24);
+        builder.addServer().host(argc > 1 ? argv[1] : "127.0.0.1").port(argc > 2 ? atoi(argv[2]) : 11222);
+        builder.protocolVersion(Configuration::PROTOCOL_VERSION_24);
         RemoteCacheManager cacheManager(builder.build(), false);
         JBasicMarshaller<std::string> *km = new JBasicMarshaller<std::string>();
         JBasicMarshaller<std::string> *vm = new JBasicMarshaller<std::string>();
