@@ -85,14 +85,14 @@ static std::string addPreamble(std::string &s) {
 private:
 	static std::string addPreambleSmall(std::string& s) {
 		std::string res("\x03\x3e");
-		res.append(1, s.size());
+		res.append(1, (char)s.size());
 		res.append(s);
 		return res;
 	}
 	static std::string addPreambleMedium(std::string& s) {
 		std::string res("\x03\x3f");
-		res.append(1, s.size()>>8);
-		res.append(1, s.size()&& 0xff);
+		res.append(1, (char)(s.size()>>8));
+		res.append(1, (char)(s.size()&& 0xff));
 		res.append(s);
 		return res;
 	}
@@ -102,7 +102,7 @@ private:
 		// JBoss preamble
 		buf[0] = JBasicMarshallerHelper::MARSHALL_VERSION;
 			buf[1] = JBasicMarshallerHelper::SMALL_STRING;
-		buf[2] = s.size();
+		buf[2] = (char)s.size();
 		memcpy(buf + 3, s.data(), s.size());
 		b.assign(buf, buf + s.size() + 3);
 	}
@@ -111,7 +111,7 @@ private:
 		char* buf = new char[s.size() + 4];
 		// JBoss preamble
 		buf[1] = JBasicMarshallerHelper::MEDIUM_STRING;
-		buf[2] = s.size() >> 8;
+		buf[2] = (char)(s.size() >> 8);
 		buf[3] = s.size() & 0xff;
 
 		memcpy(buf + 4, s.data(), s.size());

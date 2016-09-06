@@ -461,6 +461,9 @@ target_include_directories(hotrod_protobuf PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/t
                                      "${PROTOBUF_INCLUDE_DIR}")
 
 configure_file(src/hotrod/impl/Version.cpp.in ${CMAKE_BINARY_DIR}/Version.cpp @ONLY)
+if (MSVC)
+    set_target_properties(hotrod_protobuf PROPERTIES COMPILE_FLAGS "/wd4244 /wd4267" )
+endif (MSVC) 
     
     # Build a shared library
     add_library (hotrod SHARED ${library_sources})
@@ -543,7 +546,11 @@ target_include_directories(queryTest PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/qu
                                      "${PROTOBUF_INCLUDE_DIR}")
 set_property(TARGET queryTest PROPERTY CXX_STANDARD 11)
 set_property(TARGET queryTest PROPERTY CXX_STANDARD_REQUIRED ON)
-set_target_properties (queryTest PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${NO_UNUSED_FLAGS}")
+if (MSVC)
+    set_target_properties (queryTest PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS} /wd4244 /wd4267")
+else (MSVC) 
+    set_target_properties (queryTest PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${NO_UNUSED_FLAGS}")
+endif (MSVC) 
 set_target_properties(queryTest PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}")
 target_link_libraries (queryTest hotrod hotrod_protobuf  ${PROTOBUF_LIBRARY} ${platform_libs})
 
@@ -553,10 +560,15 @@ target_include_directories(queryTest-static PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/
 	"${INCLUDE_FILES_DIR}/infinispan/hotrod"
                                      "${CMAKE_CURRENT_BINARY_DIR}"
                                      "${PROTOBUF_INCLUDE_DIR}")
+
 set_property(TARGET queryTest-static PROPERTY CXX_STANDARD 11)
 set_property(TARGET queryTest-static PROPERTY CXX_STANDARD_REQUIRED ON)
 set_target_properties(queryTest-static PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}" )
+if (MSVC)
+set_target_properties (queryTest-static PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS} ${STATIC_FLAGS} /wd4244 /wd4267")
+else (MSVC) 
 set_target_properties (queryTest-static PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${STATIC_FLAGS} ${NO_UNUSED_FLAGS}")
+endif (MSVC) 
 target_link_libraries (queryTest-static hotrod-static hotrod_protobuf ${PROTOBUF_LIBRARY} ${OPENSSL_LIBRARIES} ${platform_libs})
 
 add_executable (simple-tls test/SimpleTLS.cpp)

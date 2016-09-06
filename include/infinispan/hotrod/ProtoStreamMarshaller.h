@@ -6,7 +6,14 @@
 #include <iostream>
 #include "infinispan/hotrod/Marshaller.h"
 #include "infinispan/hotrod/exceptions.h"
+#if _MSC_VER
+#pragma warning(push)
+#pragma warning(disable:4267 4244)
+#endif
 #include "message-wrapping.pb.h"
+#if _MSC_VER
+#pragma warning(pop)
+#endif
 
 using namespace org::infinispan::protostream;
 
