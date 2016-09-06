@@ -55,9 +55,16 @@ class HR_EXTERN SslConfiguration
 
   private:
     bool m_enabled;
+#if _MSC_VER
+#pragma warning(push)
+#pragma warning(disable:4251)
+#endif
     std::string m_serverCAPath;
     std::string m_serverCAFile;
     std::string m_clientCertificateFile;
+#if _MSC_VER
+#pragma warning(pop)
+#endif
 };
 
 }}

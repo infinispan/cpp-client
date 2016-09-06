@@ -11,7 +11,14 @@
 #include "infinispan/hotrod/VersionedValue.h"
 #include "infinispan/hotrod/Version.h"
 #include "infinispan/hotrod/exceptions.h"
+#if _MSC_VER
+#pragma warning(push)
+#pragma warning(disable:4267 4244)
+#endif
 #include "query.pb.h"
+#if _MSC_VER
+#pragma warning(pop)
+#endif
 
 #include <cmath>
 #include <set>

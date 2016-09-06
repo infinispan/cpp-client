@@ -9,7 +9,14 @@
 #define SRC_HOTROD_IMPL_OPERATIONS_QUERYOPERATION_H_
 
 #include "hotrod/impl/operations/RetryOnFailureOperation.h"
+#if _MSC_VER
+#pragma warning(push)
+#pragma warning(disable:4267 4244)
+#endif
 #include "query.pb.h"
+#if _MSC_VER
+#pragma warning(pop)
+#endif
 #include <memory>
 namespace infinispan {
 namespace hotrod {
@@ -51,7 +58,7 @@ public:
     QueryResponse qr;
     if (status == NO_ERROR_STATUS) {
 			std::vector<char> responseBytes = t.readArray();
-			qr.ParseFromArray(responseBytes.data(), responseBytes.size());
+			qr.ParseFromArray(responseBytes.data(), (int)responseBytes.size());
 		}
 	return qr;
  }

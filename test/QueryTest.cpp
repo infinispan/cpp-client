@@ -12,7 +12,14 @@
 #include "infinispan/hotrod/RemoteCacheManager.h"
 #include "infinispan/hotrod/RemoteCache.h"
 #include "infinispan/hotrod/Version.h"
+#if _MSC_VER
+#pragma warning(push)
+#pragma warning(disable:4267 4244)
+#endif
 #include "query.pb.h"
+#if _MSC_VER
+#pragma warning(pop)
+#endif
 #include "infinispan/hotrod/QueryUtils.h"
 #include <vector>
 #include <tuple>

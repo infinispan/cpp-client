@@ -6,14 +6,13 @@
 namespace infinispan {
 namespace hotrod {
     class TimeUnitParam {
-        static TimeUnit encodeDuration(long duration, TimeUnit timeUnit) {
+        static TimeUnit encodeDuration(uint64_t duration, TimeUnit timeUnit) {
             if (duration == 0) return DEFAULT;
-            if (duration < 0) return INFINITUM;
             return timeUnit;
         }
 
     public:
-        static char encodeTimeUnits(long lifespan, TimeUnit lifespanTimeUnit, long maxIdle, TimeUnit maxIdleTimeUnit) {
+        static char encodeTimeUnits(uint64_t lifespan, TimeUnit lifespanTimeUnit, uint64_t maxIdle, TimeUnit maxIdleTimeUnit) {
             char encodedLifespan = static_cast<char>(encodeDuration(lifespan, lifespanTimeUnit));
             char encodedMaxIdle = static_cast<char>(encodeDuration(maxIdle, maxIdleTimeUnit));
             return encodedLifespan << 4 | encodedMaxIdle;

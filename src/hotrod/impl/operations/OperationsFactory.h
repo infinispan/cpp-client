@@ -6,7 +6,14 @@
 
 #include <set>
 #include <infinispan/hotrod/portable.h>
+#if _MSC_VER
+#pragma warning(push)
+#pragma warning(disable:4267 4244)
+#endif
 #include <query.pb.h>
+#if _MSC_VER
+#pragma warning(pop)
+#endif
 
 using namespace org::infinispan::query::remote::client;
 
