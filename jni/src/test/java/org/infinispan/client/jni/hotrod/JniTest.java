@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.infinispan.client.hotrod.*;
+import org.infinispan.client.hotrod.xsite.SiteDownFailoverTest;
 import org.testng.IMethodSelector;
 import org.testng.IMethodSelectorContext;
 import org.testng.ITestNGMethod;
@@ -75,7 +76,8 @@ public class JniTest implements IMethodSelector {
             SocketTimeoutErrorTest.class,
             SegmentOwnershipLocalTest.class,
             SegmentOwnershipDistTest.class,
-            ServerShutdownTest.class
+            ServerShutdownTest.class,
+            SiteDownFailoverTest.class
             // SslTest.class,                        // SSL not implemented
             // TransportObjectFactoryTest.class,     // omitting
       });
@@ -96,9 +98,7 @@ public class JniTest implements IMethodSelector {
             "ForceReturnValuesTest.testDifferentInstancesForDifferentForceReturnValues",
             "ForceReturnValuesTest.testSameInstanceForSameForceReturnValues",
             "HotRodIntegrationTest.testGetWithMetadata",
-            "RemoteCacheManagerTest.testGetUndefinedCache",
-            "ServerShutdownTest.testServerShutdownWithConnectedClient",
-            "ServerShutdownTest.testServerShutdownWithoutConnectedClient"
+            "RemoteCacheManagerTest.testGetUndefinedCache"
       ));
       Set<String> expectedSkips = Collections.emptySet();
 

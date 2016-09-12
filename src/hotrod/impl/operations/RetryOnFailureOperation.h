@@ -28,6 +28,7 @@ template<class T> class RetryOnFailureOperation : public HotRodOperation<T>
             } catch (const TransportException& te) {
                 // Invalidate transport since this exception means that this
                 // instance is no longer usable and should be destroyed
+                //std::cout << "Transport: " << ((transport::TcpTransport*)transport)->getServerAddress().getPort() << std::endl;
             	transport::InetSocketAddress isa(te.getHostCString(),te.getPort());
                 transportFactory->invalidateTransport(isa, transport);
                 logErrorAndThrowExceptionIfNeeded(retryCount, te);
@@ -62,17 +63,21 @@ template<class T> class RetryOnFailureOperation : public HotRodOperation<T>
         }
     }
 
-    void logErrorAndThrowExceptionIfNeeded(int i, const HotRodClientException& e) {
-        if (i >= transportFactory->getMaxRetries() - 1
-            || transportFactory->getMaxRetries() < 0) {
-            ERROR("Exception encountered, retry %d of %d: %s",
-                i, transportFactory->getMaxRetries(), e.what());
-            throw; // Rethrow. The exception is rethrown as const!
-        } else {
-            TRACE("Exception encountered, retry %d of %d: %s",
-                i, transportFactory->getMaxRetries(), e.what());
-        }
-    }
+	void logErrorAndThrowExceptionIfNeeded(int& retryCount,
+			const HotRodClientException& e) {
+		if (retryCount >= transportFactory->getMaxRetries() - 1) {
+			if (transportFactory->clusterSwitch() == ClusterStatus::SWITCHED) {
+				retryCount = 0; // reset retry counter
+			} else {
+				ERROR("Exception encountered, retry %d of %d: %s", retryCount,
+						transportFactory->getMaxRetries(), e.what());
+				throw; // Rethrow. The exception is rethrown as const!
+			}
+		} else {
+			TRACE("Exception encountered, retry %d of %d: %s", retryCount,
+					transportFactory->getMaxRetries(), e.what());
+		}
+	}
 
     virtual transport::Transport& getTransport(int retryCount) = 0;
     virtual T executeOperation(transport::Transport& transport) = 0;

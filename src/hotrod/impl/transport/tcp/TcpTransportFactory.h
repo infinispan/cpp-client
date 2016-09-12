@@ -33,7 +33,8 @@ class TcpTransportFactory : public TransportFactory
     void releaseTransport(Transport& transport);
     void invalidateTransport(
         const InetSocketAddress& address, Transport* transport);
-
+    ClusterStatus clusterSwitch();
+    ClusterStatus clusterSwitch(std::string clusterName);
     bool isTcpNoDelay();
     int getMaxRetries();
     int getSoTimeout();
@@ -66,11 +67,14 @@ class TcpTransportFactory : public TransportFactory
     std::shared_ptr<TransportObjectFactory> transportFactory;
     std::shared_ptr<ConnectionPool> connectionPool;
     std::shared_ptr<FailOverRequestBalancingStrategy> balancer;
+    std::string currCluster;
     void createAndPreparePool();
     void updateTransportCount();
     void pingServers();
     Transport& borrowTransportFromPool(const InetSocketAddress& server);
     ConnectionPool* getConnectionPool();
+    std::vector<ServerConfiguration> getNextWorkingServersConfiguration();
+    void pingExternalServer(InetSocketAddress s);
 };
 
 }}} // namespace infinispan::hotrod::transport

@@ -178,6 +178,9 @@ class RelayBytes {
 %template(StringVectorReturn) std::vector<std::string>;
 %template(IntegerVectorReturn) std::vector<int>;
 %template(InetSocketAddressvectorReturn) std::vector<infinispan::hotrod::transport::InetSocketAddress>;
+%template(ServerConfigurationBuilderVector) std::vector<infinispan::hotrod::ServerConfigurationBuilder>;
+%template(ServerConfigurationVector) std::vector<infinispan::hotrod::ServerConfiguration>;
+%template(ServerConfigurationMap) std::map<std::string,std::vector<infinispan::hotrod::ServerConfiguration> >;
 
 %inline %{
  bool isNull(std::shared_ptr<RelayBytes> ptr) {

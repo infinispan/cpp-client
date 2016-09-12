@@ -1,7 +1,5 @@
 package org.infinispan.client.hotrod.configuration;
 
-import org.infinispan.commons.configuration.Builder;
-
 /**
  * ServerConfigurationBuilder.
  *
@@ -12,9 +10,9 @@ public class ServerConfigurationBuilder extends AbstractConfigurationChildBuilde
    
    private org.infinispan.client.hotrod.jni.ServerConfigurationBuilder jniServerConfigurationBuilder;
 
-   ServerConfigurationBuilder(ConfigurationBuilder builder) {
+   ServerConfigurationBuilder(ConfigurationBuilder builder, org.infinispan.client.hotrod.jni.ServerConfigurationBuilder scb) {
       super(builder);
-      jniServerConfigurationBuilder = builder.getJniConfigurationBuilder().addServer();
+      jniServerConfigurationBuilder = scb;
    }
 
    public ServerConfigurationBuilder host(String host) {

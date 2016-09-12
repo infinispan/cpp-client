@@ -94,6 +94,11 @@ public:
         if (m_dynamic != 0) delete[] m_dynamic;
     }
 
+	inline bool operator<(const string &str) const {
+		return strncmp(this->c_string(), str.c_string(),
+				this->m_length < str.m_length ? this->m_length : str.m_length);
+	}
+
     inline string &operator=(const std::string &str)
     {
         if (m_dynamic != 0) delete[] m_dynamic;

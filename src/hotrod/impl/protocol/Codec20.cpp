@@ -151,9 +151,18 @@ void Codec20::readNewTopologyAndHash(Transport& transport, HeaderParams& params)
     }
 
     TransportFactory &tf = transport.getTransportFactory();
-    int currentTopology = tf.getTopologyId(params.cacheName);
+    bool noTopologyInfo=false;
+    int currentTopology = 0;
+    try
+    {
+      currentTopology = tf.getTopologyId(params.cacheName);
+    }
+    catch (std::exception &e)
+    {
+    	noTopologyInfo=true;
+    }
     int topologyAge = tf.getTopologyAge();
-    if (params.topologyAge == topologyAge && currentTopology != newTopologyId) {
+    if (noTopologyInfo || (params.topologyAge == topologyAge && currentTopology != newTopologyId)) {
        params.topologyId = newTopologyId;
        tf.updateServers(addresses);
        if (hashFunctionVersion == 0) {

@@ -29,10 +29,7 @@ public:
 
     const std::string &getHost() const
     {
-        if (hostPtr.get() == NULL) {
-            const_cast<ServerConfiguration *>(this)->hostPtr.set(new std::string(host.c_string()), &deleteString);
-        }
-        return *hostPtr.get();
+        return host;
     }
 	/**
 	 * Returns host of this ServerConfiguration
@@ -41,7 +38,7 @@ public:
 	 */
     const char *getHostCString() const
     {
-        return host.c_string();
+        return host.data();
     }
 
     /**
@@ -55,9 +52,8 @@ public:
     }
 
 private:
-    portable::string host;
+    std::string host;
     __pragma(warning(suppress:4251))
-    portable::local_ptr<std::string> hostPtr;
     int port;
 
     static void deleteString(std::string *str) { delete str; }
