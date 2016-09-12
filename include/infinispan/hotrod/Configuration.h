@@ -33,6 +33,8 @@ class Configuration
     HR_EXTERN static const char* PROTOCOL_VERSION_22;
     HR_EXTERN static const char* PROTOCOL_VERSION_23;
     HR_EXTERN static const char* PROTOCOL_VERSION_24;
+	HR_EXTERN static const char* DEFAULT_CLUSTER_NAME;
+
 
 
     Configuration(const std::string &_protocolVersion,
@@ -40,7 +42,7 @@ class Configuration
             int _connectionTimeout,
             bool _forceReturnValue,
             int _keySizeEstimate,
-            std::vector<ServerConfiguration> _serversConfiguration,
+            std::map<std::string,std::vector<ServerConfiguration> > _serversConfiguration,
             int _socketTimeout,
             const SslConfiguration _sslConfiguration,
             bool _tcpNoDelay,
@@ -50,9 +52,17 @@ class Configuration
                 protocolVersion(_protocolVersion), protocolVersionPtr(),
                 connectionPoolConfiguration(_connectionPoolConfiguration),
                 connectionTimeout(_connectionTimeout), forceReturnValue(_forceReturnValue),
-                keySizeEstimate(_keySizeEstimate), servers(_serversConfiguration),
+                keySizeEstimate(_keySizeEstimate),
                 socketTimeout(_socketTimeout), sslConfiguration(_sslConfiguration),tcpNoDelay(_tcpNoDelay),
-                valueSizeEstimate(_valueSizeEstimate), maxRetries(_maxRetries), balancingStrategyProducer(bsp) {}
+                valueSizeEstimate(_valueSizeEstimate), maxRetries(_maxRetries), balancingStrategyProducer(bsp)
+    {
+       std::map<portable::string, portable::vector<ServerConfiguration>> tmpMap;
+       for(auto pair : _serversConfiguration)
+       {
+    	   tmpMap.insert(std::make_pair(portable::string(pair.first), portable::vector<ServerConfiguration>(pair.second)));
+       }
+       serversMap=tmpMap;
+    }
 
     /**
      * DEPRECATED. Use getProtocolVersionCString().
@@ -106,13 +116,18 @@ class Configuration
     HR_EXTERN const int& getKeySizeEstimate() const;
 
     /**
-     * Returns the vector of server configurations where each server configuration instance
+     * Returns the vector of the failover server configurations where each server configuration instance
      * describes a HotRod server address and port.
      *
      *\return vector of server configurations
      */
-    std::vector<ServerConfiguration> getServersConfiguration() const {
-        return servers.std_vector();
+    std::map<std::string, std::vector<ServerConfiguration> > getServersMapConfiguration() const {
+    	std::map<std::string, std::vector<ServerConfiguration> > temp;
+    	for (auto pair : serversMap.std_map())
+    	{
+    	  temp.insert(make_pair(pair.first.std_string(), pair.second.std_vector()));
+    	}
+        return temp;
     }
 
     /**
@@ -159,7 +174,7 @@ private:
     int connectionTimeout;
     bool forceReturnValue;
     int keySizeEstimate;
-    portable::vector<ServerConfiguration> servers;
+    portable::map<portable::string,portable::vector<ServerConfiguration> > serversMap;
     int socketTimeout;
     SslConfiguration sslConfiguration;
     bool tcpNoDelay;

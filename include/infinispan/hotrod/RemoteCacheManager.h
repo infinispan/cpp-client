@@ -249,6 +249,21 @@ public:
 		return *rcache;
     }
 
+    /**
+     * Switch the client on the main cluster
+     *
+     * \return ClusterStatus::SWITCHED or ClusterStatus::NOT_SWITCHED if no fully working
+     * cluster is available
+     */
+    ClusterStatus clusterSwitch();
+
+    /**
+     * Switch the client on the main cluster
+     *
+     * \return ClusterStatus::SWITCHED or ClusterStatus::NOT_SWITCHED if the named cluster
+     * doesn't exists
+     */
+    ClusterStatus clusterSwitch(std::string clusterName);
 
 private:
     void *impl;

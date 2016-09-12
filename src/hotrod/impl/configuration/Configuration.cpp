@@ -12,6 +12,8 @@ const char* Configuration::PROTOCOL_VERSION_21 = "2.1";
 const char* Configuration::PROTOCOL_VERSION_22 = "2.2";
 const char* Configuration::PROTOCOL_VERSION_23 = "2.3";
 const char* Configuration::PROTOCOL_VERSION_24 = "2.4";
+const char* Configuration::DEFAULT_CLUSTER_NAME = "DEFAULT_CLUSTER_NAME";
+
 
 
 const char *Configuration::getProtocolVersionCString() const

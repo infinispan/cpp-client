@@ -11,6 +11,8 @@ enum Flag
   DEFAULT_MAXIDLE    = 0x04
 };
 
+enum ClusterStatus { SWITCHED, NOT_SWITCHED, ALREADY_SWITCHED };
+
 }} // namespace
 
 #endif /* ISPN_HOTROD_FLAG_H */

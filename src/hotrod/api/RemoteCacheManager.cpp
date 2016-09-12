@@ -57,4 +57,13 @@ const Configuration& RemoteCacheManager::getConfiguration() {
     return IMPL->getConfiguration();
 }
 
+ClusterStatus RemoteCacheManager::clusterSwitch()
+{
+  return IMPL->clusterSwitch();
+}
+ClusterStatus RemoteCacheManager::clusterSwitch(std::string clusterName)
+{
+	return IMPL->clusterSwitch(clusterName);
+}
+
 }} // namespace infinispan::hotrod
