@@ -20,6 +20,13 @@ namespace operations {
 
 namespace infinispan {
 namespace hotrod {
+namespace operations {
+	class AddClientListenerOperation;
+}}}
+
+
+namespace infinispan {
+namespace hotrod {
 namespace event {
 
 using  namespace infinispan::hotrod::operations;

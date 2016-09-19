@@ -26,6 +26,7 @@ public:
 	virtual ~EventMarshaller() {};
 };
 
+
 }}}
 
 
