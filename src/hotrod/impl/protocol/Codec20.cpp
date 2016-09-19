@@ -19,6 +19,7 @@ namespace infinispan {
 namespace hotrod {
 
 using transport::Transport;
+using event::EventHeaderParams;
 using transport::InetSocketAddress;
 using transport::TransportFactory;
 using infinispan::hotrod::sys::Mutex;
@@ -59,6 +60,36 @@ HeaderParams& Codec20::writeHeader(
     return params;
 }
 
+EventHeaderParams Codec20::readEventHeader(Transport& transport) const
+{
+	EventHeaderParams params;
+    params.magic = transport.readByte();
+    if (params.magic != HotRodConstants::RESPONSE_MAGIC) {
+        std::ostringstream message;
+        message << std::hex << std::setfill('0');
+        message << "Invalid magic number. Expected 0x" << std::setw(2) << static_cast<unsigned>(HotRodConstants::RESPONSE_MAGIC) << " and received 0x" << std::setw(2) << static_cast<unsigned>(params.magic);
+        throw InvalidResponseException(message.str());
+    }
+
+    params.messageId = transport.readVLong();
+    params.opCode = transport.readByte();
+    params.status = transport.readByte();
+    // No topology change in events, discard the byte
+    transport.readByte();
+
+    // Now that all headers values have been read, check the error responses.
+    // This avoids situations where an exceptional return ends up with
+    // the socket containing data from previous request responses.
+      if (params.opCode == HotRodConstants::ERROR_RESPONSE) {
+        checkForErrorsInResponseStatus(transport, params.messageId, params.status);
+        std::ostringstream message;
+        message << "Invalid response operation. Expected " << std::hex <<
+            (int) params.opCode << " and received " << std::hex << (int) params.opCode;
+        throw InvalidResponseException(message.str());
+      }
+    return params;
+}
+
 uint8_t Codec20::readHeader(
     Transport& transport, HeaderParams& params) const
 {
@@ -93,7 +124,7 @@ uint8_t Codec20::readHeader(
     // the socket containing data from previous request responses.
     if (receivedOpCode != params.opRespCode) {
       if (receivedOpCode == HotRodConstants::ERROR_RESPONSE) {
-        checkForErrorsInResponseStatus(transport, params, status);
+        checkForErrorsInResponseStatus(transport, params.messageId, status);
         }
         std::ostringstream message;
         message << "Invalid response operation. Expected " << std::hex <<
@@ -178,7 +209,7 @@ void Codec20::readNewTopologyAndHash(Transport& transport, HeaderParams& params)
     }
 }
 
-void Codec20::checkForErrorsInResponseStatus(Transport& transport, HeaderParams& params, uint8_t status) const {
+void Codec20::checkForErrorsInResponseStatus(Transport& transport, uint64_t messageId, uint8_t status) const {
     try {
         switch (status) {
         case HotRodConstants::INVALID_MAGIC_OR_MESSAGE_ID_STATUS:
@@ -192,7 +223,7 @@ void Codec20::checkForErrorsInResponseStatus(Transport& transport, HeaderParams&
             if (msgFromServer.find("SuspectException") != std::string::npos || msgFromServer.find("SuspectedException") != std::string::npos) {
                 // Handle both Infinispan's and JGroups' suspicions
                 // TODO: This will be better handled with its own status id in version 2 of protocol
-                throw RemoteNodeSuspectException(msgFromServer, params.messageId, status);
+                throw RemoteNodeSuspectException(msgFromServer, messageId, status);
             } else {
                 throw HotRodClientException(msgFromServer); //, params.messageId, status);
             }
@@ -236,12 +267,12 @@ void Codec20::writeExpirationParams(transport::Transport& t,uint64_t lifespan, u
     t.writeVInt(mInt);
 }
 
-void Codec20::writeClientListenerParams(transport::Transport& t, const ClientListener *clientListener,
+void Codec20::writeClientListenerParams(transport::Transport& t, const ClientListener& clientListener,
 		const std::vector<std::vector<char> > &filterFactoryParams, const std::vector<std::vector<char> > &converterFactoryParams) const
 {
-    t.writeByte((short)(clientListener->includeCurrentState ? 1 : 0));
-    this->writeNamedFactory(t,clientListener->filterFactoryName, filterFactoryParams);
-    this->writeNamedFactory(t, clientListener->converterFactoryName, converterFactoryParams);
+    t.writeByte((short)(clientListener.includeCurrentState ? 1 : 0));
+    this->writeNamedFactory(t,clientListener.filterFactoryName, filterFactoryParams);
+    this->writeNamedFactory(t, clientListener.converterFactoryName, converterFactoryParams);
 }
 
 void Codec20::writeNamedFactory(transport::Transport &t, const std::vector<char> &factoryName, const std::vector<std::vector<char> > & params) const
@@ -259,7 +290,7 @@ void Codec20::writeNamedFactory(transport::Transport &t, const std::vector<char>
    }
 }
 
-char Codec20::getAddEventListenerResponseType(transport::Transport &transport, uint64_t &messageId) const
+char Codec20::readAddEventListenerResponseType(transport::Transport &transport, uint64_t &messageId) const
 {
     uint8_t magic = transport.readByte();
     if (magic != HotRodConstants::RESPONSE_MAGIC) {
@@ -273,6 +304,45 @@ char Codec20::getAddEventListenerResponseType(transport::Transport &transport, u
     messageId=receivedMessageId;
     return receivedOpCode;
 }
+
+std::vector<char> Codec20::readEventListenerId(transport::Transport &transport) const
+{
+    return transport.readArray();
+}
+
+uint8_t Codec20::readEventIsCustomFlag(transport::Transport &transport) const
+{
+    return transport.readByte();
+}
+
+uint8_t Codec20::readEventIsRetriedFlag(transport::Transport &transport) const
+{
+    return transport.readByte();
+}
+
+
+ClientCacheEntryCustomEvent Codec20::readCustomEvent(transport::Transport &transport) const
+{
+	ClientCacheEntryCustomEvent e(transport.readArray());
+	return e;
+}
+
+ClientCacheEntryExpiredEvent Codec20::processExpiredEvent(transport::Transport &transport) const
+{
+	ClientCacheEntryExpiredEvent e;
+	return e;
+}
+ClientCacheEntryModifiedEvent Codec20::processModifiedEvent(transport::Transport &transport) const
+{
+	ClientCacheEntryModifiedEvent e;
+	return e;
+}
+
+ClientCacheEntryCreatedEvent<std::vector<char>> Codec20::readCreatedEvent(transport::Transport &transport, uint8_t isRetried) const
+{
+	return ClientCacheEntryCreatedEvent<std::vector<char>>(transport.readArray(), transport.readLong(), isRetried);
+}
+
 void Codec20::processEvent() const
 {
   //TODO implement
@@ -288,7 +358,7 @@ uint8_t Codec20::readPartialHeader(transport::Transport &transport, HeaderParams
     // the socket containing data from previous request responses.
     if (receivedOpCode != params.opRespCode) {
       if (receivedOpCode == HotRodConstants::ERROR_RESPONSE) {
-        checkForErrorsInResponseStatus(transport, params, status);
+        checkForErrorsInResponseStatus(transport, params.messageId, status);
         }
         std::ostringstream message;
         message << "Invalid response operation. Expected " << std::hex <<

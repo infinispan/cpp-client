@@ -11,6 +11,10 @@ namespace transport {
 class Transport;
 }
 
+namespace event {
+class EventHeaderParam;
+}
+
 namespace protocol {
 
 class HeaderParams;
@@ -30,13 +34,20 @@ class Codec20 : public Codec
 
     std::vector<char> returnPossiblePrevValue(transport::Transport& t, uint8_t status, uint32_t flags) const;
     void writeExpirationParams(transport::Transport& t,uint64_t lifespan, uint64_t maxIdle) const;
-    virtual void writeClientListenerParams(transport::Transport& t, const ClientListener *clientListener,
+    virtual void writeClientListenerParams(transport::Transport& t, const ClientListener& clientListener,
     		const std::vector<std::vector<char> > &filterFactoryParams, const std::vector<std::vector<char> > &converterFactoryParams) const;
     void writeNamedFactory(transport::Transport &transport, const std::vector<char> &factoryName, const std::vector<std::vector<char> > & params) const;
-    virtual char getAddEventListenerResponseType(transport::Transport &transport, uint64_t &messageId) const;
+    virtual char readAddEventListenerResponseType(transport::Transport &transport, uint64_t &messageId) const;
     virtual void processEvent() const;
     virtual uint8_t readPartialHeader(transport::Transport &transport, HeaderParams &params, uint8_t receivedOpCode) const;
-
+    virtual std::vector<char> readEventListenerId(transport::Transport &transport) const;
+    virtual uint8_t readEventIsCustomFlag(transport::Transport &transport) const;
+    virtual uint8_t readEventIsRetriedFlag(transport::Transport &transport) const;
+    virtual ClientCacheEntryCustomEvent readCustomEvent(transport::Transport &transport) const;
+    virtual ClientCacheEntryExpiredEvent processExpiredEvent(transport::Transport &transport) const;
+    virtual ClientCacheEntryModifiedEvent processModifiedEvent(transport::Transport &transport) const;
+    virtual ClientCacheEntryCreatedEvent<std::vector<char>> readCreatedEvent(transport::Transport &transport, uint8_t isRetried) const;
+    virtual event::EventHeaderParams readEventHeader(transport::Transport& transport) const;
   protected:
     HeaderParams& writeHeader(
         infinispan::hotrod::transport::Transport& transport,
@@ -56,7 +67,7 @@ class Codec20 : public Codec
 
     void checkForErrorsInResponseStatus(
         infinispan::hotrod::transport::Transport& transport,
-        HeaderParams& params, uint8_t status) const;
+        uint64_t messageId, uint8_t status) const;
 };
 
 }}} // namespace infinispan::hotrod::protocol

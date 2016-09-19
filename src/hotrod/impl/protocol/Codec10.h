@@ -29,11 +29,14 @@ class Codec10 : public Codec
     long getMessageId();
     std::vector<char> returnPossiblePrevValue(transport::Transport& t, uint8_t status, uint32_t flags) const;
     void writeExpirationParams(transport::Transport& t,uint64_t lifespan, uint64_t maxIdle) const;
-    virtual void writeClientListenerParams(transport::Transport& t, const ClientListener *clientListener,
-    		const std::vector<std::vector<char> > &filterFactoryParams, const std::vector<std::vector<char> > &converterFactoryParams) const;
-    virtual char getAddEventListenerResponseType(transport::Transport &transport, uint64_t &messageId) const;
-    virtual void processEvent() const;
-    virtual uint8_t readPartialHeader(transport::Transport &transport, HeaderParams &params, uint8_t receivedOpCode) const;
+//    virtual void writeClientListenerParams(transport::Transport& t, const ClientListener clientListener,
+//    		const std::vector<std::vector<char> > &filterFactoryParams, const std::vector<std::vector<char> > &converterFactoryParams) const;
+//    virtual char readAddEventListenerResponseType(transport::Transport &transport, uint64_t &messageId) const;
+//    virtual void processEvent() const;
+//    virtual uint8_t readPartialHeader(transport::Transport &transport, HeaderParams &params, uint8_t receivedOpCode) const;
+//    virtual std::vector<char> readEventListenerId(transport::Transport &transport) const;
+//    virtual uint8_t readEventIsCustomFlag(transport::Transport &transport) const;
+
 
   protected:
     HeaderParams& writeHeader(

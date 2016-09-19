@@ -8,14 +8,14 @@
 #ifndef SRC_HOTROD_IMPL_EVENT_CLIENTLISTENERNOTIFIER_H_
 #define SRC_HOTROD_IMPL_EVENT_CLIENTLISTENERNOTIFIER_H_
 
+#include <infinispan/hotrod/ClientListener.h>
 #include "hotrod/impl/protocol/Codec.h"
 #include "infinispan/hotrod/EventMarshaller.h"
+#include "hotrod/impl/event/EventDispatcher.h"
+#include <map>
 
-namespace infinispan {
-namespace hotrod {
-namespace operations {
-	class AddClientListenerOperation;
-}}}
+using namespace infinispan::hotrod::protocol;
+using namespace infinispan::hotrod::transport;
 
 
 namespace infinispan {
@@ -29,21 +29,20 @@ namespace infinispan {
 namespace hotrod {
 namespace event {
 
-using  namespace infinispan::hotrod::operations;
-using  namespace infinispan::hotrod::protocol;
 
 
 class ClientListenerNotifier {
 public:
 	virtual ~ClientListenerNotifier();
-	void addClientListener(AddClientListenerOperation* const) const
-	{
-
-	}
-	static ClientListenerNotifier* create(Codec &, const EventMarshaller &);
+	void addClientListener(const std::vector<char> listenerId, const ClientListener& clientListener, const std::vector<char> cacheName, Transport& t, const Codec20& codec20);
+	void removeClientListener(const std::vector<char> listenerId);
+	void startClientListener(const std::vector<char> listenerId);
+	static ClientListenerNotifier* create();
 
 protected:
 	ClientListenerNotifier();
+private:
+	std::map<std::vector<char>, EventDispatcher> eventDispatchers;
 };
 
 } /* namespace event */
