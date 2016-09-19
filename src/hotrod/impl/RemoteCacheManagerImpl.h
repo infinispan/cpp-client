@@ -38,6 +38,10 @@ class RemoteCacheManagerImpl
 		return listenerNotifier;
 	}
 
+	ClientListenerNotifier*& getListenerNotifier() {
+		return listenerNotifier;
+	}
+
   private:
     sys::Mutex lock;
     bool started;
