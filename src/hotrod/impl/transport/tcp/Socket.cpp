@@ -18,9 +18,7 @@ Socket::Socket(sys::Socket *_socket) :
 {}
 
 Socket::Socket(const Socket& s) : socket(s.socket), inputStream(*socket), outputStream(*socket)
-{
-	std::cout << "COPYING: Socket::Socket(const Socket& s)" << std::endl;
-}
+{}
 
 void Socket::connect(const std::string& host, int port, int timeout) {
     socket->connect(host, port, timeout);

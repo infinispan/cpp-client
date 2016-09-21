@@ -42,7 +42,7 @@ class TcpTransport : public AbstractTransport
     void setValid(bool valid);
     bool isValid();
     virtual Transport* clone();
-
+    virtual ~TcpTransport() {}
   protected:
     TcpTransport(const InetSocketAddress& address, TransportFactory& factory, sys::Socket *sock);
     //Testing only!
