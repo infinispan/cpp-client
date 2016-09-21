@@ -52,9 +52,6 @@ public:
 	void add_listener(std::function<void(ClientCacheEntryCustomEvent)> callback) {
 		customCallbacks.push_back(callback);
 	}
-	void add_listener(std::function<void(ClientCacheFailoverEvent)> callback) {
-		failoverCallbacks.push_back(callback);
-	}
 
 	virtual void processEvent(ClientCacheEntryCreatedEvent<std::vector<char>> marshEv, std::vector<char >listId, uint8_t isCustom) const
 	{
@@ -95,7 +92,6 @@ private:
 	std::list<std::function<void(ClientCacheEntryModifiedEvent<K>)>> modifiedCallbacks;
 	std::list<std::function<void(ClientCacheEntryRemovedEvent<K>)>> removedCallbacks;
 	std::list<std::function<void(ClientCacheEntryCustomEvent)>> customCallbacks;
-	std::list<std::function<void(ClientCacheFailoverEvent)>> failoverCallbacks;
 };
 
 }}}

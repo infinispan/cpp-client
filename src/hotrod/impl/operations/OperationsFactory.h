@@ -116,7 +116,7 @@ class OperationsFactory
 
     FaultTolerantPingOperation* newFaultTolerantPingOperation();
 
-    AddClientListenerOperation* newAddClientListenerOperation(ClientListener& listener, ClientListenerNotifier& listenerNotifier, const std::vector<std::vector<char> > filterFactoryParam, const std::vector<std::vector<char> > converterFactoryParams);
+    AddClientListenerOperation* newAddClientListenerOperation(ClientListener& listener, ClientListenerNotifier& listenerNotifier, const std::vector<std::vector<char> > filterFactoryParam, const std::vector<std::vector<char> > converterFactoryParams,const std::function<void()> &recoveryCallback);
 
     void addFlags(uint32_t flags);
     void setFlags(uint32_t flags);

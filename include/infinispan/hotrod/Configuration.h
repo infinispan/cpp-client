@@ -38,7 +38,6 @@ class Configuration
 	HR_EXTERN static const char* DEFAULT_CLUSTER_NAME;
 
 
-
     Configuration(const std::string &_protocolVersion,
             const ConnectionPoolConfiguration& _connectionPoolConfiguration,
             int _connectionTimeout,

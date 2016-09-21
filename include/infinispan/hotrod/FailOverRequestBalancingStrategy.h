@@ -3,6 +3,7 @@
 
 #include <infinispan/hotrod/InetSocketAddress.h>
 #include <vector>
+#include <set>
 
 namespace infinispan {
 namespace hotrod {
@@ -14,7 +15,7 @@ class FailOverRequestBalancingStrategy
   public:
     typedef FailOverRequestBalancingStrategy* (*ProducerFn)();
     virtual void setServers(const std::vector<transport::InetSocketAddress>& servers) = 0;
-    virtual const transport::InetSocketAddress& nextServer() = 0;
+    virtual const transport::InetSocketAddress& nextServer(const std::set<transport::InetSocketAddress>& failedServer) = 0;
 
     virtual ~FailOverRequestBalancingStrategy() {};
   private:

@@ -23,12 +23,12 @@ class InetSocketAddress;
 class TcpTransportFactory : public TransportFactory
 {
   public:
-    TcpTransportFactory(const Configuration& config) : configuration(config), maxRetries(config.getMaxRetries()) {};
-    void start(protocol::Codec& codec, int defaultTopologyId);
+    TcpTransportFactory(const Configuration& config) : configuration(config), maxRetries(config.getMaxRetries()), onFailover(false) {};
+    void start(protocol::Codec& codec, int defaultTopologyId, ClientListenerNotifier* );
     void destroy();
 
-    Transport& getTransport(const std::vector<char>& cacheName);
-    Transport& getTransport(const std::vector<char>& key, const std::vector<char>& cacheName);
+    transport::Transport& getTransport(const std::vector<char>& cacheName, const std::set<transport::InetSocketAddress>& failedServers);
+    transport::Transport& getTransport(const std::vector<char>& key, const std::vector<char>& cacheName, const std::set<transport::InetSocketAddress>& failedServers);
 
     void releaseTransport(Transport& transport);
     void invalidateTransport(
@@ -73,8 +73,10 @@ class TcpTransportFactory : public TransportFactory
     void pingServers();
     Transport& borrowTransportFromPool(const InetSocketAddress& server);
     ConnectionPool* getConnectionPool();
+    bool onFailover;
     std::vector<ServerConfiguration> getNextWorkingServersConfiguration();
     void pingExternalServer(InetSocketAddress s);
+    ClientListenerNotifier* listenerNotifier;
 };
 
 }}} // namespace infinispan::hotrod::transport

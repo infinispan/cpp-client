@@ -27,18 +27,16 @@ namespace operations {
 class AddClientListenerOperation: public RetryOnFailureOperation<char> {
 public:
 	AddClientListenerOperation(const Codec &codec, std::shared_ptr<TransportFactory> transportFactory,
-        std::vector<char> cacheName, Topology& topologyId, int flags,
-        ClientListenerNotifier &listenerNotifier, const ClientListener& clientListener,
-		std::vector<std::vector<char> > filterFactoryParams,
-		std::vector<std::vector<char> > converterFactoryParams)
+                             std::vector<char> cacheName, Topology& topologyId, int flags,
+                             ClientListenerNotifier &listenerNotifier, const ClientListener& clientListener,
+		             std::vector<std::vector<char> > filterFactoryParams,
+	std::vector<std::vector<char> > converterFactoryParams, const std::function<void()> &recoveryCallback)
                            : RetryOnFailureOperation<char>(codec, transportFactory, cacheName, topologyId, flags), listenerNotifier(listenerNotifier),
 							 listenerId(generateV4UUID()), clientListener(clientListener), filterFactoryParams(filterFactoryParams), converterFactoryParams(converterFactoryParams),
-							 cacheName(cacheName)
+							 recoveryCallback(recoveryCallback), cacheName(cacheName)
 							 {};
     virtual void releaseTransport(transport::Transport* transport);
-    virtual transport::Transport& getTransport(int retryCount);
-    transport::Transport& getDedicatedTransport();
-	virtual ~AddClientListenerOperation();
+    virtual transport::Transport& getTransport(int retryCount, const std::set<transport::InetSocketAddress>& failedServers);
 	char executeOperation(transport::Transport& transport);
     ClientListenerNotifier& listenerNotifier;
 	const std::vector<char> listenerId;
@@ -46,6 +44,7 @@ public:
     const std::vector<std::vector<char> > filterFactoryParams;
     const std::vector<std::vector<char> > converterFactoryParams;
 
+    const std::function<void()> &recoveryCallback;
 private:
     const std::vector<char> cacheName;
     std::vector<char> generateV4UUID();

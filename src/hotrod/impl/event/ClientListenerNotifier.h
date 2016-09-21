@@ -20,13 +20,6 @@ using namespace infinispan::hotrod::transport;
 
 namespace infinispan {
 namespace hotrod {
-namespace operations {
-	class AddClientListenerOperation;
-}}}
-
-
-namespace infinispan {
-namespace hotrod {
 namespace event {
 
 
@@ -34,10 +27,11 @@ namespace event {
 class ClientListenerNotifier {
 public:
 	virtual ~ClientListenerNotifier();
-	void addClientListener(const std::vector<char> listenerId, const ClientListener& clientListener, const std::vector<char> cacheName, Transport& t, const Codec20& codec20);
+	void addClientListener(const std::vector<char> listenerId, const ClientListener& clientListener, const std::vector<char> cacheName, Transport& t, const Codec20& codec20, void* operationPtr, const std::function<void()> &recoveryCallback);
 	void removeClientListener(const std::vector<char> listenerId);
 	void startClientListener(const std::vector<char> listenerId);
 	static ClientListenerNotifier* create();
+	void failoverClientListeners(const std::vector<transport::InetSocketAddress>& failedServers);
 	void stop();
 protected:
 	ClientListenerNotifier();

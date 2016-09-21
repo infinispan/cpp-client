@@ -18,11 +18,6 @@ BulkGetOperation::BulkGetOperation(
         codec_, transportFactory_, cacheName_, topologyId_, flags_), entryCount(entryCount_)
 {}
 
-Transport& BulkGetOperation::getTransport(int /*retryCount*/)
-{
-        return RetryOnFailureOperation<std::map<std::vector<char>, std::vector<char>> >::transportFactory->getTransport(cacheName);
-}
-
 std::map<std::vector<char>,std::vector<char>> BulkGetOperation::executeOperation(infinispan::hotrod::transport::Transport& transport)
 {
     TRACE("Execute BulkGet(flags=%u, entryCount=%d)", flags, entryCount);

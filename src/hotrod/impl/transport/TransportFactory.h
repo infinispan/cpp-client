@@ -6,6 +6,7 @@
 #include "hotrod/impl/Topology.h"
 #include "hotrod/impl/TopologyInfo.h"
 #include "infinispan/hotrod/Flag.h"
+#include <hotrod/impl/event/ClientListenerNotifier.h>
 #include <vector>
 #include <set>
 #include <map>
@@ -31,11 +32,11 @@ class TransportFactory
 {
   friend class infinispan::hotrod::RemoteCacheManagerImpl;
   public:
-    virtual void start(protocol::Codec& codec, int defaultTopologyId) = 0;
+    virtual void start(protocol::Codec& codec, int defaultTopologyId, ClientListenerNotifier*) = 0;
     virtual void destroy() = 0;
 
-    virtual Transport& getTransport(const std::vector<char>& cacheName) = 0;
-    virtual Transport& getTransport(const std::vector<char>& key, const std::vector<char>& cacheName) = 0;
+    virtual Transport& getTransport(const std::vector<char>& cacheName, const std::set<InetSocketAddress>& failedServers) = 0;
+    virtual Transport& getTransport(const std::vector<char>& key, const std::vector<char>& cacheName, const std::set<InetSocketAddress>& failedServers) = 0;
     virtual ClusterStatus clusterSwitch() = 0;
     virtual ClusterStatus clusterSwitch(std::string) = 0;
     virtual void releaseTransport(Transport& transport) = 0;

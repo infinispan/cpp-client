@@ -8,16 +8,14 @@
 #include <hotrod/impl/operations/AddCacheClientListenerOperation.h>
 #include <random>
 #include <sstream>
+#include <hotrod/impl/transport/tcp/TcpTransport.h>
+
 
 namespace infinispan {
 namespace hotrod {
 namespace operations {
 
 
-
-AddClientListenerOperation::~AddClientListenerOperation() {
-	// TODO Auto-generated destructor stub
-}
 
 /* This function generate an random ID that seems a V4 UUID
  * it's not an implementation of UUID v4
@@ -41,16 +39,12 @@ void AddClientListenerOperation::releaseTransport(transport::Transport* )
 {
 }
 
-transport::Transport& AddClientListenerOperation::getTransport(int )
+transport::Transport& AddClientListenerOperation::getTransport(int, const std::set<transport::InetSocketAddress>& failedServers)
 {
-	dedicatedTransport= &(this->transportFactory->getTransport(this->cacheName));
+	dedicatedTransport= transportFactory->getTransport(this->cacheName, failedServers).clone();
 	return *dedicatedTransport;
 }
 
-transport::Transport& AddClientListenerOperation::getDedicatedTransport()
-{
-	return *this->dedicatedTransport;
-}
 char AddClientListenerOperation::executeOperation(transport::Transport& transport)
 {
     protocol::HeaderParams params = this->writeHeader(transport, ADD_CLIENT_LISTENER_REQUEST);
@@ -58,9 +52,11 @@ char AddClientListenerOperation::executeOperation(transport::Transport& transpor
     const Codec20& codec20 = dynamic_cast<const Codec20&>(codec);
     codec20.writeClientListenerParams(transport, clientListener, filterFactoryParams, converterFactoryParams);
     transport.flush();
-    listenerNotifier.addClientListener(listenerId, clientListener, cacheName, transport, codec20);
+    listenerNotifier.addClientListener(listenerId, clientListener, cacheName, transport, codec20, (void*)this, recoveryCallback);
     bool readMore = true;
     uint64_t respMessageId = 0;
+    try
+    {
     do
     {
     	uint8_t respOpCode = codec20.readAddEventListenerResponseType(transport, respMessageId);
@@ -95,6 +91,7 @@ char AddClientListenerOperation::executeOperation(transport::Transport& transpor
 							codec20.readRemovedEvent(transport, isRetried);
 					clientListener.processEvent(marshEvent, listId, isCustom);
 				}
+				break;
 				case CACHE_ENTRY_EXPIRED_EVENT_RESPONSE:
 					break;
 				default:
@@ -122,6 +119,13 @@ char AddClientListenerOperation::executeOperation(transport::Transport& transpor
         	readMore=false;
     	}
     } while (readMore);
+    }
+    catch (const TransportException& ex)
+    {
+    	listenerNotifier.removeClientListener(listenerId);
+    	transport::TcpTransport& tcpT = dynamic_cast<transport::TcpTransport&>(transport);
+    	throw TransportException(tcpT.getServerAddress().getHostname(), tcpT.getServerAddress().getPort(), ex.what(), ex.getErrnum());
+    }
     return 0;
 }
 

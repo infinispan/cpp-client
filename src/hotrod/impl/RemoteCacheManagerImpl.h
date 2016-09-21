@@ -31,13 +31,7 @@ class RemoteCacheManagerImpl
     const Configuration& getConfiguration();
     ClusterStatus clusterSwitch();
     ClusterStatus clusterSwitch(std::string clusterName);
-
-
-	ClientListenerNotifier*& getListenerNotifier() {
-		return listenerNotifier;
-	}
-
-	ClientListenerNotifier*& getListenerNotifier() {
+    ClientListenerNotifier*& getListenerNotifier() {
 		return listenerNotifier;
 	}
 

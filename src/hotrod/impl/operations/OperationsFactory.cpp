@@ -172,10 +172,10 @@ uint32_t OperationsFactory::getFlags() {
     return result;
 }
 
-AddClientListenerOperation* OperationsFactory::newAddClientListenerOperation(ClientListener& listener, ClientListenerNotifier& listenerNotifier,const std::vector<std::vector<char> > filterFactoryParam, const std::vector<std::vector<char> > converterFactoryParams) {
+AddClientListenerOperation* OperationsFactory::newAddClientListenerOperation(ClientListener& listener, ClientListenerNotifier& listenerNotifier,const std::vector<std::vector<char> > filterFactoryParam, const std::vector<std::vector<char> > converterFactoryParams, const std::function<void()> &recoveryCallback) {
    return new AddClientListenerOperation(codec, transportFactory,
          cacheNameBytes, topologyId, getFlags(), listenerNotifier,
-         listener,  filterFactoryParam, converterFactoryParams);
+         listener,  filterFactoryParam, converterFactoryParams, recoveryCallback);
 }
 
 void OperationsFactory::addFlags(uint32_t f) {

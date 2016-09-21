@@ -17,11 +17,6 @@ FaultTolerantPingOperation::FaultTolerantPingOperation(
         codec_, transportFactory_, cacheName_, topologyId_, flags_)
 {}
 
-Transport& FaultTolerantPingOperation::getTransport(int /*retryCount*/)
-{
-        return RetryOnFailureOperation<PingResult>::transportFactory->getTransport(cacheName);
-}
-
 PingResult FaultTolerantPingOperation::executeOperation(transport::Transport& transport)
 {
     PingOperation pingOp(codec, topologyId, transport, cacheName);

@@ -118,7 +118,7 @@ void SSLSocket::logAndThrow(const std::string& host, const int port, const std::
         ERR_error_string_n(i,buf,sizeof(buf));
         ERROR("Error %d: %s", i, buf);
     }
-    throw TransportException(host, port, msg);
+    throw TransportException(host, port, msg, -1);
 }
 
 SSLSocket* SSLSocket::create(const std::string& _serverCAPath, const std::string& _serverCAFile, const std::string& _clientCertificateFile) {

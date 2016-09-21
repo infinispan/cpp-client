@@ -43,7 +43,19 @@ public:
 	virtual void processEvent(ClientCacheEntryModifiedEvent<std::vector<char>>, std::vector<char >listId, uint8_t isCustom) const = 0;
 	virtual void processEvent(ClientCacheEntryRemovedEvent<std::vector<char>>, std::vector<char >listId, uint8_t isCustom) const = 0;
 	virtual void processEvent(ClientCacheEntryCustomEvent, std::vector<char >listId, uint8_t isCustom) const = 0;
+	virtual void processFailoverEvent() const
+	{
+		for (auto callable : failoverCallbacks) {
+			callable();
+		}
+	}
+	void add_listener(std::function<void()> callback) {
+		failoverCallbacks.push_back(callback);
+	}
+
 	virtual ~ClientListener() {}
+private:
+	std::list<std::function<void()>> failoverCallbacks;
 };
 
 }}}
