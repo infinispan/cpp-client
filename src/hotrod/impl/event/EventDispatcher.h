@@ -12,6 +12,7 @@
 #include "infinispan/hotrod/ClientListener.h"
 #include "hotrod/impl/protocol/Codec20.h"
 #include "hotrod/impl/transport/Transport.h"
+#include "hotrod/impl/transport/tcp/TcpTransport.h"
 #include <memory>
 #include <functional>
 #include <map>
@@ -34,11 +35,11 @@ public:
 	EventDispatcher(const std::vector<char> listenerId, const ClientListener& cl, std::vector<char> cacheName, Transport& t, const Codec20& codec20, void* addClientListenerOpPtr, const std::function<void()> &recoveryCallback) : listenerId(listenerId), cl(cl), operationPtr(addClientListenerOpPtr), cacheName(cacheName), transport(t), codec20(codec20), status(0), recoveryCallback(recoveryCallback)
     {}
 	virtual ~EventDispatcher() {
-		if (status!=99)
-			{
-			  // Thread is still running, try to close the transport below
-			  //transport.invalidate();
-			}
+		if (p_thread)
+		{
+			((TcpTransport&)transport).destroy();
+		   p_thread->join();
+		}
 	}
 	const Transport& getTransport() {
 		return transport;

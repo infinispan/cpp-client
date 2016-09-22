@@ -16,6 +16,12 @@
 
 // For CTest: return 0 if all tests pass, non-zero otherwise.
 
+#define ASSERT(VALUE, COND, RES, MSG) \
+	do { if (!(COND)){ \
+		std::cout << "FAIL :(" << #COND << "):(" << VALUE << "):" << #MSG << std::endl; \
+		RES=-1; }\
+		} while(0)
+
 using namespace infinispan::hotrod;
 
 int main(int argc, char** argv) {
@@ -25,7 +31,7 @@ int main(int argc, char** argv) {
     {
         ConfigurationBuilder builder;
                 builder.balancingStrategyProducer(nullptr);
-        builder.addServer().host(argc > 1 ? argv[1] : "127.0.0.1").port(argc > 2 ? atoi(argv[2]) : 11222);
+        builder.addServer().host(argc > 1 ? argv[1] : "127.0.0.1").port(argc > 2 ? atoi(argv[2]) : 11322);
         builder.protocolVersion(Configuration::PROTOCOL_VERSION_24);
         RemoteCacheManager cacheManager(builder.build(), false);
         cacheManager.start();
@@ -48,35 +54,50 @@ int main(int argc, char** argv) {
         cl.add_listener(listenerModified);
         cl.add_listener(listenerRemoved);
 
+        cache.put(1,"v1");
+        cache.put(2,"v2");
+        cache.put(3,"v3");
+
         cache.addClientListener(cl, filterFactoryParams, converterFactoryParams);
 
-        cache.put(1,"key1");
-        cache.put(2,"key2");
-        cache.put(3,"key3");
+        cache.put(4,"v4");
+        cache.put(5,"v5");
+        cache.put(6,"v6");
 
-        cache.put(1,"key1a");
-        cache.put(2,"key2a");
+        ASSERT(createdCount, createdCount == 3, result, "created count mismatch");
+
+        cache.put(1,"v1a");
+        cache.put(2,"v2a");
+        ASSERT(modifiedCount, modifiedCount == 2, result, "modified count mismatch");
 
         cache.remove(3);
+        ASSERT(removedCount, removedCount == 1, result, "removed count mismatch");
 
-        if (createdCount!=3)
-        {
-    		std::cerr << "fail: listenerCreated expected 3 got " << createdCount << std::endl;
-    		result=-1;
-        }
+        cache.removeClientListener(cl);
 
-        if (modifiedCount!=2)
-        {
-    		std::cerr << "fail: listenerModified expected 2 got " << modifiedCount << std::endl;
-    		result=-1;
-        }
+        // Now add a second listener to check includeCurrentState CS feature
+        CacheClientListener<int, std::string> clCS(cache);
+        clCS.includeCurrentState=true;
+        int createdCountCS=0, modifiedCountCS=0, removedCountCS=0;
+        std::function<void(ClientCacheEntryCreatedEvent<int>)> listenerCreatedCS = [&createdCountCS](ClientCacheEntryCreatedEvent<int> e) { createdCountCS++; };
+        std::function<void(ClientCacheEntryModifiedEvent<int>)> listenerModifiedCS = [&modifiedCountCS](ClientCacheEntryModifiedEvent <int> e) { modifiedCountCS++; };
+        std::function<void(ClientCacheEntryRemovedEvent<int>)> listenerRemovedCS = [&removedCountCS](ClientCacheEntryRemovedEvent <int> e) { removedCountCS++; };
 
-        if (removedCount!=1)
-        {
-    		std::cerr << "fail: listenerRemoved expected 1 got " << removedCount << std::endl;
-    		result=-1;
-        }
+        clCS.add_listener(listenerCreatedCS);
+        clCS.add_listener(listenerModifiedCS);
+        clCS.add_listener(listenerRemovedCS);
 
+        cache.addClientListener(clCS, filterFactoryParams, converterFactoryParams);
+
+        ASSERT(createdCountCS, createdCountCS == 5, result, "created with current state");
+
+        cache.put(1,"v1a");
+        cache.put(2,"v2a");
+
+        ASSERT(modifiedCountCS, modifiedCountCS == 2, result, "modified count mismatch");
+
+        cache.remove(3);
+        ASSERT(removedCountCS, removedCountCS == 0, result, "removed count mismatch");
 
         cacheManager.stop();
     }

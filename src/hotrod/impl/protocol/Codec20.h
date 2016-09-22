@@ -12,7 +12,7 @@ class Transport;
 }
 
 namespace event {
-class EventHeaderParam;
+class EventHeaderParams;
 }
 
 namespace protocol {
@@ -40,6 +40,7 @@ class Codec20 : public Codec
     virtual char readAddEventListenerResponseType(transport::Transport &transport, uint64_t &messageId) const;
     virtual void processEvent() const;
     virtual uint8_t readPartialHeader(transport::Transport &transport, HeaderParams &params, uint8_t receivedOpCode) const;
+    virtual uint8_t readPartialEventHeader(transport::Transport &transport, EventHeaderParams &params) const;
     virtual std::vector<char> readEventListenerId(transport::Transport &transport) const;
     virtual uint8_t readEventIsCustomFlag(transport::Transport &transport) const;
     virtual uint8_t readEventIsRetriedFlag(transport::Transport &transport) const;

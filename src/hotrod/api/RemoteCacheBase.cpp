@@ -166,6 +166,12 @@ void RemoteCacheBase::base_addClientListener(ClientListener& clientListener, con
 	IMPL->addClientListener(clientListener, filterFactoryParam, converterFactoryParams, recoveryCallback);
 }
 
+void RemoteCacheBase::base_removeClientListener(ClientListener& clientListener)
+{
+	IMPL->removeClientListener(clientListener);
+}
+
+
 }
 } /* namespace */
 

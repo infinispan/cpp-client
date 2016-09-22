@@ -877,6 +877,11 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
     	base_addClientListener(clientListener, filterFactoryParams, converterFactoryParams, recoveryCallback);
     }
 
+    void removeClientListener(ClientListener& clientListener)
+    {
+    	base_removeClientListener(clientListener);
+    }
+
     CacheTopologyInfo getCacheTopologyInfo(){
     	return base_getCacheTopologyInfo();
     }

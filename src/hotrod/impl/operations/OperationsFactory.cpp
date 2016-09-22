@@ -1,4 +1,3 @@
-#include <hotrod/impl/operations/AddCacheClientListenerOperation.h>
 #include <hotrod/impl/Topology.h>
 #include "hotrod/impl/operations/OperationsFactory.h"
 #include "hotrod/impl/protocol/CodecFactory.h"
@@ -22,10 +21,13 @@
 #include "hotrod/impl/operations/FaultTolerantPingOperation.h"
 #include "hotrod/impl/operations/ExecuteCmdOperation.h"
 #include "hotrod/impl/operations/QueryOperation.h"
+#include <hotrod/impl/operations/AddClientListenerOperation.h>
+#include <hotrod/impl/operations/RemoveClientListenerOperation.h>
 #include "infinispan/hotrod/Flag.h"
 
 #include <cstring>
 #include <vector>
+#include <functional>
 
 namespace infinispan {
 namespace hotrod {
@@ -177,6 +179,14 @@ AddClientListenerOperation* OperationsFactory::newAddClientListenerOperation(Cli
          cacheNameBytes, topologyId, getFlags(), listenerNotifier,
          listener,  filterFactoryParam, converterFactoryParams, recoveryCallback);
 }
+
+RemoveClientListenerOperation* OperationsFactory::newRemoveClientListenerOperation(ClientListener& listener, ClientListenerNotifier& listenerNotifier)
+{
+   return new RemoveClientListenerOperation(codec, transportFactory,
+	         cacheNameBytes, topologyId, getFlags(), listenerNotifier,
+	         listener);
+}
+
 
 void OperationsFactory::addFlags(uint32_t f) {
     flags |= f;

@@ -69,6 +69,7 @@ protected:
     HR_EXTERN QueryResponse base_query(const QueryRequest &qr);
     HR_EXTERN std::vector<unsigned char> base_query_char(std::vector<unsigned char> qr, size_t size);
 	HR_EXTERN void base_addClientListener(ClientListener &clientListener, const std::vector<std::vector<char> > filterFactoryParam, const std::vector<std::vector<char> > converterFactoryParams, const std::function<void()> &recoveryCallback);
+	HR_EXTERN void base_removeClientListener(ClientListener &clientListener);
 
     RemoteCacheBase() {}
     HR_EXTERN void setMarshallers(void* rc, MarshallHelperFn kf, MarshallHelperFn vf, UnmarshallHelperFn ukf, UnmarshallHelperFn uvf);

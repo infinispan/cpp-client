@@ -418,6 +418,7 @@ endif(ENABLE_INTERNAL_TESTING)
       src/hotrod/impl/event/JBasicEventMarshaller.cpp
       src/hotrod/impl/event/ClientListenerNotifier.cpp
       src/hotrod/impl/operations/AddClientListenerOperation.cpp
+      src/hotrod/impl/operations/RemoveClientListenerOperation.cpp
       src/hotrod/api/ClientListener.cpp
       src/hotrod/impl/event/EventDispatcher.cpp
       ${platform_sources}

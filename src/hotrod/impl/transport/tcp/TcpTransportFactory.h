@@ -57,6 +57,7 @@ class TcpTransportFactory : public TransportFactory
     void clearHashFunction(const std::vector<char>& cacheName);
     infinispan::hotrod::consistenthash::ConsistentHashFactory
             & getConsistentHashFactory();
+    Transport& borrowTransportFromPool(const InetSocketAddress& server);
 
 
   private:
@@ -71,7 +72,6 @@ class TcpTransportFactory : public TransportFactory
     void createAndPreparePool();
     void updateTransportCount();
     void pingServers();
-    Transport& borrowTransportFromPool(const InetSocketAddress& server);
     ConnectionPool* getConnectionPool();
     bool onFailover;
     std::vector<ServerConfiguration> getNextWorkingServersConfiguration();

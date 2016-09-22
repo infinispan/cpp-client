@@ -6,12 +6,12 @@
  */
 
 #include <hotrod/impl/event/ClientListenerNotifier.h>
+#include <hotrod/impl/operations/AddClientListenerOperation.h>
 #include "hotrod/impl/event/EventDispatcher.h"
 #include <vector>
 
 
 #include "infinispan/hotrod/InetSocketAddress.h"
-#include "hotrod/impl/operations/AddCacheClientListenerOperation.h"
 #include <vector>
 
 
@@ -78,6 +78,23 @@ void ClientListenerNotifier::startClientListener(const std::vector<char> listene
       if (it != eventDispatchers.end())
     	  it->second.start();
 }
+
+const ClientListener& ClientListenerNotifier::findClientListener(const std::vector<char> listenerId)
+{
+    auto it = eventDispatchers.find(listenerId);
+    if (it!=eventDispatchers.end())
+    	return it->second.cl;
+    throw HotRodClientException("Internal: client listener not found");
+}
+
+const Transport& ClientListenerNotifier::findClientListenerTransport(const std::vector<char> listenerId)
+{
+    auto it = eventDispatchers.find(listenerId);
+    if (it!=eventDispatchers.end())
+    	return it->second.getTransport();
+    throw HotRodClientException("Internal: client listener not found");
+}
+
 
 
 } /* namespace event */

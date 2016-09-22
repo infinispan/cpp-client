@@ -54,8 +54,18 @@ public:
 	}
 
 	virtual ~ClientListener() {}
+
+	const std::vector<char>& getListenerId() const {
+		return listenerId;
+	}
+
+	void setListenerId(const std::vector<char>& listenerId) {
+		this->listenerId = listenerId;
+	}
+
 private:
 	std::list<std::function<void()>> failoverCallbacks;
+	std::vector<char> listenerId;
 };
 
 }}}

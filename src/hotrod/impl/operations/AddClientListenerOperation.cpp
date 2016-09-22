@@ -5,7 +5,7 @@
  *      Author: rigazilla
  */
 
-#include <hotrod/impl/operations/AddCacheClientListenerOperation.h>
+#include <hotrod/impl/operations/AddClientListenerOperation.h>
 #include <random>
 #include <sstream>
 #include <hotrod/impl/transport/tcp/TcpTransport.h>
@@ -53,6 +53,7 @@ char AddClientListenerOperation::executeOperation(transport::Transport& transpor
     codec20.writeClientListenerParams(transport, clientListener, filterFactoryParams, converterFactoryParams);
     transport.flush();
     listenerNotifier.addClientListener(listenerId, clientListener, cacheName, transport, codec20, (void*)this, recoveryCallback);
+    const_cast <ClientListener&>(clientListener).setListenerId(listenerId);
     bool readMore = true;
     uint64_t respMessageId = 0;
     try
@@ -63,6 +64,18 @@ char AddClientListenerOperation::executeOperation(transport::Transport& transpor
     	// The response contains immediate event to process
     	if (isEvent(respOpCode))
     	{
+			EventHeaderParams params;
+			params.messageId=respMessageId;
+			params.opCode=respOpCode;
+			try
+			{
+				uint8_t status = codec20.readPartialEventHeader(transport, params);
+				if (!HotRodConstants::isSuccess(status))
+					break;
+			}
+			catch (HotRodClientException e) {
+				continue;
+			}
 		    std::vector<char> listId=codec20.readEventListenerId(transport);
 		    uint8_t isCustom = codec20.readEventIsCustomFlag(transport);
 		    uint8_t isRetried = codec20.readEventIsRetriedFlag(transport);

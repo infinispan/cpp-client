@@ -5,7 +5,6 @@
 #include <infinispan/hotrod/ClientListener.h>
 #include "infinispan/hotrod/Flag.h"
 
-#include <set>
 #include <infinispan/hotrod/portable.h>
 #if _MSC_VER
 #pragma warning(push)
@@ -17,6 +16,10 @@
 #endif
 
 #include "infinispan/hotrod/ClientListener.h"
+#include <set>
+#include <functional>
+#include <memory>
+
 using namespace org::infinispan::query::remote::client;
 using namespace infinispan::hotrod::event;
 
@@ -62,6 +65,7 @@ class FaultTolerantPingOperation;
 class ExecuteCmdOperation;
 class QueryOperation;
 class AddClientListenerOperation;
+class RemoveClientListenerOperation;
 
 
 class OperationsFactory
@@ -117,7 +121,7 @@ class OperationsFactory
     FaultTolerantPingOperation* newFaultTolerantPingOperation();
 
     AddClientListenerOperation* newAddClientListenerOperation(ClientListener& listener, ClientListenerNotifier& listenerNotifier, const std::vector<std::vector<char> > filterFactoryParam, const std::vector<std::vector<char> > converterFactoryParams,const std::function<void()> &recoveryCallback);
-
+    RemoveClientListenerOperation* newRemoveClientListenerOperation(ClientListener& listener, ClientListenerNotifier& listenerNotifier);
     void addFlags(uint32_t flags);
     void setFlags(uint32_t flags);
 

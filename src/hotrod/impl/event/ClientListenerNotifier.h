@@ -22,14 +22,14 @@ namespace infinispan {
 namespace hotrod {
 namespace event {
 
-
-
 class ClientListenerNotifier {
 public:
 	virtual ~ClientListenerNotifier();
 	void addClientListener(const std::vector<char> listenerId, const ClientListener& clientListener, const std::vector<char> cacheName, Transport& t, const Codec20& codec20, void* operationPtr, const std::function<void()> &recoveryCallback);
 	void removeClientListener(const std::vector<char> listenerId);
 	void startClientListener(const std::vector<char> listenerId);
+	const ClientListener& findClientListener(const std::vector<char> listenerId);
+	const Transport& findClientListenerTransport(const std::vector<char> listenerId);
 	static ClientListenerNotifier* create();
 	void failoverClientListeners(const std::vector<transport::InetSocketAddress>& failedServers);
 	void stop();

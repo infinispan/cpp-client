@@ -379,4 +379,17 @@ uint8_t Codec20::readPartialHeader(transport::Transport &transport, HeaderParams
     return status;
 }
 
+uint8_t Codec20::readPartialEventHeader(transport::Transport &transport, EventHeaderParams &params) const
+{
+    params.status = transport.readByte();
+    /*uint8_t unused topology*/transport.readByte();
+	if (!HotRodConstants::isSuccess(params.status))
+	{
+      checkForErrorsInResponseStatus(transport, params.messageId, params.status);
+	}
+    return params.status;
+}
+
+
+
 }}} // namespace infinispan::hotrod::protocol
