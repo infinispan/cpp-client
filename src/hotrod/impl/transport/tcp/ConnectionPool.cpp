@@ -265,6 +265,7 @@ void ConnectionPool::preparePool(const InetSocketAddress& key) {
 void ConnectionPool::close() {
     closed = true;
     sys::ScopedLock<sys::Mutex> l(lock);
+    clear();
 }
 
 void PoolWorker::run() {
