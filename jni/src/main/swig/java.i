@@ -75,6 +75,7 @@ using namespace infinispan::hotrod;
 
 %include "infinispan/hotrod/InetSocketAddress.h"
 %include "infinispan/hotrod/FailOverRequestBalancingStrategy.h"
+%include "infinispan/hotrod/ConfigurationChildBuilder.h"
 %include "infinispan/hotrod/SslConfigurationBuilder.h"
 %include "infinispan/hotrod/ServerConfigurationBuilder.h"
 %include "infinispan/hotrod/ConnectionPoolConfigurationBuilder.h"
@@ -178,6 +179,8 @@ class RelayBytes {
 %template(StringVectorReturn) std::vector<std::string>;
 %template(IntegerVectorReturn) std::vector<int>;
 %template(InetSocketAddressvectorReturn) std::vector<infinispan::hotrod::transport::InetSocketAddress>;
+%ignore std::vector<infinispan::hotrod::ServerConfigurationBuilder>::vector(size_type);
+%ignore std::vector<infinispan::hotrod::ServerConfigurationBuilder>::resize; 
 %template(ServerConfigurationBuilderVector) std::vector<infinispan::hotrod::ServerConfigurationBuilder>;
 %template(ServerConfigurationVector) std::vector<infinispan::hotrod::ServerConfiguration>;
 %template(ServerConfigurationMap) std::map<std::string,std::vector<infinispan::hotrod::ServerConfiguration> >;

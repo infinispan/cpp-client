@@ -365,6 +365,7 @@ endif(ENABLE_INTERNAL_TESTING)
       src/hotrod/api/exceptions.cpp
       src/hotrod/impl/configuration/Configuration.cpp
       src/hotrod/impl/configuration/ConnectionPoolConfiguration.cpp
+      src/hotrod/impl/configuration/ConfigurationChildBuilder.cpp
       src/hotrod/impl/RemoteCacheManagerImpl.cpp
       src/hotrod/impl/RemoteCacheImpl.cpp
       src/hotrod/impl/Topology.cpp

@@ -19,14 +19,15 @@ namespace hotrod {
 class ClusterConfigurationBuilder
 {
 public:
-	ClusterConfigurationBuilder(std::vector<ServerConfigurationBuilder>& servers) : servers(servers) {}
+	ClusterConfigurationBuilder(std::vector<ServerConfigurationBuilder>& servers, ConfigurationBuilder &parent) : servers(servers), m_parent(parent) {}
 	ClusterConfigurationBuilder& addClusterNode(const std::string host, const int port)
 	{
-        servers.push_back(ServerConfigurationBuilder().host(host).port(port));
+        servers.push_back(ServerConfigurationBuilder(m_parent).host(host).port(port));
         return *this;
 	}
 private:
     std::vector<ServerConfigurationBuilder>& servers;
+    ConfigurationBuilder &m_parent;
 };
 /**
  * ConfigurationBuilder used to generate immutable Configuration objects that are in turn
@@ -48,15 +49,15 @@ class ConfigurationBuilder
         m_maxRetries(10),
 		m_balancingStrategyProducer(nullptr),
         __pragma(warning(suppress:4355)) // passing uninitialized 'this'
-        connectionPoolConfigurationBuilder(),
+        connectionPoolConfigurationBuilder(*this),
         __pragma(warning(suppress:4355))
-        sslConfigurationBuilder()
+        sslConfigurationBuilder(*this)
         {}
 
      void validate() {}
 
     ClusterConfigurationBuilder addCluster(const std::string& clusterName) {
-    		return ClusterConfigurationBuilder(m_serversMap[clusterName]);
+    		return ClusterConfigurationBuilder(m_serversMap[clusterName],*this);
     }
 
     /**
@@ -71,7 +72,7 @@ class ConfigurationBuilder
 			m_serversMap[Configuration::DEFAULT_CLUSTER_NAME];
 	   }
 		auto& servers = m_serversMap[Configuration::DEFAULT_CLUSTER_NAME];
-   	   servers.push_back(ServerConfigurationBuilder());
+   	   servers.push_back(ServerConfigurationBuilder(*this));
        return servers[servers.size() - 1];
    }
 
@@ -240,7 +241,7 @@ class ConfigurationBuilder
         if (serversMap.size()==0)
         {
         	std::vector<ServerConfiguration> scVec;
-        	scVec.push_back(ServerConfigurationBuilder().create());
+        	scVec.push_back(ServerConfigurationBuilder(*this).create());
 			serversMap.insert(std::make_pair(Configuration::DEFAULT_CLUSTER_NAME, scVec));
         }
 
