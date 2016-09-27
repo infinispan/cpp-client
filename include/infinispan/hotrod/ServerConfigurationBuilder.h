@@ -11,6 +11,7 @@
 #include <string>
 #include "infinispan/hotrod/ImportExport.h"
 #include "ServerConfiguration.h"
+#include "ConfigurationChildBuilder.h"
 
 namespace infinispan {
 namespace hotrod {
@@ -22,11 +23,13 @@ namespace hotrod {
  *
  */
 class ServerConfigurationBuilder
+  : public ConfigurationChildBuilder
 {
   public:
-    ServerConfigurationBuilder() :
-    	m_host("localhost"), m_port(11222) {}
+    ServerConfigurationBuilder(ConfigurationBuilder& builder_):
+        ConfigurationChildBuilder(builder_), m_host("localhost"), m_port(11222) {}
 
+    virtual void validate() {};
 	/***
 	 * Specifies host of remote HotRod server
 	 *
@@ -55,7 +58,7 @@ class ServerConfigurationBuilder
 	 *
 	 * \return created ServerConfiguration instance
 	 */
-    ServerConfiguration create()
+    virtual ServerConfiguration create()
     {
         return ServerConfiguration(m_host, m_port);
     }
@@ -66,7 +69,7 @@ class ServerConfigurationBuilder
 	 *
 	 * \return ServerConfigurationBuilder for further configuration
 	 */
-    ServerConfigurationBuilder& read(ServerConfiguration& configuration)
+    virtual ServerConfigurationBuilder& read(ServerConfiguration& configuration)
     {
         m_host = configuration.getHostCString();
         m_port = configuration.getPort();
