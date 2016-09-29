@@ -16,18 +16,24 @@
 #if _MSC_VER
 #pragma warning(pop)
 #endif
+#include "infinispan/hotrod/ClientListener.h"
 
 #include <map>
 #include <set>
 #include <vector>
 
 using namespace org::infinispan::query::remote::client;
+using namespace infinispan::hotrod::event;
 
 namespace infinispan {
 namespace hotrod {
 
 namespace operations {
 class OperationsFactory;
+}
+
+namespace event {
+class ClientListener;
 }
 
 typedef void (*MarshallHelperFn) (void*, const void*, std::vector<char> &);
@@ -61,7 +67,7 @@ protected:
     HR_EXTERN CacheTopologyInfo base_getCacheTopologyInfo();
     HR_EXTERN QueryResponse base_query(const QueryRequest &qr);
     HR_EXTERN std::vector<unsigned char> base_query_char(std::vector<unsigned char> qr, size_t size);
-
+	HR_EXTERN void base_addClientListener(ClientListener *clientListener, const std::vector<std::vector<char> > filterFactoryParam, const std::vector<std::vector<char> > converterFactoryParams);
 
     RemoteCacheBase() {}
     HR_EXTERN void setMarshallers(void* rc, MarshallHelperFn kf, MarshallHelperFn vf, UnmarshallHelperFn ukf, UnmarshallHelperFn uvf);

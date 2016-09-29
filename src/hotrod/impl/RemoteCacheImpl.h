@@ -50,6 +50,7 @@ public:
     QueryResponse query(const QueryRequest & qr);
     operations::PingResult ping();
     CacheTopologyInfo getCacheTopologyInfo();
+    void addClientListener(ClientListener*, const std::vector<std::vector<char> >, const std::vector<std::vector<char> >);
     void init(operations::OperationsFactory* operationsFactory);
 
     void withFlags(Flag flag);

@@ -394,6 +394,8 @@ endif(ENABLE_INTERNAL_TESTING)
       src/hotrod/impl/operations/SizeOperation.cpp
       src/hotrod/impl/operations/FaultTolerantPingOperation.cpp
       src/hotrod/impl/operations/ExecuteCmdOperation.cpp
+      src/hotrod/impl/operations/AddClientListenerOperation.cpp
+      src/hotrod/impl/event/ClientListenerNotifier.cpp
       src/hotrod/impl/protocol/HeaderParams.cpp
       src/hotrod/impl/protocol/Codec10.cpp
       src/hotrod/impl/protocol/Codec11.cpp
@@ -416,6 +418,7 @@ endif(ENABLE_INTERNAL_TESTING)
       src/hotrod/sys/Runnable.cpp
       src/hotrod/sys/Log.cpp
       ${socket_impl}
+      src/hotrod/impl/event/JBasicEventMarshaller.cpp
       ${platform_sources}
       ${internal_test_sources}  
       ${CMAKE_BINARY_DIR}/Version.cpp
@@ -600,8 +603,8 @@ endif (ENABLE_INTERNAL_TESTING)
 add_executable (itest test/InteractiveTest.cpp)
 target_include_directories(itest PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
 	"${INCLUDE_FILES_DIR}"
-                                     "${CMAKE_CURRENT_BINARY_DIR}"
-                                     "${PROTOBUF_INCLUDE_DIR}")
+	"${CMAKE_CURRENT_BINARY_DIR}"
+	"${PROTOBUF_INCLUDE_DIR}")
 target_include_directories(itest PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto")
 set_target_properties(itest PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}")
 set_target_properties (itest PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${NO_UNUSED_FLAGS}")
