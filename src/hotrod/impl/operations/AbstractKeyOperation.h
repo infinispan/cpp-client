@@ -64,9 +64,9 @@ template<class T> class AbstractKeyOperation : public RetryOnFailureOperation<T>
         uint8_t status =
             this->readHeaderAndValidate(transport, params);
         VersionedOperationResponse::RspCode code;
-        if (status == protocol::HotRodConstants::NO_ERROR_STATUS) {
+        if (protocol::HotRodConstants::isSuccess(status)) {
            	code = VersionedOperationResponse::SUCCESS;
-        } else if (status == protocol::HotRodConstants::NOT_PUT_REMOVED_REPLACED_STATUS) {
+        } else if (protocol::HotRodConstants::isNotExecuted(status)) {
             TRACE("Operation failed due to modification");
             code = VersionedOperationResponse::MODIFIED_KEY;
         } else if (status == protocol::HotRodConstants::KEY_DOES_NOT_EXIST_STATUS) {
