@@ -66,8 +66,8 @@ public:
      *\param start optional boolean parameter indicating whether to start this RemoteCacheManager
      */
     explicit RemoteCacheManager(
-        const Configuration& configuration,
-        bool start = true);
+            const Configuration& configuration,
+            bool start = true);
 
     ~RemoteCacheManager();
 
@@ -102,153 +102,177 @@ public:
     const Configuration& getConfiguration();
 
     /**
-     * Returns the default RemoteCache given an optional forceReturnValue boolean parameter.
-     * The optional forceReturnValue parameter is false by default meaning that each cache
-     * operation that optionally returns a value will return a NULL. In such case you could
-     * still force operation to return a value on per invocation basis using the appropriate
-     * Flag. However, if you want to force return value on all cache %operations
-     * that optionally return a value set forceReturnValue parameter to true.
+     * Returns a RemoteCache instance connected to the default cache
      *
-     *
-     * \param forceReturnValue if true all cache %operations that optionally return a value
-     * will indeed return a value.
-     * \return the default RemoteCache to interact with on a remote Infinispan server
+     * \param forceReturnValue if true, force all the HotRod operation that have optional return to always return a value
+     * \return a RemoteCache instance connected to the default cache
      *
      */
     template <class K, class V> RemoteCache<K, V> &getCache(
-        bool forceReturnValue = false)
-    {
+            bool forceReturnValue) {
         const std::string key = forceReturnValue ? "/true" : "/false";
         if (remoteCacheMap.find(key)==remoteCacheMap.end())
         {
-          RemoteCache<K,V> *pRc= new RemoteCache<K,V>();
-          remoteCacheMap[key]= std::unique_ptr<RemoteCacheBase>(pRc);
-          RemoteCache<K, V> *rcache=(RemoteCache<K, V> *)remoteCacheMap[key].get();
-          initCache(*rcache, forceReturnValue);
-          rcache->keyMarshaller.reset(new BasicMarshaller<K>(), &Marshaller<K>::destroy);
-          rcache->valueMarshaller.reset(new BasicMarshaller<V>(), &Marshaller<V>::destroy);
-          return *rcache;
+            RemoteCache<K,V> *pRc= new RemoteCache<K,V>();
+            remoteCacheMap[key]= std::unique_ptr<RemoteCacheBase>(pRc);
+            RemoteCache<K, V> *rcache=(RemoteCache<K, V> *)remoteCacheMap[key].get();
+            initCache(*rcache, forceReturnValue);
+            rcache->keyMarshaller.reset(new BasicMarshaller<K>(), &Marshaller<K>::destroy);
+            rcache->valueMarshaller.reset(new BasicMarshaller<V>(), &Marshaller<V>::destroy);
+            return *rcache;
         }
         return *(RemoteCache<K, V> *)remoteCacheMap[key].get();
     }
 
     /**
-     * Returns RemoteCache for the given cache name and an optional forceReturnValue boolean
-     * parameter. The optional forceReturnValue parameter is false by default meaning that
-     * each cache operation that optionally returns a value will return a NULL. In such case
-     * you could still force operation to return a value on per invocation basis using the
-     * appropriate Flag. However, if you want to force return value on all cache %operations
-     * that optionally return a value set forceReturnValue parameter to true.
+     * Returns a RemoteCache instance connected to the default cache
      *
+     * The Configuration.forceReturnValue policy will be used
      *
-     * \param name the cache name to connect to on a remote Infinispan server
-     * \param forceReturnValue if true all cache %operations that optionally return a value
-     * will indeed return a value.
-     * \return the RemoteCache to interact with on a remote Infinispan server
+     * \return a RemoteCache instance connected to the default cache
      *
      */
+    template <class K, class V> RemoteCache<K, V> &getCache() {
+        return getCache<K,V>(getConfiguration().isForceReturnValue());
+    }
+
+    /**
+     * Returns a RemoteCache instance connected to the cache with the given name
+     *
+     * \param name the cache name
+     * \param forceReturnValue if true, force all the HotRod operation that have optional return to always return a value
+     * \return a RemoteCache instance connected to the cache with the given name
+     */
     template <class K, class V> RemoteCache<K, V> &getCache(
-        const std::string& name, bool forceReturnValue = false)
-    {
+            const std::string& name, bool forceReturnValue) {
         const std::string key = forceReturnValue ? name+"/true" : name+"/false";
         if (remoteCacheMap.find(key)==remoteCacheMap.end())
         {
-          RemoteCache<K,V> *pRc= new RemoteCache<K,V>();
-          remoteCacheMap[key]= std::unique_ptr<RemoteCacheBase>(pRc);
-          RemoteCache<K, V> *rcache=(RemoteCache<K, V> *)remoteCacheMap[key].get();
-          initCache(*rcache, name.c_str(), forceReturnValue);
-          rcache->keyMarshaller.reset(new BasicMarshaller<K>(), &Marshaller<K>::destroy);
-          rcache->valueMarshaller.reset(new BasicMarshaller<V>(), &Marshaller<V>::destroy);
-          return *rcache;
+            RemoteCache<K,V> *pRc= new RemoteCache<K,V>();
+            remoteCacheMap[key]= std::unique_ptr<RemoteCacheBase>(pRc);
+            RemoteCache<K, V> *rcache=(RemoteCache<K, V> *)remoteCacheMap[key].get();
+            initCache(*rcache, name.c_str(), forceReturnValue);
+            rcache->keyMarshaller.reset(new BasicMarshaller<K>(), &Marshaller<K>::destroy);
+            rcache->valueMarshaller.reset(new BasicMarshaller<V>(), &Marshaller<V>::destroy);
+            return *rcache;
         }
         return *(RemoteCache<K, V> *)remoteCacheMap[key].get();
     }
 
     /**
-     * Returns the default RemoteCache given the key and the value marshallers, the cache name
-     * and an optional forceReturnValue boolean parameter.
+     * Returns a RemoteCache instance connected to the cache with the given name
      *
-     * The optional forceReturnValue parameter is false by default meaning that each cache
-     * operation that optionally returns a value will return a NULL. In such case you could
-     * still force operation to return a value on per invocation basis using the appropriate
-     * Flag. However, if you want to force return value on all cache %operations that optionally
-     * return a value set forceReturnValue parameter to true.
+     * The Configuration.forceReturnValue policy will be used
+     *
+     * \param name the cache name
+     * \return a RemoteCache instance connected to the cache with the given name
+     */
+    template <class K, class V> RemoteCache<K, V> &getCache(
+            const std::string& name) {
+        return getCache<K,V>(name, getConfiguration().isForceReturnValue());
+    }
+
+    /**
+     * Returns a RemoteCache instance connected to the default cache
      *
      * \param km the key marshaller
      * \param km function used as key marshaller destructor after this is no longer needed
      * \param vm the value marshaller
      * \param vd function used as value marshaller destructor after this is no longer needed
-     * \param forceReturnValue if true all cache %operations that optionally return a value
-     * will indeed return a value.
-     * \return the default RemoteCache to interact with on a remote Infinispan server
-     *
+     * \param forceReturnValue if true, force all the HotRod operation that have optional return to always return a value
+     * \return a RemoteCache instance connected to the default cache
      */
-	template<class K, class V> RemoteCache<K, V> &getCache(Marshaller<K> *km,
-			void (*kd)(Marshaller<K> *), Marshaller<V> *vm,
-			void (*vd)(Marshaller<V> *), bool forceReturnValue = false) {
-		const std::string key = forceReturnValue ? "/true" : "/false";
-		if (remoteCacheMap.find(key) == remoteCacheMap.end()) {
-			RemoteCache<K, V> *pRc = new RemoteCache<K, V>();
-			remoteCacheMap[key] = std::unique_ptr < RemoteCacheBase > (pRc);
-			RemoteCache<K, V> *rcache =
-					(RemoteCache<K, V> *) remoteCacheMap[key].get();
-			initCache(*rcache, forceReturnValue);
-			rcache->keyMarshaller.reset(km, kd);
-			rcache->valueMarshaller.reset(vm, vd);
-			return *rcache;
-		}
-		RemoteCache<K, V> *rcache =
-				(RemoteCache<K, V> *) remoteCacheMap[key].get();
-		initCache(*rcache, forceReturnValue);
-		rcache->keyMarshaller.reset(km, kd);
-		rcache->valueMarshaller.reset(vm, vd);
-		return *rcache;
-	}
+    template<class K, class V> RemoteCache<K, V> &getCache(
+            Marshaller<K> *km, void (*kd)(Marshaller<K> *),
+            Marshaller<V> *vm, void (*vd)(Marshaller<V> *), bool forceReturnValue) {
+        const std::string key = forceReturnValue ? "/true" : "/false";
+        if (remoteCacheMap.find(key) == remoteCacheMap.end()) {
+            RemoteCache<K, V> *pRc = new RemoteCache<K, V>();
+            remoteCacheMap[key] = std::unique_ptr < RemoteCacheBase > (pRc);
+            RemoteCache<K, V> *rcache =
+                    (RemoteCache<K, V> *) remoteCacheMap[key].get();
+            initCache(*rcache, forceReturnValue);
+            rcache->keyMarshaller.reset(km, kd);
+            rcache->valueMarshaller.reset(vm, vd);
+            return *rcache;
+        }
+        RemoteCache<K, V> *rcache =
+                (RemoteCache<K, V> *) remoteCacheMap[key].get();
+        initCache(*rcache, forceReturnValue);
+        rcache->keyMarshaller.reset(km, kd);
+        rcache->valueMarshaller.reset(vm, vd);
+        return *rcache;
+    }
 
     /**
-     * Returns RemoteCache for the given key and value marshallers, the cache name and an
-     * optional forceReturnValue boolean parameter.
+     * Returns a RemoteCache instance connected to the default cache
      *
-     * The optional forceReturnValue parameter is false by default meaning that each cache
-     * operation that optionally returns a value will return a NULL. In such case you could
-     * still force operation to return a value on per invocation basis using the appropriate
-     * Flag. However, if you want to force return value on all cache %operations
-     * that optionally return a value set forceReturnValue parameter to true.
+     * The Configuration.forceReturnValue policy will be used
+     *
+     * \param km the key marshaller
+     * \param km function used as key marshaller destructor after this is no longer needed
+     * \param vm the value marshaller
+     * \param vd function used as value marshaller destructor after this is no longer needed
+     * will indeed return a value.
+     * \return a RemoteCache instance connected to the default cache
+     *
+     */
+    template<class K, class V> RemoteCache<K, V> &getCache(
+            Marshaller<K> *km, void (*kd)(Marshaller<K> *),
+            Marshaller<V> *vm, void (*vd)(Marshaller<V> *)) {
+        return getCache<K,V>(km, kd, vm, vd, getConfiguration().isForceReturnValue());
+    }
+    /**
+     * Returns a RemoteCache instance connected to the cache with the given name
      *
      * \param km the key marshaller
      * \param km function used as key marshaller destructor after this is no longer needed
      * \param vm the value marshaller
      * \param vd function used as value marshaller destructor after this is no longer needed
      * \param name the cache name to connect to on a remote Infinispan server
-     * \param forceReturnValue if true all cache %operations that optionally return a value
-     *  will indeed return a value.
-     * \return the RemoteCache to interact with on a remote Infinispan server
-     *
+     * \param forceReturnValue if true, force all the HotRod operation that have optional return to always return a value
+     * \return a RemoteCache instance connected to the cache with the given name
      */
     template <class K, class V> RemoteCache<K, V> &getCache(
-        Marshaller<K> *km, void (*kd)(Marshaller<K> *),
-        Marshaller<V> *vm, void (*vd)(Marshaller<V> *),
-        const std::string& name, bool forceReturnValue = false)
-    {
-		const std::string key = forceReturnValue ? name+"/true" : name+"/false";
-		if (remoteCacheMap.find(key) == remoteCacheMap.end()) {
-			RemoteCache<K, V> *pRc = new RemoteCache<K, V>();
-			remoteCacheMap[key] = std::unique_ptr < RemoteCacheBase > (pRc);
-			RemoteCache<K, V> *rcache =
-					(RemoteCache<K, V> *) remoteCacheMap[key].get();
-			initCache(*rcache, name.c_str(), forceReturnValue);
-			rcache->keyMarshaller.reset(km, kd);
-			rcache->valueMarshaller.reset(vm, vd);
-			return *rcache;
-		}
-		RemoteCache<K, V> *rcache =
-				(RemoteCache<K, V> *) remoteCacheMap[key].get();
-		initCache(*rcache, name.c_str(), forceReturnValue);
-		rcache->keyMarshaller.reset(km, kd);
-		rcache->valueMarshaller.reset(vm, vd);
-		return *rcache;
+            Marshaller<K> *km, void (*kd)(Marshaller<K> *),
+            Marshaller<V> *vm, void (*vd)(Marshaller<V> *),
+            const std::string& name, bool forceReturnValue) {
+        const std::string key = forceReturnValue ? name+"/true" : name+"/false";
+        if (remoteCacheMap.find(key) == remoteCacheMap.end()) {
+            RemoteCache<K, V> *pRc = new RemoteCache<K, V>();
+            remoteCacheMap[key] = std::unique_ptr < RemoteCacheBase > (pRc);
+            RemoteCache<K, V> *rcache =
+                    (RemoteCache<K, V> *) remoteCacheMap[key].get();
+            initCache(*rcache, name.c_str(), forceReturnValue);
+            rcache->keyMarshaller.reset(km, kd);
+            rcache->valueMarshaller.reset(vm, vd);
+            return *rcache;
+        }
+        RemoteCache<K, V> *rcache =
+                (RemoteCache<K, V> *) remoteCacheMap[key].get();
+        initCache(*rcache, name.c_str(), forceReturnValue);
+        rcache->keyMarshaller.reset(km, kd);
+        rcache->valueMarshaller.reset(vm, vd);
+        return *rcache;
     }
 
+    /**
+     * Returns a RemoteCache instance connected to the cache with the given name
+     *
+     * \param km the key marshaller
+     * \param km function used as key marshaller destructor after this is no longer needed
+     * \param vm the value marshaller
+     * \param vd function used as value marshaller destructor after this is no longer needed
+     * \param name the cache name to connect to on a remote Infinispan server
+     * \param forceReturnValue if true, force all the HotRod operation that have optional return to always return a value
+     * \return a RemoteCache instance connected to the cache with the given name
+     */
+    template <class K, class V> RemoteCache<K, V> &getCache(
+            Marshaller<K> *km, void (*kd)(Marshaller<K> *),
+            Marshaller<V> *vm, void (*vd)(Marshaller<V> *),
+            const std::string& name) {
+        return getCache(km, kd, vm, vd, name, getConfiguration().isForceReturnValue());
+    }
     /**
      * Switch the client on the main cluster
      *
