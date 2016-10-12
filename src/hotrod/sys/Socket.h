@@ -20,6 +20,7 @@ class Socket
     virtual size_t read(char *p, size_t n) = 0;
     virtual void write(const char *p, size_t n) = 0;
     virtual int getSocket() = 0;
+    bool valid=true;
 };
 
 }}} // namespace

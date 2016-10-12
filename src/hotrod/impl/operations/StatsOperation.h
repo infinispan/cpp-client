@@ -27,8 +27,6 @@ class StatsOperation : public RetryOnFailureOperation<std::map<std::string, std:
             Topology&                                 topologyId_,
             uint32_t                                   flags_);
 
-        infinispan::hotrod::transport::Transport& getTransport(int retryCount);
-
         std::map<std::string, std::string> executeOperation(infinispan::hotrod::transport::Transport& transport);
     private:
 
