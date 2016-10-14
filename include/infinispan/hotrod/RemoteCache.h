@@ -872,7 +872,7 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
         base_ping();
     }
 
-    void addClientListener(ClientListener& clientListener, std::vector<std::vector<char> > filterFactoryParams, std::vector<std::vector<char> > converterFactoryParams, const std::function<void()> &recoveryCallback = 0)
+    void addClientListener(ClientListener& clientListener, std::vector<std::vector<char> > filterFactoryParams, std::vector<std::vector<char> > converterFactoryParams, const std::function<void()> &recoveryCallback = nullptr)
     {
     	base_addClientListener(clientListener, filterFactoryParams, converterFactoryParams, recoveryCallback);
     }

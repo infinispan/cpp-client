@@ -81,7 +81,7 @@ char AddClientListenerOperation::executeOperation(transport::Transport& transpor
 		    uint8_t isRetried = codec20.readEventIsRetriedFlag(transport);
 		    if (isCustom != 0)
 		    {
-		    	ClientCacheEntryCustomEvent ev = codec20.readCustomEvent(transport);
+		    	ClientCacheEntryCustomEvent ev = codec20.readCustomEvent(transport,isRetried);
 		    	clientListener.processEvent(ev, listId, isCustom);
 		    }
 		    else

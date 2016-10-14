@@ -8,7 +8,7 @@
 #ifndef INCLUDE_INFINISPAN_HOTROD_CACHECLIENTLISTENER_H_
 #define INCLUDE_INFINISPAN_HOTROD_CACHECLIENTLISTENER_H_
 
-#include <hotrod/impl/event/ClientEvent.h>
+#include "infinispan/hotrod/ClientEvent.h"
 #include "infinispan/hotrod/ImportExport.h"
 #include "infinispan/hotrod/ClientListener.h"
 #include "infinispan/hotrod/RemoteCacheBase.h"

@@ -8,7 +8,7 @@
 #ifndef INCLUDE_INFINISPAN_HOTROD_CLIENTLISTENER_H_
 #define INCLUDE_INFINISPAN_HOTROD_CLIENTLISTENER_H_
 
-#include <hotrod/impl/event/ClientEvent.h>
+#include "infinispan/hotrod/ClientEvent.h"
 #include "infinispan/hotrod/ImportExport.h"
 #include <vector>
 #include <list>
@@ -39,9 +39,9 @@ public:
 	std::vector<char> filterFactoryName;
 	std::vector<char> converterFactoryName;
 	bool useRawData = false ;
-	virtual void processEvent(ClientCacheEntryCreatedEvent<std::vector<char>>, std::vector<char >listId, uint8_t isCustom) const = 0;
-	virtual void processEvent(ClientCacheEntryModifiedEvent<std::vector<char>>, std::vector<char >listId, uint8_t isCustom) const = 0;
-	virtual void processEvent(ClientCacheEntryRemovedEvent<std::vector<char>>, std::vector<char >listId, uint8_t isCustom) const = 0;
+	virtual void processEvent(ClientCacheEntryCreatedEvent<std::vector<char> >, std::vector<char >listId, uint8_t isCustom) const = 0;
+	virtual void processEvent(ClientCacheEntryModifiedEvent<std::vector<char> >, std::vector<char >listId, uint8_t isCustom) const = 0;
+	virtual void processEvent(ClientCacheEntryRemovedEvent<std::vector<char> >, std::vector<char >listId, uint8_t isCustom) const = 0;
 	virtual void processEvent(ClientCacheEntryCustomEvent, std::vector<char >listId, uint8_t isCustom) const = 0;
 	virtual void processFailoverEvent() const
 	{
@@ -64,7 +64,7 @@ public:
 	}
 
 private:
-	std::list<std::function<void()>> failoverCallbacks;
+	std::list<std::function<void()> > failoverCallbacks;
 	std::vector<char> listenerId;
 };
 

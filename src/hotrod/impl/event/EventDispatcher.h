@@ -8,7 +8,7 @@
 #ifndef SRC_HOTROD_IMPL_EVENT_EVENTDISPATCHER_H_
 #define SRC_HOTROD_IMPL_EVENT_EVENTDISPATCHER_H_
 
-#include "hotrod/impl/event/ClientEvent.h"
+#include "infinispan/hotrod/ClientEvent.h"
 #include "infinispan/hotrod/ClientListener.h"
 #include "hotrod/impl/protocol/Codec20.h"
 #include "hotrod/impl/transport/Transport.h"

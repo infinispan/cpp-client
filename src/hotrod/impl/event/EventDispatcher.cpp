@@ -51,7 +51,7 @@ void EventDispatcher::run() {
 				status = 3;
 				if (isCustom != 0) {
 					ClientCacheEntryCustomEvent ev = codec20.readCustomEvent(
-							transport);
+							transport, isRetried);
 					cl.processEvent(ev, listId, isCustom);
 				} else {
 					switch (params.opCode) {

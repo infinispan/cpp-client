@@ -44,7 +44,7 @@ class Codec20 : public Codec
     virtual std::vector<char> readEventListenerId(transport::Transport &transport) const;
     virtual uint8_t readEventIsCustomFlag(transport::Transport &transport) const;
     virtual uint8_t readEventIsRetriedFlag(transport::Transport &transport) const;
-    virtual ClientCacheEntryCustomEvent readCustomEvent(transport::Transport &transport) const;
+    virtual ClientCacheEntryCustomEvent readCustomEvent(transport::Transport &transport, uint8_t isRetried) const;
     virtual ClientCacheEntryExpiredEvent processExpiredEvent(transport::Transport &transport) const;
     virtual ClientCacheEntryCreatedEvent<std::vector<char>> readCreatedEvent(transport::Transport &transport, uint8_t isRetried) const;
     virtual ClientCacheEntryModifiedEvent<std::vector<char>> readModifiedEvent(transport::Transport &transport, uint8_t isRetried) const;

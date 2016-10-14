@@ -321,16 +321,17 @@ uint8_t Codec20::readEventIsRetriedFlag(transport::Transport &transport) const
 }
 
 
-ClientCacheEntryCustomEvent Codec20::readCustomEvent(transport::Transport &transport) const
+ClientCacheEntryCustomEvent Codec20::readCustomEvent(transport::Transport &transport, uint8_t isRetried) const
 {
-	ClientCacheEntryCustomEvent e(transport.readArray());
+	ClientCacheEntryCustomEvent e(transport.readArray(), isRetried);
 	return e;
 }
 
-ClientCacheEntryExpiredEvent Codec20::processExpiredEvent(transport::Transport& /*transport*/) const
+ClientCacheEntryExpiredEvent Codec20::processExpiredEvent(transport::Transport& transport) const
 {
-	ClientCacheEntryExpiredEvent e;
-	return e;
+	std::vector<char> key = transport.readArray();
+	uint64_t version = transport.readLong();
+	return ClientCacheEntryExpiredEvent(key);
 }
 
 ClientCacheEntryCreatedEvent<std::vector<char>> Codec20::readCreatedEvent(transport::Transport &transport, uint8_t isRetried) const
