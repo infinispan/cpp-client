@@ -36,10 +36,7 @@ void EventDispatcher::run() {
 	while (true) {
 		try {
 			while (1) {
-				//uint64_t messageId;
-				status = 1;
 				EventHeaderParams params = codec20.readEventHeader(transport);
-				status = 2;
 				if (!(HotRodConstants::isEvent(params.opCode))) {
 					// TODO handle error in some way
 					break;
@@ -48,7 +45,6 @@ void EventDispatcher::run() {
 						transport);
 				uint8_t isCustom = codec20.readEventIsCustomFlag(transport);
 				uint8_t isRetried = codec20.readEventIsRetriedFlag(transport);
-				status = 3;
 				if (isCustom != 0) {
 					ClientCacheEntryCustomEvent ev = codec20.readCustomEvent(
 							transport, isRetried);
@@ -86,7 +82,6 @@ void EventDispatcher::run() {
 			}
 			transport.setValid(false);
 
-			status = 99;
 			if (recoveryCallback) {
 				recoveryCallback();
 			}

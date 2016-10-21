@@ -112,7 +112,7 @@ private:
 
 class ClientCacheEntryExpiredEvent : public ClientEvent {
 public:
-	   ClientCacheEntryExpiredEvent(std::vector<char> key) {}
+	   ClientCacheEntryExpiredEvent(std::vector<char> /*key*/) {}
 	   uint8_t getType() { return CLIENT_CACHE_ENTRY_EXPIRED; }
 };
 
