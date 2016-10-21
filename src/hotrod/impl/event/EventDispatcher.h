@@ -57,7 +57,7 @@ private:
 	const Codec20& codec20;
 	std::shared_ptr<std::thread> p_thread;
 	int status;
-	const std::function<void()> &recoveryCallback;
+	const std::function<void()> recoveryCallback;
 };
 
 } /* namespace event */
