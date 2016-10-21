@@ -31,7 +31,7 @@ int main(int argc, char** argv) {
     {
         ConfigurationBuilder builder;
                 builder.balancingStrategyProducer(nullptr);
-        builder.addServer().host(argc > 1 ? argv[1] : "127.0.0.1").port(argc > 2 ? atoi(argv[2]) : 11322);
+        builder.addServer().host(argc > 1 ? argv[1] : "127.0.0.1").port(argc > 2 ? atoi(argv[2]) : 11222);
         builder.protocolVersion(Configuration::PROTOCOL_VERSION_24);
         RemoteCacheManager cacheManager(builder.build(), false);
         cacheManager.start();
