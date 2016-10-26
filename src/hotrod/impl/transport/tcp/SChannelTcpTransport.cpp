@@ -14,8 +14,8 @@ namespace infinispan {
 		namespace transport {
 
 			SChannelTcpTransport::SChannelTcpTransport(
-				const InetSocketAddress& a, TransportFactory& factory, const std::string& _serverCAPath, const std::string& _serverCAFile, const std::string& _clientCertificateFile)
-				: TcpTransport(a, factory, sys::SChannelSocket::create(_serverCAPath, _serverCAFile, _clientCertificateFile)) {
+				const InetSocketAddress& a, TransportFactory& factory, const std::string& _serverCAPath, const std::string& _serverCAFile, const std::string& _clientCertificateFile, const std::string& _hostName)
+				: TcpTransport(a, factory, sys::SChannelSocket::create(_serverCAPath, _serverCAFile, _clientCertificateFile, _hostName)) {
 			}
 
 			//Testing purpose only!

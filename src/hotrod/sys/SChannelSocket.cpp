@@ -36,8 +36,8 @@ SChannelSocket::SChannelInitializer::SChannelInitializer() {
 
 }
 
-SChannelSocket::SChannelSocket(const std::string& _serverCAPath, const std::string& _serverCAFile, const std::string& _clientCertificateFile) :
-	m_serverCAPath(_serverCAPath), m_serverCAFile(_serverCAFile), m_clientCertificateFile(_clientCertificateFile)
+SChannelSocket::SChannelSocket(const std::string& _serverCAPath, const std::string& _serverCAFile, const std::string& _clientCertificateFile, const std::string& _hostName) :
+	m_serverCAPath(_serverCAPath), m_serverCAFile(_serverCAFile), m_clientCertificateFile(_clientCertificateFile), m_hostName(_hostName)
     {}
 
 SChannelSocket::~SChannelSocket()
@@ -127,11 +127,15 @@ void SChannelSocket::getNewClientCredentials()
 		// Get pointer to leaf certificate context.
 		pCertContext = pChainContext->rgpChain[0]->rgpElement[0]->pCertContext;
 
-		// Create schannel credential.
+		// Create schannel credential
+		ZeroMemory(&SchannelCred, sizeof(SchannelCred));
 		SchannelCred.dwVersion = SCHANNEL_CRED_VERSION;
 		SchannelCred.cCreds = 1;
 		SchannelCred.paCred = &pCertContext;
-
+        if (!m_hostName.empty())
+        {
+            SchannelCred.dwFlags |= SCH_CRED_SNI_CREDENTIAL;
+        }
 		Status = initializer.g_pSSPI->AcquireCredentialsHandleA(NULL,                   // Name of principal
 			UNISP_NAME_A,           // Name of package
 			SECPKG_CRED_OUTBOUND,   // Flags indicating use
@@ -232,7 +236,7 @@ SECURITY_STATUS SChannelSocket::clientHandshakeLoop(BOOL doInitialRead, SecBuffe
 		// Call InitializeSecurityContext.
 		scRet = initializer.g_pSSPI->InitializeSecurityContextA(&hCred,
 			&hContext,
-			NULL,
+			m_hostName.empty() ? NULL : (LPSTR)m_hostName.c_str(),
 			dwSSPIFlags,
 			0,
 			SECURITY_NATIVE_DREP,
@@ -625,6 +629,11 @@ void SChannelSocket::connect(const std::string & host, int port, int timeout)
 		// leave off this flag, in which case the InitializeSecurityContext
 		// function will validate the server certificate automatically.
 		SchannelCred.dwFlags |= SCH_CRED_MANUAL_CRED_VALIDATION;
+        if (!m_hostName.empty())
+        {
+            SchannelCred.dwFlags |= SCH_CRED_SNI_CREDENTIAL;
+        }
+
 
 		// Create an SSPI credential.
 		Status = SChannelSocket::initializer.g_pSSPI->AcquireCredentialsHandleA(NULL,                 // Name of principal    
@@ -645,7 +654,7 @@ void SChannelSocket::connect(const std::string & host, int port, int timeout)
 
 		Client_Socket = INVALID_SOCKET;
 		connectToServer(host, port, &Client_Socket);
-		performClientHandshake(host, &ExtraData);
+		performClientHandshake(m_hostName.empty() ? host : m_hostName, &ExtraData);
 		isContextInitialized = true;
 		// Authenticate server's credentials. Get server's certificate.
 		Status = initializer.g_pSSPI->QueryContextAttributes(&hContext, SECPKG_ATTR_REMOTE_CERT_CONTEXT, (PVOID)&pRemoteCertContext);
@@ -659,7 +668,7 @@ void SChannelSocket::connect(const std::string & host, int port, int timeout)
 		// Attempt to validate server certificate.
 		if (this->onlyVerified)
 		{
-		Status = verifyServerCertificate(pRemoteCertContext, host, 0);
+		Status = verifyServerCertificate(pRemoteCertContext, host, 0x00001000  /*SECURITY_FLAG_IGNORE_CERT_CN_INVALID*/);
 		if (Status) 
 		{ 
 			ERROR("**** Error 0x%x authenticating server credentials!\n", Status);
@@ -923,8 +932,8 @@ int SChannelSocket::getSocket()
 	return 0;
 }
 
-SChannelSocket* SChannelSocket::create(const std::string& _serverCAPath, const std::string& _serverCAFile, const std::string& _clientCertificateFile) {
-	return new SChannelSocket(_serverCAPath, _serverCAFile, _clientCertificateFile);
+SChannelSocket* SChannelSocket::create(const std::string& _serverCAPath, const std::string& _serverCAFile, const std::string& _clientCertificateFile, const std::string& _hostName) {
+	return new SChannelSocket(_serverCAPath, _serverCAFile, _clientCertificateFile, _hostName);
 }
 
 void SChannelSocket::logAndThrow(const std::string& host, const int port, const std::string& msg) {

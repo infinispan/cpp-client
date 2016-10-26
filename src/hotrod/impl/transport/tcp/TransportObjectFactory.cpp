@@ -26,7 +26,7 @@ TcpTransport& TransportObjectFactory::makeObject(const InetSocketAddress& addres
                 tcpTransportFactory.getSslServerCAPath(), tcpTransportFactory.getSslServerCAFile(), tcpTransportFactory.getSslClientCertificateFile(), tcpTransportFactory.getSniHostName()));
 #else
 return *(new SChannelTcpTransport(address, tcpTransportFactory,
-	tcpTransportFactory.getSslServerCAPath(), tcpTransportFactory.getSslServerCAFile(), tcpTransportFactory.getSslClientCertificateFile()));
+	tcpTransportFactory.getSslServerCAPath(), tcpTransportFactory.getSslServerCAFile(), tcpTransportFactory.getSslClientCertificateFile(), tcpTransportFactory.getSniHostName()));
 #endif
 
 	} else {

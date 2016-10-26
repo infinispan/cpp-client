@@ -18,7 +18,7 @@ namespace infinispan {
 			class SChannelTcpTransport : public TcpTransport
 			{
 			public:
-				SChannelTcpTransport(const InetSocketAddress& address, TransportFactory& factory, const std::string& _serverCAPath, const std::string& _serverCAFile, const std::string& _clientCertificateFile);
+				SChannelTcpTransport(const InetSocketAddress& address, TransportFactory& factory, const std::string& _serverCAPath, const std::string& _serverCAFile, const std::string& _clientCertificateFile, const std::string& _hostName);
 
 			protected:
 				//Testing only!

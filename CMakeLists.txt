@@ -549,19 +549,6 @@ set_target_properties (queryTest-static PROPERTIES COMPILE_FLAGS "${COMPILER_FLA
 endif (MSVC) 
 target_link_libraries (queryTest-static hotrod-static hotrod_protobuf ${PROTOBUF_LIBRARY} ${OPENSSL_LIBRARIES} ${platform_libs})
 
-if(WIN32)
-    add_executable (simple-schannel test/SimpleSChannel.cpp)
-    target_include_directories(simple-schannel PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
-	    "${INCLUDE_FILES_DIR}"
-	    "${INCLUDE_FILES_DIR}/infinispan/hotrod"
-                                         "${CMAKE_CURRENT_BINARY_DIR}"
-                                         "${PROTOBUF_INCLUDE_DIR}")
-    set_property(TARGET simple-schannel PROPERTY CXX_STANDARD 11)
-    set_property(TARGET simple-schannel PROPERTY CXX_STANDARD_REQUIRED ON)
-    set_target_properties(simple-schannel PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}")
-    set_target_properties (simple-schannel PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${NO_UNUSED_FLAGS}")
-    target_link_libraries (simple-schannel hotrod hotrod_protobuf ${PROTOBUF_LIBRARY} ${platform_libs} ${OPENSSL_LIBRARIES})
-else(WIN32)
     add_executable (simple-tls test/SimpleTLS.cpp)
     target_include_directories(simple-tls PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
 	    "${INCLUDE_FILES_DIR}"
@@ -584,7 +571,6 @@ else(WIN32)
     set_target_properties(simple-tls-sni PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}")
     set_target_properties (simple-tls-sni PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${NO_UNUSED_FLAGS}")
     target_link_libraries (simple-tls-sni hotrod hotrod_protobuf ${PROTOBUF_LIBRARY} ${platform_libs} ${OPENSSL_LIBRARIES})
-endif(WIN32)
 
 if (ENABLE_INTERNAL_TESTING)
     add_executable (unittest test/Unit.cpp)
@@ -652,12 +638,8 @@ else (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.sh") AND (EXISTS "${HOTR
     add_test (stop_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py stop)
     add_test (start_ssl_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py start ${JAVA_RUNTIME} ${HOTROD_JBOSS_HOME} standalone-hotrod-ssl.xml)
     add_test (probe_ssl_port ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/probe_port.py localhost 11222 60)
-if(WIN32)
-    add_test (simple-schannel simple-schannel ${CMAKE_CURRENT_SOURCE_DIR}/test/data/infinispan-ca.pem)
-else(WIN32)
     add_test (simple-tls simple-tls ${CMAKE_CURRENT_SOURCE_DIR}/test/data/infinispan-ca.pem)
     add_test (simple-tls-sni simple-tls-sni ${CMAKE_CURRENT_SOURCE_DIR}/test/data/keystore_server_cert.pem)
-endif(WIN32)
     add_test (stop_ssl_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py stop)
 endif (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.sh") AND (EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.bat")))
 
