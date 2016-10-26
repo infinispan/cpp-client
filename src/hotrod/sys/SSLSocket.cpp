@@ -17,9 +17,9 @@ SSLSocket::OpenSSLInitializer::OpenSSLInitializer() {
 
 SSLSocket::OpenSSLInitializer SSLSocket::initializer;
 
-SSLSocket::SSLSocket(const std::string& _serverCAPath, const std::string& _serverCAFile, const std::string& _clientCertificateFile):
+SSLSocket::SSLSocket(const std::string& _serverCAPath, const std::string& _serverCAFile, const std::string& _clientCertificateFile, const std::string& _sniHostName):
     m_socket(Socket::create()), m_bio(0), m_ctx(0), m_ssl(0),
-    m_serverCAPath(_serverCAPath), m_serverCAFile(_serverCAFile), m_clientCertificateFile(_clientCertificateFile) {}
+    m_serverCAPath(_serverCAPath), m_serverCAFile(_serverCAFile), m_clientCertificateFile(_clientCertificateFile), m_sniHostName(_sniHostName) {}
 
 SSLSocket::~SSLSocket()
 {
@@ -50,6 +50,7 @@ void SSLSocket::connect(const std::string& host, int port, int timeout) {
     if (!SSL_CTX_load_verify_locations(m_ctx, m_serverCAFile.empty() ? 0 : m_serverCAFile.c_str(), m_serverCAPath.empty() ? 0 : m_serverCAPath.c_str())) {
         logAndThrow(host, port, "SSL_CTX_load_verify_locations");
     }
+
     m_ssl = SSL_new(m_ctx);
     if (!m_ssl) {
         logAndThrow(host, port, "SSL_new");
@@ -64,7 +65,14 @@ void SSLSocket::connect(const std::string& host, int port, int timeout) {
     }
 
     SSL_set_bio(m_ssl, m_bio, m_bio);
-    //SSL_set_tlsext_host_name(m_ssl, host.c_str()); // SNI
+
+    if (!m_sniHostName.empty())
+    {
+        if (!SSL_set_tlsext_host_name(m_ssl, &m_sniHostName[0])) {
+            logAndThrow(host,port, "SSL_set_tlsext_host_name");
+        }
+    }
+
     if (!SSL_connect(m_ssl)) {
         logAndThrow(host, port, "SSL_connect");
     }
@@ -121,6 +129,6 @@ void SSLSocket::logAndThrow(const std::string& host, const int port, const std::
     throw TransportException(host, port, msg);
 }
 
-SSLSocket* SSLSocket::create(const std::string& _serverCAPath, const std::string& _serverCAFile, const std::string& _clientCertificateFile) {
-    return new SSLSocket(_serverCAPath, _serverCAFile, _clientCertificateFile);
+SSLSocket* SSLSocket::create(const std::string& _serverCAPath, const std::string& _serverCAFile, const std::string& _clientCertificateFile, const std::string& _sniHostName) {
+    return new SSLSocket(_serverCAPath, _serverCAFile, _clientCertificateFile, _sniHostName);
 }

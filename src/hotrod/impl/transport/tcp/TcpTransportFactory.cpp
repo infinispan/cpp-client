@@ -61,6 +61,7 @@ void TcpTransportFactory::start(
     createAndPreparePool();
 
     balancer->setServers(initialServers);
+    sniHostName = configuration.getSslConfiguration().sniHostName();
     pingServers();
  }
 
@@ -347,6 +348,11 @@ void TcpTransportFactory::clearHashFunction(const std::vector<char>& cacheName) 
 ConsistentHashFactory& TcpTransportFactory::getConsistentHashFactory(){
     ScopedLock<Mutex> l(lock);
     return *topologyInfo->getHashFactory();
+}
+
+const std::string& TcpTransportFactory::getSniHostName(){
+    return sniHostName;
+
 }
 
 }}} // namespace infinispan::hotrod::transport

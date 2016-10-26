@@ -14,8 +14,8 @@ namespace hotrod {
 namespace transport {
 
 SSLTcpTransport::SSLTcpTransport(
-    const InetSocketAddress& a, TransportFactory& factory, const std::string& _serverCAPath, const std::string& _serverCAFile, const std::string& _clientCertificateFile)
-: TcpTransport(a, factory, sys::SSLSocket::create(_serverCAPath, _serverCAFile, _clientCertificateFile)) {
+    const InetSocketAddress& a, TransportFactory& factory, const std::string& _serverCAPath, const std::string& _serverCAFile, const std::string& _clientCertificateFile, const std::string& _sniHostName)
+: TcpTransport(a, factory, sys::SSLSocket::create(_serverCAPath, _serverCAFile, _clientCertificateFile, _sniHostName)) {
 }
 
 //Testing purpose only!

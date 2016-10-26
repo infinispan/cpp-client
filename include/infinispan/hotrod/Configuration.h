@@ -167,6 +167,8 @@ class Configuration
 
     HR_EXTERN FailOverRequestBalancingStrategy::ProducerFn getBalancingStrategy() const;
 
+    SslConfiguration& getSslConfiguration() { return sslConfiguration; }
+
 private:
     portable::string protocolVersion;
     portable::local_ptr<std::string> protocolVersionPtr;
