@@ -54,7 +54,7 @@ int main(int argc, char** argv) {
       }
       catch (Exception e)
       {
-          std::cout << "PASS: not connected with wrong SNI" << std::endl;
+          std::cout << "FAIL: not connected with correct SNI" << std::endl;
           return 1;
       }
     }
@@ -86,6 +86,7 @@ int main(int argc, char** argv) {
                   std::cerr << "get/put fail for " << k1 << " got " << *rv << " expected " << v1 << std::endl;
                   return 1;
                }
+               std::cout << "FAIL: connected with wrong SNI" << std::endl;
                cacheManager.stop();
                return 1;
       }

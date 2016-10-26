@@ -18,10 +18,10 @@ namespace infinispan {
 			class SChannelSocket : public infinispan::hotrod::sys::Socket
 			{
 			public:
-				SChannelSocket(const std::string& _serverCAPath, const std::string& _serverCAFile, const std::string& _clientCertificateFile);
+				SChannelSocket(const std::string& _serverCAPath, const std::string& _serverCAFile, const std::string& _clientCertificateFile, const std::string& _hostName);
 				virtual ~SChannelSocket();
 				// Inherited via Socket
-				static SChannelSocket*  create(const std::string& _serverCAPath, const std::string& _serverCAFile, const std::string& _clientCertificateFile);
+				static SChannelSocket*  create(const std::string& _serverCAPath, const std::string& _serverCAFile, const std::string& _clientCertificateFile, const std::string& _hostName);
 
 				virtual void    connect(const std::string & host, int port, int timeout) override;
 				virtual void    close() override;
@@ -60,6 +60,7 @@ namespace infinispan {
 				std::string    m_serverCAPath;
 				std::string    m_serverCAFile;
 				std::string    m_clientCertificateFile;
+                std::string    m_hostName;
 				SOCKET            Client_Socket;
 				CredHandle        hCred;
 				struct _SecHandle hCtxt;
@@ -72,7 +73,7 @@ namespace infinispan {
 				unsigned int offset_bytes=0;
 				boolean      isContextInitialized = false;
 				boolean      isCredsInitialized = false;
-				boolean      onlyVerified = false;
+				boolean      onlyVerified = true;
 			};
 
 		}
