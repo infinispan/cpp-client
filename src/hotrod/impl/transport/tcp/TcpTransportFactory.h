@@ -39,6 +39,7 @@ class TcpTransportFactory : public TransportFactory
     int getMaxRetries();
     int getSoTimeout();
     int getConnectTimeout();
+    const std::string& getSniHostName();
     bool isSslEnabled();
     const std::string& getSslServerCAPath();
     const std::string& getSslServerCAFile();
@@ -75,6 +76,7 @@ class TcpTransportFactory : public TransportFactory
     ConnectionPool* getConnectionPool();
     std::vector<ServerConfiguration> getNextWorkingServersConfiguration();
     void pingExternalServer(InetSocketAddress s);
+    std::string sniHostName;
 };
 
 }}} // namespace infinispan::hotrod::transport

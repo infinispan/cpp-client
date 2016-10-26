@@ -573,6 +573,17 @@ else(WIN32)
     set_target_properties(simple-tls PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}")
     set_target_properties (simple-tls PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${NO_UNUSED_FLAGS}")
     target_link_libraries (simple-tls hotrod hotrod_protobuf ${PROTOBUF_LIBRARY} ${platform_libs} ${OPENSSL_LIBRARIES})
+    add_executable (simple-tls-sni test/SimpleTLS-SNI.cpp)
+    target_include_directories(simple-tls-sni PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
+	    "${INCLUDE_FILES_DIR}"
+	    "${INCLUDE_FILES_DIR}/infinispan/hotrod"
+                                         "${CMAKE_CURRENT_BINARY_DIR}"
+                                         "${PROTOBUF_INCLUDE_DIR}")
+    set_property(TARGET simple-tls-sni PROPERTY CXX_STANDARD 11)
+    set_property(TARGET simple-tls-sni PROPERTY CXX_STANDARD_REQUIRED ON)
+    set_target_properties(simple-tls-sni PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}")
+    set_target_properties (simple-tls-sni PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${NO_UNUSED_FLAGS}")
+    target_link_libraries (simple-tls-sni hotrod hotrod_protobuf ${PROTOBUF_LIBRARY} ${platform_libs} ${OPENSSL_LIBRARIES})
 endif(WIN32)
 
 if (ENABLE_INTERNAL_TESTING)
@@ -645,6 +656,7 @@ if(WIN32)
     add_test (simple-schannel simple-schannel ${CMAKE_CURRENT_SOURCE_DIR}/test/data/infinispan-ca.pem)
 else(WIN32)
     add_test (simple-tls simple-tls ${CMAKE_CURRENT_SOURCE_DIR}/test/data/infinispan-ca.pem)
+    add_test (simple-tls-sni simple-tls-sni ${CMAKE_CURRENT_SOURCE_DIR}/test/data/keystore_server_cert.pem)
 endif(WIN32)
     add_test (stop_ssl_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py stop)
 endif (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.sh") AND (EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.bat")))

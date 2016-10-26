@@ -23,7 +23,7 @@ TcpTransport& TransportObjectFactory::makeObject(const InetSocketAddress& addres
     if(tcpTransportFactory.isSslEnabled()) {
 #if !defined _WIN32 && !defined _WIN64
         return *(new SSLTcpTransport(address, tcpTransportFactory,
-                tcpTransportFactory.getSslServerCAPath(), tcpTransportFactory.getSslServerCAFile(), tcpTransportFactory.getSslClientCertificateFile()));
+                tcpTransportFactory.getSslServerCAPath(), tcpTransportFactory.getSslServerCAFile(), tcpTransportFactory.getSslClientCertificateFile(), tcpTransportFactory.getSniHostName()));
 #else
 return *(new SChannelTcpTransport(address, tcpTransportFactory,
 	tcpTransportFactory.getSslServerCAPath(), tcpTransportFactory.getSslServerCAFile(), tcpTransportFactory.getSslClientCertificateFile()));

@@ -10,8 +10,8 @@ namespace hotrod {
 class HR_EXTERN SslConfiguration
 {
   public:
-    SslConfiguration(const bool _enabled, const std::string& _serverCAPath, const std::string& _serverCAFile, const std::string& _clientCertificateFile):
-        m_enabled(_enabled), m_serverCAPath(_serverCAPath), m_serverCAFile(_serverCAFile), m_clientCertificateFile(_clientCertificateFile) {};
+    SslConfiguration(const bool _enabled, const std::string& _serverCAPath, const std::string& _serverCAFile, const std::string& _clientCertificateFile, const std::string& _sniHostName):
+        m_enabled(_enabled), m_serverCAPath(_serverCAPath), m_serverCAFile(_serverCAFile), m_clientCertificateFile(_clientCertificateFile), m_sniHostName(_sniHostName) {};
 
     /**
      * Returns whether SSL is enabled
@@ -53,6 +53,16 @@ class HR_EXTERN SslConfiguration
         return m_clientCertificateFile;
     }
 
+    /**
+     * Returns the certificate file used for the client
+     *
+     * \return the file which contains the client certificate
+     */
+    const std::string& sniHostName() const
+    {
+        return m_sniHostName;
+    }
+
   private:
     bool m_enabled;
 #if _MSC_VER
@@ -62,6 +72,7 @@ class HR_EXTERN SslConfiguration
     std::string m_serverCAPath;
     std::string m_serverCAFile;
     std::string m_clientCertificateFile;
+    std::string m_sniHostName;
 #if _MSC_VER
 #pragma warning(pop)
 #endif

@@ -46,6 +46,7 @@ class TransportFactory
     virtual int getMaxRetries() = 0;
     virtual int getSoTimeout() = 0;
     virtual int getConnectTimeout() = 0;
+    virtual const std::string& getSniHostName() = 0;
 
     virtual void updateServers(std::vector<InetSocketAddress>& ) = 0;
     virtual ~TransportFactory() {}
@@ -89,6 +90,7 @@ class TransportFactory
   protected:
     TopologyInfo* topologyInfo;
     int topologyAge;
+    const std::string sniHostName;
 
   private:
     static TransportFactory* newInstance(const Configuration& config);

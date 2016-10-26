@@ -11,9 +11,9 @@ namespace sys {
 class SSLSocket: public infinispan::hotrod::sys::Socket
 {
   public:
-    static SSLSocket* create(const std::string& _serverCAPath, const std::string& _serverCAFile, const std::string& _clientCertificateFile);
+    static SSLSocket* create(const std::string& _serverCAPath, const std::string& _serverCAFile, const std::string& _clientCertificateFile, const std::string& _sniHostName);
 
-    SSLSocket(const std::string& _serverCAPath, const std::string& _serverCAFile, const std::string& _clientCertificateFile);
+    SSLSocket(const std::string& _serverCAPath, const std::string& _serverCAFile, const std::string& _clientCertificateFile, const std::string& _sniHostName);
     virtual ~SSLSocket();
 
     virtual void connect(const std::string& host, int port, int timeout);
@@ -34,6 +34,7 @@ class SSLSocket: public infinispan::hotrod::sys::Socket
     std::string m_serverCAPath;
     std::string m_serverCAFile;
     std::string m_clientCertificateFile;
+    std::string m_sniHostName;
 
     class OpenSSLInitializer
     {

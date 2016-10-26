@@ -14,15 +14,17 @@ class SslConfigurationBuilder
 {
   public:
     SslConfigurationBuilder(ConfigurationBuilder &parent): ConfigurationChildBuilder(parent),
-        m_enabled(false), m_serverCAPath(), m_serverCAFile(), m_clientCertificateFile() {}
+        m_enabled(false), m_serverCAPath(), m_serverCAFile(), m_clientCertificateFile(), m_sniHostName() {}
+
     SslConfiguration create() {
-        return SslConfiguration(m_enabled, m_serverCAPath, m_serverCAFile, m_clientCertificateFile);
+        return SslConfiguration(m_enabled, m_serverCAPath, m_serverCAFile, m_clientCertificateFile, m_sniHostName);
     }
     virtual SslConfigurationBuilder& read(SslConfiguration& configuration) {
         m_enabled = configuration.enabled();
         m_serverCAPath = configuration.serverCAPath();
         m_serverCAFile = configuration.serverCAFile();
         m_clientCertificateFile = configuration.clientCertificateFile();
+        m_sniHostName = configuration.sniHostName();
         return *this;
     }
     virtual void validate() {};
@@ -93,12 +95,34 @@ class SslConfigurationBuilder
         return *this;
     }
 
+    /**
+     * Specifies the hostname for SNI.
+     *
+     * \return ServerConfigurationBuilder for further configuration
+     */
+    SslConfigurationBuilder& sniHostName(const std::string& _sniHostName)
+    {
+        m_sniHostName = _sniHostName;
+        return *this;
+    }
+
+    /**
+     * Returns the certificate file used for the client
+     *
+     * \return the file which contains the client certificate
+     */
+    const std::string& getSniHostName() const
+    {
+        return m_sniHostName;
+    }
+
+
 private:
     bool m_enabled;
     std::string m_serverCAPath;
     std::string m_serverCAFile;
     std::string m_clientCertificateFile;
-	
+    std::string m_sniHostName;
 };
 
 }}

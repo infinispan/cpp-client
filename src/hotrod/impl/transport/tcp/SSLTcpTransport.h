@@ -18,7 +18,7 @@ class TransportFactory;
 class SSLTcpTransport : public TcpTransport
 {
   public:
-    SSLTcpTransport(const InetSocketAddress& address, TransportFactory& factory, const std::string& _serverCAPath, const std::string& _serverCAFile, const std::string& _clientCertificateFile);
+    SSLTcpTransport(const InetSocketAddress& address, TransportFactory& factory, const std::string& _serverCAPath, const std::string& _serverCAFile, const std::string& _clientCertificateFile, const std::string& _sniHostName);
 
   protected:
     //Testing only!
