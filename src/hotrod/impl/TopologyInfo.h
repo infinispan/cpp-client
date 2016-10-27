@@ -64,6 +64,11 @@ public:
 	}
 	int getSegmentsByCacheName(std::vector<char> cacheName);
 
+	std::vector<transport::InetSocketAddress>& getServers()
+    {
+		return servers;
+    }
+
 private:
 	Topology topology;
     std::shared_ptr<infinispan::hotrod::consistenthash::ConsistentHashFactory> hashFactory;

@@ -17,47 +17,56 @@
 using namespace infinispan::hotrod;
 
 namespace infinispan {
-    namespace hotrod {
-        namespace transport {
+namespace hotrod {
+namespace transport {
 
-            class MyRoundRobinBalancingStrategy : public FailOverRequestBalancingStrategy
-            {
-            public:
-                MyRoundRobinBalancingStrategy() : index(0) { }
+class MyRoundRobinBalancingStrategy: public FailOverRequestBalancingStrategy {
+public:
+	MyRoundRobinBalancingStrategy() :
+			index(0) {
+	}
 
-                static FailOverRequestBalancingStrategy *newInstance() {
-                    return new MyRoundRobinBalancingStrategy();
-                }
+	static FailOverRequestBalancingStrategy *newInstance() {
+		return new MyRoundRobinBalancingStrategy();
+	}
 
-                void setServers(const std::vector<transport::InetSocketAddress> &s) {
-                    servers = s;
-                    // keep the old index if possible so that we don't produce more requests for the first server
-                    if (index >= servers.size()) {
-                        index = 0;
-                    }
-                }
+	void setServers(const std::vector<transport::InetSocketAddress> &s) {
+		servers = s;
+		// keep the old index if possible so that we don't produce more requests for the first server
+		if (index >= servers.size()) {
+			index = 0;
+		}
+	}
 
-                ~MyRoundRobinBalancingStrategy() { }
+	~MyRoundRobinBalancingStrategy() {
+	}
 
-                const transport::InetSocketAddress &getServerByIndex(size_t pos) {
-                    const transport::InetSocketAddress &server = servers[pos];
-                    return server;
-                }
-            private:
-                std::vector<transport::InetSocketAddress> servers;
-                size_t index;
-                const transport::InetSocketAddress &nextServer() {
-                    const transport::InetSocketAddress &server = getServerByIndex(index++);
-                    if (index >= servers.size()) {
-                        index = 0;
-                    }
-                    return server;
-                }
+	const transport::InetSocketAddress &getServerByIndex(size_t pos) {
+		const transport::InetSocketAddress &server = servers[pos];
+		return server;
+	}
+private:
+	std::vector<transport::InetSocketAddress> servers;
+	size_t index;
+	const transport::InetSocketAddress &nextServer(
+			const std::set<transport::InetSocketAddress>& failedServers) {
+		for (unsigned int i = 0; i <= servers.size(); i++) {
+			const transport::InetSocketAddress &server = getServerByIndex(
+					index++);
+			if (failedServers.empty() || failedServers.find(server)!=failedServers.end() || i>failedServers.size()) {
+				if (index >= servers.size()) {
+					index = 0;
+				}
+			}
+			return server;
+		}
+		throw Exception("Bad news, no server available.");
+	}
+};
 
-
-            };
-
-        }}}
+}
+}
+}
 
 
 template <class T>

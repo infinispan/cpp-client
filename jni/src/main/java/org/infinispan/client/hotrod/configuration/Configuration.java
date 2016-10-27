@@ -29,6 +29,7 @@ public class Configuration {
    private final Class<? extends Marshaller> marshallerClass;
    private final Marshaller marshaller;
    private final List<ServerConfiguration> servers;
+   private final List<ServerConfiguration> failoverServers;
    private final Class<? extends TransportFactory> transportFactory;
    
    private org.infinispan.client.hotrod.jni.Configuration jniConfiguration;
@@ -43,15 +44,16 @@ public class Configuration {
       this.marshallerClass = null;
       this.marshaller = null;
       this.servers = null;
+      this.failoverServers = null;
       this.transportFactory = null;
    }
 
    Configuration(ExecutorFactoryConfiguration asyncExecutorFactory, Class<? extends RequestBalancingStrategy> balancingStrategy, ClassLoader classLoader,
          ConnectionPoolConfiguration connectionPool, int connectionTimeout, Class<? extends ConsistentHash>[] consistentHashImpl, boolean forceReturnValues, int keySizeEstimate, Class<? extends Marshaller> marshallerClass,
-         boolean pingOnStartup, String protocolVersion, List<ServerConfiguration> servers, int socketTimeout, SslConfiguration ssl, boolean tcpNoDelay,
+         boolean pingOnStartup, String protocolVersion, List<ServerConfiguration> servers, List<ServerConfiguration> failOverervers, int socketTimeout, SslConfiguration ssl, boolean tcpNoDelay,
          Class<? extends TransportFactory> transportFactory, int valueSizeEstimate, int maxRetries) {
       this.jniConfiguration = new org.infinispan.client.hotrod.jni.Configuration(protocolVersion, connectionPool.getJniConnectionPoolConfiguration(),
-            connectionTimeout, forceReturnValues, keySizeEstimate,  null, socketTimeout, ssl.getJniSslConfiguration(), tcpNoDelay,
+            connectionTimeout, forceReturnValues, keySizeEstimate, null, socketTimeout, ssl.getJniSslConfiguration(), tcpNoDelay,
             valueSizeEstimate, maxRetries);
       this.asyncExecutorFactory = asyncExecutorFactory;
       this.balancingStrategy = balancingStrategy;
@@ -60,6 +62,7 @@ public class Configuration {
       this.marshallerClass = marshallerClass;
       this.marshaller = null;
       this.servers = Collections.unmodifiableList(servers);
+      this.failoverServers = Collections.unmodifiableList(servers);
       this.transportFactory = transportFactory;
    }
 
@@ -77,6 +80,7 @@ public class Configuration {
       this.marshallerClass = null;
       this.marshaller = marshaller;
       this.servers = Collections.unmodifiableList(servers);
+      this.failoverServers = Collections.unmodifiableList(servers);
       this.transportFactory = transportFactory;
    }
 

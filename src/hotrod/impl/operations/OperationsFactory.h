@@ -2,9 +2,9 @@
 #define ISPN_HOTROD_OPERATIONS_OPERATIONSFACTORY_H
 
 #include <infinispan/hotrod/CacheTopologyInfo.h>
+#include <infinispan/hotrod/ClientListener.h>
 #include "infinispan/hotrod/Flag.h"
 
-#include <set>
 #include <infinispan/hotrod/portable.h>
 #if _MSC_VER
 #pragma warning(push)
@@ -15,7 +15,13 @@
 #pragma warning(pop)
 #endif
 
+#include "infinispan/hotrod/ClientListener.h"
+#include <set>
+#include <functional>
+#include <memory>
+
 using namespace org::infinispan::query::remote::client;
+using namespace infinispan::hotrod::event;
 
 namespace infinispan {
 namespace hotrod {
@@ -30,6 +36,11 @@ class Transport;
 
 namespace protocol {
 class Codec;
+}
+
+namespace event
+{
+class ClientListenerNotifier;
 }
 
 namespace operations {
@@ -53,6 +64,8 @@ class SizeOperation;
 class FaultTolerantPingOperation;
 class ExecuteCmdOperation;
 class QueryOperation;
+class AddClientListenerOperation;
+class RemoveClientListenerOperation;
 
 
 class OperationsFactory
@@ -107,6 +120,8 @@ class OperationsFactory
 
     FaultTolerantPingOperation* newFaultTolerantPingOperation();
 
+    AddClientListenerOperation* newAddClientListenerOperation(ClientListener& listener, ClientListenerNotifier& listenerNotifier, const std::vector<std::vector<char> > filterFactoryParam, const std::vector<std::vector<char> > converterFactoryParams,const std::function<void()> &recoveryCallback);
+    RemoveClientListenerOperation* newRemoveClientListenerOperation(ClientListener& listener, ClientListenerNotifier& listenerNotifier);
     void addFlags(uint32_t flags);
     void setFlags(uint32_t flags);
 

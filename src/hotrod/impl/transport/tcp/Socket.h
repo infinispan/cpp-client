@@ -4,6 +4,7 @@
 #include "hotrod/sys/Socket.h"
 
 #include <sstream>
+#include <memory>
 
 namespace infinispan {
 namespace hotrod {
@@ -17,6 +18,7 @@ class InputStream
   private:
     static const size_t BufferSize = 1024;
     InputStream(sys::Socket& socket);
+    ~InputStream() {}
     sys::Socket& socket;
     char buffer[BufferSize];
     char* ptr;
@@ -34,6 +36,7 @@ class OutputStream
     void flush();
   private:
     OutputStream(sys::Socket& socket);
+    ~OutputStream() {}
     sys::Socket& socket;
     std::ostringstream out;
 
@@ -44,19 +47,35 @@ class Socket
 {
   public:
     Socket(sys::Socket *_socket);
-    ~Socket();
+    Socket(const Socket& s);
+    ~Socket() {};
     void connect(const std::string& host, int port, int timeout);
     void close();
     void setTcpNoDelay(bool tcpNoDelay);
     void setTimeout(int timeout);
     InputStream& getInputStream();
     OutputStream& getOutputStream();
-
+	sys::Socket* getSocket() const {
+		return socket.get();
+	}
+	void setSocket(sys::Socket* socket) {
+		this->socket.reset(socket);
+	}
+	void setValid(bool valid)
+	{
+		socket->valid=valid;
+		if (!valid)
+			socket->valid=valid;
+	}
+	bool isValid()
+	{
+		return socket->valid;
+	}
   private:
-    sys::Socket *socket;
+    std::shared_ptr<sys::Socket> socket;
     InputStream inputStream;
     OutputStream outputStream;
-
+  public:
 };
 
 }}} // namespace infinispan::hotrod::transport::tcp

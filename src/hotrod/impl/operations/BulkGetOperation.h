@@ -27,8 +27,6 @@ class BulkGetOperation : public RetryOnFailureOperation<std::map<std::vector<cha
             uint32_t                                   flags_,
             int                                    entryCount_);
 
-        infinispan::hotrod::transport::Transport& getTransport(int retryCount);
-
         std::map<std::vector<char>,std::vector<char>> executeOperation(infinispan::hotrod::transport::Transport& transport);
     private:
         int entryCount;
