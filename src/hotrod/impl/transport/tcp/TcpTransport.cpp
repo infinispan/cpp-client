@@ -15,8 +15,8 @@ namespace transport {
 
 TcpTransport::TcpTransport(
     const InetSocketAddress& a, TransportFactory& factory)
-: AbstractTransport(factory), socket(sys::Socket::create()), invalid(false){
-    serverAddress = new InetSocketAddress(a);
+: AbstractTransport(factory), socket(sys::Socket::create()) {
+    serverAddress.reset(new InetSocketAddress(a));
     socket.connect(a.getHostname(),a.getPort(), factory.getConnectTimeout());
     socket.setTimeout(factory.getSoTimeout());
     socket.setTcpNoDelay(factory.isTcpNoDelay());
@@ -24,8 +24,8 @@ TcpTransport::TcpTransport(
 
 TcpTransport::TcpTransport(
     const InetSocketAddress& a, TransportFactory& factory, sys::Socket *sock)
-: AbstractTransport(factory), socket(sock), invalid(false){
-    serverAddress = new InetSocketAddress(a);
+: AbstractTransport(factory), socket(sock) {
+    serverAddress.reset(new InetSocketAddress(a));
     socket.connect(a.getHostname(),a.getPort(), factory.getConnectTimeout());
     socket.setTimeout(factory.getSoTimeout());
     socket.setTcpNoDelay(factory.isTcpNoDelay());
@@ -33,7 +33,9 @@ TcpTransport::TcpTransport(
 
 //Testing purpose only!
 TcpTransport::TcpTransport()
-: AbstractTransport(*(TransportFactory*)NULL), socket(sys::Socket::create()), invalid(false), serverAddress(){}
+: AbstractTransport(*(TransportFactory*)NULL), socket(sys::Socket::create()), serverAddress(){}
+
+//TcpTransport::TcpTransport(const TcpTransport& t) : AbstractTransport(t.getTransportFactory()), socket(t.socket.getSocket()), invalid(false), serverAddress(t.serverAddress) {}
 
 void TcpTransport::flush() {
     socket.getOutputStream().flush();
@@ -104,26 +106,33 @@ void TcpTransport::release() {
     try {
         socket.close();
     } catch (const Exception& e) {
-        invalid = true;
+        socket.setValid(false);
+
         TRACE("Caught exception when closing socket: %s", e.what());
     }
 }
 
-void TcpTransport::invalidate() {
-    invalid = true;
-}
-
 void TcpTransport::destroy() {
+	this->setValid(false);
     socket.close();
-    delete serverAddress;
 }
 
-bool TcpTransport::isValid(){
-    return !invalid;
-}
-
-const InetSocketAddress& TcpTransport::getServerAddress() {
+const InetSocketAddress& TcpTransport::getServerAddress() const {
    return *serverAddress;
+}
+
+bool TcpTransport::isValid()
+{
+	return socket.isValid();
+}
+
+void TcpTransport::setValid(bool valid)
+{
+	socket.setValid(valid);
+}
+Transport* TcpTransport::clone()
+{
+	return new TcpTransport(*this);
 }
 
 }}} /* namespace */

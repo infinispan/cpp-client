@@ -22,11 +22,6 @@ BulkGetKeysOperation::BulkGetKeysOperation(
         codec_, transportFactory_, cacheName_, topologyId_, flags_), scope(scope_)
 {}
 
-Transport& BulkGetKeysOperation::getTransport(int /*retryCount*/)
-{
-        return RetryOnFailureOperation<std::set<std::vector<char>> >::transportFactory->getTransport(cacheName);
-}
-
 std::set<std::vector<char>> BulkGetKeysOperation::executeOperation(Transport& transport)
 {
     TRACE("Execute BulkGetKeys(flags=%u,scope=%d)", flags, scope);

@@ -193,7 +193,7 @@ std::map<InetSocketAddress, std::set<int32_t> > Codec10::computeNewHashes(
                 // If error, the body of the message just contains a message
                 std::string msgFromServer = transport.readString();
                 if (invalidate) {
-                    transport.invalidate();
+                    transport.setValid(false);
                 }
                 if (msgFromServer.find("SuspectException") != std::string::npos ||
                     msgFromServer.find("SuspectedException") != std::string::npos) {
@@ -240,5 +240,36 @@ void Codec10::writeExpirationParams(transport::Transport& t,uint64_t lifespan, u
     t.writeVInt(mInt);
 }
 
+//void Codec10::writeClientListenerParams(transport::Transport& , const ClientListener,
+//		const std::vector<std::vector<char> > &, const std::vector<std::vector<char> > &) const
+//{
+//
+//}
+//char Codec10::readAddEventListenerResponseType(transport::Transport &, uint64_t&) const
+//{
+//	return 0;
+//}
+//
+//void Codec10::processEvent() const
+//{
+//  //No events for this protocol version
+//}
+//
+//uint8_t Codec10::readPartialHeader(transport::Transport &, HeaderParams &, uint8_t) const
+//{
+//	//not used for this protocol version
+//	return 0;
+//}
+//
+//std::vector<char> Codec10::readEventListenerId(transport::Transport &transport) const
+//{
+//	//not used for this protocol version
+//	return std::vector<char>();
+//}
+//uint8_t Codec10::readEventIsCustomFlag(transport::Transport &transport) const
+//{
+//	//not used for this protocol version
+//	return 0;
+//}
 
 }}} // namespace infinispan::hotrod::protocol

@@ -56,7 +56,7 @@ void throwIOErr (const std::string& host, int port, const char *msg, int errnum)
             m << " Unknown WSA error " << errnum;
         }
     }
-    throw TransportException(host, port, m.str());
+    throw TransportException(host, port, m.str(),-1);
 }
 
 } /* namespace */

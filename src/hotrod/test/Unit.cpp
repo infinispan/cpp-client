@@ -9,7 +9,7 @@
 #include "hotrod/sys/Condition.h"
 #include "hotrod/sys/RunOnce.h"
 #include "hotrod/sys/Log.h"
-#include "hotrod/impl/transport/AbstractTransport.h"
+#include "hotrod/impl/transport/tcp/TcpTransport.h"
 #include "hotrod/impl/protocol/CodecFactory.h"
 #include "hotrod/impl/protocol/Codec10.h"
 #include "infinispan/hotrod/Configuration.h"
@@ -37,58 +37,59 @@ using namespace infinispan::hotrod::protocol;
 using namespace infinispan::hotrod::sys;
 using namespace infinispan::hotrod::transport;
 
-class TestTransport : public AbstractTransport {
+class TestTransport: public TcpTransport {
 
 public:
-    TestTransport() : AbstractTransport(*(TransportFactory*)NULL) {
-    }
+	TestTransport() :
+			TcpTransport() {
+	}
 
-    void flush() {
+	void flush() {
+	}
 
-    }
+	void writeByte(uint8_t var) {
+		UNUSED(var);
+	}
 
-    void writeByte(uint8_t var) {
-        UNUSED(var);
-    }
+	void writeVInt(uint32_t var) {
+		UNUSED(var);
+	}
 
-    void writeVInt(uint32_t var) {
-        UNUSED(var);
-    }
+	void writeVLong(uint64_t var) {
+		UNUSED(var);
+	}
 
-    void writeVLong(uint64_t var) {
-        UNUSED(var);
-    }
+	uint8_t readByte() {
+		return 0;
+	}
 
-    uint8_t readByte() {
-        return 0;
-    }
+	uint32_t readVInt() {
+		return 0;
+	}
 
-    uint32_t readVInt() {
-        return 0;
-    }
+	uint64_t readVLong() {
+		return 0;
+	}
 
-    uint64_t readVLong() {
-        return 0;
-    }
+	void release() {
 
-    void release() {
+	}
 
-    }
+	void invalidate() {
 
-    void invalidate() {
-
-    }
+	}
 
 protected:
-    void writeBytes(const std::vector<char> &bytes) {
-        UNUSED(bytes);
-    }
+	void writeBytes(const std::vector<char> &bytes) {
+		UNUSED(bytes);
+	}
 
-    std::vector<char> readBytes(uint32_t size) {
-        UNUSED(size);
-        return std::vector<char>();
-    }
+	std::vector<char> readBytes(uint32_t size) {
+		UNUSED(size);
+		return std::vector<char>();
+	}
 };
+
 
 class CodecInvoker : public Runnable {
 
