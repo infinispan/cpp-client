@@ -938,7 +938,7 @@ SChannelSocket* SChannelSocket::create(const std::string& _serverCAPath, const s
 
 void SChannelSocket::logAndThrow(const std::string& host, const int port, const std::string& msg) {
 	DEBUG(msg.c_str());
-	throw TransportException(host, port, msg);
+	throw TransportException(host, port, msg, -1);
 }
 
 void SChannelSocket::cleanup()

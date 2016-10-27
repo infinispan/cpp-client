@@ -19,6 +19,7 @@ class HeaderParams
     HeaderParams& setClientIntel(uint8_t clientIntel);
     HeaderParams& setTxMarker(uint8_t txMarker);
     HeaderParams& setMessageId(uint64_t messageId);
+    uint64_t getMessageId();
     HeaderParams& setTopologyAge(int topologyAge_);
 
   private:

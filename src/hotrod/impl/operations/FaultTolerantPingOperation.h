@@ -24,8 +24,6 @@ class FaultTolerantPingOperation : public RetryOnFailureOperation<PingResult>
             Topology&                                 topologyId_,
             uint32_t                                   flags_);
 
-        transport::Transport& getTransport(int retryCount);
-
         PingResult executeOperation(transport::Transport& transport);
 
     friend class OperationsFactory;

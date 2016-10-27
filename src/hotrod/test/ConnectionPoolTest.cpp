@@ -80,7 +80,7 @@ public:
 	}
 
 	void destroyObject(const InetSocketAddress&, TcpTransport& transport) {
-		delete &transport;
+	    delete &transport;
 	}
 
 	PingResult ping(TcpTransport&) {
@@ -510,9 +510,9 @@ HR_EXPORT void testMaxTotal2() {
 	assert(pool->getNumIdle(*addrs[0]) == maxTotal);
 
 	//cleanup. run with valgrind to make sure that the transport is free'd
-	deleteArray(addrs, numberOfKeys);
 	delete[] trps;
 	delete pool;
+	deleteArray(addrs, numberOfKeys);
 
 }
 
