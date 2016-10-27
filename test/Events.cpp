@@ -31,7 +31,7 @@ int main(int argc, char** argv) {
     {
         ConfigurationBuilder builder;
                 builder.balancingStrategyProducer(nullptr);
-        builder.addServer().host(argc > 1 ? argv[1] : "127.0.0.1").port(argc > 2 ? atoi(argv[2]) : 11322);
+        builder.addServer().host(argc > 1 ? argv[1] : "127.0.0.1").port(argc > 2 ? atoi(argv[2]) : 11222);
         builder.protocolVersion(Configuration::PROTOCOL_VERSION_24);
         RemoteCacheManager cacheManager(builder.build(), false);
         cacheManager.start();
@@ -64,13 +64,17 @@ int main(int argc, char** argv) {
         cache.put(5,"v5");
         cache.put(6,"v6");
 
+        // Give some time to listener thread to update the counters
+        std::this_thread::sleep_for(std::chrono::milliseconds(100)); 
         ASSERT(createdCount, createdCount == 3, result, "created count mismatch");
 
         cache.put(1,"v1a");
         cache.put(2,"v2a");
+        std::this_thread::sleep_for(std::chrono::milliseconds(100)); 
         ASSERT(modifiedCount, modifiedCount == 2, result, "modified count mismatch");
 
         cache.remove(3);
+        std::this_thread::sleep_for(std::chrono::milliseconds(100)); 
         ASSERT(removedCount, removedCount == 1, result, "removed count mismatch");
 
         cache.removeClientListener(cl);
@@ -89,14 +93,17 @@ int main(int argc, char** argv) {
 
         cache.addClientListener(clCS, filterFactoryParams, converterFactoryParams);
 
+        std::this_thread::sleep_for(std::chrono::milliseconds(100)); 
         ASSERT(createdCountCS, createdCountCS == 5, result, "created with current state");
 
         cache.put(1,"v1a");
         cache.put(2,"v2a");
 
+        std::this_thread::sleep_for(std::chrono::milliseconds(100)); 
         ASSERT(modifiedCountCS, modifiedCountCS == 2, result, "modified count mismatch");
 
         cache.remove(3);
+        std::this_thread::sleep_for(std::chrono::milliseconds(100)); 
         ASSERT(removedCountCS, removedCountCS == 0, result, "removed count mismatch");
 
         cacheManager.stop();
