@@ -53,10 +53,4 @@ std::vector<char> ExecuteCmdOperation::sendExecuteOperation(
 
 }
 
-Transport& ExecuteCmdOperation::getTransport(int /*retryCount*/)
-{
-        return RetryOnFailureOperation<std::vector<char>>::transportFactory->getTransport(cacheName);
-}
-
-
 }}} /* namespace */

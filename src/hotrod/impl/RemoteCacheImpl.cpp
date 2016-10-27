@@ -25,7 +25,8 @@
 #include "hotrod/impl/MetadataValueImpl.h"
 #include "hotrod/impl/operations/ExecuteCmdOperation.h"
 #include "hotrod/impl/operations/QueryOperation.h"
-
+#include <hotrod/impl/operations/AddClientListenerOperation.h>
+#include <hotrod/impl/operations/RemoveClientListenerOperation.h>
 #include <iostream>
 
 namespace infinispan {
@@ -254,6 +255,22 @@ QueryResponse RemoteCacheImpl::query(const QueryRequest &qr) {
 
 CacheTopologyInfo RemoteCacheImpl::getCacheTopologyInfo() {
 	return operationsFactory->getCacheTopologyInfo();
+}
+
+void RemoteCacheImpl::addClientListener(ClientListener& clientListener, const std::vector<std::vector<char> > filterFactoryParam, const std::vector<std::vector<char> > converterFactoryParams, const std::function<void()> &recoveryCallback)
+{
+	// Special behaviour for this operation. op will be keep by the dispatcher and reused if needed
+	// so op is not to be destroyed here.
+	// TODO: Maybe a good move semantic implementation for Add operation can uniform the code
+    auto op = operationsFactory->newAddClientListenerOperation(clientListener, *remoteCacheManager.getListenerNotifier(), filterFactoryParam, converterFactoryParams, recoveryCallback);
+    op->execute();
+}
+
+void RemoteCacheImpl::removeClientListener(ClientListener& clientListener)
+{
+	RemoveClientListenerOperation *rclo = operationsFactory->newRemoveClientListenerOperation(clientListener, *remoteCacheManager.getListenerNotifier());
+	std::unique_ptr<RemoveClientListenerOperation> op(rclo);
+    op->execute();
 }
 
 

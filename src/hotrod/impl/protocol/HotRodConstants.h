@@ -156,7 +156,13 @@ class HotRodConstants
 
     static bool isInvalidIteration(short status) {
        return status == INVALID_ITERATION;
-    }};
+    }
+    static bool isEvent(short opCode)
+    {
+    	return opCode ==  CACHE_ENTRY_CREATED_EVENT_RESPONSE || opCode == CACHE_ENTRY_EXPIRED_EVENT_RESPONSE
+    	        			|| opCode == CACHE_ENTRY_MODIFIED_EVENT_RESPONSE || opCode == CACHE_ENTRY_REMOVED_EVENT_RESPONSE;
+    }
+   };
 
 }}} // namespace infinispan::hotrod::protocol
 

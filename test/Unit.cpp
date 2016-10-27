@@ -21,7 +21,7 @@ HR_EXTERN void testMaxTotal3();
 HR_EXTERN void testMaxTotal4();
 
 int main(int, char**) {
-    runConcurrentCodecWritesTest();
+/*    runConcurrentCodecWritesTest();
     threadTest();
     syncTest();
     runOnceTest();
@@ -29,7 +29,7 @@ int main(int, char**) {
     updateServersTest();
     consistentHashFactoryTests();
     murmurHash3StringTest();
-    murmurHash3IntTest();
+    murmurHash3IntTest();*/
     //ConnectionPool unit tests
     testMinIdle();
     testMaxActive();
