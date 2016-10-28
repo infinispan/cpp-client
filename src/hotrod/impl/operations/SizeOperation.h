@@ -24,8 +24,6 @@ class SizeOperation : public RetryOnFailureOperation<uint64_t>
             Topology&                                 topologyId_,
             uint32_t                                   flags_);
 
-        infinispan::hotrod::transport::Transport& getTransport(int retryCount);
-
         uint64_t executeOperation(infinispan::hotrod::transport::Transport& transport);
 
     friend class OperationsFactory;

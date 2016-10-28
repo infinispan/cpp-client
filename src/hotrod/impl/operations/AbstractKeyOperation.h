@@ -32,11 +32,11 @@ template<class T> class AbstractKeyOperation : public RetryOnFailureOperation<T>
             key(_key)
         {}
 
-    transport::Transport& getTransport(int retryCount) {
+    transport::Transport& getTransport(int retryCount, const std::set<transport::InetSocketAddress>& failedServers) {
         if (retryCount == 0) {
-            return this->transportFactory->getTransport(key, this->cacheName);
+            return this->transportFactory->getTransport(key, this->cacheName, failedServers);
         } else {
-            return this->transportFactory->getTransport(this->cacheName);
+            return this->transportFactory->getTransport(this->cacheName, failedServers);
         }
     }
 

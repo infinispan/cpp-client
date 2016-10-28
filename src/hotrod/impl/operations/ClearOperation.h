@@ -24,8 +24,6 @@ class ClearOperation : public RetryOnFailureOperation<std::vector<char>>
             Topology&                                 topologyId_,
             uint32_t                                   flags_);
 
-        infinispan::hotrod::transport::Transport& getTransport(int retryCount);
-
         std::vector<char> executeOperation(infinispan::hotrod::transport::Transport& transport);
 
     friend class OperationsFactory;
