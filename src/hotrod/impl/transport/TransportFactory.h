@@ -34,8 +34,8 @@ class TransportFactory
     virtual void start(protocol::Codec& codec, int defaultTopologyId) = 0;
     virtual void destroy() = 0;
 
-    virtual Transport& getTransport(const std::vector<char>& cacheName) = 0;
-    virtual Transport& getTransport(const std::vector<char>& key, const std::vector<char>& cacheName) = 0;
+    virtual Transport& getTransport(const std::vector<char>& cacheName, const std::set<InetSocketAddress>& failedServers) = 0;
+    virtual Transport& getTransport(const std::vector<char>& key, const std::vector<char>& cacheName, const std::set<InetSocketAddress>& failedServers) = 0;
     virtual ClusterStatus clusterSwitch() = 0;
     virtual ClusterStatus clusterSwitch(std::string) = 0;
     virtual void releaseTransport(Transport& transport) = 0;

@@ -20,10 +20,11 @@ namespace infinispan {
     namespace hotrod {
         namespace transport {
 
-            class MyRoundRobinBalancingStrategy : public FailOverRequestBalancingStrategy
-            {
+class MyRoundRobinBalancingStrategy: public FailOverRequestBalancingStrategy {
             public:
-                MyRoundRobinBalancingStrategy() : index(0) { }
+	MyRoundRobinBalancingStrategy() :
+			index(0) {
+	}
 
                 static FailOverRequestBalancingStrategy *newInstance() {
                     return new MyRoundRobinBalancingStrategy();
@@ -37,7 +38,8 @@ namespace infinispan {
                     }
                 }
 
-                ~MyRoundRobinBalancingStrategy() { }
+	~MyRoundRobinBalancingStrategy() {
+	}
 
                 const transport::InetSocketAddress &getServerByIndex(size_t pos) {
                     const transport::InetSocketAddress &server = servers[pos];
@@ -46,18 +48,27 @@ namespace infinispan {
             private:
                 std::vector<transport::InetSocketAddress> servers;
                 size_t index;
-                const transport::InetSocketAddress &nextServer() {
-                    const transport::InetSocketAddress &server = getServerByIndex(index++);
+	const transport::InetSocketAddress &nextServer(
+			const std::set<transport::InetSocketAddress>& failedServers) {
+		for (unsigned int i = 0; i <= servers.size(); i++) {
+			const transport::InetSocketAddress &server = getServerByIndex(
+					index++);
+			if (failedServers.empty() || failedServers.find(server)!=failedServers.end() || i>failedServers.size()) {
                     if (index >= servers.size()) {
                         index = 0;
+				}
                     }
                     return server;
                 }
 
 
+		throw Exception("Bad news, no server available.");
+	}
             };
 
-        }}}
+}
+}
+}
 
 
 template <class T>

@@ -27,8 +27,8 @@ class TcpTransportFactory : public TransportFactory
     void start(protocol::Codec& codec, int defaultTopologyId);
     void destroy();
 
-    Transport& getTransport(const std::vector<char>& cacheName);
-    Transport& getTransport(const std::vector<char>& key, const std::vector<char>& cacheName);
+    transport::Transport& getTransport(const std::vector<char>& cacheName, const std::set<transport::InetSocketAddress>& failedServers);
+    transport::Transport& getTransport(const std::vector<char>& key, const std::vector<char>& cacheName, const std::set<transport::InetSocketAddress>& failedServers);
 
     void releaseTransport(Transport& transport);
     void invalidateTransport(

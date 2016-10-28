@@ -86,12 +86,12 @@ std::vector<ServerConfiguration> TcpTransportFactory::getNextWorkingServersConfi
 	return std::vector<ServerConfiguration>();
 }
 
-Transport& TcpTransportFactory::getTransport(const std::vector<char>& /*cacheName*/) {
-    const InetSocketAddress* server = &balancer->nextServer();
+transport::Transport& TcpTransportFactory::getTransport(const std::vector<char>& /*cacheName*/, const std::set<transport::InetSocketAddress>& failedServers) {
+    const InetSocketAddress* server = &balancer->nextServer(failedServers);
     return borrowTransportFromPool(*server);
 }
 
-Transport& TcpTransportFactory::getTransport(const std::vector<char>& key, const std::vector<char>& cacheName) {
+transport::Transport& TcpTransportFactory::getTransport(const std::vector<char>& key, const std::vector<char>& cacheName, const std::set<transport::InetSocketAddress>& failedServers) {
     InetSocketAddress server;
     {
         ScopedLock<Mutex> l(lock);
@@ -99,7 +99,7 @@ Transport& TcpTransportFactory::getTransport(const std::vector<char>& key, const
         server = topologyInfo->getHashAwareServer(key,cacheName);
         if (server.isEmpty())
         {   // Return balanced transport
-        	return getTransport(cacheName);
+        	return getTransport(cacheName, failedServers);
         }
         return borrowTransportFromPool(server);
     }
@@ -178,6 +178,8 @@ ClusterStatus TcpTransportFactory::clusterSwitch(std::string clusterName)
     {
         balancer.reset(RoundRobinBalancingStrategy::newInstance());
     }
+    // Consider all the current server as failed
+    auto failedServers = topologyInfo->getServers();
     topologyInfo->updateServers(initialServers);
 
     createAndPreparePool();
