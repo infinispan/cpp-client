@@ -23,4 +23,11 @@ HeaderParams& Codec21::writeHeader(Transport& transport, HeaderParams& params) c
     return Codec20::writeHeader(transport, params, HotRodConstants::VERSION_21);
 }
 
+void Codec21::writeClientListenerParams(transport::Transport& t, const ClientListener& clientListener,
+		const std::vector<std::vector<char> > &filterFactoryParams, const std::vector<std::vector<char> > &converterFactoryParams) const
+{
+	Codec20::writeClientListenerParams(t,clientListener, filterFactoryParams, converterFactoryParams);
+	t.writeByte((short)(clientListener.useRawData ? 1 : 0));
+}
+
 }}} // namespace infinispan::hotrod::protocol

@@ -24,7 +24,7 @@ class TcpTransportFactory : public TransportFactory
 {
   public:
     TcpTransportFactory(const Configuration& config) : configuration(config), maxRetries(config.getMaxRetries()) {};
-    void start(protocol::Codec& codec, int defaultTopologyId);
+    void start(protocol::Codec& codec, int defaultTopologyId, ClientListenerNotifier* );
     void destroy();
 
     transport::Transport& getTransport(const std::vector<char>& cacheName, const std::set<transport::InetSocketAddress>& failedServers);
@@ -58,6 +58,7 @@ class TcpTransportFactory : public TransportFactory
     void clearHashFunction(const std::vector<char>& cacheName);
     infinispan::hotrod::consistenthash::ConsistentHashFactory
             & getConsistentHashFactory();
+    Transport& borrowTransportFromPool(const InetSocketAddress& server);
 
 
   private:
@@ -72,11 +73,11 @@ class TcpTransportFactory : public TransportFactory
     void createAndPreparePool();
     void updateTransportCount();
     void pingServers();
-    Transport& borrowTransportFromPool(const InetSocketAddress& server);
     ConnectionPool* getConnectionPool();
     std::vector<ServerConfiguration> getNextWorkingServersConfiguration();
     void pingExternalServer(InetSocketAddress s);
     std::string sniHostName;
+    ClientListenerNotifier* listenerNotifier;
 };
 
 }}} // namespace infinispan::hotrod::transport

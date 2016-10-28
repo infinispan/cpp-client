@@ -18,10 +18,14 @@ public:
             infinispan::hotrod::transport::Transport& transport,
             HeaderParams& params) const;
 
-    Codec21() {
+    Codec21()
+    {
     }
 
-    friend class CodecFactory;
+    virtual void writeClientListenerParams(transport::Transport& t, const ClientListener& clientListener,
+    		const std::vector<std::vector<char> > &filterFactoryParams, const std::vector<std::vector<char> > &converterFactoryParams) const;
+
+friend class CodecFactory;
 };
 
 }}} // namespace infinispan::hotrod::protocol

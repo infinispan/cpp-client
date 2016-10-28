@@ -69,7 +69,7 @@ void throwIOErr (const std::string& host, int port, const char *msg, int errnum)
             m << " " << strerror(errnum);
         }
     }
-    throw TransportException(host, port, m.str());
+    throw TransportException(host, port, m.str(), errnum);
 }
 
 } /* namespace */

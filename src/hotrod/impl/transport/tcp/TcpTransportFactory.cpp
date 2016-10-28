@@ -24,7 +24,7 @@ TransportFactory* TransportFactory::newInstance(const Configuration& configurati
 }
 
 void TcpTransportFactory::start(
-    Codec& codec, int defaultTopologyId)
+    Codec& codec, int defaultTopologyId, ClientListenerNotifier* listenerNotifier)
 {
 	ScopedLock<Mutex> l(lock);
 	topologyAge = 0;
@@ -63,6 +63,7 @@ void TcpTransportFactory::start(
     balancer->setServers(initialServers);
     sniHostName = configuration.getSslConfiguration().sniHostName();
     pingServers();
+    this->listenerNotifier = listenerNotifier;
  }
 
 std::vector<ServerConfiguration> TcpTransportFactory::getNextWorkingServersConfiguration() {

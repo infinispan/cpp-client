@@ -11,6 +11,7 @@
 #include "infinispan/hotrod/VersionedValue.h"
 #include "infinispan/hotrod/Version.h"
 #include "infinispan/hotrod/exceptions.h"
+#include "infinispan/hotrod/ClientListener.h"
 #if _MSC_VER
 #pragma warning(push)
 #pragma warning(disable:4267 4244)
@@ -868,6 +869,16 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      */
     void ping() {
         base_ping();
+    }
+
+    void addClientListener(ClientListener& clientListener, std::vector<std::vector<char> > filterFactoryParams, std::vector<std::vector<char> > converterFactoryParams, const std::function<void()> &recoveryCallback = nullptr)
+    {
+    	base_addClientListener(clientListener, filterFactoryParams, converterFactoryParams, recoveryCallback);
+    }
+
+    void removeClientListener(ClientListener& clientListener)
+    {
+    	base_removeClientListener(clientListener);
     }
 
     CacheTopologyInfo getCacheTopologyInfo(){

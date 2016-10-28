@@ -29,8 +29,8 @@ const char* HotRodClientException::what() const throw() {
     return message.c_string();
 }
 
-TransportException::TransportException(const std::string& h, int p, const std::string& msg)
-: HotRodClientException(msg), host(h), port(p) {}
+TransportException::TransportException(const std::string& h, int p, const std::string& msg, int errnum)
+: HotRodClientException(msg), host(h), port(p), errnum(errnum) {}
 
 TransportException::~TransportException() throw() {}
 
