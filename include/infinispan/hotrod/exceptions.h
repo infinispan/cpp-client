@@ -46,7 +46,7 @@ class HR_EXTERN HotRodClientException : public Exception
 class HR_EXTERN TransportException : public HotRodClientException
 {
   public:
-    TransportException(const std::string& host, int port, const std::string&);
+    TransportException(const std::string& host, int port, const std::string&, int);
     ~TransportException() throw();
 
     const std::string &getHost() const {
@@ -57,12 +57,14 @@ class HR_EXTERN TransportException : public HotRodClientException
     }
     const char *getHostCString() const;
     int getPort() const;
+    int getErrnum() const { return errnum; }
   private:
     const portable::string host;
     __pragma(warning(suppress:4251))
     portable::local_ptr<std::string> hostPtr;
     int port;
 
+    int errnum;
     static void deleteString(std::string *str) { delete str; }
 };
 

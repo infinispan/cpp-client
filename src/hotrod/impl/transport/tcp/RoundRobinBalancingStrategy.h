@@ -2,6 +2,7 @@
 #define ISPN_HOTROD_TRANSPORT_ROUNDROBINBALANCINGSTRATEGY_H
 
 #include "infinispan/hotrod/FailOverRequestBalancingStrategy.h"
+#include <set>
 
 namespace infinispan {
 namespace hotrod {
@@ -12,7 +13,7 @@ class RoundRobinBalancingStrategy : public FailOverRequestBalancingStrategy
   public:
 	RoundRobinBalancingStrategy();
     void setServers(const std::vector<transport::InetSocketAddress>& servers);
-    const transport::InetSocketAddress& nextServer();
+    const transport::InetSocketAddress& nextServer(const std::set<transport::InetSocketAddress>& failedServer);
 	static FailOverRequestBalancingStrategy* newInstance();
 
   private:

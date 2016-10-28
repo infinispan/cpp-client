@@ -69,4 +69,8 @@ FailOverRequestBalancingStrategy::ProducerFn Configuration::getBalancingStrategy
 {
   return balancingStrategyProducer;
 }
+const event::EventMarshaller &Configuration::getEventMarshaller() const
+{
+	return eventMarshaller;
+}
 }} /* namespace */

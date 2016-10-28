@@ -1,6 +1,7 @@
 #ifndef ISPN_HOTROD_REMOTECACHEMANAGERIMPL_H
 #define ISPN_HOTROD_REMOTECACHEMANAGERIMPL_H
 
+#include <hotrod/impl/event/ClientListenerNotifier.h>
 #include "infinispan/hotrod/Configuration.h"
 #include "hotrod/impl/RemoteCacheImpl.h"
 #include "hotrod/impl/protocol/Codec.h"
@@ -10,6 +11,7 @@
 
 #include <map>
 
+using namespace infinispan::hotrod::event;
 namespace infinispan {
 namespace hotrod {
 
@@ -30,6 +32,9 @@ class RemoteCacheManagerImpl
     ClusterStatus clusterSwitch();
     ClusterStatus clusterSwitch(std::string clusterName);
 
+    ClientListenerNotifier*& getListenerNotifier() {
+		return listenerNotifier;
+	}
 
   private:
     sys::Mutex lock;
@@ -43,6 +48,7 @@ class RemoteCacheManagerImpl
 
     operations::PingResult ping(RemoteCacheImpl& remoteCache);
     std::shared_ptr<transport::TransportFactory> transportFactory;
+    ClientListenerNotifier *listenerNotifier;
 
     void startRemoteCache(RemoteCacheImpl& remoteCache, bool forceReturnValue);
 };
