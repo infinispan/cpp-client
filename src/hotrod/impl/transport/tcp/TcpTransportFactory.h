@@ -23,12 +23,12 @@ class InetSocketAddress;
 class TcpTransportFactory : public TransportFactory
 {
   public:
-    TcpTransportFactory(const Configuration& config) : configuration(config), maxRetries(config.getMaxRetries()) {};
-    void start(protocol::Codec& codec, int defaultTopologyId);
+    TcpTransportFactory(const Configuration& config) : configuration(config), maxRetries(config.getMaxRetries()), onFailover(false) {};
+    void start(protocol::Codec& codec, int defaultTopologyId, ClientListenerNotifier* );
     void destroy();
 
-    Transport& getTransport(const std::vector<char>& cacheName);
-    Transport& getTransport(const std::vector<char>& key, const std::vector<char>& cacheName);
+    transport::Transport& getTransport(const std::vector<char>& cacheName, const std::set<transport::InetSocketAddress>& failedServers);
+    transport::Transport& getTransport(const std::vector<char>& key, const std::vector<char>& cacheName, const std::set<transport::InetSocketAddress>& failedServers);
 
     void releaseTransport(Transport& transport);
     void invalidateTransport(
@@ -58,6 +58,7 @@ class TcpTransportFactory : public TransportFactory
     void clearHashFunction(const std::vector<char>& cacheName);
     infinispan::hotrod::consistenthash::ConsistentHashFactory
             & getConsistentHashFactory();
+    Transport& borrowTransportFromPool(const InetSocketAddress& server);
 
 
   private:
@@ -72,11 +73,12 @@ class TcpTransportFactory : public TransportFactory
     void createAndPreparePool();
     void updateTransportCount();
     void pingServers();
-    Transport& borrowTransportFromPool(const InetSocketAddress& server);
     ConnectionPool* getConnectionPool();
+    bool onFailover;
     std::vector<ServerConfiguration> getNextWorkingServersConfiguration();
     void pingExternalServer(InetSocketAddress s);
     std::string sniHostName;
+    ClientListenerNotifier* listenerNotifier;
 };
 
 }}} // namespace infinispan::hotrod::transport

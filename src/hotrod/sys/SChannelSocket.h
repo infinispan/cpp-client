@@ -65,9 +65,9 @@ namespace infinispan {
 				CredHandle        hCred;
 				struct _SecHandle hCtxt;
 				CtxtHandle   hContext;
-				PBYTE        pbRBuffer;
-				PBYTE        pbWBuffer;
-				PBYTE        recvBuff;
+				PBYTE        pbRBuffer=NULL;
+				PBYTE        pbWBuffer=NULL;
+				PBYTE        recvBuff=NULL;
 				DWORD        cbRBuffer;
 				unsigned int ready_bytes=0;
 				unsigned int offset_bytes=0;

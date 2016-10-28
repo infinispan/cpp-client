@@ -17,11 +17,6 @@ ClearOperation::ClearOperation(
         codec_, transportFactory_, cacheName_, topologyId_, flags_)
 {}
 
-Transport& ClearOperation::getTransport(int /*retryCount*/)
-{
-        return RetryOnFailureOperation<std::vector<char>>::transportFactory->getTransport(cacheName);
-}
-
 std::vector<char> ClearOperation::executeOperation(infinispan::hotrod::transport::Transport& transport)
 {
     TRACE("Executing Clear(flags=%u)", flags);
