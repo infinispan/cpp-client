@@ -4,6 +4,7 @@
 #include "hotrod/sys/Socket.h"
 
 #include <sstream>
+#include <memory>
 
 namespace infinispan {
 namespace hotrod {
@@ -44,7 +45,8 @@ class Socket
 {
   public:
     Socket(sys::Socket *_socket);
-    ~Socket();
+    Socket(const Socket& s);
+    ~Socket() {};
     void connect(const std::string& host, int port, int timeout);
     void close();
     void setTcpNoDelay(bool tcpNoDelay);
@@ -52,8 +54,24 @@ class Socket
     InputStream& getInputStream();
     OutputStream& getOutputStream();
 
+	sys::Socket* getSocket() const {
+		return socket.get();
+	}
+	void setSocket(sys::Socket* socket) {
+		this->socket.reset(socket);
+	}
+	void setValid(bool valid)
+	{
+		socket->valid=valid;
+		if (!valid)
+			socket->valid=valid;
+	}
+	bool isValid()
+	{
+		return socket->valid;
+	}
   private:
-    sys::Socket *socket;
+    std::shared_ptr<sys::Socket> socket;
     InputStream inputStream;
     OutputStream outputStream;
 

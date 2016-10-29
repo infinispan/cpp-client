@@ -190,7 +190,8 @@ void Socket::connect(const std::string& h, int p, int timeout) {
 
 void Socket::close() {
     if (fd >= 0) {
-        ::close(fd);
+        //::close(fd); prefer shutdown to avoid socket reuse
+        ::shutdown(fd, SHUT_RDWR);
         fd = -1;
     }
 }

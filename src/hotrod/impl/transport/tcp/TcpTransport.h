@@ -33,19 +33,24 @@ class TcpTransport : public AbstractTransport
     std::vector<char> readBytes(uint32_t size);
 
     void release();
-    void invalidate();
     void destroy();
 
-    const InetSocketAddress& getServerAddress();
+    virtual bool targets(const InetSocketAddress& arg) const
+    {
+    	return arg==getServerAddress();
+    }
+    const InetSocketAddress& getServerAddress() const;
+    void setValid(bool valid);
+    bool isValid();
+    virtual Transport* clone();
+    virtual ~TcpTransport() {}
 
   protected:
     TcpTransport(const InetSocketAddress& address, TransportFactory& factory, sys::Socket *sock);
     //Testing only!
     TcpTransport();
     Socket socket;
-    bool invalid;
-    InetSocketAddress* serverAddress;
-    bool isValid();
+    std::shared_ptr<InetSocketAddress> serverAddress;
 
   friend class TcpTransportFactory;
 };

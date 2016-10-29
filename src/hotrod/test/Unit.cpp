@@ -9,7 +9,7 @@
 #include "hotrod/sys/Condition.h"
 #include "hotrod/sys/RunOnce.h"
 #include "hotrod/sys/Log.h"
-#include "hotrod/impl/transport/AbstractTransport.h"
+#include "hotrod/impl/transport/tcp/TcpTransport.h"
 #include "hotrod/impl/protocol/CodecFactory.h"
 #include "hotrod/impl/protocol/Codec10.h"
 #include "infinispan/hotrod/Configuration.h"
@@ -37,10 +37,11 @@ using namespace infinispan::hotrod::protocol;
 using namespace infinispan::hotrod::sys;
 using namespace infinispan::hotrod::transport;
 
-class TestTransport : public AbstractTransport {
+class TestTransport: public TcpTransport {
 
 public:
-    TestTransport() : AbstractTransport(*(TransportFactory*)NULL) {
+	TestTransport() :
+			TcpTransport() {
     }
 
     void flush() {

@@ -208,7 +208,7 @@ void Codec20::checkForErrorsInResponseStatus(Transport& transport, HeaderParams&
         case HotRodConstants::REQUEST_PARSING_ERROR_STATUS:
         case HotRodConstants::UNKNOWN_COMMAND_STATUS:
         case HotRodConstants::UNKNOWN_VERSION_STATUS: {
-            transport.invalidate();
+            transport.setValid(false);
         }
         }
         throw;
