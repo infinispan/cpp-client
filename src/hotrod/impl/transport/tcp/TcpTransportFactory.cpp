@@ -129,6 +129,7 @@ ClusterStatus TcpTransportFactory::clusterSwitch()
 	{
 		return NOT_SWITCHED;
 	}
+	connectionPool->close();
 	ScopedLock<Mutex> l(lock);
 	topologyAge = 0;
     initialServers.clear();

@@ -4,11 +4,13 @@
 #include <cstdint>
 #include <vector>
 
+#include <iostream>
 namespace infinispan {
 namespace hotrod {
 namespace transport {
 
 class TransportFactory;
+class InetSocketAddress;
 
 class Transport
 {
@@ -32,11 +34,12 @@ class Transport
     virtual std::string readString() = 0;
 
     virtual void release() = 0;
-    virtual void invalidate() = 0;
+    virtual void setValid(bool valid) = 0;
 
     virtual TransportFactory& getTransportFactory() = 0;
 
-    virtual ~Transport() {}
+    virtual bool targets(const InetSocketAddress&) const = 0;
+    virtual Transport* clone() = 0;
 };
 
 }}} // namespace infinispan::hotrod::transport
