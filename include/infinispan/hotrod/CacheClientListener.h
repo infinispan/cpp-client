@@ -12,7 +12,6 @@
 #include "infinispan/hotrod/ImportExport.h"
 #include "infinispan/hotrod/ClientListener.h"
 #include "infinispan/hotrod/RemoteCacheBase.h"
-#include "hotrod/impl/transport/Transport.h"
 #include <vector>
 #include <list>
 #include <functional>
