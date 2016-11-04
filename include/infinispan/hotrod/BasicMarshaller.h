@@ -44,7 +44,7 @@ template <>
 class BasicMarshaller<int> : public infinispan::hotrod::Marshaller<int> {
   public:
     void marshall(const int& s, std::vector<char>& b) {
-        char *buf = new char[4];
+        char buf[4];
         for (int i = 0 ; i < 4 ; i++) {
             buf[3-i] = (char) ((s) >> (8*i));
         }
