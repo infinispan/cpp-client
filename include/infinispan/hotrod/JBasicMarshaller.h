@@ -98,7 +98,7 @@ private:
 	}
 
 	void marshallSmall(const std::string& s, std::vector<char>& b) {
-		char* buf = new char[s.size() + 3];
+		char buf[s.size() + 3];
 		// JBoss preamble
 		buf[0] = JBasicMarshallerHelper::MARSHALL_VERSION;
 			buf[1] = JBasicMarshallerHelper::SMALL_STRING;
@@ -108,7 +108,7 @@ private:
 	}
 
 	void marshallMedium(const std::string& s, std::vector<char>& b) {
-		char* buf = new char[s.size() + 4];
+		char buf[s.size() + 4];
 		// JBoss preamble
 		buf[1] = JBasicMarshallerHelper::MEDIUM_STRING;
 		buf[2] = (char)(s.size() >> 8);
@@ -123,7 +123,7 @@ template <>
 class JBasicMarshaller<int> : public infinispan::hotrod::Marshaller<int> {
   public:
     void marshall(const int& s, std::vector<char>& b) {
-        char *buf = new char[6];
+        char buf[6];
         // JBoss preamble
         buf[0] = JBasicMarshallerHelper::MARSHALL_VERSION;
         buf[1] = JBasicMarshallerHelper::INTEGER;
