@@ -123,12 +123,12 @@ void TcpTransportFactory::invalidateTransport(
     pool->invalidateObject(serverAddress, dynamic_cast<TcpTransport*>(transport));
 }
 
-ClusterStatus TcpTransportFactory::clusterSwitch()
+bool TcpTransportFactory::clusterSwitch()
 {
     auto configuredServers = getNextWorkingServersConfiguration();
 	if (configuredServers.size()==0)
 	{
-		return NOT_SWITCHED;
+		return false;
 	}
 	connectionPool->close();
 	ScopedLock<Mutex> l(lock);
@@ -154,14 +154,14 @@ ClusterStatus TcpTransportFactory::clusterSwitch()
 
     balancer->setServers(initialServers);
     pingServers();
-    return SWITCHED;
+    return true;
 }
 
-ClusterStatus TcpTransportFactory::clusterSwitch(std::string clusterName)
+bool TcpTransportFactory::clusterSwitch(std::string clusterName)
 {
 	auto servers=configuration.getServersMapConfiguration();
 	if (servers.find(clusterName)==servers.end())
-		return NOT_SWITCHED;
+		return false;
     auto configuredServers = servers[clusterName];
 	ScopedLock<Mutex> l(lock);
 	topologyAge = 0;
@@ -188,7 +188,7 @@ ClusterStatus TcpTransportFactory::clusterSwitch(std::string clusterName)
 
     balancer->setServers(initialServers);
     pingServers();
-    return SWITCHED;
+    return true;
 }
 
 bool TcpTransportFactory::isTcpNoDelay() {

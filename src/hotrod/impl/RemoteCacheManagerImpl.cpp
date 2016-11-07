@@ -145,12 +145,12 @@ PingResult RemoteCacheManagerImpl::ping(RemoteCacheImpl& remoteCache) {
     return remoteCache.ping();
 }
 
-ClusterStatus RemoteCacheManagerImpl::clusterSwitch(std::string clusterName)
+bool RemoteCacheManagerImpl::clusterSwitch(std::string clusterName)
 {
 	return transportFactory->clusterSwitch(clusterName);
 }
 
-ClusterStatus RemoteCacheManagerImpl::clusterSwitch()
+bool RemoteCacheManagerImpl::clusterSwitch()
 {
 	return transportFactory->clusterSwitch();
 }

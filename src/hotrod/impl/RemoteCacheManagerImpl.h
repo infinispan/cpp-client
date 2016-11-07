@@ -29,8 +29,8 @@ class RemoteCacheManagerImpl
     void stop();
     bool isStarted();
     const Configuration& getConfiguration();
-    ClusterStatus clusterSwitch();
-    ClusterStatus clusterSwitch(std::string clusterName);
+    bool clusterSwitch();
+    bool clusterSwitch(std::string clusterName);
 
     ClientListenerNotifier*& getListenerNotifier() {
 		return listenerNotifier;

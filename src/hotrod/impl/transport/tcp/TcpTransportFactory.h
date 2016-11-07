@@ -33,8 +33,8 @@ class TcpTransportFactory : public TransportFactory
     void releaseTransport(Transport& transport);
     void invalidateTransport(
         const InetSocketAddress& address, Transport* transport);
-    ClusterStatus clusterSwitch();
-    ClusterStatus clusterSwitch(std::string clusterName);
+    bool clusterSwitch();
+    bool clusterSwitch(std::string clusterName);
     bool isTcpNoDelay();
     int getMaxRetries();
     int getSoTimeout();

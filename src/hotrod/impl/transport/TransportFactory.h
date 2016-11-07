@@ -37,8 +37,8 @@ class TransportFactory
 
     virtual Transport& getTransport(const std::vector<char>& cacheName, const std::set<InetSocketAddress>& failedServers) = 0;
     virtual Transport& getTransport(const std::vector<char>& key, const std::vector<char>& cacheName, const std::set<InetSocketAddress>& failedServers) = 0;
-    virtual ClusterStatus clusterSwitch() = 0;
-    virtual ClusterStatus clusterSwitch(std::string) = 0;
+    virtual bool clusterSwitch() = 0;
+    virtual bool clusterSwitch(std::string) = 0;
     virtual void releaseTransport(Transport& transport) = 0;
     virtual void invalidateTransport(
         const InetSocketAddress& serverAddress, Transport* transport) = 0;

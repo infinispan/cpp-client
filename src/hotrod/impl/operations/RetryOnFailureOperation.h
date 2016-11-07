@@ -68,7 +68,7 @@ template<class T> class RetryOnFailureOperation : public HotRodOperation<T>
 	void logErrorAndThrowExceptionIfNeeded(int& retryCount,
 			const HotRodClientException& e) {
 		if (retryCount >= transportFactory->getMaxRetries() - 1) {
-			if (transportFactory->clusterSwitch() == ClusterStatus::SWITCHED) {
+			if (transportFactory->clusterSwitch()) {
 				retryCount = 0; // reset retry counter
 			} else {
 				ERROR("Exception encountered, retry %d of %d: %s", retryCount,
