@@ -10,7 +10,7 @@
 
 #include "infinispan/hotrod/ClientEvent.h"
 #include "infinispan/hotrod/ClientListener.h"
-#include "hotrod/impl/protocol/Codec20.h"
+#include "hotrod/impl/protocol/Codec21.h"
 #include "hotrod/impl/transport/Transport.h"
 #include "hotrod/impl/transport/tcp/TcpTransport.h"
 #include <memory>

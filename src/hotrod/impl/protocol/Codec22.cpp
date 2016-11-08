@@ -20,9 +20,6 @@ using transport::TransportFactory;
 
 namespace protocol {
 
-HeaderParams& Codec22::writeHeader(Transport& transport, HeaderParams& params) const {
-    return Codec20::writeHeader(transport, params, HotRodConstants::VERSION_22);
-}
 void Codec22::writeExpirationParams(transport::Transport& t,uint64_t lifespan, uint64_t maxIdle) const {
     unsigned char timeCode = TimeUnitParam::encodeTimeUnits(lifespan,SECONDS,maxIdle,SECONDS);
     t.writeByte(timeCode);

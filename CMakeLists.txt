@@ -395,13 +395,9 @@ endif(ENABLE_INTERNAL_TESTING)
       src/hotrod/impl/protocol/HeaderParams.cpp
       src/hotrod/impl/protocol/Codec10.cpp
       src/hotrod/impl/protocol/Codec11.cpp
-      src/hotrod/impl/protocol/Codec12.cpp
-      src/hotrod/impl/protocol/Codec13.cpp
       src/hotrod/impl/protocol/Codec20.cpp
       src/hotrod/impl/protocol/Codec21.cpp
       src/hotrod/impl/protocol/Codec22.cpp
-      src/hotrod/impl/protocol/Codec23.cpp
-      src/hotrod/impl/protocol/Codec24.cpp
       src/hotrod/impl/protocol/CodecFactory.cpp
       src/hotrod/impl/transport/AbstractTransport.cpp
       src/hotrod/impl/transport/tcp/ConnectionPool.cpp

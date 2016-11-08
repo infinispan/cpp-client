@@ -19,9 +19,6 @@ using transport::TransportFactory;
 
 namespace protocol {
 
-HeaderParams& Codec21::writeHeader(Transport& transport, HeaderParams& params) const {
-    return Codec20::writeHeader(transport, params, HotRodConstants::VERSION_21);
-}
 
 void Codec21::writeClientListenerParams(transport::Transport& t, const ClientListener& clientListener,
 		const std::vector<std::vector<char> > &filterFactoryParams, const std::vector<std::vector<char> > &converterFactoryParams) const
@@ -29,5 +26,12 @@ void Codec21::writeClientListenerParams(transport::Transport& t, const ClientLis
 	Codec20::writeClientListenerParams(t,clientListener, filterFactoryParams, converterFactoryParams);
 	t.writeByte((short)(clientListener.useRawData ? 1 : 0));
 }
+
+ClientCacheEntryExpiredEvent<std::vector<char>> Codec21::readExpiredEvent(transport::Transport &transport) const
+{
+    std::vector<char> key = transport.readArray();
+    return ClientCacheEntryExpiredEvent<std::vector<char>>(key);
+}
+
 
 }}} // namespace infinispan::hotrod::protocol

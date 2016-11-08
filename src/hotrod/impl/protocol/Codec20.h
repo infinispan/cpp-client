@@ -47,7 +47,6 @@ class Codec20 : public Codec
     virtual uint8_t readEventIsCustomFlag(transport::Transport &transport) const;
     virtual uint8_t readEventIsRetriedFlag(transport::Transport &transport) const;
     virtual ClientCacheEntryCustomEvent readCustomEvent(transport::Transport &transport, uint8_t isRetried) const;
-    virtual ClientCacheEntryExpiredEvent processExpiredEvent(transport::Transport &transport) const;
     virtual ClientCacheEntryCreatedEvent<std::vector<char>> readCreatedEvent(transport::Transport &transport, uint8_t isRetried) const;
     virtual ClientCacheEntryModifiedEvent<std::vector<char>> readModifiedEvent(transport::Transport &transport, uint8_t isRetried) const;
     virtual ClientCacheEntryRemovedEvent<std::vector<char>> readRemovedEvent(transport::Transport &transport, uint8_t isRetried) const;
@@ -58,7 +57,7 @@ class Codec20 : public Codec
         infinispan::hotrod::transport::Transport& transport,
         HeaderParams& params, uint8_t version) const;
 
-    Codec20() {}
+    Codec20()  { protocolVersion=HotRodConstants::VERSION_20; }
 
   friend class CodecFactory;
 

@@ -2,6 +2,7 @@
 #define ISPN_HOTROD_PROTOCOL_CODEC_H
 
 #include "infinispan/hotrod/defs.h"
+#include "hotrod/impl/protocol/HotRodConstants.h"
 #include <set>
 #include <map>
 #include <vector>
@@ -29,7 +30,9 @@ class Codec
     virtual std::vector<char> returnPossiblePrevValue(transport::Transport& t, uint8_t status, uint32_t flags) const = 0;
     virtual void writeExpirationParams(transport::Transport& t,uint64_t lifespan, uint64_t maxIdle) const = 0;
     virtual ~Codec() {}
-  protected:
+    uint8_t getProtocolVersion() const { return protocolVersion; }
+protected:
+    uint8_t protocolVersion;
 
 };
 

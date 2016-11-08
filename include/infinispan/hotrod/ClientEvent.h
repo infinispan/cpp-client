@@ -110,10 +110,20 @@ private:
 	   const bool commandRetried;
 };
 
+template <class K>
 class ClientCacheEntryExpiredEvent : public ClientEvent {
 public:
-	   ClientCacheEntryExpiredEvent(std::vector<char> /*key*/) {}
+	   ClientCacheEntryExpiredEvent(K key): key(key) {}
+	   /**
+	    * Created cache entry's key.
+	    * @return an instance of the key with which a cache entry has been
+	    * created in remote server.
+	    */
+	   K getKey() { return key; }
+
 	   uint8_t getType() { return CLIENT_CACHE_ENTRY_EXPIRED; }
+private:
+   const K key;
 };
 
 template <class K>

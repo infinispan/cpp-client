@@ -13,13 +13,8 @@ namespace protocol {
 
 class Codec23: public Codec22 {
 
-public:
-    HeaderParams& writeHeader(
-            infinispan::hotrod::transport::Transport& transport,
-            HeaderParams& params) const;
-
-    Codec23() {
-    }
+protected:
+    Codec23()  { protocolVersion=HotRodConstants::VERSION_23; }
 
     friend class CodecFactory;
 };
