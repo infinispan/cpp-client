@@ -14,16 +14,13 @@ namespace protocol {
 class Codec21: public Codec20 {
 
 public:
-    HeaderParams& writeHeader(
-            infinispan::hotrod::transport::Transport& transport,
-            HeaderParams& params) const;
-
-    Codec21()
-    {
-    }
-
     virtual void writeClientListenerParams(transport::Transport& t, const ClientListener& clientListener,
     		const std::vector<std::vector<char> > &filterFactoryParams, const std::vector<std::vector<char> > &converterFactoryParams) const;
+
+    virtual ClientCacheEntryExpiredEvent<std::vector<char>> readExpiredEvent(transport::Transport &transport) const;
+
+protected:
+    Codec21() { protocolVersion=HotRodConstants::VERSION_21; }
 
 friend class CodecFactory;
 };

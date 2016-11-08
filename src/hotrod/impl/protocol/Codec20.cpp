@@ -41,7 +41,7 @@ long Codec20::getMessageId() {
 HeaderParams& Codec20::writeHeader(
     Transport& transport, HeaderParams& params) const
 {
-    return writeHeader(transport, params, HotRodConstants::VERSION_20);
+    return writeHeader(transport, params, protocolVersion);
 }
 
 HeaderParams& Codec20::writeHeader(
@@ -325,13 +325,6 @@ ClientCacheEntryCustomEvent Codec20::readCustomEvent(transport::Transport &trans
 {
 	ClientCacheEntryCustomEvent e(transport.readArray(), isRetried);
 	return e;
-}
-
-ClientCacheEntryExpiredEvent Codec20::processExpiredEvent(transport::Transport& transport) const
-{
-	std::vector<char> key = transport.readArray();
-	transport.readLong();
-	return ClientCacheEntryExpiredEvent(key);
 }
 
 ClientCacheEntryCreatedEvent<std::vector<char>> Codec20::readCreatedEvent(transport::Transport &transport, uint8_t isRetried) const

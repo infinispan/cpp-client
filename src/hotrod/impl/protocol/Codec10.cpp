@@ -40,7 +40,7 @@ long Codec10::getMessageId() {
 HeaderParams& Codec10::writeHeader(
     Transport& transport, HeaderParams& params) const
 {
-    return writeHeader(transport, params, HotRodConstants::VERSION_10);
+    return writeHeader(transport, params, protocolVersion);
 }
 
 HeaderParams& Codec10::writeHeader(

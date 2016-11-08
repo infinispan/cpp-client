@@ -42,6 +42,7 @@ public:
 	virtual void processEvent(ClientCacheEntryCreatedEvent<std::vector<char> >, std::vector<char >listId, uint8_t isCustom) const = 0;
 	virtual void processEvent(ClientCacheEntryModifiedEvent<std::vector<char> >, std::vector<char >listId, uint8_t isCustom) const = 0;
 	virtual void processEvent(ClientCacheEntryRemovedEvent<std::vector<char> >, std::vector<char >listId, uint8_t isCustom) const = 0;
+    virtual void processEvent(ClientCacheEntryExpiredEvent<std::vector<char> >, std::vector<char >listId, uint8_t isCustom) const = 0;
 	virtual void processEvent(ClientCacheEntryCustomEvent, std::vector<char >listId, uint8_t isCustom) const = 0;
 	virtual void processFailoverEvent() const
 	{

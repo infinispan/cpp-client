@@ -22,12 +22,6 @@ using consistenthash::ConsistentHashFactory;
 
 namespace protocol {
 
-HeaderParams& Codec11::writeHeader(
-    Transport& transport, HeaderParams& params) const
-{
-    return Codec10::writeHeader(transport, params, HotRodConstants::VERSION_11);
-}
-
 std::map<InetSocketAddress, std::set<int32_t> > Codec11::computeNewHashes(
         infinispan::hotrod::transport::Transport& transport, uint32_t /*newTopologyId*/, int16_t /*numKeyOwners*/,
         uint8_t hashFunctionVersion, uint32_t /*hashSpace*/, uint32_t clusterSize) const {

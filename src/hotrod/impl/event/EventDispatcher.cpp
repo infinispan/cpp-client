@@ -9,6 +9,7 @@
 #include "hotrod/impl/protocol/HotRodConstants.h"
 #include "infinispan/hotrod/exceptions.h"
 #include "hotrod/impl/transport/tcp/TcpTransport.h"
+#include "hotrod/sys/Log.h"
 #include <thread>
 #include <iostream>
 #include <exception>
@@ -17,6 +18,8 @@ using namespace infinispan::hotrod::protocol;
 namespace infinispan {
 namespace hotrod {
 namespace event {
+
+using namespace infinispan::hotrod::sys;
 
 void EventDispatcher::start()
 {
@@ -73,6 +76,19 @@ void EventDispatcher::run() {
 						cl.processEvent(ev, listId, isCustom);
 					}
 						break;
+                    case HotRodConstants::CACHE_ENTRY_EXPIRED_EVENT_RESPONSE: {
+                        if (codec20.getProtocolVersion() >= HotRodConstants::VERSION_21)
+                        { // ok codec has expired events
+                            ClientCacheEntryExpiredEvent<std::vector<char>> ev =
+                                    ((const Codec21&)codec20).readExpiredEvent(transport);
+                            cl.processEvent(ev, listId, isCustom);
+                        }
+                        else
+                        {
+                            ERROR("Received an Expired Entry Events but codec is %d<21",codec20.getProtocolVersion());
+                        }
+                    }
+                        break;
 					}
 				}
 			}

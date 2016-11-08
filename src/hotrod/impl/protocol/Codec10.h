@@ -39,7 +39,7 @@ class Codec10 : public Codec
         infinispan::hotrod::transport::Transport& transport, uint32_t newTopologyId, int16_t numKeyOwners,
         uint8_t hashFunctionVersion, uint32_t hashSpace, uint32_t clusterSize) const;
 
-    Codec10() {}
+    Codec10()  { protocolVersion=HotRodConstants::VERSION_10; }
 
   friend class CodecFactory;
 

@@ -39,7 +39,7 @@ public:
 	void add_listener(std::function<void(ClientCacheEntryCreatedEvent<K>)> callback) {
 		createdCallbacks.push_back(callback);
 	}
-	void add_listener(std::function<void(ClientCacheEntryExpiredEvent)> callback) {
+	void add_listener(std::function<void(ClientCacheEntryExpiredEvent<K>)> callback) {
 		expiredCallbacks.push_back(callback);
 	}
 	void add_listener(std::function<void(ClientCacheEntryModifiedEvent<K>)> callback) {
@@ -78,6 +78,16 @@ public:
 			  callable(typedEvent);
 		  }
 	}
+
+    virtual void processEvent(ClientCacheEntryExpiredEvent<std::vector<char>> marshEv, std::vector<char >listId, uint8_t isCustom) const
+    {
+        ClientCacheEntryExpiredEvent<K> typedEvent(*(K*)cache.baseKeyUnmarshall(marshEv.getKey()));
+          for (auto callable: expiredCallbacks)
+          {
+              callable(typedEvent);
+          }
+    }
+
 	virtual void processEvent(ClientCacheEntryCustomEvent ev, std::vector<char >listId, uint8_t isCustom) const
 	{
 		  for (auto callable: customCallbacks)
@@ -87,7 +97,7 @@ public:
 	}
 private:
 	std::list<std::function<void(ClientCacheEntryCreatedEvent<K>)>> createdCallbacks;
-	std::list<std::function<void(ClientCacheEntryExpiredEvent)>> expiredCallbacks;
+	std::list<std::function<void(ClientCacheEntryExpiredEvent<K>)>> expiredCallbacks;
 	std::list<std::function<void(ClientCacheEntryModifiedEvent<K>)>> modifiedCallbacks;
 	std::list<std::function<void(ClientCacheEntryRemovedEvent<K>)>> removedCallbacks;
 	std::list<std::function<void(ClientCacheEntryCustomEvent)>> customCallbacks;

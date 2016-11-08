@@ -13,11 +13,8 @@ namespace protocol {
 
 class Codec11: public Codec10 {
 
-public:
-    HeaderParams& writeHeader(
-                infinispan::hotrod::transport::Transport& transport,
-                HeaderParams& params) const;
 protected:
+    Codec11()  { protocolVersion=HotRodConstants::VERSION_11; }
 
     virtual std::map<infinispan::hotrod::transport::InetSocketAddress, std::set<int32_t> > computeNewHashes(
             infinispan::hotrod::transport::Transport& transport, uint32_t newTopologyId, int16_t numKeyOwners,
@@ -44,10 +41,6 @@ private:
 
     int32_t calcVNodeHashCode(int32_t addrHashCode, int32_t id) const;
 
-protected:
-
-    Codec11() {
-    }
 
     friend class CodecFactory;
 };
