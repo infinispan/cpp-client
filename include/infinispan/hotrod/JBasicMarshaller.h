@@ -98,24 +98,25 @@ private:
 	}
 
 	void marshallSmall(const std::string& s, std::vector<char>& b) {
-		char buf[s.size() + 3];
+		b.resize(s.size() + 3);
+		char* buf = b.data();
 		// JBoss preamble
 		buf[0] = JBasicMarshallerHelper::MARSHALL_VERSION;
-			buf[1] = JBasicMarshallerHelper::SMALL_STRING;
+		buf[1] = JBasicMarshallerHelper::SMALL_STRING;
 		buf[2] = (char)s.size();
 		memcpy(buf + 3, s.data(), s.size());
-		b.assign(buf, buf + s.size() + 3);
 	}
 
 	void marshallMedium(const std::string& s, std::vector<char>& b) {
-		char buf[s.size() + 4];
+		b.resize(s.size() + 4);
+		char* buf = b.data();
 		// JBoss preamble
+		buf[0] = JBasicMarshallerHelper::MARSHALL_VERSION;
 		buf[1] = JBasicMarshallerHelper::MEDIUM_STRING;
 		buf[2] = (char)(s.size() >> 8);
 		buf[3] = s.size() & 0xff;
 
 		memcpy(buf + 4, s.data(), s.size());
-		b.assign(buf, buf + s.size() + 4);
 	}
 };
 
