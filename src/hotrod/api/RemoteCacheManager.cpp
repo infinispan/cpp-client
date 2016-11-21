@@ -59,7 +59,7 @@ const Configuration& RemoteCacheManager::getConfiguration() {
 
 bool RemoteCacheManager::switchToDefaultCluster()
 {
-  return IMPL->clusterSwitch();
+  return IMPL->clusterSwitch(Configuration::DEFAULT_CLUSTER_NAME);
 }
 bool RemoteCacheManager::switchToCluster(std::string clusterName)
 {
