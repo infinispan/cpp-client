@@ -13,7 +13,7 @@ import pickle
 def is_compressed_oops_supported(java):
     try:
         subprocess.check_output([java, '-XX:+UseCompressedOops'], stderr=subprocess.STDOUT)
-    except subprocess.CalledProcessError, error:
+    except subprocess.CalledProcessError as error:
         # An exception will always be thrown as the cmdline is not complete.
         return (re.search("Unrecognized VM option 'UseCompressedOops'", error.output) is None)
     return true
@@ -59,11 +59,7 @@ def start(args):
         server_out.close()
 
     output = open('servers.pkl', 'wb')
-    if os.name == 'nt' :
-        # Windows can't pickle the process, so just save the pid
-        pickle.dump(jproc.pid, output)
-    else:
-        pickle.dump(jproc, output)
+    pickle.dump(jproc.pid, output)
     output.close()
 
     return 0
@@ -84,7 +80,7 @@ def stop(verbose=False):
                 time.sleep(1)
             else:
                 try:
-                    jproc_pid.terminate()
+                    subprocess.call(["kill", str(jproc_pid)])
                     time.sleep(1)
                 except Exception:
                     pass
