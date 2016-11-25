@@ -9,14 +9,7 @@
 #define SRC_HOTROD_IMPL_OPERATIONS_QUERYOPERATION_H_
 
 #include "hotrod/impl/operations/RetryOnFailureOperation.h"
-#if _MSC_VER
-#pragma warning(push)
-#pragma warning(disable:4267 4244)
-#endif
-#include "query.pb.h"
-#if _MSC_VER
-#pragma warning(pop)
-#endif
+#include "infinispan/hotrod/Query.h"
 #include <memory>
 namespace infinispan {
 namespace hotrod {

@@ -3,8 +3,7 @@
 #include "infinispan/hotrod/RemoteCacheBase.h"
 #include "infinispan/hotrod/RemoteCacheManager.h"
 #include "hotrod/impl/RemoteCacheImpl.h"
-#include "query.pb.h"
-
+#include "infinispan/hotrod/Query.h"
 #include <iostream>
 
 namespace infinispan {

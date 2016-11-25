@@ -7,14 +7,8 @@
 
 #ifndef INCLUDE_INFINISPAN_HOTROD_QUERYUTILS_H_
 #define INCLUDE_INFINISPAN_HOTROD_QUERYUTILS_H_
-#if _MSC_VER
-#pragma warning(push)
-#pragma warning(disable:4267 4244)
-#endif
-#include "query.pb.h"
-#if _MSC_VER
-#pragma warning(pop)
-#endif
+
+#include "infinispan/hotrod/Query.h"
 #include <tuple>
 using namespace org::infinispan::protostream;
 
