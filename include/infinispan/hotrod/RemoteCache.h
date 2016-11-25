@@ -1,8 +1,6 @@
 #ifndef ISPN_HOTROD_REMOTECACHE_H
 #define ISPN_HOTROD_REMOTECACHE_H
 
-
-
 #include "infinispan/hotrod/RemoteCacheBase.h"
 #include "infinispan/hotrod/Marshaller.h"
 #include "infinispan/hotrod/Flag.h"
@@ -12,15 +10,7 @@
 #include "infinispan/hotrod/Version.h"
 #include "infinispan/hotrod/exceptions.h"
 #include "infinispan/hotrod/ClientListener.h"
-#if _MSC_VER
-#pragma warning(push)
-#pragma warning(disable:4267 4244)
-#endif
-#include "query.pb.h"
-#if _MSC_VER
-#pragma warning(pop)
-#endif
-
+#include "infinispan/hotrod/Query.h"
 #include <cmath>
 #include <set>
 #include <map>

@@ -6,14 +6,7 @@
 #include "hotrod/impl/MetadataValueImpl.h"
 #include "hotrod/impl/VersionedValueImpl.h"
 #include "hotrod/impl/operations/PingOperation.h"
-#if _MSVC_VER
-#pragma warning(push)
-#pragma warning(disable:4267 4244)
-#endif
-#include "query.pb.h"
-#if _MSVC_VER
-#pragma warning(pop)
-#endif
+#include "infinispan/hotrod/Query.h"
 
 using namespace org::infinispan::query::remote::client;
 
