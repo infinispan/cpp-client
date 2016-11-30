@@ -32,7 +32,6 @@
 
 namespace infinispan {
 namespace hotrod {
-
 /**
  * Provides remote reference to a cache residing on a Hot Rod server/cluster.
  *
@@ -909,11 +908,12 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
         return *this;
     }
 
-  private:
+  protected:
     RemoteCache() : RemoteCacheBase() {
         setMarshallers(this, &keyMarshall, &valueMarshall, &keyUnmarshall, &valueUnmarshall);
     }
 
+  private:
     uint64_t toSeconds(uint64_t time, TimeUnit unit) {
         uint64_t result;
         switch (unit) {

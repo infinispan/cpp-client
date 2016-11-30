@@ -1,3 +1,4 @@
+#include <hotrod/impl/NearRemoteCacheImpl.h>
 #include "infinispan/hotrod/ConfigurationBuilder.h"
 #include "hotrod/impl/RemoteCacheManagerImpl.h"
 #include "hotrod/impl/RemoteCacheImpl.h"
@@ -88,13 +89,13 @@ const Configuration& RemoteCacheManagerImpl::getConfiguration() {
 }
 
 RemoteCacheImpl *RemoteCacheManagerImpl::createRemoteCache(
-    bool forceReturnValue)
+    bool forceReturnValue, NearCacheConfiguration nc)
 {
-    return createRemoteCache(DefaultCacheName,forceReturnValue);
+    return createRemoteCache(DefaultCacheName,forceReturnValue, nc);
 }
 
 RemoteCacheImpl *RemoteCacheManagerImpl::createRemoteCache(
-    const std::string& name, bool forceReturnValue)
+    const std::string& name, bool forceReturnValue, NearCacheConfiguration nc)
 {
     ScopedLock<Mutex> l(lock);
     std::map<std::string, RemoteCacheHolder>::iterator iter = cacheName2RemoteCache.find(name);
@@ -103,7 +104,15 @@ RemoteCacheImpl *RemoteCacheManagerImpl::createRemoteCache(
         return iter->second.first.get();
     }
     // Cache not found, creating...
-    RemoteCacheImpl *rcache = new RemoteCacheImpl(*this, name);
+    RemoteCacheImpl *rcache;
+    if (nc.getMode()==NearCacheMode::DISABLED)
+    {
+        rcache = new RemoteCacheImpl(*this, name);
+    }
+    else
+    {
+        rcache = new NearRemoteCacheImpl(*this, name, nc);
+    }
     try {
         startRemoteCache(*rcache, forceReturnValue);
         if (name != DefaultCacheName) {

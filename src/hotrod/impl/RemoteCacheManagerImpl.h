@@ -22,8 +22,8 @@ class RemoteCacheManagerImpl
     RemoteCacheManagerImpl(const std::map<std::string,std::string>& properties, bool start_); // Deprecated
 	RemoteCacheManagerImpl(const Configuration& configuration, bool start = true);
 
-	RemoteCacheImpl *createRemoteCache(bool forceReturnValue);
-	RemoteCacheImpl *createRemoteCache(const std::string& name, bool forceReturnValue);
+	RemoteCacheImpl *createRemoteCache(bool forceReturnValue, NearCacheConfiguration nc);
+	RemoteCacheImpl *createRemoteCache(const std::string& name, bool forceReturnValue, NearCacheConfiguration nc);
 
 	void start();
     void stop();

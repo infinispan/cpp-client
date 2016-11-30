@@ -30,21 +30,21 @@ class RemoteCacheImpl: public portable::counted_object
 {
 public:
     RemoteCacheImpl(RemoteCacheManagerImpl& rcm, const std::string& name);
-    void *get(RemoteCacheBase& rcb, const void* key);
-    void *put(RemoteCacheBase& rcb, const void *key, const void* val, uint64_t life, uint64_t idle);
+    virtual void *get(RemoteCacheBase& rcb, const void* key);
+    virtual void *put(RemoteCacheBase& rcb, const void *key, const void* val, uint64_t life, uint64_t idle);
     void *putIfAbsent(RemoteCacheBase& rcb, const void *key, const void* val, uint64_t life, uint64_t idle);
-    void *replace(RemoteCacheBase& rcb, const void *key, const void* val, uint64_t life, uint64_t idle);
-    void *remove(RemoteCacheBase& rcb, const void* key);
+    virtual void *replace(RemoteCacheBase& rcb, const void *key, const void* val, uint64_t life, uint64_t idle);
+    virtual void *remove(RemoteCacheBase& rcb, const void* key);
     bool  containsKey(RemoteCacheBase& rcb, const void* key);
-    bool  replaceWithVersion(RemoteCacheBase& rcb, const void* k, const void* v, uint64_t version, uint64_t life, uint64_t idle);
-    bool  removeWithVersion(RemoteCacheBase& rcb, const void* k, uint64_t version);
+    virtual bool  replaceWithVersion(RemoteCacheBase& rcb, const void* k, const void* v, uint64_t version, uint64_t life, uint64_t idle);
+    virtual bool  removeWithVersion(RemoteCacheBase& rcb, const void* k, uint64_t version);
     void *getWithMetadata(RemoteCacheBase& rcb, const void *key, MetadataValue* metadata);
-    void *getWithVersion(RemoteCacheBase& rcb, const void *key, VersionedValue* version);
+    virtual void *getWithVersion(RemoteCacheBase& rcb, const void *key, VersionedValue* version);
     void  getBulk(RemoteCacheBase& rcb, portable::map<void*, void*> &mbuf);
     void  getBulk(RemoteCacheBase& rcb, int size, portable::map<void*, void*> &mbuf);
     void  keySet(RemoteCacheBase& rcb, int scope, portable::vector<void*> &result);
     void  stats(portable::map<portable::string,portable::string> &stats);
-    void  clear();
+    virtual void clear();
     uint64_t size();
     std::vector<char> execute(std::vector<char> cmdName, const std::map<std::vector<char>,std::vector<char>>& args);
     QueryResponse query(const QueryRequest & qr);
@@ -52,7 +52,7 @@ public:
     CacheTopologyInfo getCacheTopologyInfo();
     void addClientListener(ClientListener&, const std::vector<std::vector<char> >, const std::vector<std::vector<char> >, const std::function<void()> &);
     void removeClientListener(ClientListener&);
-    void init(operations::OperationsFactory* operationsFactory);
+    virtual void init(operations::OperationsFactory* operationsFactory);
 
     void withFlags(Flag flag);
 
@@ -64,7 +64,6 @@ public:
 
 private:
     RemoteCacheManagerImpl& remoteCacheManager;
-
     std::shared_ptr<operations::OperationsFactory> operationsFactory;
     std::string name;
 

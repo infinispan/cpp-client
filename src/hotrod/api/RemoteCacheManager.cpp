@@ -30,15 +30,15 @@ RemoteCacheManager::~RemoteCacheManager() {
 }
 
 void RemoteCacheManager::initCache(
-    RemoteCacheBase& cache, bool forceReturnValue)
+    RemoteCacheBase& cache, bool forceReturnValue, NearCacheConfiguration nc)
 {
-    cache.impl = IMPL->createRemoteCache(forceReturnValue);
+    cache.impl = IMPL->createRemoteCache(forceReturnValue, nc);
 }
 
 void RemoteCacheManager::initCache(
-    RemoteCacheBase& cache, const char *name, bool forceReturnValue)
+    RemoteCacheBase& cache, const char *name, bool forceReturnValue, NearCacheConfiguration nc)
 {
-    cache.impl = IMPL->createRemoteCache(std::string(name), forceReturnValue);
+    cache.impl = IMPL->createRemoteCache(std::string(name), forceReturnValue, nc);
 }
 
 void RemoteCacheManager::start() {

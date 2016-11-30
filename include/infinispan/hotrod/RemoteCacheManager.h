@@ -113,10 +113,11 @@ public:
         const std::string key = forceReturnValue ? "/true" : "/false";
         if (remoteCacheMap.find(key)==remoteCacheMap.end())
         {
-            RemoteCache<K,V> *pRc= new RemoteCache<K,V>();
+            RemoteCache<K,V> *pRc;
+            pRc= new RemoteCache<K,V>();
             remoteCacheMap[key]= std::unique_ptr<RemoteCacheBase>(pRc);
             RemoteCache<K, V> *rcache=(RemoteCache<K, V> *)remoteCacheMap[key].get();
-            initCache(*rcache, forceReturnValue);
+            initCache(*rcache, forceReturnValue, getConfiguration().getNearCacheConfiguration());
             rcache->keyMarshaller.reset(new BasicMarshaller<K>(), &Marshaller<K>::destroy);
             rcache->valueMarshaller.reset(new BasicMarshaller<V>(), &Marshaller<V>::destroy);
             return *rcache;
@@ -191,14 +192,14 @@ public:
             remoteCacheMap[key] = std::unique_ptr < RemoteCacheBase > (pRc);
             RemoteCache<K, V> *rcache =
                     (RemoteCache<K, V> *) remoteCacheMap[key].get();
-            initCache(*rcache, forceReturnValue);
+            initCache(*rcache, forceReturnValue, getConfiguration().getNearCacheConfiguration());
             rcache->keyMarshaller.reset(km, kd);
             rcache->valueMarshaller.reset(vm, vd);
             return *rcache;
         }
         RemoteCache<K, V> *rcache =
                 (RemoteCache<K, V> *) remoteCacheMap[key].get();
-        initCache(*rcache, forceReturnValue);
+        initCache(*rcache, forceReturnValue, getConfiguration().getNearCacheConfiguration());
         rcache->keyMarshaller.reset(km, kd);
         rcache->valueMarshaller.reset(vm, vd);
         return *rcache;
@@ -243,14 +244,14 @@ public:
             remoteCacheMap[key] = std::unique_ptr < RemoteCacheBase > (pRc);
             RemoteCache<K, V> *rcache =
                     (RemoteCache<K, V> *) remoteCacheMap[key].get();
-            initCache(*rcache, name.c_str(), forceReturnValue);
+            initCache(*rcache, name.c_str(), forceReturnValue, getConfiguration().getNearCacheConfiguration());
             rcache->keyMarshaller.reset(km, kd);
             rcache->valueMarshaller.reset(vm, vd);
             return *rcache;
         }
         RemoteCache<K, V> *rcache =
                 (RemoteCache<K, V> *) remoteCacheMap[key].get();
-        initCache(*rcache, name.c_str(), forceReturnValue);
+        initCache(*rcache, name.c_str(), forceReturnValue, getConfiguration().getNearCacheConfiguration());
         rcache->keyMarshaller.reset(km, kd);
         rcache->valueMarshaller.reset(vm, vd);
         return *rcache;
@@ -295,8 +296,8 @@ private:
 
     void init(const portable::map<portable::string, portable::string>& configuration, bool start);
 
-    void initCache(RemoteCacheBase& cache, bool forceReturnValue);
-    void initCache(RemoteCacheBase& cache, const char *name, bool forceReturnValue);
+    void initCache(RemoteCacheBase& cache, bool forceReturnValue, NearCacheConfiguration nc = NearCacheConfiguration());
+    void initCache(RemoteCacheBase& cache, const char *name, bool forceReturnValue, NearCacheConfiguration nc = NearCacheConfiguration());
 
     // not implemented
     RemoteCacheManager(const RemoteCacheManager&);
