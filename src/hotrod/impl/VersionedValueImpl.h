@@ -13,6 +13,10 @@ template<class V> class VersionedValueImpl : public VersionedValue
         version = _version;
     }
 
+    unsigned long getVersion() {
+        return version;
+    }
+
     V getValue() {
     	return value;
     }

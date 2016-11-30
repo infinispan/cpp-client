@@ -10,6 +10,7 @@ import org.infinispan.client.hotrod.impl.transport.TransportFactory;
 import org.infinispan.client.hotrod.impl.transport.tcp.RequestBalancingStrategy;
 import org.infinispan.client.hotrod.configuration.ConnectionPoolConfiguration;
 import org.infinispan.client.hotrod.configuration.SslConfiguration;
+import org.infinispan.client.hotrod.configuration.NearCacheConfiguration;
 import org.infinispan.commons.configuration.BuiltBy;
 import org.infinispan.commons.marshall.Marshaller;
 
@@ -51,10 +52,10 @@ public class Configuration {
    Configuration(ExecutorFactoryConfiguration asyncExecutorFactory, Class<? extends RequestBalancingStrategy> balancingStrategy, ClassLoader classLoader,
          ConnectionPoolConfiguration connectionPool, int connectionTimeout, Class<? extends ConsistentHash>[] consistentHashImpl, boolean forceReturnValues, int keySizeEstimate, Class<? extends Marshaller> marshallerClass,
          boolean pingOnStartup, String protocolVersion, List<ServerConfiguration> servers, List<ServerConfiguration> failOverServers, int socketTimeout, SslConfiguration ssl, boolean tcpNoDelay,
-         Class<? extends TransportFactory> transportFactory, int valueSizeEstimate, int maxRetries) {
+         Class<? extends TransportFactory> transportFactory, int valueSizeEstimate, int maxRetries, NearCacheConfiguration nearCache) {
       this.jniConfiguration = new org.infinispan.client.hotrod.jni.Configuration(protocolVersion, connectionPool.getJniConnectionPoolConfiguration(),
             connectionTimeout, forceReturnValues, keySizeEstimate,  null, socketTimeout, ssl.getJniSslConfiguration(), tcpNoDelay,
-            valueSizeEstimate, maxRetries);
+            valueSizeEstimate, maxRetries, nearCache.getJniNearCacheConfiguration());
       this.asyncExecutorFactory = asyncExecutorFactory;
       this.balancingStrategy = balancingStrategy;
       this.classLoader = new WeakReference<ClassLoader>(classLoader);
@@ -132,6 +133,10 @@ public class Configuration {
 
    public SslConfiguration ssl() {
       return new SslConfiguration(this.jniConfiguration.getSslConfiguration());
+   }
+
+   public NearCacheConfiguration nearCache() {
+      return new NearCacheConfiguration(this.jniConfiguration.getNearCacheConfiguration());
    }
 
    public boolean tcpNoDelay() {

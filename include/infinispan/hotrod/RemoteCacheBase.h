@@ -80,6 +80,7 @@ private:
 
 friend class RemoteCacheManager;
 friend class RemoteCacheImpl;
+friend class NearRemoteCacheImpl;
 friend class KeyUnmarshallerFtor;
 friend class ValueUnmarshallerFtor;
 template <class K, class V>

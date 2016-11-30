@@ -7,9 +7,10 @@
 #include <vector>
 #include "infinispan/hotrod/portable.h"
 #include "infinispan/hotrod/ImportExport.h"
-#include "ConnectionPoolConfiguration.h"
-#include "ServerConfiguration.h"
-#include "SslConfiguration.h"
+#include "infinispan/hotrod/ConnectionPoolConfiguration.h"
+#include "infinispan/hotrod/ServerConfiguration.h"
+#include "infinispan/hotrod/SslConfiguration.h"
+#include "infinispan/hotrod/NearCacheConfiguration.h"
 #include "infinispan/hotrod/FailOverRequestBalancingStrategy.h"
 #include "infinispan/hotrod/JBasicEventMarshaller.h"
 
@@ -49,6 +50,7 @@ class Configuration
             bool _tcpNoDelay,
             int _valueSizeEstimate,
             int _maxRetries,
+            NearCacheConfiguration _nearCacheConfiguration,
             FailOverRequestBalancingStrategy::ProducerFn bsp=0,
 			const event::EventMarshaller &eventMarshaller = event::JBasicEventMarshaller()):
                 protocolVersion(_protocolVersion), protocolVersionPtr(),
@@ -56,7 +58,7 @@ class Configuration
                 connectionTimeout(_connectionTimeout), forceReturnValue(_forceReturnValue),
                 keySizeEstimate(_keySizeEstimate),
                 socketTimeout(_socketTimeout), sslConfiguration(_sslConfiguration),tcpNoDelay(_tcpNoDelay),
-                valueSizeEstimate(_valueSizeEstimate), maxRetries(_maxRetries), balancingStrategyProducer(bsp),
+                valueSizeEstimate(_valueSizeEstimate), maxRetries(_maxRetries), nearCacheConfiguration(_nearCacheConfiguration), balancingStrategyProducer(bsp),
 				eventMarshaller(eventMarshaller)
     {
        std::map<portable::string, portable::vector<ServerConfiguration>> tmpMap;
@@ -173,6 +175,8 @@ class Configuration
     SslConfiguration& getSslConfiguration() { return sslConfiguration; }
     HR_EXTERN const event::EventMarshaller &getEventMarshaller() const;
 
+    const NearCacheConfiguration& getNearCacheConfiguration() const { return nearCacheConfiguration; }
+
 private:
     portable::string protocolVersion;
     portable::local_ptr<std::string> protocolVersionPtr;
@@ -186,6 +190,7 @@ private:
     bool tcpNoDelay;
     int valueSizeEstimate;
     int maxRetries;
+    const NearCacheConfiguration nearCacheConfiguration;
     FailOverRequestBalancingStrategy::ProducerFn balancingStrategyProducer;
     const event::EventMarshaller &eventMarshaller;
 

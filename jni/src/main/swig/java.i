@@ -16,6 +16,9 @@
 
 %include "std_pair.i"
 
+%include "enums.swg"
+%javaconst(1);
+
 //#define std::shared_ptr std::shared_ptr
 
 %{
@@ -28,6 +31,7 @@
 #include <infinispan/hotrod/JBasicEventMarshaller.h>
 #include <infinispan/hotrod/ServerConfiguration.h>
 #include <infinispan/hotrod/SslConfiguration.h>
+#include <infinispan/hotrod/NearCacheConfiguration.h>
 #include <infinispan/hotrod/Configuration.h>
 #include <infinispan/hotrod/ServerConfigurationBuilder.h>
 #include <infinispan/hotrod/ConfigurationBuilder.h>
@@ -55,6 +59,7 @@ using namespace infinispan::hotrod;
 %include "infinispan/hotrod/ConnectionPoolConfiguration.h"
 %include "infinispan/hotrod/ServerConfiguration.h"
 %include "infinispan/hotrod/SslConfiguration.h"
+%include "infinispan/hotrod/NearCacheConfiguration.h"
 
 %immutable infinispan::hotrod::Configuration::PROTOCOL_VERSION_10;
 %immutable infinispan::hotrod::Configuration::PROTOCOL_VERSION_11;

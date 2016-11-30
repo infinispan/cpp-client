@@ -14,11 +14,13 @@
 #include "ConnectionPoolConfigurationBuilder.h"
 #include "ServerConfigurationBuilder.h"
 #include "SslConfigurationBuilder.h"
+#include "NearCacheConfiguration.h"
 
 using namespace infinispan::hotrod::event;
 
 namespace infinispan {
 namespace hotrod {
+
 class ClusterConfigurationBuilder
 {
 public:
@@ -32,6 +34,43 @@ private:
     std::vector<ServerConfigurationBuilder>& servers;
     ConfigurationBuilder &m_parent;
 };
+
+/**
+ * Configuration classes for near cache
+ */
+class NearCacheConfigurationBuilder : public ConfigurationChildBuilder
+{
+public:
+    NearCacheConfigurationBuilder(ConfigurationBuilder& _builder) : ConfigurationChildBuilder(_builder) {}
+
+    int getMaxEntries() const {
+        return m_maxEntries;
+    }
+
+    NearCacheConfigurationBuilder& maxEntries(int maxEntries = 0) {
+        this->m_maxEntries = maxEntries;
+        return *this;
+    }
+
+    NearCacheMode getMode() const {
+        return m_mode;
+    }
+
+    NearCacheConfigurationBuilder& mode(NearCacheMode mode = DISABLED) {
+        this->m_mode = mode;
+        return *this;
+    }
+
+    NearCacheConfiguration create()
+    {
+        return NearCacheConfiguration(m_mode,m_maxEntries);
+    }
+
+    private:
+    NearCacheMode m_mode=DISABLED;
+    int m_maxEntries=0;
+};
+
 /**
  * ConfigurationBuilder used to generate immutable Configuration objects that are in turn
  * used to configure RemoteCacheManager instances.
@@ -54,7 +93,8 @@ class ConfigurationBuilder
         __pragma(warning(suppress:4355)) // passing uninitialized 'this'
         connectionPoolConfigurationBuilder(*this),
         __pragma(warning(suppress:4355))
-        sslConfigurationBuilder(*this)
+        sslConfigurationBuilder(*this),
+        nearCacheConfigurationBuilder(*this)
         {}
 
      void validate() {}
@@ -179,6 +219,15 @@ class ConfigurationBuilder
     }
 
     /**
+     * Returns NearCacheConfigurationBuilder for near cache enabling and configuration.
+     *
+     *\return NearCacheConfigurationBuilder instance to be used for configuration
+     */
+    NearCacheConfigurationBuilder& nearCache() {
+        return nearCacheConfigurationBuilder;
+    }
+
+    /**
      * Set tcpNoDelay for this ConfigurationBuilder. Default is true.
      *
      *\return ConfigurationBuilder instance to be used for further configuration
@@ -259,6 +308,7 @@ class ConfigurationBuilder
             m_tcpNoDelay,
             m_valueSizeEstimate,
             m_maxRetries,
+            nearCacheConfigurationBuilder.create(),
             m_balancingStrategyProducer,
             m_eventMarshaller);
 
@@ -298,6 +348,7 @@ class ConfigurationBuilder
     ConnectionPoolConfigurationBuilder connectionPoolConfigurationBuilder;
     SslConfigurationBuilder sslConfigurationBuilder;
     JBasicEventMarshaller m_defaultEventMarshaller;
+    NearCacheConfigurationBuilder nearCacheConfigurationBuilder;
 
     EventMarshaller &m_eventMarshaller=m_defaultEventMarshaller;
 };
