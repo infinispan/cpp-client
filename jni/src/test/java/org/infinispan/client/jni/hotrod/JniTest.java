@@ -33,7 +33,7 @@ public class JniTest implements IMethodSelector {
    public static void main(String[] args) {
       TestNG testng = new TestNG();
       testng.addMethodSelector("org.infinispan.client.jni.hotrod.JniTest", 1);
-      TextReporter tr = new TextReporter("SWIG Tests", 2);
+      IncrementalTextReporter tr = new IncrementalTextReporter("SWIG Tests", 2);
 
       testng.setTestClasses(new Class[] {
             /* package org.infinispan.client.jni.hotrod (this one) */
