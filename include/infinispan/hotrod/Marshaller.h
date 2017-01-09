@@ -8,9 +8,7 @@
 namespace infinispan {
 namespace hotrod {
 
-// Todo: application buffer memory management; async readers/writers.  SSL implications?
-
-template <class T> class Marshaller: public portable::counted_object
+template <class T> class Marshaller
 {
   public:
     virtual void marshall(const T&, std::vector<char>&) = 0;

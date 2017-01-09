@@ -22,8 +22,8 @@ class RemoteCacheManagerImpl
     RemoteCacheManagerImpl(const std::map<std::string,std::string>& properties, bool start_); // Deprecated
 	RemoteCacheManagerImpl(const Configuration& configuration, bool start = true);
 
-	RemoteCacheImpl *createRemoteCache(bool forceReturnValue, NearCacheConfiguration nc);
-	RemoteCacheImpl *createRemoteCache(const std::string& name, bool forceReturnValue, NearCacheConfiguration nc);
+	std::shared_ptr<RemoteCacheImpl> createRemoteCache(bool forceReturnValue, NearCacheConfiguration nc);
+	std::shared_ptr<RemoteCacheImpl> createRemoteCache(const std::string& name, bool forceReturnValue, NearCacheConfiguration nc);
 
 	void start();
     void stop();
@@ -35,7 +35,6 @@ class RemoteCacheManagerImpl
     ClientListenerNotifier*& getListenerNotifier() {
 		return listenerNotifier;
 	}
-
   private:
     sys::Mutex lock;
     bool started;
@@ -43,7 +42,7 @@ class RemoteCacheManagerImpl
     protocol::Codec* codec;
     int defaultCacheTopologyId;
 
-    typedef std::pair<portable::counting_ptr<RemoteCacheImpl>, bool> RemoteCacheHolder;
+    typedef std::pair<std::shared_ptr<RemoteCacheImpl>, bool> RemoteCacheHolder;
     std::map<std::string, RemoteCacheHolder> cacheName2RemoteCache;
 
     operations::PingResult ping(RemoteCacheImpl& remoteCache);

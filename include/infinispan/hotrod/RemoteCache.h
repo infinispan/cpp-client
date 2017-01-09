@@ -950,8 +950,8 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
         return ((RemoteCache<K, V> *)thisp)->valueMarshaller->unmarshall(buf);
     }
 
-    portable::counting_ptr<Marshaller<K> > keyMarshaller;
-    portable::counting_ptr<Marshaller<V> > valueMarshaller;
+    std::shared_ptr<Marshaller<K> > keyMarshaller;
+    std::shared_ptr<Marshaller<V> > valueMarshaller;
 
   friend class RemoteCacheManager;
 };

@@ -59,7 +59,7 @@ class TcpTransportFactory : public TransportFactory
     infinispan::hotrod::consistenthash::ConsistentHashFactory
             & getConsistentHashFactory();
     Transport& borrowTransportFromPool(const InetSocketAddress& server);
-
+    virtual ~TcpTransportFactory() { }
 
   private:
     sys::Mutex lock;
