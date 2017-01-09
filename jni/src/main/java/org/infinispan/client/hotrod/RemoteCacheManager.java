@@ -116,6 +116,14 @@ public class RemoteCacheManager /* implements BasicCacheContainer */{
        throw new UnsupportedOperationException();
     }
 
+    public boolean switchToDefaultCluster() {
+       return jniRemoteCacheManager.switchToDefaultCluster();
+    }
+
+    public boolean switchToCluster(String clusterName) {
+       return jniRemoteCacheManager.switchToCluster(clusterName);
+    }
+
     static {
         try {
             System.loadLibrary("hotrod");

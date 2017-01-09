@@ -164,6 +164,7 @@
                 <encryption security-realm="ApplicationRealm" require-ssl-client-auth="false">
                      <sni host-name="sni"    security-realm="SSLRealm2"/>
                      <sni host-name="sni2"   security-realm="SSLRealm1"/>
+                     <sni host-name="sni3"    security-realm="SSLRealm2"/>
                 </encryption>
             </hotrod-connector>
         </subsystem>
