@@ -26,7 +26,9 @@ void RemoteCacheManager::init(const portable::map<portable::string, portable::st
 }
 
 RemoteCacheManager::~RemoteCacheManager() {
-    delete IMPL;
+	if (IMPL)
+		delete IMPL;
+	impl=nullptr;
 }
 
 void RemoteCacheManager::initCache(

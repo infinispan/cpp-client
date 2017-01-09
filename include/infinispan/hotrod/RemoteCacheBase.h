@@ -32,9 +32,12 @@ typedef void* (*UnmarshallHelperFn) (void*, const std::vector<char> &);
 
 class KeyUnmarshallerFtor;
 class ValueUnmarshallerFtor;
+class RemoteCacheImpl;
 
 class RemoteCacheBase
 {
+public:
+    virtual ~RemoteCacheBase() {}
 protected:
     HR_EXTERN const char *base_getName();
     HR_EXTERN void *base_get(const void *key);
@@ -64,10 +67,9 @@ protected:
 
     RemoteCacheBase() {}
     HR_EXTERN void setMarshallers(void* rc, MarshallHelperFn kf, MarshallHelperFn vf, UnmarshallHelperFn ukf, UnmarshallHelperFn uvf);
-
 private:
-    portable::counting_ptr<portable::counted_object> impl; // pointer to RemoteCacheImpl;
-    void *remoteCachePtr; // TODO: pointer to self, is it really necessary?
+    std::shared_ptr<RemoteCacheImpl> impl; // pointer to RemoteCacheImpl;
+    void *remoteCachePtr=nullptr; // TODO: pointer to self, is it really necessary?
     MarshallHelperFn baseKeyMarshallFn;
     MarshallHelperFn baseValueMarshallFn;
     HR_EXTERN void baseKeyMarshall(const void* k, std::vector<char> &buf);

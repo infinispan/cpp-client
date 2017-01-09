@@ -76,6 +76,7 @@ void RemoteCacheManagerImpl::stop() {
         started = false;
     	if  (listenerNotifier)
     		listenerNotifier->stop();
+    	delete listenerNotifier;
     }
 }
 
@@ -88,48 +89,46 @@ const Configuration& RemoteCacheManagerImpl::getConfiguration() {
     return configuration;
 }
 
-RemoteCacheImpl *RemoteCacheManagerImpl::createRemoteCache(
+std::shared_ptr<RemoteCacheImpl> RemoteCacheManagerImpl::createRemoteCache(
     bool forceReturnValue, NearCacheConfiguration nc)
 {
     return createRemoteCache(DefaultCacheName,forceReturnValue, nc);
 }
 
-RemoteCacheImpl *RemoteCacheManagerImpl::createRemoteCache(
+std::shared_ptr<RemoteCacheImpl> RemoteCacheManagerImpl::createRemoteCache(
     const std::string& name, bool forceReturnValue, NearCacheConfiguration nc)
 {
     ScopedLock<Mutex> l(lock);
     std::map<std::string, RemoteCacheHolder>::iterator iter = cacheName2RemoteCache.find(name);
     // Cache found
     if (iter != cacheName2RemoteCache.end()) {
-        return iter->second.first.get();
+        return iter->second.first;
     }
     // Cache not found, creating...
-    RemoteCacheImpl *rcache;
+    std::shared_ptr<RemoteCacheImpl> rcache_sptr;
     if (nc.getMode()==NearCacheMode::DISABLED)
     {
-        rcache = new RemoteCacheImpl(*this, name);
+        rcache_sptr.reset(new RemoteCacheImpl(*this, name));
     }
     else
     {
-        rcache = new NearRemoteCacheImpl(*this, name, nc);
+    	rcache_sptr.reset(new NearRemoteCacheImpl(*this, name, nc));
     }
     try {
-        startRemoteCache(*rcache, forceReturnValue);
+        startRemoteCache(*rcache_sptr, forceReturnValue);
         if (name != DefaultCacheName) {
            // If ping not successful assume that the cache does not exist
            // Default cache is always started, so don't do for it
-           if (ping(*rcache) == CACHE_DOES_NOT_EXIST) {
-               delete rcache;
-               return NULL;
+           if (ping(*rcache_sptr) == CACHE_DOES_NOT_EXIST) {
+               return nullptr;
            }
         }
         // If ping on startup is disabled, or cache is defined in server
-        cacheName2RemoteCache[name] = RemoteCacheHolder(rcache, forceReturnValue);
-        return rcache;
+        cacheName2RemoteCache[name] = RemoteCacheHolder(rcache_sptr, forceReturnValue);
+        return rcache_sptr;
     }
     catch (...)
     {
-        delete rcache;
         throw;
     }
 }

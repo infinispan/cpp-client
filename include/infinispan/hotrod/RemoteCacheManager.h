@@ -118,8 +118,8 @@ public:
             remoteCacheMap[key]= std::unique_ptr<RemoteCacheBase>(pRc);
             RemoteCache<K, V> *rcache=(RemoteCache<K, V> *)remoteCacheMap[key].get();
             initCache(*rcache, forceReturnValue, getConfiguration().getNearCacheConfiguration());
-            rcache->keyMarshaller.reset(new BasicMarshaller<K>(), &Marshaller<K>::destroy);
-            rcache->valueMarshaller.reset(new BasicMarshaller<V>(), &Marshaller<V>::destroy);
+            rcache->keyMarshaller.reset(new BasicMarshaller<K>());
+            rcache->valueMarshaller.reset(new BasicMarshaller<V>());
             return *rcache;
         }
         return *(RemoteCache<K, V> *)remoteCacheMap[key].get();
@@ -153,8 +153,8 @@ public:
             remoteCacheMap[key]= std::unique_ptr<RemoteCacheBase>(pRc);
             RemoteCache<K, V> *rcache=(RemoteCache<K, V> *)remoteCacheMap[key].get();
             initCache(*rcache, name.c_str(), forceReturnValue);
-            rcache->keyMarshaller.reset(new BasicMarshaller<K>(), &Marshaller<K>::destroy);
-            rcache->valueMarshaller.reset(new BasicMarshaller<V>(), &Marshaller<V>::destroy);
+            rcache->keyMarshaller.reset(new BasicMarshaller<K>());
+            rcache->valueMarshaller.reset(new BasicMarshaller<V>());
             return *rcache;
         }
         return *(RemoteCache<K, V> *)remoteCacheMap[key].get();
@@ -193,15 +193,15 @@ public:
             RemoteCache<K, V> *rcache =
                     (RemoteCache<K, V> *) remoteCacheMap[key].get();
             initCache(*rcache, forceReturnValue, getConfiguration().getNearCacheConfiguration());
-            rcache->keyMarshaller.reset(km, kd);
-            rcache->valueMarshaller.reset(vm, vd);
+            rcache->keyMarshaller.reset(km);
+            rcache->valueMarshaller.reset(vm);
             return *rcache;
         }
         RemoteCache<K, V> *rcache =
                 (RemoteCache<K, V> *) remoteCacheMap[key].get();
         initCache(*rcache, forceReturnValue, getConfiguration().getNearCacheConfiguration());
-        rcache->keyMarshaller.reset(km, kd);
-        rcache->valueMarshaller.reset(vm, vd);
+        rcache->keyMarshaller.reset(km);
+        rcache->valueMarshaller.reset(vm);
         return *rcache;
     }
 
@@ -245,15 +245,15 @@ public:
             RemoteCache<K, V> *rcache =
                     (RemoteCache<K, V> *) remoteCacheMap[key].get();
             initCache(*rcache, name.c_str(), forceReturnValue, getConfiguration().getNearCacheConfiguration());
-            rcache->keyMarshaller.reset(km, kd);
-            rcache->valueMarshaller.reset(vm, vd);
+            rcache->keyMarshaller.reset(km);
+            rcache->valueMarshaller.reset(vm);
             return *rcache;
         }
         RemoteCache<K, V> *rcache =
                 (RemoteCache<K, V> *) remoteCacheMap[key].get();
         initCache(*rcache, name.c_str(), forceReturnValue, getConfiguration().getNearCacheConfiguration());
-        rcache->keyMarshaller.reset(km, kd);
-        rcache->valueMarshaller.reset(vm, vd);
+        rcache->keyMarshaller.reset(km);
+        rcache->valueMarshaller.reset(vm);
         return *rcache;
     }
 

@@ -343,39 +343,6 @@ int basicTest(RemoteCacheManager &cacheManager, RemoteCache<K,V> &cache) {
 
     cache.clear();
 
-/*    // Put ak1,av1 in async thread A
-    std::future<std::string*> future_put= cache.putAsync(ak1,av1);
-    // Get the value in this thread
-    std::string* arv1= cache.get(ak1);
-    if (future_put.wait_for(std::chrono::seconds(0))!=std::future_status::ready)
-    {
-    	// get happens before put completes, arv1 must be null
-    	if (arv1)
-    	{
-    		std::cerr << "fail: expected null got value" << std::endl;
-    		return 1;
-    	}
-    }
-    // Now wait for put completion
-    future_put.wait();
-
-    // All is synch now
-    std::string* arv11= cache.get(ak1);
-    if (!arv11 || arv11->compare(av1))
-    {
-    	std::cout << "fail: expected " << av1 << "got " << (arv11 ? *arv11 : "null") << std::endl;
-    	return 1;
-    }
-
-    // Read ak1 again, but in async way and test that the result is the same
-    std::future<std::string*> future_ga= cache.getAsync(ak1);
-    std::string* arv2= future_ga.get();
-    if (!arv2 || arv2->compare(av1))
-    {
-    	std::cerr << "fail: expected " << av1 << " got " << (arv2 ? *arv2 : "null") << std::endl;
-    	return 1;
-    }
-*/
     bool flag=false;
     // Now user pass a lambda func that will be executed in the async thread after the put completion
     std::future<std::string*> future_put1= cache.putAsync(ak2,av2,0,0,[&] (std::string *v){flag=true; return v;});
@@ -427,6 +394,7 @@ int basicTest(RemoteCacheManager &cacheManager, RemoteCache<K,V> &cache) {
     	std::cerr << "fail: expected " << av2 << " got " << (arv3 ? *arv3 : "null") << std::endl;
     	return 1;
     }
+    delete arv3;
     std::cout << "PASS: Async test" << std::endl;
     return 0;
 }
@@ -472,6 +440,7 @@ int main(int argc, char** argv) {
             result=1;
         }
     }
+
     if (result!=0)
     	return result;
     std::cout << "PASS: Tests for CacheManager" << std::endl;
@@ -491,41 +460,50 @@ int main(int argc, char** argv) {
                 vm,
                 &Marshaller<std::string>::destroy);
         cacheManager.start();
-        result = basicTest<std::string, std::string>(cacheManager, cache);
 
-        try
-        {
-            std::map<std::string,std::string> s;
-            std::string argName = std::string("a");
-            std::string argValue = std::string("b");
-            // execute() operation needs explicit JBossMarshalling<string> format for argument values
-            s.insert(std::pair<std::string, std::string>(argName,JBasicMarshaller<std::string>::addPreamble(argValue)));
-            std::string script ("// mode=local,language=javascript\n "
-            "var cache = cacheManager.getCache(\"namedCache\");\n"
-            "cache.put(\"a\", \"abc\");\n"
-            "cache.put(\"b\", \"b\");\n"
-            "cache.get(\"a\");\n");
-            std::string script_name("script.js");
-            std::string p_script_name=JBasicMarshaller<std::string>::addPreamble(script_name);
-            std::string p_script=JBasicMarshaller<std::string>::addPreamble(script);
-            RemoteCache<std::string, std::string> scriptCache=cacheManager.getCache<std::string,std::string>("___script_cache",false);
-            scriptCache.put(p_script_name, p_script);
-            std::vector<unsigned char> execResult = cache.execute(script_name,s);
+		try {
+			result = basicTest<std::string, std::string>(cacheManager, cache);
+			std::map<std::string, std::string> s;
+			std::string argName = std::string("a");
+			std::string argValue = std::string("b");
+			// execute() operation needs explicit JBossMarshalling<string> format for argument values
+			s.insert(
+					std::pair<std::string, std::string>(argName,
+							JBasicMarshaller<std::string>::addPreamble(
+									argValue)));
+			std::string script("// mode=local,language=javascript\n "
+					"var cache = cacheManager.getCache(\"namedCache\");\n"
+					"cache.put(\"a\", \"abc\");\n"
+					"cache.put(\"b\", \"b\");\n"
+					"cache.get(\"a\");\n");
+			std::string script_name("script.js");
+			std::string p_script_name =
+					JBasicMarshaller<std::string>::addPreamble(script_name);
+			std::string p_script = JBasicMarshaller<std::string>::addPreamble(
+					script);
+			RemoteCache<std::string, std::string> scriptCache =
+					cacheManager.getCache<std::string, std::string>(
+							"___script_cache", false);
+			scriptCache.put(p_script_name, p_script);
+			std::vector<unsigned char> execResult = cache.execute(script_name,
+					s);
 
-
-            // We know the remote script returns a string and
-            // we use the helper to unmarshall
-            std::string res(JBasicMarshallerHelper::unmarshall<std::string>((char*)execResult.data()));
-            if (res.compare("abc")!=0)
-            {
-                std::cerr << "fail: cache.exec() returned unexpected result"<< std::endl;
-                return 1;
-            }
-        } catch (const Exception& e) {
-            std::cout << "is: " << typeid(e).name() << '\n';
-            std::cerr << "fail unexpected exception: " << e.what() << std::endl;
-            return 1;
-        }
+			// We know the remote script returns a string and
+			// we use the helper to unmarshall
+			std::string res(
+					JBasicMarshallerHelper::unmarshall<std::string>(
+							(char*) execResult.data()));
+			if (res.compare("abc") != 0) {
+				std::cerr << "fail: cache.exec() returned unexpected result"
+						<< std::endl;
+				return 1;
+			}
+		} catch (const Exception& e) {
+	        cacheManager.stop();
+			std::cout << "is: " << typeid(e).name() << '\n';
+			std::cerr << "fail unexpected exception: " << e.what() << std::endl;
+			return 1;
+		}
         std::cout << "PASS: script execution on server" << std::endl;
 
         cacheManager.stop();
@@ -548,13 +526,15 @@ int main(int argc, char** argv) {
                 vm,
                 &Marshaller<std::string>::destroy);
         cacheManager.start();
-        result = basicTest<std::string, std::string>(cacheManager, cache);
         try
         {
+            result = basicTest<std::string, std::string>(cacheManager, cache);
             std::map<std::string,std::string> s;
             std::string argName = std::string("a");
             std::string argValue = std::string("b");
             // execute() operation needs explicit JBossMarshalling<string> format for argument values
+            JBasicMarshaller<std::string> *km1 = new JBasicMarshaller<std::string>();
+            JBasicMarshaller<std::string> *vm1 = new JBasicMarshaller<std::string>();
             s.insert(std::pair<std::string, std::string>(argName,JBasicMarshaller<std::string>::addPreamble(argValue)));
             std::string script ("// mode=local,language=javascript\n "
             "var cache = cacheManager.getCache(\"namedCache\");\n"
@@ -562,9 +542,9 @@ int main(int argc, char** argv) {
             "cache.put(\"b\", \"b\");\n"
             "cache.get(\"a\");\n");
             std::string script_name("script.js");
-            cacheManager.getCache<std::string,std::string>(km,
+            cacheManager.getCache<std::string,std::string>(km1,
                     &Marshaller<std::string>::destroy,
-                    vm,
+                    vm1,
                     &Marshaller<std::string>::destroy,"___script_cache").put(script_name, script);
             std::vector<unsigned char> execResult = cache.execute(script_name,s);
 
@@ -577,6 +557,7 @@ int main(int argc, char** argv) {
                 return 1;
             }
         } catch (const Exception& e) {
+            cacheManager.stop();
             std::cout << "is: " << typeid(e).name() << '\n';
             std::cerr << "fail unexpected exception: " << e.what() << std::endl;
             return 1;

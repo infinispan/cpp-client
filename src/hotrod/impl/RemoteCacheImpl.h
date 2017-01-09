@@ -19,7 +19,7 @@ class OperationsFactory;
 
 class RemoteCacheManagerImpl;
 
-class RemoteCacheImpl: public portable::counted_object
+class RemoteCacheImpl
 {
 public:
     RemoteCacheImpl(RemoteCacheManagerImpl& rcm, const std::string& name);
@@ -50,10 +50,6 @@ public:
     void withFlags(Flag flag);
 
     const char *getName() const;
-
-    void destroy() {
-        delete this;
-    }
 
 private:
     RemoteCacheManagerImpl& remoteCacheManager;
