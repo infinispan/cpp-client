@@ -8,7 +8,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.infinispan.client.hotrod.*;
-import org.infinispan.client.hotrod.xsite.SiteDownFailoverTest;
+import org.infinispan.client.hotrod.xsite.*;
 import org.testng.IMethodSelector;
 import org.testng.IMethodSelectorContext;
 import org.testng.ITestNGMethod;
@@ -77,7 +77,8 @@ public class JniTest implements IMethodSelector {
             SegmentOwnershipLocalTest.class,
             SegmentOwnershipDistTest.class,
             ServerShutdownTest.class,
-            SiteDownFailoverTest.class
+            SiteDownFailoverTest.class,
+            SiteManualSwitchTest.class
             // SslTest.class,                        // SSL not implemented
             // TransportObjectFactoryTest.class,     // omitting
       });
