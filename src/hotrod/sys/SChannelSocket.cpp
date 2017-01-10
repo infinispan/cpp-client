@@ -17,9 +17,8 @@
 #pragma comment(lib, "Secur32.lib")
 
 using namespace infinispan::hotrod::sys;
-HCERTSTORE SChannelSocket::hMyCertStore = NULL;
-
-
+PCCERT_CONTEXT  SChannelSocket::pServerContext = NULL, SChannelSocket::pClientContext = NULL;
+HCERTSTORE SChannelSocket::hMemStore = NULL;
 SChannelSocket::SChannelInitializer SChannelSocket::initializer;
 
 SChannelSocket::SChannelInitializer::SChannelInitializer() {
@@ -33,7 +32,6 @@ SChannelSocket::SChannelInitializer::SChannelInitializer() {
 	{
 		logAndThrow("",0,"Could not initialize winsock");
 	}
-
 }
 
 SChannelSocket::SChannelSocket(const std::string& _serverCAPath, const std::string& _serverCAFile, const std::string& _clientCertificateFile, const std::string& _hostName) :
@@ -80,81 +78,6 @@ INT SChannelSocket::connectToServer(std::string host, int iPortNumber, SOCKET * 
 	}
 	*pSocket = Socket;
 	return SEC_E_OK;
-}
-
-void SChannelSocket::getNewClientCredentials()
-{
-
-	CredHandle                        newHCreds;
-	SecPkgContext_IssuerListInfoEx    IssuerListInfo;
-	PCCERT_CHAIN_CONTEXT              pChainContext;
-	CERT_CHAIN_FIND_BY_ISSUER_PARA    FindByIssuerPara;
-	PCCERT_CONTEXT                    pCertContext;
-	TimeStamp                         tsExpiry;
-	SECURITY_STATUS                   Status;
-	SCHANNEL_CRED                     SchannelCred;
-
-	// Read list of trusted issuers from schannel.
-	Status = initializer.g_pSSPI->QueryContextAttributes(&hContext, SECPKG_ATTR_ISSUER_LIST_EX, (PVOID)&IssuerListInfo);
-	if (Status != SEC_E_OK)
-	{
-		ERROR("Error 0x%x querying issuer list info\n", Status); return;
-	}
-
-	// Enumerate the client certificates.
-	ZeroMemory(&FindByIssuerPara, sizeof(FindByIssuerPara));
-
-	FindByIssuerPara.cbSize = sizeof(FindByIssuerPara);
-	FindByIssuerPara.pszUsageIdentifier = szOID_PKIX_KP_CLIENT_AUTH;
-	FindByIssuerPara.dwKeySpec = 0;
-	FindByIssuerPara.cIssuer = IssuerListInfo.cIssuers;
-	FindByIssuerPara.rgIssuer = IssuerListInfo.aIssuers;
-	pChainContext = NULL;
-	while (TRUE)
-	{   // Find a certificate chain.
-		pChainContext = CertFindChainInStore(hMyCertStore,
-			X509_ASN_ENCODING,
-			0,
-			CERT_CHAIN_FIND_BY_ISSUER,
-			&FindByIssuerPara,
-			pChainContext);
-		if (pChainContext == NULL) 
-		{ 
-			ERROR("Error 0x%x finding cert chain\n", GetLastError()); break;
-		}
-		DEBUG("\ncertificate chain found\n");
-
-		// Get pointer to leaf certificate context.
-		pCertContext = pChainContext->rgpChain[0]->rgpElement[0]->pCertContext;
-
-		// Create schannel credential
-		ZeroMemory(&SchannelCred, sizeof(SchannelCred));
-		SchannelCred.dwVersion = SCHANNEL_CRED_VERSION;
-		SchannelCred.cCreds = 1;
-		SchannelCred.paCred = &pCertContext;
-        if (!m_hostName.empty())
-        {
-            SchannelCred.dwFlags |= SCH_CRED_SNI_CREDENTIAL;
-        }
-		Status = initializer.g_pSSPI->AcquireCredentialsHandleA(NULL,                   // Name of principal
-			UNISP_NAME_A,           // Name of package
-			SECPKG_CRED_OUTBOUND,   // Flags indicating use
-			NULL,                   // Pointer to logon ID
-			&SchannelCred,          // Package specific data
-			NULL,                   // Pointer to GetKey() func
-			NULL,                   // Value to pass to GetKey()
-			&newHCreds,                // (out) Cred Handle
-			&tsExpiry);            // (out) Lifetime (optional)
-		isCredsInitialized = true;
-		if (Status != SEC_E_OK) 
-		{ 
-			ERROR("**** Error 0x%x returned by AcquireCredentialsHandle\n", Status);
-			continue;
-		}
-		DEBUG("\nnew schannel credential created\n");
-		initializer.g_pSSPI->FreeCredentialsHandle(&hCred); // Destroy the old credentials.
-		hCred = newHCreds;
-	}
 }
 
 SECURITY_STATUS SChannelSocket::clientHandshakeLoop(BOOL doInitialRead, SecBuffer *pExtraData)
@@ -329,7 +252,7 @@ SECURITY_STATUS SChannelSocket::clientHandshakeLoop(BOOL doInitialRead, SecBuffe
 			// was issued by one of these. If this function is successful,
 			// then we will connect using the new certificate. Otherwise,
 			// we will attempt to connect anonymously (using our current credentials).
-			getNewClientCredentials();
+			//getNewClientCredentials();
 			// Go around again.
 			fDoRead = FALSE;
 			scRet = SEC_I_CONTINUE_NEEDED;
@@ -438,8 +361,46 @@ void SChannelSocket::displayWinVerifyTrustError(DWORD Status)
 	ERROR("Error 0x%x (%s) returned by CertVerifyCertificateChainPolicy!\n", Status, pszName);
 }
 
+DWORD CustomVerifyCertificate(HCERTSTORE hCertStore, PCCERT_CONTEXT pSubjectContext) {
+    DWORD           dwFlags;
+    PCCERT_CONTEXT  pIssuerContext;
 
-DWORD SChannelSocket::verifyServerCertificate(PCCERT_CONTEXT pServerCert, std::string host, DWORD dwCertFlags)
+    if (!(pSubjectContext = CertDuplicateCertificateContext(pSubjectContext)))
+        return FALSE;
+    do {
+        dwFlags = CERT_STORE_REVOCATION_FLAG | CERT_STORE_SIGNATURE_FLAG |
+            CERT_STORE_TIME_VALIDITY_FLAG;
+        pIssuerContext = CertGetIssuerCertificateFromStore(hCertStore,
+            pSubjectContext, 0, &dwFlags);
+        CertFreeCertificateContext(pSubjectContext);
+        if (pIssuerContext) {
+            pSubjectContext = pIssuerContext;
+            if (dwFlags & CERT_STORE_NO_CRL_FLAG)
+                dwFlags &= ~(CERT_STORE_NO_CRL_FLAG | CERT_STORE_REVOCATION_FLAG);
+            if (dwFlags) break;
+        }
+        else
+        {
+            DWORD lastErr = GetLastError();
+            PCCERT_CONTEXT  pSelfContext = NULL;
+            if (lastErr == CRYPT_E_SELF_SIGNED)
+            {
+                pSelfContext = CertGetSubjectCertificateFromStore(hCertStore, X509_ASN_ENCODING | PKCS_7_ASN_ENCODING, pSubjectContext->pCertInfo);
+                lastErr = GetLastError();
+                if (pSelfContext == NULL)
+                {
+                    return CERT_E_UNTRUSTEDROOT;
+                }
+                return SEC_E_OK;
+            }
+            else
+                return lastErr;
+        }
+    } while (pIssuerContext);
+    return FALSE;
+}
+
+DWORD SChannelSocket::verifyServerCertificate(HCERTSTORE hCertStore, PCCERT_CONTEXT pServerCert, std::string host, DWORD dwCertFlags)
 {
 	HTTPSPolicyCallbackData  polHttps;
 	CERT_CHAIN_POLICY_PARA   PolicyPara;
@@ -453,7 +414,8 @@ DWORD SChannelSocket::verifyServerCertificate(PCCERT_CONTEXT pServerCert, std::s
 	auto pszServerName = (PSTR)host.c_str();
 	DWORD cUsages = sizeof(rgszUsages) / sizeof(LPSTR);
 	PWSTR   pwszServerName = NULL;
-	if (pServerCert == NULL)
+
+    if (pServerCert == NULL)
 	{
 		if (pChainContext)  CertFreeCertificateChain(pChainContext);
 		return SEC_E_WRONG_PRINCIPAL;
@@ -464,244 +426,257 @@ DWORD SChannelSocket::verifyServerCertificate(PCCERT_CONTEXT pServerCert, std::s
 	{
 		return SEC_E_WRONG_PRINCIPAL;
 	}
+    if (hCertStore != NULL)
+    {
+        Status=CustomVerifyCertificate(hCertStore, pServerCert);
+        if (Status != SEC_E_OK)
+        {
+            displayWinVerifyTrustError(Status);
+        }
+        return Status;
+    }
+    else
+    {
+        cchServerName = MultiByteToWideChar(CP_ACP, 0, pszServerName, -1, NULL, 0);
+        pwszServerName = (PWSTR)LocalAlloc(LMEM_FIXED, cchServerName * sizeof(WCHAR));
+        if (pwszServerName == NULL)
+        {
+            return SEC_E_INSUFFICIENT_MEMORY;
+        }
 
-	cchServerName = MultiByteToWideChar(CP_ACP, 0, pszServerName, -1, NULL, 0);
-	pwszServerName = (PWSTR)LocalAlloc(LMEM_FIXED, cchServerName * sizeof(WCHAR));
-	if (pwszServerName == NULL)
-	{
-		return SEC_E_INSUFFICIENT_MEMORY;
-	}
+        cchServerName = MultiByteToWideChar(CP_ACP, 0, pszServerName, -1, pwszServerName, cchServerName);
+        if (cchServerName == 0)
+        {
+            if (pwszServerName) LocalFree(pwszServerName);
+            return SEC_E_WRONG_PRINCIPAL;
+        }
 
-	cchServerName = MultiByteToWideChar(CP_ACP, 0, pszServerName, -1, pwszServerName, cchServerName);
-	if (cchServerName == 0)
-	{
-		if (pwszServerName) LocalFree(pwszServerName);
-		return SEC_E_WRONG_PRINCIPAL;
-	}
+        // Build certificate chain.
+        ZeroMemory(&ChainPara, sizeof(ChainPara));
+        ChainPara.cbSize = sizeof(ChainPara);
+        ChainPara.RequestedUsage.dwType = USAGE_MATCH_TYPE_OR;
+        ChainPara.RequestedUsage.Usage.cUsageIdentifier = cUsages;
+        ChainPara.RequestedUsage.Usage.rgpszUsageIdentifier = rgszUsages;
 
-	// Build certificate chain.
-	ZeroMemory(&ChainPara, sizeof(ChainPara));
-	ChainPara.cbSize = sizeof(ChainPara);
-	ChainPara.RequestedUsage.dwType = USAGE_MATCH_TYPE_OR;
-	ChainPara.RequestedUsage.Usage.cUsageIdentifier = cUsages;
-	ChainPara.RequestedUsage.Usage.rgpszUsageIdentifier = rgszUsages;
+        if (!CertGetCertificateChain(NULL,
+            pServerCert,
+            NULL,
+            pServerCert->hCertStore,
+            &ChainPara,
+            0,
+            NULL,
+            &pChainContext))
+        {
+            Status = GetLastError();
+            ERROR("Error 0x%x returned by CertGetCertificateChain!\n", Status);
+            if (pChainContext)  CertFreeCertificateChain(pChainContext);
+            if (pwszServerName) LocalFree(pwszServerName);
+            return Status;
+        }
 
-	if (!CertGetCertificateChain(NULL,
-		pServerCert,
-		NULL,
-		pServerCert->hCertStore,
-		&ChainPara,
-		0,
-		NULL,
-		&pChainContext))
-	{
-		Status = GetLastError();
-		ERROR("Error 0x%x returned by CertGetCertificateChain!\n", Status);
-		if (pChainContext)  CertFreeCertificateChain(pChainContext);
-		if (pwszServerName) LocalFree(pwszServerName);
-		return Status;
-	}
+        // Validate certificate chain.
+        ZeroMemory(&polHttps, sizeof(HTTPSPolicyCallbackData));
+        polHttps.cbStruct = sizeof(HTTPSPolicyCallbackData);
+        polHttps.dwAuthType = AUTHTYPE_SERVER;
+        polHttps.fdwChecks = dwCertFlags;
+        polHttps.pwszServerName = pwszServerName;
 
-	// Validate certificate chain.
-	ZeroMemory(&polHttps, sizeof(HTTPSPolicyCallbackData));
-	polHttps.cbStruct = sizeof(HTTPSPolicyCallbackData);
-	polHttps.dwAuthType = AUTHTYPE_SERVER;
-	polHttps.fdwChecks = dwCertFlags;
-	polHttps.pwszServerName = pwszServerName;
+        memset(&PolicyPara, 0, sizeof(PolicyPara));
+        PolicyPara.cbSize = sizeof(PolicyPara);
+        PolicyPara.pvExtraPolicyPara = &polHttps;
 
-	memset(&PolicyPara, 0, sizeof(PolicyPara));
-	PolicyPara.cbSize = sizeof(PolicyPara);
-	PolicyPara.pvExtraPolicyPara = &polHttps;
+        memset(&PolicyStatus, 0, sizeof(PolicyStatus));
+        PolicyStatus.cbSize = sizeof(PolicyStatus);
 
-	memset(&PolicyStatus, 0, sizeof(PolicyStatus));
-	PolicyStatus.cbSize = sizeof(PolicyStatus);
+        if (!CertVerifyCertificateChainPolicy(CERT_CHAIN_POLICY_SSL,
+            pChainContext,
+            &PolicyPara,
+            &PolicyStatus))
+        {
+            Status = GetLastError();
+            ERROR("Error 0x%x returned by CertVerifyCertificateChainPolicy!\n", Status);
+            if (pChainContext)  CertFreeCertificateChain(pChainContext);
+            if (pwszServerName) LocalFree(pwszServerName);
+            return Status;
+        }
 
-	if (!CertVerifyCertificateChainPolicy(CERT_CHAIN_POLICY_SSL,
-		pChainContext,
-		&PolicyPara,
-		&PolicyStatus))
-	{
-		Status = GetLastError();
-		ERROR("Error 0x%x returned by CertVerifyCertificateChainPolicy!\n", Status);
-		if (pChainContext)  CertFreeCertificateChain(pChainContext);
-		if (pwszServerName) LocalFree(pwszServerName);
-		return Status;
-	}
+        if (PolicyStatus.dwError)
+        {
+            Status = PolicyStatus.dwError;
+            displayWinVerifyTrustError(Status);
+            if (pChainContext)  CertFreeCertificateChain(pChainContext);
+            if (pwszServerName) LocalFree(pwszServerName);
+            return Status;
+        }
 
-	if (PolicyStatus.dwError)
-	{
-		Status = PolicyStatus.dwError;
-		displayWinVerifyTrustError(Status);
-		if (pChainContext)  CertFreeCertificateChain(pChainContext);
-		if (pwszServerName) LocalFree(pwszServerName);
-		return Status;
-	}
-
-	Status = SEC_E_OK;
-	if (pChainContext)  CertFreeCertificateChain(pChainContext);
-	if (pwszServerName) LocalFree(pwszServerName);
-	return Status;
+        Status = SEC_E_OK;
+        if (pChainContext)  CertFreeCertificateChain(pChainContext);
+        if (pwszServerName) LocalFree(pwszServerName);
+        return Status;
+    }
 }
 
 void SChannelSocket::connect(const std::string & host, int port, int timeout)
 {
-	SCHANNEL_CRED SchannelCred;
-	DWORD   dwProtocol = SP_PROT_TLS1; // SP_PROT_TLS1; // SP_PROT_PCT1; SP_PROT_SSL2; SP_PROT_SSL3; 0=default
-	ALG_ID  aiKeyExch = 0; // = default; CALG_DH_EPHEM; CALG_RSA_KEYX;
-	SECURITY_STATUS  Status;
-	DWORD            cSupportedAlgs = 0;
-	ALG_ID           rgbSupportedAlgs[16];
-	TimeStamp        tsExpiry;
-	SecBuffer  ExtraData;
-	std::ifstream is( m_serverCAFile.c_str(), std::ios::binary);
-	if (is) {
-		is.seekg(0, is.end);
-		int length = is.tellg();
-		is.seekg(0, is.beg);
-	    BYTE * certificate = new BYTE[length];
-		is.read((PCHAR)certificate, length);
-		PCCERT_CONTEXT pCertContext;
+    SCHANNEL_CRED    SchannelCred;
+    DWORD            dwProtocol = SP_PROT_TLS1;
+    ALG_ID           aiKeyExch = 0;
+    SECURITY_STATUS  Status;
+    DWORD            cSupportedAlgs = 0;
+    ALG_ID           rgbSupportedAlgs[16];
+    TimeStamp        tsExpiry;
+    SecBuffer        ExtraData;
+    HANDLE           hFile, hClientFile;
+    char             pemServCert[8192], pemClientCert[8192];
+    BYTE             derServCert[8192], derClientCert[8192];
+    DWORD            derCertLen = 8192;
+    DWORD            readLen;
 
-		// If a user name is specified, then attempt to find a client
-		// certificate. Otherwise, just create a NULL credential.
-		if (!m_clientCertificateFile.empty())
-		{
-			// Open the "MY" certificate store, where IE stores client certificates.
-			// Windows maintains 4 stores -- MY, CA, ROOT, SPC.
-			if (hMyCertStore == NULL)
-			{
-				hMyCertStore = CertOpenSystemStore(0, "MY");
-				if (!hMyCertStore)
-				{
-					printf("**** Error 0x%x returned by CertOpenSystemStore\n", GetLastError());
-					logAndThrow(host, port, "ERROR");
-				}
-			}
-
-			// Find client certificate. Note that this sample just searches for a
-			// certificate that contains the user name somewhere in the subject name.
-			// A real application should be a bit less casual.
-			pCertContext = CertFindCertificateInStore(hMyCertStore,                     // hCertStore
-				X509_ASN_ENCODING,             // dwCertEncodingType
-				0,                                             // dwFindFlags
-				CERT_FIND_SUBJECT_STR_A
-				,// dwFindType
-				m_clientCertificateFile.c_str(),       // *pvFindPara
-				NULL);                                 // pPrevCertContext
-		
-			if (pCertContext == NULL)
-			{
-				ERROR("**** Error 0x%x returned by CertFindCertificateInStore\n", GetLastError());
-				if (GetLastError() == CRYPT_E_NOT_FOUND) 
-					ERROR("CRYPT_E_NOT_FOUND - property doesn't exist\n");
-				logAndThrow(host, port, "ERROR");
-			}
-		}
-		else
-		{
-			pCertContext = CertCreateCertificateContext(X509_ASN_ENCODING, certificate, length);
-		}
-		ZeroMemory(&SchannelCred, sizeof(SchannelCred));
-		SchannelCred.dwVersion = SCHANNEL_CRED_VERSION;
-		if (pCertContext)
-		{
-			SchannelCred.cCreds = 1;
-			SchannelCred.paCred = &pCertContext;
-		}
-
-		SchannelCred.grbitEnabledProtocols = dwProtocol;
-
-		if (aiKeyExch) rgbSupportedAlgs[cSupportedAlgs++] = aiKeyExch;
-
-		if (cSupportedAlgs)
-		{
-			SchannelCred.cSupportedAlgs = cSupportedAlgs;
-			SchannelCred.palgSupportedAlgs = rgbSupportedAlgs;
-		}
-
-		SchannelCred.dwFlags |= SCH_CRED_NO_DEFAULT_CREDS;
-
-		// The SCH_CRED_MANUAL_CRED_VALIDATION flag is specified because
-		// this sample verifies the server certificate manually.
-		// Applications that expect to run on WinNT, Win9x, or WinME
-		// should specify this flag and also manually verify the server
-		// certificate. Applications running on newer versions of Windows can
-		// leave off this flag, in which case the InitializeSecurityContext
-		// function will validate the server certificate automatically.
-		SchannelCred.dwFlags |= SCH_CRED_MANUAL_CRED_VALIDATION;
-        if (!m_hostName.empty())
+    if (hMemStore==NULL && !m_serverCAFile.empty())
+    {
+        // User provided the certificate to validate the server in a file
+        // Read it and build certificate and certificates store
+        hFile = CreateFile(m_serverCAFile.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+        if (hFile == INVALID_HANDLE_VALUE)
         {
-            SchannelCred.dwFlags |= SCH_CRED_SNI_CREDENTIAL;
+            fprintf(stderr, "**** Error %d. Failed to open server certificate file %s.\n", GetLastError(), m_serverCAFile.c_str());
         }
 
+        if (!ReadFile(hFile, pemServCert, 8192, &readLen, NULL))
+        {
+            fprintf(stderr, "**** Error %d. Failed to open read certificate file %s.\n", GetLastError(), m_serverCAFile.c_str());
+        }
+        CloseHandle(hFile);
+        CryptStringToBinary(pemServCert, readLen, CRYPT_STRING_BASE64_ANY, derServCert, &derCertLen, NULL, NULL);
+        pServerContext = CertCreateCertificateContext(X509_ASN_ENCODING | PKCS_7_ASN_ENCODING,
+            (BYTE*)derServCert,
+            derCertLen);
+        if (pServerContext == NULL)
+        {
+            printf("**** Error 0x%x returned by CertCreateCertificateContext. Cannot create certificate. File corrupted?\n", GetLastError());
+            logAndThrow(host, port, "ERROR");
+        }
+        if (!(hMemStore = CertOpenStore(
+            CERT_STORE_PROV_MEMORY,   // The memory provider type
+            0,                        // The encoding type is not needed
+            NULL,                     // Use the default HCRYPTPROV
+            0,                        // Accept the default dwFlags
+            NULL                      // pvPara is not used
+            )))
+        {
+            printf("**** Error 0x%x returned by CertOpenStore\n", GetLastError());
+            logAndThrow(host, port, "ERROR");
+        }
+        if (!CertAddCertificateContextToStore(hMemStore, pServerContext,
+            CERT_STORE_ADD_REPLACE_EXISTING,
+            NULL
+            ))
+        {
+            printf("**** Error 0x%x returned by CertAddCertificateContextToStore\n", GetLastError());
+            logAndThrow(host, port, "ERROR");
+        }
+    }
+    ZeroMemory(&SchannelCred, sizeof(SchannelCred));
+    SchannelCred.dwVersion = SCHANNEL_CRED_VERSION;
+    if (pClientContext==NULL && !m_clientCertificateFile.empty())
+    {
+        // User provided the certificate to validate the client against the server
+        // Read it and build certificate and set credentials for the schannel
+        hClientFile = CreateFile(m_clientCertificateFile.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+        if (hClientFile == INVALID_HANDLE_VALUE)
+        {
+            fprintf(stderr, "**** Error %d. Failed to open server certificate file %s.\n", GetLastError(), m_clientCertificateFile.c_str());
+        }
 
-		// Create an SSPI credential.
-		Status = SChannelSocket::initializer.g_pSSPI->AcquireCredentialsHandleA(NULL,                 // Name of principal    
-			UNISP_NAME_A,         // Name of package
-			SECPKG_CRED_OUTBOUND, // Flags indicating use
-			NULL,                 // Pointer to logon ID
-			&SchannelCred,        // Package specific data
-			NULL,                 // Pointer to GetKey() func
-			NULL,                 // Value to pass to GetKey()
-			&hCred,              // (out) Cred Handle
-			&tsExpiry);          // (out) Lifetime (optional)
+        if (!ReadFile(hClientFile, pemClientCert, 8192, &readLen, NULL))
+        {
+            fprintf(stderr, "**** Error %d. Failed to open read certificate file %s.\n", GetLastError(), m_clientCertificateFile.c_str());
+        }
+        CloseHandle(hClientFile);
+        CryptStringToBinary(pemClientCert, readLen, CRYPT_STRING_BASE64_ANY, derClientCert, &derCertLen, NULL, NULL);
+        pClientContext = CertCreateCertificateContext(X509_ASN_ENCODING | PKCS_7_ASN_ENCODING,
+            (BYTE*)derClientCert,
+            derCertLen);
+        if (pClientContext == NULL)
+        {
+            printf("**** Error 0x%x returned by CertCreateCertificateContext. Cannot create certificate. File corrupted?\n", GetLastError());
+            logAndThrow(host, port, "ERROR");
+        }
+        SchannelCred.cCreds = 1;
+        SchannelCred.paCred = &pClientContext;
+    }
+    SchannelCred.grbitEnabledProtocols = dwProtocol;
 
-		if (Status != SEC_E_OK)
-		{
-			ERROR("**** Error 0x%x returned by AcquireCredentialsHandle\n", Status);
-		}
-		if (pCertContext) CertFreeCertificateContext(pCertContext);
+    if (aiKeyExch) rgbSupportedAlgs[cSupportedAlgs++] = aiKeyExch;
 
-		Client_Socket = INVALID_SOCKET;
-		connectToServer(host, port, &Client_Socket);
-		performClientHandshake(m_hostName.empty() ? host : m_hostName, &ExtraData);
-		isContextInitialized = true;
-		// Authenticate server's credentials. Get server's certificate.
-		Status = initializer.g_pSSPI->QueryContextAttributes(&hContext, SECPKG_ATTR_REMOTE_CERT_CONTEXT, (PVOID)&pRemoteCertContext);
-		if (Status != SEC_E_OK)
-		{
-			cleanup();
-			ERROR("Error 0x%x querying remote certificate\n", Status);
-			logAndThrow(host, port, "Error querying remote certificate\n");
-		} //
-		DEBUG("----- Server Credentials Authenticated \n");
-		// Attempt to validate server certificate.
-		if (this->onlyVerified)
-		{
-		Status = verifyServerCertificate(pRemoteCertContext, host, 0x00001000  /*SECURITY_FLAG_IGNORE_CERT_CN_INVALID*/);
-		if (Status) 
-		{ 
-			ERROR("**** Error 0x%x authenticating server credentials!\n", Status);
-			cleanup(); 
-			logAndThrow(host,port,"**** Error 0x%x authenticating server credentials!\n");
-		}
-		// The server certificate did not validate correctly. At this point, we cannot tell
-		// if we are connecting to the correct server, or if we are connecting to a
-		// "man in the middle" attack server - Best to just abort the connection.
-		DEBUG("----- Server Certificate Verified\n");
-		// Free the server certificate context.
-		}
-		CertFreeCertificateContext(pRemoteCertContext);
-		pRemoteCertContext = NULL;
-		DEBUG("----- Server certificate context released \n");
+    if (cSupportedAlgs)
+    {
+        SchannelCred.cSupportedAlgs = cSupportedAlgs;
+        SchannelCred.palgSupportedAlgs = rgbSupportedAlgs;
+    }
 
-		// Display connection info.
-		displayConnectionInfo(); 
-		DEBUG("----- Secure Connection Info\n");
-		SecPkgContext_StreamSizes Sizes;
-		initializer.g_pSSPI->QueryContextAttributes(&hContext, SECPKG_ATTR_STREAM_SIZES, &Sizes);
-		auto cbIoBufferLength = Sizes.cbHeader + Sizes.cbMaximumMessage + Sizes.cbTrailer;
-		pbRBuffer = (PBYTE)LocalAlloc(LMEM_FIXED, cbIoBufferLength);
-		pbWBuffer = (PBYTE)LocalAlloc(LMEM_FIXED, cbIoBufferLength);
-		recvBuff = (PBYTE)LocalAlloc(LMEM_FIXED, cbIoBufferLength);
-		this->cbRBuffer = 0;
-		if (ExtraData.cbBuffer > 0)
-		{
-			MoveMemory(recvBuff, ExtraData.pvBuffer, ExtraData.cbBuffer);
-			this->cbRBuffer = ExtraData.cbBuffer;
-			LocalFree(ExtraData.pvBuffer);
-		}
-	}
+    SchannelCred.dwFlags |= SCH_CRED_NO_DEFAULT_CREDS;
+    SchannelCred.dwFlags |= SCH_CRED_MANUAL_CRED_VALIDATION;
+    if (!m_hostName.empty())
+    {
+        SchannelCred.dwFlags |= SCH_CRED_SNI_CREDENTIAL;
+    }
+
+    // Create an SSPI credential.
+    Status = SChannelSocket::initializer.g_pSSPI->AcquireCredentialsHandleA(NULL,                 // Name of principal    
+        UNISP_NAME_A,         // Name of package
+        SECPKG_CRED_OUTBOUND, // Flags indicating use
+        NULL,                 // Pointer to logon ID
+        &SchannelCred,        // Package specific data
+        NULL,                 // Pointer to GetKey() func
+        NULL,                 // Value to pass to GetKey()
+        &hCred,              // (out) Cred Handle
+        &tsExpiry);          // (out) Lifetime (optional)
+
+    if (Status != SEC_E_OK)
+    {
+        ERROR("**** Error 0x%x returned by AcquireCredentialsHandle\n", Status);
+    }
+    Client_Socket = INVALID_SOCKET;
+    connectToServer(host, port, &Client_Socket);
+    performClientHandshake(m_hostName.empty() ? host : m_hostName, &ExtraData);
+    isContextInitialized = true;
+    // Authenticate server's credentials. Get server's certificate.
+    Status = initializer.g_pSSPI->QueryContextAttributes(&hContext, SECPKG_ATTR_REMOTE_CERT_CONTEXT, (PVOID)&pRemoteCertContext);
+    if (Status != SEC_E_OK)
+    {
+        cleanup();
+        ERROR("Error 0x%x querying remote certificate\n", Status);
+        logAndThrow(host, port, "Error querying remote certificate\n");
+    } //
+
+    // Attempt to validate server certificate.
+    if (this->onlyVerified)
+    {
+        Status = verifyServerCertificate(hMemStore, pRemoteCertContext, host, 0x00001000  /*SECURITY_FLAG_IGNORE_CERT_CN_INVALID*/);
+        if (Status)
+        {
+            ERROR("**** Error 0x%x the server certificate did not validate correctly.\n", Status);
+            cleanup();
+            logAndThrow(host, port, "**** The server certificate did not validate correctly.\n");
+        }
+    }
+    CertFreeCertificateContext(pRemoteCertContext);
+    pRemoteCertContext = NULL;
+    DEBUG("----- Server certificate context released \n");
+    SecPkgContext_StreamSizes Sizes;
+    initializer.g_pSSPI->QueryContextAttributes(&hContext, SECPKG_ATTR_STREAM_SIZES, &Sizes);
+    auto cbIoBufferLength = Sizes.cbHeader + Sizes.cbMaximumMessage + Sizes.cbTrailer;
+    pbRBuffer = (PBYTE)LocalAlloc(LMEM_FIXED, cbIoBufferLength);
+    pbWBuffer = (PBYTE)LocalAlloc(LMEM_FIXED, cbIoBufferLength);
+    recvBuff = (PBYTE)LocalAlloc(LMEM_FIXED, cbIoBufferLength);
+    this->cbRBuffer = 0;
+    if (ExtraData.cbBuffer > 0)
+    {
+        MoveMemory(recvBuff, ExtraData.pvBuffer, ExtraData.cbBuffer);
+        this->cbRBuffer = ExtraData.cbBuffer;
+        LocalFree(ExtraData.pvBuffer);
+    }
 }
 
 void SChannelSocket::close()
@@ -791,7 +766,6 @@ SECURITY_STATUS SChannelSocket::readDecrypt(const DWORD bufsize, size_t *read_co
 		Message.pBuffers = Buffers;                         // Pointer to array of buffers
 		scRet = initializer.g_pSSPI->DecryptMessage(&hContext, &Message, 0, NULL);
 		if (scRet == SEC_I_CONTEXT_EXPIRED) break;          // Server signalled end of session
-//      if( scRet == SEC_E_INCOMPLETE_MESSAGE - Input buffer has partial encrypted record, read more
 		if (scRet != SEC_E_OK &&
 			scRet != SEC_I_RENEGOTIATE &&
 			scRet != SEC_I_CONTEXT_EXPIRED)
@@ -842,8 +816,6 @@ SECURITY_STATUS SChannelSocket::readDecrypt(const DWORD bufsize, size_t *read_co
 }
 
 DWORD SChannelSocket::encryptSend(size_t len, SecPkgContext_StreamSizes Sizes)
-// http://msdn.microsoft.com/en-us/library/aa375378(VS.85).aspx
-// The encrypted message is encrypted in place, overwriting the original contents of its buffer.
 {
 	SECURITY_STATUS			scRet;				// unsigned long cbBuffer;    // Size of the buffer, in bytes
 	SecBufferDesc			Message;			// unsigned long BufferType;  // Type of the buffer (below)
@@ -967,9 +939,21 @@ void SChannelSocket::cleanup()
 	// Close socket.
 	if (Client_Socket != INVALID_SOCKET) closesocket(Client_Socket);
 
-	// Close "MY" certificate store.
-	if (hMyCertStore) CertCloseStore(hMyCertStore, 0);
-	hMyCertStore = NULL;
+    // Close "In memory store" certificate store.
+    if (hMemStore) CertCloseStore(hMemStore, 0);
+    hMemStore = NULL;
+
+    // Free certificates
+    if (pClientContext)
+    {
+        CertFreeCertificateContext(pClientContext);
+        pClientContext = NULL;
+    }
+    if (pServerContext)
+    {
+        CertFreeCertificateContext(pServerContext);
+        pServerContext = NULL;
+    }
 
 	if (recvBuff != NULL) LocalFree(recvBuff);
 	if (pbWBuffer != NULL) LocalFree(pbWBuffer);
@@ -979,9 +963,8 @@ void SChannelSocket::cleanup()
 
 void SChannelSocket::displayWinSockError(DWORD ErrCode)
 {
-	LPSTR pszName = NULL; // http://www.sockets.com/err_lst1.htm#WSANO_DATA
-
-	switch (ErrCode) // http://msdn.microsoft.com/en-us/library/ms740668(VS.85).aspx
+	LPSTR pszName = NULL;
+	switch (ErrCode)
 	{
 	case     10035:  pszName = "WSAEWOULDBLOCK    "; break;
 	case     10036:  pszName = "WSAEINPROGRESS    "; break;
@@ -1031,104 +1014,6 @@ void SChannelSocket::displayWinSockError(DWORD ErrCode)
 	ERROR("Error 0x%x (%s)\n", ErrCode, pszName);
 }
 
-void SChannelSocket::displayConnectionInfo()
-{
-	SECURITY_STATUS Status;
-	SecPkgContext_ConnectionInfo ConnectionInfo;
-
-	Status = initializer.g_pSSPI->QueryContextAttributes(&hContext, SECPKG_ATTR_CONNECTION_INFO, (PVOID)&ConnectionInfo);
-	if (Status != SEC_E_OK) { printf("Error 0x%x querying connection info\n", Status); return; }
-
-	printf("\n");
-
-	switch (ConnectionInfo.dwProtocol)
-	{
-	case SP_PROT_TLS1_CLIENT:
-		DEBUG("Protocol: TLS1\n");
-		break;
-
-	case SP_PROT_SSL3_CLIENT:
-		DEBUG("Protocol: SSL3\n");
-		break;
-
-	case SP_PROT_PCT1_CLIENT:
-		DEBUG("Protocol: PCT\n");
-		break;
-
-	case SP_PROT_SSL2_CLIENT:
-		DEBUG("Protocol: SSL2\n");
-		break;
-
-	default:
-		DEBUG("Protocol: 0x%x\n", ConnectionInfo.dwProtocol);
-	}
-
-	switch (ConnectionInfo.aiCipher)
-	{
-	case CALG_RC4:
-		DEBUG("Cipher: RC4\n");
-		break;
-
-	case CALG_3DES:
-		DEBUG("Cipher: Triple DES\n");
-		break;
-
-	case CALG_RC2:
-		DEBUG("Cipher: RC2\n");
-		break;
-
-	case CALG_DES:
-	case CALG_CYLINK_MEK:
-		DEBUG("Cipher: DES\n");
-		break;
-
-	case CALG_SKIPJACK:
-		DEBUG("Cipher: Skipjack\n");
-		break;
-
-	default:
-		DEBUG("Cipher: 0x%x\n", ConnectionInfo.aiCipher);
-	}
-
-	DEBUG("Cipher strength: %d\n", ConnectionInfo.dwCipherStrength);
-
-	switch (ConnectionInfo.aiHash)
-	{
-	case CALG_MD5:
-		DEBUG("Hash: MD5\n");
-		break;
-
-	case CALG_SHA:
-		DEBUG("Hash: SHA\n");
-		break;
-
-	default:
-		DEBUG("Hash: 0x%x\n", ConnectionInfo.aiHash);
-	}
-
-	DEBUG("Hash strength: %d\n", ConnectionInfo.dwHashStrength);
-
-	switch (ConnectionInfo.aiExch)
-	{
-	case CALG_RSA_KEYX:
-	case CALG_RSA_SIGN:
-		DEBUG("Key exchange: RSA\n");
-		break;
-
-	case CALG_KEA_KEYX:
-		DEBUG("Key exchange: KEA\n");
-		break;
-
-	case CALG_DH_EPHEM:
-		DEBUG("Key exchange: DH Ephemeral\n");
-		break;
-
-	default:
-		DEBUG("Key exchange: 0x%x\n", ConnectionInfo.aiExch);
-	}
-
-	DEBUG("Key exchange strength: %d\n", ConnectionInfo.dwExchStrength);
-}
 
 
 
