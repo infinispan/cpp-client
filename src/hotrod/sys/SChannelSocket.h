@@ -35,16 +35,14 @@ namespace infinispan {
 				static void     displayWinSockError(DWORD ErrCode);
 				static void     displayWinVerifyTrustError(DWORD Status);
 				static INT      connectToServer(std::string host, int iPortNumber, SOCKET * pSocket);
-				static DWORD    verifyServerCertificate(PCCERT_CONTEXT pServerCert, std::string host, DWORD dwCertFlags);
+				static DWORD    verifyServerCertificate(HCERTSTORE hCertStore, PCCERT_CONTEXT pServerCert, std::string host, DWORD dwCertFlags);
 				static void     logAndThrow(const std::string& host, const int port, const std::string& msg);
 
 				SECURITY_STATUS readDecrypt(const DWORD bufsize, size_t *read_counter);
 				DWORD           encryptSend(size_t len, SecPkgContext_StreamSizes Sizes);
 				SECURITY_STATUS clientHandshakeLoop(BOOL doInitialRead, SecBuffer  *pExtraData);
-				void            getNewClientCredentials();
 				SECURITY_STATUS performClientHandshake(std::string host, SecBuffer  *pExtraData);
 				void            cleanup();
-				void            displayConnectionInfo();
 
 				class SChannelInitializer
 				{
@@ -54,7 +52,8 @@ namespace infinispan {
 				};
 
 				static SChannelInitializer initializer;
-				static HCERTSTORE hMyCertStore;
+                static PCCERT_CONTEXT  pServerContext, pClientContext;
+                static HCERTSTORE hMemStore;
 
 				PCCERT_CONTEXT pRemoteCertContext = NULL;
 				std::string    m_serverCAPath;
