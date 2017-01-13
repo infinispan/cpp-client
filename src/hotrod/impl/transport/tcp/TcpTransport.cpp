@@ -17,9 +17,16 @@ TcpTransport::TcpTransport(
     const InetSocketAddress& a, TransportFactory& factory)
 : AbstractTransport(factory), socket(sys::Socket::create()) {
     serverAddress.reset(new InetSocketAddress(a));
+    //try
+    //{
     socket.connect(a.getHostname(),a.getPort(), factory.getConnectTimeout());
     socket.setTimeout(factory.getSoTimeout());
     socket.setTcpNoDelay(factory.isTcpNoDelay());
+    //}
+    //catch (Exception& e) {
+    //    serverAddress.reset();
+    //    throw e;
+    //}
 }
 
 TcpTransport::TcpTransport(

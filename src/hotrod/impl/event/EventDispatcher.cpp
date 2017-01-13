@@ -29,9 +29,7 @@ void EventDispatcher::start()
 void EventDispatcher::stop()
 {
    // This terminates the thread
-//   std::cout << "EventDispatcher::stop()" << std::endl;
-//   transport.release();
-//   std::cout << "EventDispatcher::stop() end" << std::endl;
+   transport.release();
 }
 
 void EventDispatcher::run() {
@@ -39,19 +37,14 @@ void EventDispatcher::run() {
 	while (true) {
 		try {
 			while (1) {
-				//uint64_t messageId;
-				status = 1;
 				EventHeaderParams params = codec20.readEventHeader(transport);
-				status = 2;
 				if (!(HotRodConstants::isEvent(params.opCode))) {
 					// TODO handle error in some way
 					break;
 				}
-				std::vector<char> listId = codec20.readEventListenerId(
-						transport);
+				std::vector<char> listId = codec20.readEventListenerId(transport);
 				uint8_t isCustom = codec20.readEventIsCustomFlag(transport);
 				uint8_t isRetried = codec20.readEventIsRetriedFlag(transport);
-				status = 3;
 				if (isCustom != 0) {
 					ClientCacheEntryCustomEvent ev = codec20.readCustomEvent(
 							transport, isRetried);
@@ -97,12 +90,9 @@ void EventDispatcher::run() {
 			if (ex.getErrnum() == EINTR) {
 				// count a retry
 				bool b = dynamic_cast<TcpTransport&>(transport).isValid();
-				if (retryCount++ <= 2 && b)
+				if (retryCount++ <= 1 && b)
 					continue;
 			}
-			transport.setValid(false);
-
-			status = 99;
 			if (recoveryCallback) {
 				recoveryCallback();
 			}

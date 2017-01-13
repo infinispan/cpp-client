@@ -40,6 +40,8 @@ class Transport
 
     virtual bool targets(const InetSocketAddress&) const = 0;
     virtual Transport* clone() = 0;
+    virtual ~Transport() {}
+
 };
 
 }}} // namespace infinispan::hotrod::transport

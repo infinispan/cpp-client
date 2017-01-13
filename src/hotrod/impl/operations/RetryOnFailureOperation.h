@@ -32,7 +32,7 @@ template<class T> class RetryOnFailureOperation : public HotRodOperation<T>
                 //std::cout << "Transport: " << ((transport::TcpTransport*)transport)->getServerAddress().getPort() << std::endl;
             	transport::InetSocketAddress isa(te.getHostCString(),te.getPort());
             	failedServers.insert(isa);
-                transportFactory->invalidateTransport(isa, transport);
+                invalidateTransport(isa, transport);
                 logErrorAndThrowExceptionIfNeeded(retryCount, te);
             } catch (const RemoteNodeSuspectException& rnse) {
                 // Do not invalidate transport because this exception is caused
@@ -62,6 +62,12 @@ template<class T> class RetryOnFailureOperation : public HotRodOperation<T>
     virtual void releaseTransport(transport::Transport* transport) {
         if (transport) {
             transportFactory->releaseTransport(*transport);
+        }
+    }
+
+    virtual void invalidateTransport(const infinispan::hotrod::transport::InetSocketAddress & addr, transport::Transport* transport) {
+        if (transport) {
+            transportFactory->invalidateTransport(addr, transport);
         }
     }
 

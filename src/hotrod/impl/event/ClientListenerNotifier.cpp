@@ -21,7 +21,7 @@ namespace infinispan {
 namespace hotrod {
 namespace event {
 
-ClientListenerNotifier::ClientListenerNotifier() {
+ClientListenerNotifier::ClientListenerNotifier(std::shared_ptr<TransportFactory> factory)  : transportFactory(factory){
 	// TODO Auto-generated constructor stub
 
 }
@@ -30,12 +30,12 @@ ClientListenerNotifier::~ClientListenerNotifier() {
 	// TODO Auto-generated destructor stub
 }
 
-ClientListenerNotifier* ClientListenerNotifier::create()
+ClientListenerNotifier* ClientListenerNotifier::create(std::shared_ptr<TransportFactory> factory)
 {
-	return new ClientListenerNotifier();
+	return new ClientListenerNotifier(factory);
 }
 
-void ClientListenerNotifier::addClientListener(const std::vector<char> listenerId, const ClientListener& clientListener, const std::vector<char> cacheName, Transport& t, const Codec20& codec20, void* operationPtr, const std::function<void()> &recoveryCallback)
+void ClientListenerNotifier::addClientListener(const std::vector<char> listenerId, const ClientListener& clientListener, const std::vector<char> cacheName, Transport& t, const Codec20& codec20, std::shared_ptr<void> operationPtr, const std::function<void()> &recoveryCallback)
 {
 	EventDispatcher ed(listenerId, clientListener, cacheName, t, codec20, operationPtr, recoveryCallback);
 	eventDispatchers.insert(std::make_pair(listenerId, ed));
@@ -51,7 +51,7 @@ void ClientListenerNotifier::failoverClientListeners(const std::vector<transport
 			{
 				//removeClientListener(edPair.second.listenerId);
 //				edPair.second.cl.processFailoverEvent();
-				auto op = (AddClientListenerOperation*)edPair.second.operationPtr;
+				auto op = (AddClientListenerOperation*)edPair.second.operationPtr.get();
 				// Add the listener to the failover servers
 				op->execute();
 			}
@@ -69,6 +69,7 @@ void ClientListenerNotifier::stop()
 
 void ClientListenerNotifier::removeClientListener(const std::vector<char> listenerId)
 {
+    transportFactory->releaseTransport(eventDispatchers.find(listenerId)->second.getTransport());
 	eventDispatchers.erase(listenerId);
 }
 

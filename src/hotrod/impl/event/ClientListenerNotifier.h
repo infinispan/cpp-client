@@ -17,7 +17,6 @@
 using namespace infinispan::hotrod::protocol;
 using namespace infinispan::hotrod::transport;
 
-
 namespace infinispan {
 namespace hotrod {
 namespace event {
@@ -25,18 +24,19 @@ namespace event {
 class ClientListenerNotifier {
 public:
 	virtual ~ClientListenerNotifier();
-	void addClientListener(const std::vector<char> listenerId, const ClientListener& clientListener, const std::vector<char> cacheName, Transport& t, const Codec20& codec20, void* operationPtr, const std::function<void()> &recoveryCallback);
+	void addClientListener(const std::vector<char> listenerId, const ClientListener& clientListener, const std::vector<char> cacheName,  Transport& t, const Codec20& codec20, std::shared_ptr<void> operationPtr, const std::function<void()> &recoveryCallback);
 	void removeClientListener(const std::vector<char> listenerId);
 	void startClientListener(const std::vector<char> listenerId);
 	const ClientListener& findClientListener(const std::vector<char> listenerId);
 	const Transport& findClientListenerTransport(const std::vector<char> listenerId);
-	static ClientListenerNotifier* create();
+	static ClientListenerNotifier* create(std::shared_ptr<TransportFactory> factory);
 	void failoverClientListeners(const std::vector<transport::InetSocketAddress>& failedServers);
 	void stop();
 protected:
-	ClientListenerNotifier();
+	ClientListenerNotifier(std::shared_ptr<TransportFactory> factory);
 private:
 	std::map<std::vector<char>, EventDispatcher> eventDispatchers;
+	std::shared_ptr<TransportFactory> transportFactory;
 };
 
 } /* namespace event */

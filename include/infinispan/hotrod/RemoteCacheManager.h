@@ -115,9 +115,9 @@ public:
             pRc= new RemoteCache<K,V>();
             remoteCacheMap[key]= std::unique_ptr<RemoteCacheBase>(pRc);
             RemoteCache<K, V> *rcache=(RemoteCache<K, V> *)remoteCacheMap[key].get();
-            initCache(*rcache, forceReturnValue, getConfiguration().getNearCacheConfiguration());
             rcache->keyMarshaller.reset(new BasicMarshaller<K>());
             rcache->valueMarshaller.reset(new BasicMarshaller<V>());
+            initCache(*rcache, forceReturnValue, getConfiguration().getNearCacheConfiguration());
             return *rcache;
         }
         return *(RemoteCache<K, V> *)remoteCacheMap[key].get();
@@ -150,9 +150,9 @@ public:
             RemoteCache<K,V> *pRc= new RemoteCache<K,V>();
             remoteCacheMap[key]= std::unique_ptr<RemoteCacheBase>(pRc);
             RemoteCache<K, V> *rcache=(RemoteCache<K, V> *)remoteCacheMap[key].get();
-            initCache(*rcache, name.c_str(), forceReturnValue);
             rcache->keyMarshaller.reset(new BasicMarshaller<K>());
             rcache->valueMarshaller.reset(new BasicMarshaller<V>());
+            initCache(*rcache, name.c_str(), forceReturnValue);
             return *rcache;
         }
         return *(RemoteCache<K, V> *)remoteCacheMap[key].get();
@@ -188,18 +188,12 @@ public:
         if (remoteCacheMap.find(key) == remoteCacheMap.end()) {
             RemoteCache<K, V> *pRc = new RemoteCache<K, V>();
             remoteCacheMap[key] = std::unique_ptr < RemoteCacheBase > (pRc);
-            RemoteCache<K, V> *rcache =
-                    (RemoteCache<K, V> *) remoteCacheMap[key].get();
-            initCache(*rcache, forceReturnValue, getConfiguration().getNearCacheConfiguration());
-            rcache->keyMarshaller.reset(km);
-            rcache->valueMarshaller.reset(vm);
-            return *rcache;
         }
         RemoteCache<K, V> *rcache =
                 (RemoteCache<K, V> *) remoteCacheMap[key].get();
-        initCache(*rcache, forceReturnValue, getConfiguration().getNearCacheConfiguration());
         rcache->keyMarshaller.reset(km);
         rcache->valueMarshaller.reset(vm);
+        initCache(*rcache, forceReturnValue, getConfiguration().getNearCacheConfiguration());
         return *rcache;
     }
 
@@ -240,18 +234,12 @@ public:
         if (remoteCacheMap.find(key) == remoteCacheMap.end()) {
             RemoteCache<K, V> *pRc = new RemoteCache<K, V>();
             remoteCacheMap[key] = std::unique_ptr < RemoteCacheBase > (pRc);
-            RemoteCache<K, V> *rcache =
-                    (RemoteCache<K, V> *) remoteCacheMap[key].get();
-            initCache(*rcache, name.c_str(), forceReturnValue, getConfiguration().getNearCacheConfiguration());
-            rcache->keyMarshaller.reset(km);
-            rcache->valueMarshaller.reset(vm);
-            return *rcache;
         }
         RemoteCache<K, V> *rcache =
                 (RemoteCache<K, V> *) remoteCacheMap[key].get();
-        initCache(*rcache, name.c_str(), forceReturnValue, getConfiguration().getNearCacheConfiguration());
         rcache->keyMarshaller.reset(km);
         rcache->valueMarshaller.reset(vm);
+        initCache(*rcache, name.c_str(), forceReturnValue, getConfiguration().getNearCacheConfiguration());
         return *rcache;
     }
 

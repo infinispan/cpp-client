@@ -28,6 +28,7 @@ class AbstractTransport : public Transport
     int32_t read4ByteInt();
     std::string readString();
     TransportFactory& getTransportFactory();
+    virtual ~AbstractTransport() {}
 
   protected:
     virtual void writeBytes(const std::vector<char>& bytes) = 0;

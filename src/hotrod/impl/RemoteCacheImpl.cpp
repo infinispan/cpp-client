@@ -265,13 +265,13 @@ void RemoteCacheImpl::addClientListener(ClientListener& clientListener, const st
 	// Special behaviour for this operation. op will be keep by the dispatcher and reused if needed
 	// so op is not to be destroyed here.
 	// TODO: Maybe a good move semantic implementation for Add operation can uniform the code
-    auto op = operationsFactory->newAddClientListenerOperation(clientListener, *remoteCacheManager.getListenerNotifier(), filterFactoryParam, converterFactoryParams, recoveryCallback);
+    auto op = std::shared_ptr<AddClientListenerOperation>(operationsFactory->newAddClientListenerOperation(clientListener, remoteCacheManager.getListenerNotifier(), filterFactoryParam, converterFactoryParams, recoveryCallback));
     op->execute();
 }
 
 void RemoteCacheImpl::removeClientListener(ClientListener& clientListener)
 {
-    RemoveClientListenerOperation *rclo = operationsFactory->newRemoveClientListenerOperation(clientListener, *remoteCacheManager.getListenerNotifier());
+    RemoveClientListenerOperation *rclo = operationsFactory->newRemoveClientListenerOperation(clientListener, remoteCacheManager.getListenerNotifier());
     std::unique_ptr<RemoveClientListenerOperation> op(rclo);
     op->execute();
 }

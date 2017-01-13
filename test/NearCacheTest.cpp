@@ -23,6 +23,8 @@ int main(int argc, char** argv) {
     RemoteCacheManager nearCacheManager(nearCacheBuilder.build(), false);
     JBasicMarshaller<std::string> *km = new JBasicMarshaller<std::string>();
     JBasicMarshaller<std::string> *vm = new JBasicMarshaller<std::string>();
+    try
+    {
     nearCacheManager.start();
     RemoteCache<std::string, std::string> nearCache = nearCacheManager.getCache<std::string, std::string>(km,
             &Marshaller<std::string>::destroy,
@@ -39,7 +41,9 @@ int main(int argc, char** argv) {
     nearCache.put("key1", "value1");
     std::string *rest = nearCache.get("key1");
     std::cout << "Got result from near cache:" << ((rest) ? *rest : "null") << std::endl;
-    nearCache.get("key1");
+    delete rest;
+    rest = nearCache.get("key1");
+    delete rest;
     std::map<std::string,std::string> stats1= nearCache.stats();
     auto hits1 = std::stoi(stats1["hits"]);
     auto misses1 = std::stoi(stats1["misses"]);
@@ -50,12 +54,20 @@ int main(int argc, char** argv) {
         nearCache.put("key"+std::to_string(i),std::to_string(i));
     }
     // now key1 one should not be near
-    nearCache.get("key1");  // remote get. Stored near (this delete key2 nearly)
-    nearCache.get("key2");  // remote get. Stored near (this delete key3 nearly)
-    nearCache.get("key1");  // near
+    rest = nearCache.get("key1");  // remote get. Stored near (this delete key2 nearly)
+    delete rest;
+    rest = nearCache.get("key2");  // remote get. Stored near (this delete key3 nearly)
+    delete rest;
+    rest = nearCache.get("key1");  // near
+    delete rest;
     std::map<std::string,std::string> statsEnd= nearCache.stats();
     auto hitsEnd = std::stoi(statsEnd["hits"]);
     auto missesEnd = std::stoi(statsEnd["misses"]);
     std::cout << "Remote misses is: " << missesEnd-missesBegin << "" << std::endl;
     std::cout << "Remote hits is: " << hitsEnd-hitsBegin << "" << std::endl;
+    nearCacheManager.stop();
+    }
+    catch (Exception &e) {
+        nearCacheManager.stop();
+    }
 }
