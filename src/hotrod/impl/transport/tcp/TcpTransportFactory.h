@@ -23,7 +23,7 @@ class InetSocketAddress;
 class TcpTransportFactory : public TransportFactory
 {
   public:
-    TcpTransportFactory(const Configuration& config) : configuration(config), maxRetries(config.getMaxRetries()) {};
+    TcpTransportFactory(const Configuration& config) : configuration(config), maxRetries(config.getMaxRetries()) {}
     void start(protocol::Codec& codec, int defaultTopologyId, ClientListenerNotifier* );
     void destroy();
 

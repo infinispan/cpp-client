@@ -32,8 +32,8 @@ class RemoteCacheManagerImpl
     bool clusterSwitch();
     bool clusterSwitch(std::string clusterName);
 
-    ClientListenerNotifier*& getListenerNotifier() {
-		return listenerNotifier;
+    ClientListenerNotifier& getListenerNotifier() {
+		return *listenerNotifier;
 	}
   private:
     sys::Mutex lock;
@@ -47,7 +47,7 @@ class RemoteCacheManagerImpl
 
     operations::PingResult ping(RemoteCacheImpl& remoteCache);
     std::shared_ptr<transport::TransportFactory> transportFactory;
-    ClientListenerNotifier *listenerNotifier;
+    std::shared_ptr<ClientListenerNotifier> listenerNotifier;
 
     void startRemoteCache(RemoteCacheImpl& remoteCache, bool forceReturnValue);
 };

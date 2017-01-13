@@ -62,7 +62,14 @@ void TcpTransportFactory::start(
 
     balancer->setServers(initialServers);
     sniHostName = configuration.getSslConfiguration().sniHostName();
-    pingServers();
+    try
+    {
+        pingServers();
+    }
+    catch (Exception &e) {
+        delete topologyInfo;
+        throw e;
+    }
     this->listenerNotifier = listenerNotifier;
  }
 

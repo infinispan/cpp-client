@@ -32,16 +32,18 @@ template <class T> using X =  std::function<void(T)>;
 
 class EventDispatcher {
 public:
-	EventDispatcher(const std::vector<char> listenerId, const ClientListener& cl, std::vector<char> cacheName, Transport& t, const Codec20& codec20, void* addClientListenerOpPtr, const std::function<void()> &recoveryCallback) : listenerId(listenerId), cl(cl), operationPtr(addClientListenerOpPtr), cacheName(cacheName), transport(t), codec20(codec20), status(0), recoveryCallback(recoveryCallback)
+	EventDispatcher(const std::vector<char> listenerId, const ClientListener& cl, std::vector<char> cacheName, Transport &t, const Codec20& codec20, std::shared_ptr<void> addClientListenerOpPtr, const std::function<void()> &recoveryCallback) : listenerId(listenerId), cl(cl), operationPtr(addClientListenerOpPtr), cacheName(cacheName), transport(t), codec20(codec20), recoveryCallback(recoveryCallback)
     {}
 	virtual ~EventDispatcher() {
-		if (p_thread)
-		{
-			((TcpTransport&)transport).destroy();
-		   p_thread->join();
-		}
+	    if (p_thread)
+	    {
+	        if (p_thread->joinable())
+	        {
+	            p_thread->join();
+	        }
+        }
 	}
-	const Transport& getTransport() {
+	Transport& getTransport() {
 		return transport;
 	}
     void run();
@@ -49,14 +51,13 @@ public:
     void stop();
 	const std::vector<char> listenerId;
 	const ClientListener& cl;
-	void* const operationPtr;
+	const std::shared_ptr<void> operationPtr;
 
 private:
 	std::vector<char> cacheName;
-	Transport& transport;
+	Transport &transport;
 	const Codec20& codec20;
 	std::shared_ptr<std::thread> p_thread;
-	int status;
 	const std::function<void()> &recoveryCallback;
 };
 

@@ -24,7 +24,7 @@ namespace infinispan {
 namespace hotrod {
 namespace operations {
 
-class AddClientListenerOperation: public RetryOnFailureOperation<char> {
+class AddClientListenerOperation: public RetryOnFailureOperation<char>, public std::enable_shared_from_this<AddClientListenerOperation> {
 public:
 	AddClientListenerOperation(const Codec &codec, std::shared_ptr<TransportFactory> transportFactory,
                              std::vector<char> cacheName, Topology& topologyId, int flags,
@@ -36,6 +36,8 @@ public:
 							 recoveryCallback(recoveryCallback), cacheName(cacheName)
 							 {};
     virtual void releaseTransport(transport::Transport* transport);
+    virtual void invalidateTransport(const infinispan::hotrod::transport::InetSocketAddress & addr, transport::Transport* transport);
+
     virtual transport::Transport& getTransport(int retryCount, const std::set<transport::InetSocketAddress>& failedServers);
 	char executeOperation(transport::Transport& transport);
     ClientListenerNotifier& listenerNotifier;
@@ -45,6 +47,7 @@ public:
     const std::vector<std::vector<char> > converterFactoryParams;
 
     const std::function<void()> recoveryCallback;
+    bool shared = false;
 private:
     const std::vector<char> cacheName;
     std::vector<char> generateV4UUID();
