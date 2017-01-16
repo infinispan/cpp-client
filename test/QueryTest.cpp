@@ -163,7 +163,7 @@ int main(int argc, char** argv) {
         std::cout << "result is: " << i << std::endl;
     }
 
-
+    cacheManager.stop();
     return result;
 }
 

@@ -38,29 +38,43 @@ void SSLSocket::connect(const std::string& host, int port, int timeout) {
     if (!m_clientCertificateFile.empty()) {
         DEBUG("Using user-supplied client certificate %s", m_clientCertificateFile.c_str());
         if (!SSL_CTX_use_certificate_file(m_ctx, m_clientCertificateFile.c_str(), SSL_FILETYPE_PEM)) {
+            if(m_ctx != 0)
+                SSL_CTX_free(m_ctx);
+            m_socket->close();
             logAndThrow(host, port, "SSL_CTX_use_certificate_file");
         }
     }
     SSL_CTX_set_options(m_ctx, SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_NO_TLSv1 | SSL_OP_NO_TLSv1_1);
     if (m_serverCAFile.empty() &&  m_serverCAPath.empty()) {
         if(!SSL_CTX_set_default_verify_paths(m_ctx)) {
+            if(m_ctx != 0)
+                SSL_CTX_free(m_ctx);
+            m_socket->close();
             logAndThrow(host, port, "SSL_CTX_set_default_verify_paths");
         }
     }
     if (!SSL_CTX_load_verify_locations(m_ctx, m_serverCAFile.empty() ? 0 : m_serverCAFile.c_str(), m_serverCAPath.empty() ? 0 : m_serverCAPath.c_str())) {
+        if(m_ctx != 0)
+            SSL_CTX_free(m_ctx);
+        m_socket->close();
         logAndThrow(host, port, "SSL_CTX_load_verify_locations");
     }
 
     m_ssl = SSL_new(m_ctx);
     if (!m_ssl) {
+        if(m_ctx != 0)
+            SSL_CTX_free(m_ctx);
+        m_socket->close();
         logAndThrow(host, port, "SSL_new");
     }
     const char* const PREFERRED_CIPHERS = "HIGH:!aNULL:!kRSA:!PSK:!SRP:!MD5:!RC4";
     if (!SSL_set_cipher_list(m_ssl, PREFERRED_CIPHERS)) {
+        close();
         logAndThrow(host, port, "SSL_set_cipher_list");
     }
     m_bio = BIO_new_socket(getSocket(), BIO_NOCLOSE);
     if (!m_bio) {
+        close();
         logAndThrow(host, port, "BIO_new_socket");
     }
 
@@ -69,6 +83,7 @@ void SSLSocket::connect(const std::string& host, int port, int timeout) {
     if (!m_sniHostName.empty())
     {
         if (!SSL_set_tlsext_host_name(m_ssl, &m_sniHostName[0])) {
+            close();
             logAndThrow(host,port, "SSL_set_tlsext_host_name");
         }
     }
@@ -81,6 +96,7 @@ void SSLSocket::connect(const std::string& host, int port, int timeout) {
         DEBUG("X509 Certificate %s", cert->name);
         X509_free(cert);
     } else {
+        close();
         logAndThrow(host, port, "SSL_get_peer_certificate");
     }
     /*if (SSL_get_verify_result(m_ssl) != X509_V_OK) {
@@ -100,8 +116,8 @@ void SSLSocket::write(const char *p, size_t n) {
 
 void SSLSocket::close() {
     SSL_shutdown(m_ssl);
-    if(m_bio != 0)
-        BIO_free_all(m_bio);
+    if(m_ssl != 0)
+        SSL_free(m_ssl);
     if(m_ctx != 0)
         SSL_CTX_free(m_ctx);
     m_socket->close();
