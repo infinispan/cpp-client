@@ -43,10 +43,12 @@ int test(const std::string &test_desc, int argc, char** argv, const std::string 
             std::unique_ptr < std::string > rv(cache.get(k1));
             if (rv->compare(v1)) {
                 std::cerr << "get/put fail for " << k1 << " got " << *rv << " expected " << v1 << std::endl;
+                cacheManager.stop();
                 return 1;
             }
             cacheManager.stop();
         } catch (Exception e) {
+            cacheManager.stop();
             return 1;
         }
     }
