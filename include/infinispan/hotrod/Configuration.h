@@ -5,7 +5,7 @@
 
 #include <string>
 #include <vector>
-#include "infinispan/hotrod/portable.h"
+#include <map>
 #include "infinispan/hotrod/ImportExport.h"
 #include "infinispan/hotrod/ConnectionPoolConfiguration.h"
 #include "infinispan/hotrod/ServerConfiguration.h"
@@ -57,17 +57,11 @@ class Configuration
                 connectionPoolConfiguration(_connectionPoolConfiguration),
                 connectionTimeout(_connectionTimeout), forceReturnValue(_forceReturnValue),
                 keySizeEstimate(_keySizeEstimate),
+                serversMap(_serversConfiguration),
                 socketTimeout(_socketTimeout), sslConfiguration(_sslConfiguration),tcpNoDelay(_tcpNoDelay),
                 valueSizeEstimate(_valueSizeEstimate), maxRetries(_maxRetries), nearCacheConfiguration(_nearCacheConfiguration), balancingStrategyProducer(bsp),
 				eventMarshaller(eventMarshaller)
-    {
-       std::map<portable::string, portable::vector<ServerConfiguration>> tmpMap;
-       for(auto pair : _serversConfiguration)
-       {
-    	   tmpMap.insert(std::make_pair(portable::string(pair.first), portable::vector<ServerConfiguration>(pair.second)));
-       }
-       serversMap=tmpMap;
-    }
+    {}
 
     /**
      * DEPRECATED. Use getProtocolVersionCString().
@@ -76,7 +70,7 @@ class Configuration
     HR_EXTERN const std::string &getProtocolVersion() const {
         if (protocolVersionPtr.get() == NULL) {
             const_cast<Configuration *>(this)->protocolVersionPtr
-                    .set(new std::string(protocolVersion.c_string()), &deleteString);
+                    .reset(new std::string(protocolVersion.c_str()));
         }
         return *(protocolVersionPtr.get());
     }
@@ -128,11 +122,7 @@ class Configuration
      */
     std::map<std::string, std::vector<ServerConfiguration> > getServersMapConfiguration() const {
     	std::map<std::string, std::vector<ServerConfiguration> > temp;
-    	for (auto pair : serversMap.std_map())
-    	{
-    	  temp.insert(make_pair(pair.first.std_string(), pair.second.std_vector()));
-    	}
-        return temp;
+        return serversMap;
     }
 
     /**
@@ -178,13 +168,13 @@ class Configuration
     const NearCacheConfiguration& getNearCacheConfiguration() const { return nearCacheConfiguration; }
 
 private:
-    portable::string protocolVersion;
-    portable::local_ptr<std::string> protocolVersionPtr;
+    std::string protocolVersion;
+    std::shared_ptr<std::string> protocolVersionPtr;
     ConnectionPoolConfiguration connectionPoolConfiguration;
     int connectionTimeout;
     bool forceReturnValue;
     int keySizeEstimate;
-    portable::map<portable::string,portable::vector<ServerConfiguration> > serversMap;
+    std::map<std::string,std::vector<ServerConfiguration> > serversMap;
     int socketTimeout;
     SslConfiguration sslConfiguration;
     bool tcpNoDelay;

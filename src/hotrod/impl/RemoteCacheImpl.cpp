@@ -172,31 +172,34 @@ void *RemoteCacheImpl::getWithMetadata(RemoteCacheBase& remoteCacheBase, const v
     return obuf.data() ? remoteCacheBase.baseValueUnmarshall(obuf) : NULL;
 }
 
-void RemoteCacheImpl::getBulk(RemoteCacheBase& remoteCacheBase, portable::map<void*, void*> &map) {
+void RemoteCacheImpl::getBulk(RemoteCacheBase& remoteCacheBase, std::map<void*, void*> &map) {
     getBulk(remoteCacheBase, 0, map);
 }
 
-void RemoteCacheImpl::getBulk(RemoteCacheBase& remoteCacheBase, int isize, portable::map<void*, void*> &map) {
+void RemoteCacheImpl::getBulk(RemoteCacheBase& remoteCacheBase, int isize, std::map<void*, void*> &map) {
     assertRemoteCacheManagerIsStarted();
     std::unique_ptr<BulkGetOperation> gco(operationsFactory->newBulkGetOperation(isize));
     std::map<std::vector<char>,std::vector<char>> res = gco->execute();
-    portable::map<void *, void *> tmpMap(res, KeyUnmarshallerFtor(remoteCacheBase), ValueUnmarshallerFtor(remoteCacheBase));
-    map = tmpMap.move();
+    for (auto it = res.begin(); it != res.end(); ++it)
+    {
+        map[KeyUnmarshallerFtor(remoteCacheBase)(it->first)]=ValueUnmarshallerFtor(remoteCacheBase)(it->second);
+    }
 }
 
-void RemoteCacheImpl::keySet(RemoteCacheBase& remoteCacheBase, int scope, portable::vector<void*> &result) {
+void RemoteCacheImpl::keySet(RemoteCacheBase& remoteCacheBase, int scope, std::vector<void*> &result) {
     assertRemoteCacheManagerIsStarted();
     std::unique_ptr<BulkGetKeysOperation> gco(operationsFactory->newBulkGetKeysOperation(scope));
     std::set<std::vector<char>> res = gco->execute();
-    portable::vector<void *> tmpVector(res, KeyUnmarshallerFtor(remoteCacheBase));
-    result = tmpVector.move();
+    for(auto it=res.begin(); it!=res.end(); it++)
+    {
+        result.push_back(KeyUnmarshallerFtor(remoteCacheBase)(*it));
+    }
 }
 
-void RemoteCacheImpl::stats(portable::map<portable::string,portable::string> &statistics) {
+void RemoteCacheImpl::stats(std::map<std::string, std::string> &statistics) {
     assertRemoteCacheManagerIsStarted();
     std::unique_ptr<StatsOperation> gco(operationsFactory->newStatsOperation());
-    portable::map<portable::string,portable::string> tmpMap(gco->execute(), portable::string::convert(), portable::string::convert());
-    statistics = tmpMap.move();
+    statistics = gco->execute();
 }
 
 void RemoteCacheImpl::clear() {

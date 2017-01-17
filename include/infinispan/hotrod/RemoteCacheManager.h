@@ -2,7 +2,6 @@
 #define ISPN_HOTROD_REMOTECACHEMANAGER_H
 
 #include "infinispan/hotrod/BasicMarshaller.h"
-#include "infinispan/hotrod/portable.h"
 #include "infinispan/hotrod/ImportExport.h"
 #include "infinispan/hotrod/RemoteCache.h"
 #include "infinispan/hotrod/Configuration.h"
@@ -52,8 +51,7 @@ public:
     explicit RemoteCacheManager(
             const std::map<std::string, std::string>& configuration,
             bool start_ = true) {
-        init(portable::map<portable::string, portable::string>(
-                configuration, portable::string::convert(), portable::string::convert()), start_);
+        init(configuration, start_);
     }
 
     /**
@@ -294,7 +292,7 @@ private:
     void *impl;
     std::map<std::string, std::unique_ptr<RemoteCacheBase> > remoteCacheMap;
 
-    void init(const portable::map<portable::string, portable::string>& configuration, bool start);
+    void init(const std::map<std::string, std::string>& configuration, bool start);
 
     void initCache(RemoteCacheBase& cache, bool forceReturnValue, NearCacheConfiguration nc = NearCacheConfiguration());
     void initCache(RemoteCacheBase& cache, const char *name, bool forceReturnValue, NearCacheConfiguration nc = NearCacheConfiguration());

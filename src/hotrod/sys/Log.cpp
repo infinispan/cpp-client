@@ -12,11 +12,14 @@
 using namespace infinispan::hotrod::sys;
 
 Log logger;
-
 #ifdef _MSC_VER
+#   define strncpy_safe strncpy_s
 #   define getenv_safe getenv_s
 #   define vsnprintf_safe vsnprintf_s
 #else
+#   ifndef _TRUNCATE
+#       define _TRUNCATE ((size_t)-1)
+#   endif // _TRUNCATE
 static int getenv_safe(size_t *required_size, char *buffer, size_t numberOfElements, const char *variable) {
     if (!required_size) return -1;
     const char *value = getenv(variable);    

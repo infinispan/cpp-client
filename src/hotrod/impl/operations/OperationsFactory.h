@@ -4,7 +4,6 @@
 #include <infinispan/hotrod/CacheTopologyInfo.h>
 #include "infinispan/hotrod/Flag.h"
 
-#include <infinispan/hotrod/portable.h>
 #include "infinispan/hotrod/Query.h"
 #include "infinispan/hotrod/ClientListener.h"
 #include <set>

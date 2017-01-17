@@ -8,7 +8,6 @@
 #include "infinispan/hotrod/ImportExport.h"
 #include "infinispan/hotrod/Flag.h"
 #include "infinispan/hotrod/MetadataValue.h"
-#include "infinispan/hotrod/portable.h"
 #include "infinispan/hotrod/Query.h"
 #include <map>
 #include <set>
@@ -51,9 +50,9 @@ protected:
     HR_EXTERN bool  base_removeWithVersion(const void *key, int64_t version);
     HR_EXTERN void *base_getWithVersion(const void* key, VersionedValue* version);
     HR_EXTERN void *base_getWithMetadata(const void* key, MetadataValue* metadata);
-    HR_EXTERN void  base_getBulk(int size, portable::map<void*, void*> &mbuf);
-    HR_EXTERN void  base_keySet(int scope, portable::vector<void*> &sbuf);
-    HR_EXTERN void  base_stats(portable::map<portable::string,portable::string> &sbuf);
+    HR_EXTERN void  base_getBulk(int size, std::map<void*, void*> &mbuf);
+    HR_EXTERN void  base_keySet(int scope, std::vector<void*> &sbuf);
+    HR_EXTERN void  base_stats(std::map<std::string,std::string> &sbuf);
     HR_EXTERN void  base_clear();
     HR_EXTERN uint64_t  base_size();
     HR_EXTERN void  base_withFlags(Flag flag);

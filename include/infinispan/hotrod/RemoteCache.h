@@ -725,14 +725,12 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      *TODO
      */
     std::map<std::shared_ptr<K>, std::shared_ptr<V> > getBulk(int nrOfEntries) {
-        portable::map<void*, void*> mbuf;
-        base_getBulk(nrOfEntries, mbuf);
-
+        std::map<void* , void*> mbuf;
         std::map<std::shared_ptr<K>, std::shared_ptr<V> > result;
-        const portable::pair<void*, void*> *data = mbuf.data();
-        for (size_t i = 0; i < mbuf.size(); i++) {
-            result.insert(std::make_pair(
-                std::shared_ptr<K>((K*)data[i].key), std::shared_ptr<V>((V*)data[i].value)));
+        base_getBulk(nrOfEntries, mbuf);
+        for (auto it = mbuf.begin(); it != mbuf.end(); ++it)
+        {
+            result[std::shared_ptr<K>((K*)it->first)]=std::shared_ptr<V>((V*)it->second);
         }
         return result;
     }
@@ -784,7 +782,7 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      * \return a std::set of pointers to all keys in this given cache
      */
     std::set<std::shared_ptr<K> > keySet() {
-        portable::vector<void*> p;
+        std::vector<void*> p;
         base_keySet(0, p);
 
         std::set<std::shared_ptr<K> > result;
@@ -823,10 +821,9 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      * while the matching value represents the value for that property
      */
     std::map<std::string, std::string> stats() {
-        portable::map<portable::string,portable::string> statistics;
+        std::map<std::string, std::string> statistics;
         base_stats(statistics);
-        return statistics.std_map<std::string, portable::string::convert, std::string, portable::string::convert>
-            (portable::string::convert(), portable::string::convert());
+        return statistics;
     }
     /**
      * Clears all entries in this cache

@@ -19,10 +19,8 @@ RemoteCacheManager::RemoteCacheManager(bool start_)
 RemoteCacheManager::RemoteCacheManager(const Configuration& configuration, bool start_)
   : impl(new RemoteCacheManagerImpl(configuration, start_)) { }
 
-void RemoteCacheManager::init(const portable::map<portable::string, portable::string> &properties, bool start_) {
-    impl = new RemoteCacheManagerImpl(
-            properties.std_map<std::string, portable::string::convert, std::string, portable::string::convert>(
-                    portable::string::convert(), portable::string::convert()), start_);
+void RemoteCacheManager::init(const std::map<std::string, std::string> &properties, bool start_) {
+    impl = new RemoteCacheManagerImpl(properties, start_);
 }
 
 RemoteCacheManager::~RemoteCacheManager() {
