@@ -83,18 +83,18 @@ void *RemoteCacheBase::base_getWithMetadata(const void *key, MetadataValue* meta
     return IMPL->getWithMetadata(*this, key, metadata);
 }
 
-void RemoteCacheBase::base_getBulk(int size, portable::map<void*, void*> &mbuf)
+void RemoteCacheBase::base_getBulk(int size, std::map<void*, void*> &mbuf)
 {
     IMPL->getBulk(*this, size, mbuf);
 }
 
 
-void RemoteCacheBase::base_keySet(int scope, portable::vector<void*> &result)
+void RemoteCacheBase::base_keySet(int scope, std::vector<void*> &result)
 {
     IMPL->keySet(*this, scope, result);
 }
 
-void RemoteCacheBase::base_stats(portable::map<portable::string,portable::string> &stats)
+void RemoteCacheBase::base_stats(std::map<std::string,std::string> &stats)
 {
     IMPL->stats(stats);
 }

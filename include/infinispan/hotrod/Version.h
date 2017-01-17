@@ -1,7 +1,6 @@
 #ifndef ISPN_HOTROD_VERSION_H
 #define ISPN_HOTROD_VERSION_H
 
-#include "infinispan/hotrod/portable.h"
 #include "infinispan/hotrod/ImportExport.h"
 #include <string>
 

@@ -10,7 +10,6 @@
 
 #include <string>
 #include "infinispan/hotrod/defs.h"
-#include "infinispan/hotrod/portable.h"
 #include "infinispan/hotrod/ImportExport.h"
 
 namespace infinispan {

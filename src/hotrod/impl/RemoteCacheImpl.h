@@ -1,7 +1,6 @@
 #ifndef ISPN_HOTROD_REMOTECACHEIMPL_H
 #define ISPN_HOTROD_REMOTECACHEIMPL_H
 
-#include "infinispan/hotrod/portable.h"
 #include "infinispan/hotrod/RemoteCacheBase.h"
 #include "hotrod/impl/MetadataValueImpl.h"
 #include "hotrod/impl/VersionedValueImpl.h"
@@ -33,10 +32,10 @@ public:
     virtual bool  removeWithVersion(RemoteCacheBase& rcb, const void* k, uint64_t version);
     void *getWithMetadata(RemoteCacheBase& rcb, const void *key, MetadataValue* metadata);
     virtual void *getWithVersion(RemoteCacheBase& rcb, const void *key, VersionedValue* version);
-    void  getBulk(RemoteCacheBase& rcb, portable::map<void*, void*> &mbuf);
-    void  getBulk(RemoteCacheBase& rcb, int size, portable::map<void*, void*> &mbuf);
-    void  keySet(RemoteCacheBase& rcb, int scope, portable::vector<void*> &result);
-    void  stats(portable::map<portable::string,portable::string> &stats);
+    void  getBulk(RemoteCacheBase& rcb, std::map<void*, void*> &mbuf);
+    void  getBulk(RemoteCacheBase& rcb, int size,  std::map<void*, void*> &mbuf);
+    void  keySet(RemoteCacheBase& rcb, int scope, std::vector<void*> &result);
+    void  stats(std::map<std::string,std::string> &stats);
     virtual void clear();
     uint64_t size();
     std::vector<char> execute(std::vector<char> cmdName, const std::map<std::vector<char>,std::vector<char>>& args);

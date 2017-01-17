@@ -5,7 +5,6 @@
 #include <string>
 #include <stdint.h>
 #include "infinispan/hotrod/defs.h"
-#include "infinispan/hotrod/portable.h"
 #include "infinispan/hotrod/ImportExport.h"
 
 namespace infinispan {
@@ -19,7 +18,7 @@ class HR_EXTERN Exception : public std::exception
     virtual const char* what() const throw();
 
   protected:
-    portable::string message;
+    std::string message;
 };
 
 /**
@@ -51,7 +50,7 @@ class HR_EXTERN TransportException : public HotRodClientException
 
     const std::string &getHost() const {
         if (hostPtr.get() == NULL) {
-            const_cast<TransportException *>(this)->hostPtr.set(new std::string(host.c_string()), &deleteString);
+            const_cast<TransportException *>(this)->hostPtr.reset(new std::string(host.c_str()));
         }
         return *(hostPtr.get());
     }
@@ -59,13 +58,12 @@ class HR_EXTERN TransportException : public HotRodClientException
     int getPort() const;
     int getErrnum() const { return errnum; }
   private:
-    const portable::string host;
+    const std::string host;
     __pragma(warning(suppress:4251))
-    portable::local_ptr<std::string> hostPtr;
+    std::shared_ptr<std::string> hostPtr;
     int port;
 
     int errnum;
-    static void deleteString(std::string *str) { delete str; }
 };
 
 /**

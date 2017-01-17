@@ -10,20 +10,6 @@
 #include <vector>
 namespace infinispan {
 namespace hotrod {
-struct cmpCacheNameVector {
-    bool operator()(const std::vector<char>& a, const std::vector<char>& b) const {
-    	if (b.size()==0){
-    		return false;
-    	}
-    	if (a.size()==0){
-    		return true;
-    	}
-    	if (a.size()==b.size()){
-          return strncmp(a.data(),b.data(),a.size()) < 0;
-    	}
-    	return (a.size()<b.size());
-    }
-};
 class TopologyInfo {
 public:
 	TopologyInfo(int defaultTopologyId_, std::vector<transport::InetSocketAddress>& servers_, const Configuration& c_):
@@ -67,9 +53,9 @@ public:
 private:
 	Topology topology;
     std::shared_ptr<infinispan::hotrod::consistenthash::ConsistentHashFactory> hashFactory;
-    std::map<std::vector<char>, std::shared_ptr<infinispan::hotrod::consistenthash::ConsistentHash>, cmpCacheNameVector > consistentHashByCacheName;
-    std::map<std::vector<char>, uint32_t, cmpCacheNameVector > segmentsByCache;
-    std::map<std::vector<char>, int , cmpCacheNameVector > topologyIdsByCache;
+    std::map<std::vector<char>, std::shared_ptr<infinispan::hotrod::consistenthash::ConsistentHash> > consistentHashByCacheName;
+    std::map<std::vector<char>, uint32_t > segmentsByCache;
+    std::map<std::vector<char>, int > topologyIdsByCache;
     int defaultTopologyId;
     std::vector<transport::InetSocketAddress>& servers;
     const Configuration& configuration;

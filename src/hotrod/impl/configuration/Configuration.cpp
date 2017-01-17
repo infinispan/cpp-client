@@ -18,7 +18,7 @@ const char* Configuration::DEFAULT_CLUSTER_NAME = "DEFAULT_CLUSTER_NAME";
 
 const char *Configuration::getProtocolVersionCString() const
 {
-  return Configuration::protocolVersion.c_string();
+  return Configuration::protocolVersion.c_str();
 }
 
 const ConnectionPoolConfiguration& Configuration::getConnectionPoolConfiguration() const

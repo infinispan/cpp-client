@@ -1,8 +1,6 @@
 #ifndef ISPN_HOTROD_MARSHALLER_H
 #define ISPN_HOTROD_MARSHALLER_H
 
-#include "portable.h"
-
 #include <vector>
 
 namespace infinispan {
