@@ -5,6 +5,9 @@
 #include "hotrod/sys/Log.h"
 #include "SChannelSocket.h"
 #include "WinDef.h"
+#include "Cryptuiapi.h"
+
+#pragma comment(lib, "Cryptui.lib")
 
 
 #define IO_BUFFER_SIZE  0x10000
@@ -516,6 +519,13 @@ DWORD SChannelSocket::verifyServerCertificate(HCERTSTORE hCertStore, PCCERT_CONT
     }
 }
 
+bool is_pem_filename(const std::string &str)
+{
+    static const std::string &suffix = ".pem";
+    return str.size() >= 4 &&
+        str.compare(str.size() - 4, 4, suffix) == 0;
+}
+
 void SChannelSocket::connect(const std::string & host, int port, int timeout)
 {
     SCHANNEL_CRED    SchannelCred;
@@ -527,7 +537,7 @@ void SChannelSocket::connect(const std::string & host, int port, int timeout)
     TimeStamp        tsExpiry;
     SecBuffer        ExtraData;
     HANDLE           hFile, hClientFile;
-    char             pemServCert[8192], pemClientCert[8192];
+    char             servCert[8192], pemClientCert[8192];
     BYTE             derServCert[8192], derClientCert[8192];
     DWORD            derCertLen = 8192;
     DWORD            readLen;
@@ -542,61 +552,102 @@ void SChannelSocket::connect(const std::string & host, int port, int timeout)
             fprintf(stderr, "**** Error %d. Failed to open server certificate file %s.\n", GetLastError(), m_serverCAFile.c_str());
         }
 
-        if (!ReadFile(hFile, pemServCert, 8192, &readLen, NULL))
+        if (!ReadFile(hFile, servCert, 8192, &readLen, NULL))
         {
             fprintf(stderr, "**** Error %d. Failed to open read certificate file %s.\n", GetLastError(), m_serverCAFile.c_str());
         }
         CloseHandle(hFile);
-        CryptStringToBinary(pemServCert, readLen, CRYPT_STRING_BASE64_ANY, derServCert, &derCertLen, NULL, NULL);
-        pServerContext = CertCreateCertificateContext(X509_ASN_ENCODING | PKCS_7_ASN_ENCODING,
-            (BYTE*)derServCert,
-            derCertLen);
-        if (pServerContext == NULL)
+
+        // .pem if pem all others are supposed to be p12 pfx
+        if (is_pem_filename(m_serverCAFile.c_str()))
         {
-            printf("**** Error 0x%x returned by CertCreateCertificateContext. Cannot create certificate. File corrupted?\n", GetLastError());
-            logAndThrow(host, port, "ERROR");
+            if (!CryptStringToBinary(servCert, readLen, CRYPT_STRING_BASE64_ANY, derServCert, &derCertLen, NULL, NULL))
+            {
+                printf("**** Error 0x%x returned by CryptStringToBinary server cert\n", GetLastError());
+                logAndThrow(host, port, "ERROR");
+            }
+            pServerContext = CertCreateCertificateContext(X509_ASN_ENCODING | PKCS_7_ASN_ENCODING,
+                (BYTE*)derServCert,
+                derCertLen);
+            if (pServerContext == NULL)
+            {
+                printf("**** Error 0x%x returned by CertCreateCertificateContext. Cannot create certificate. File corrupted?\n", GetLastError());
+                logAndThrow(host, port, "ERROR");
+            }
+            if (!(hMemStore = CertOpenStore(
+                CERT_STORE_PROV_MEMORY,   // The memory provider type
+                0,                        // The encoding type is not needed
+                NULL,                     // Use the default HCRYPTPROV
+                0,                        // Accept the default dwFlags
+                NULL                      // pvPara is not used
+                )))
+            {
+                printf("**** Error 0x%x returned by CertOpenStore\n", GetLastError());
+                logAndThrow(host, port, "ERROR");
+            }
+            if (!CertAddCertificateContextToStore(hMemStore, pServerContext,
+                CERT_STORE_ADD_REPLACE_EXISTING,
+                NULL
+                ))
+            {
+                printf("**** Error 0x%x returned by CertAddCertificateContextToStore\n", GetLastError());
+                logAndThrow(host, port, "ERROR");
+            }
         }
-        if (!(hMemStore = CertOpenStore(
-            CERT_STORE_PROV_MEMORY,   // The memory provider type
-            0,                        // The encoding type is not needed
-            NULL,                     // Use the default HCRYPTPROV
-            0,                        // Accept the default dwFlags
-            NULL                      // pvPara is not used
-            )))
+        else
         {
-            printf("**** Error 0x%x returned by CertOpenStore\n", GetLastError());
-            logAndThrow(host, port, "ERROR");
-        }
-        if (!CertAddCertificateContextToStore(hMemStore, pServerContext,
-            CERT_STORE_ADD_REPLACE_EXISTING,
-            NULL
-            ))
-        {
-            printf("**** Error 0x%x returned by CertAddCertificateContextToStore\n", GetLastError());
-            logAndThrow(host, port, "ERROR");
+            // p12 can be imported directly as certstore
+            CRYPT_DATA_BLOB sblob;
+            sblob.cbData = (DWORD)readLen;
+            sblob.pbData = (BYTE*)servCert;
+
+            // Importing the cert. The file cannot be password protected
+            HCERTSTORE servCertStore = PFXImportCertStore(&sblob, L"", CRYPT_MACHINE_KEYSET);
+            if (servCertStore == NULL) {
+                printf("PFXImportCertStore failed. hr=0x%x\n", GetLastError());
+                logAndThrow(host, port, "ERROR");
+            }
         }
     }
+
     ZeroMemory(&SchannelCred, sizeof(SchannelCred));
     SchannelCred.dwVersion = SCHANNEL_CRED_VERSION;
     if (pClientContext==NULL && !m_clientCertificateFile.empty())
     {
         // User provided the certificate to validate the client against the server
         // Read it and build certificate and set credentials for the schannel
-        hClientFile = CreateFile(m_clientCertificateFile.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-        if (hClientFile == INVALID_HANDLE_VALUE)
+        BYTE             clientCertStore[8192];
+        DWORD            clientCertStoreLen = 8192;
+        DWORD            readLen;
+        CRYPT_DATA_BLOB blob;
+        // User provided the certificate to validate the server in a file
+        // Read it and build certificate and certificates store
+        hFile = CreateFile(m_clientCertificateFile.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+        if (hFile == INVALID_HANDLE_VALUE)
         {
             fprintf(stderr, "**** Error %d. Failed to open server certificate file %s.\n", GetLastError(), m_clientCertificateFile.c_str());
         }
 
-        if (!ReadFile(hClientFile, pemClientCert, 8192, &readLen, NULL))
+        if (!ReadFile(hFile, clientCertStore, 8192, &clientCertStoreLen, NULL))
         {
             fprintf(stderr, "**** Error %d. Failed to open read certificate file %s.\n", GetLastError(), m_clientCertificateFile.c_str());
         }
-        CloseHandle(hClientFile);
-        CryptStringToBinary(pemClientCert, readLen, CRYPT_STRING_BASE64_ANY, derClientCert, &derCertLen, NULL, NULL);
-        pClientContext = CertCreateCertificateContext(X509_ASN_ENCODING | PKCS_7_ASN_ENCODING,
+        CloseHandle(hFile);
+        blob.cbData = (DWORD)clientCertStoreLen;
+        blob.pbData = clientCertStore;
+
+        HCERTSTORE certStore = PFXImportCertStore(&blob, L"", CRYPT_EXPORTABLE);
+        if (certStore == NULL) {
+            printf("PFXImportCertStore failed. hr=0x%x\n", GetLastError());
+            logAndThrow(host, port, "ERROR");
+        }
+        
+        pClientContext = CertFindCertificateInStore(certStore, X509_ASN_ENCODING | PKCS_7_ASN_ENCODING
+            , 0, CERT_FIND_HAS_PRIVATE_KEY, NULL, NULL);
+        
+/*        pClientContext = CertCreateCertificateContext(X509_ASN_ENCODING | PKCS_7_ASN_ENCODING,
             (BYTE*)derClientCert,
-            derCertLen);
+            derCertLen); */
         if (pClientContext == NULL)
         {
             printf("**** Error 0x%x returned by CertCreateCertificateContext. Cannot create certificate. File corrupted?\n", GetLastError());
