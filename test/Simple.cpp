@@ -459,7 +459,32 @@ int main(int argc, char** argv) {
                 &Marshaller<std::string>::destroy,
                 vm,
                 &Marshaller<std::string>::destroy);
+
         cacheManager.start();
+
+        {
+            std::cout << "Test different cache types" << std::endl;
+            BasicMarshaller<float> *kmf = new BasicMarshaller<float>();
+            BasicMarshaller<double> *vmd = new BasicMarshaller<double>();
+            RemoteCache<float, double> cache1 = cacheManager.getCache<float, double>(kmf,
+                    &Marshaller<float>::destroy,
+                    vmd,
+                    &Marshaller<double>::destroy);
+            float k1=1.0;
+            double v1=1e-3;
+
+            cache.clear();
+
+            // put
+            cache1.put(k1, v1);
+            std::unique_ptr<double> rv(cache1.get(k1));
+            assert_not_null("get returned null!", __LINE__, rv);
+            cache.clear();
+            if (*rv!=v1) {
+                std::cerr << "get/put fail for " << k1 << " got " << *rv << " expected " << v1 << std::endl;
+                return 1;
+            }
+        }
 
 		try {
 			result = basicTest<std::string, std::string>(cacheManager, cache);
