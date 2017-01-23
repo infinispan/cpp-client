@@ -42,6 +42,7 @@ namespace infinispan {
 				DWORD           encryptSend(size_t len, SecPkgContext_StreamSizes Sizes);
 				SECURITY_STATUS clientHandshakeLoop(BOOL doInitialRead, SecBuffer  *pExtraData);
 				SECURITY_STATUS performClientHandshake(std::string host, SecBuffer  *pExtraData);
+                LONG DisconnectFromServer();
 				void            cleanup();
 
 				class SChannelInitializer
