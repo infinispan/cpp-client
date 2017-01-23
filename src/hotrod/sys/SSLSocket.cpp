@@ -99,6 +99,7 @@ void SSLSocket::write(const char *p, size_t n) {
 }
 
 void SSLSocket::close() {
+    SSL_shutdown(m_ssl);
     if(m_bio != 0)
         BIO_free_all(m_bio);
     if(m_ctx != 0)
