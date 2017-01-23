@@ -3,7 +3,9 @@
 
 
 #include <string>
+#include <cstring>
 #include <iostream>
+#include <type_traits>
 #include "infinispan/hotrod/Marshaller.h"
 
 namespace infinispan {
@@ -15,7 +17,28 @@ namespace hotrod {
 
 
 template <class T> class BasicMarshaller : public infinispan::hotrod::Marshaller<T>
-{};
+{
+      public:
+        void marshall(const T& s, std::vector<char>& b) {
+#if __GNUG__ && __GNUC__ < 5
+            static_assert(std::is_fundamental<T>::value, "Type is not fundamental. A marshaller specialization is needed");
+#else
+            static_assert(std::is_trivially_copyable<T>::value, "Type is not trivially_copyable. A marshaller specialization is needed");
+#endif
+            b.resize(sizeof(s));
+            std::memcpy(b.data(), &s, sizeof(s));
+        }
+        T* unmarshall(const std::vector<char>& b) {
+#if __GNUG__ && __GNUC__ < 5
+            static_assert(std::is_fundamental<T>::value, "Type is not trivially_copyable. A marshaller specialization is needed");
+#else
+            static_assert(std::is_trivially_copyable<T>::value, "Type is not trivially_copyable. A marshaller specialization is needed");
+#endif
+            T* s = new T();
+            std::memcpy(s, b.data(), sizeof(*s));
+            return s;
+        }
+};
 
 class BasicMarshallerHelper {
 public:
@@ -36,27 +59,6 @@ class BasicMarshaller<std::string> : public infinispan::hotrod::Marshaller<std::
     }
     std::string* unmarshall(const std::vector<char>& b) {
         std::string* s = new std::string(b.data(), b.size());
-        return s;
-    }
-};
-
-template <>
-class BasicMarshaller<int> : public infinispan::hotrod::Marshaller<int> {
-  public:
-    void marshall(const int& s, std::vector<char>& b) {
-        char buf[4];
-        for (int i = 0 ; i < 4 ; i++) {
-            buf[3-i] = (char) ((s) >> (8*i));
-        }
-        b.assign(buf, buf+4);
-    }
-    int* unmarshall(const std::vector<char>& b) {
-    	int result = 0;
-    	for (int i = 0; i < 4 ; i++) {
-    	    result <<= 8;
-    	    result ^= (int) *(b.data()+i) & 0xFF;
-    	}
-        int* s = new int(result);
         return s;
     }
 };
