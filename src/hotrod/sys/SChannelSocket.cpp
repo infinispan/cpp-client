@@ -913,8 +913,84 @@ void SChannelSocket::logAndThrow(const std::string& host, const int port, const 
 	throw TransportException(host, port, msg, -1);
 }
 
+/*****************************************************************************/
+LONG SChannelSocket::DisconnectFromServer()
+{
+    PBYTE                    pbMessage;
+    DWORD                    dwType, dwSSPIFlags, dwSSPIOutFlags, cbMessage, cbData, Status;
+    SecBufferDesc OutBuffer;
+    SecBuffer     OutBuffers[1];
+    TimeStamp     tsExpiry;
+
+
+    dwType = SCHANNEL_SHUTDOWN; // Notify schannel that we are about to close the connection.
+
+    OutBuffers[0].pvBuffer = &dwType;
+    OutBuffers[0].BufferType = SECBUFFER_TOKEN;
+    OutBuffers[0].cbBuffer = sizeof(dwType);
+
+    OutBuffer.cBuffers = 1;
+    OutBuffer.pBuffers = OutBuffers;
+    OutBuffer.ulVersion = SECBUFFER_VERSION;
+
+    Status = initializer.g_pSSPI->ApplyControlToken(&hContext, &OutBuffer);
+
+    // Build an SSL close notify message.
+    dwSSPIFlags = ISC_REQ_SEQUENCE_DETECT |
+        ISC_REQ_REPLAY_DETECT |
+        ISC_REQ_CONFIDENTIALITY |
+        ISC_RET_EXTENDED_ERROR |
+        ISC_REQ_ALLOCATE_MEMORY |
+        ISC_REQ_STREAM;
+
+    OutBuffers[0].pvBuffer = NULL;
+    OutBuffers[0].BufferType = SECBUFFER_TOKEN;
+    OutBuffers[0].cbBuffer = 0;
+
+    OutBuffer.cBuffers = 1;
+    OutBuffer.pBuffers = OutBuffers;
+    OutBuffer.ulVersion = SECBUFFER_VERSION;
+
+    Status = initializer.g_pSSPI->InitializeSecurityContextA(&hCred,
+        &hContext,
+        NULL,
+        dwSSPIFlags,
+        0,
+        SECURITY_NATIVE_DREP,
+        NULL,
+        0,
+        &hContext,
+        &OutBuffer,
+        &dwSSPIOutFlags,
+        &tsExpiry);
+
+
+    pbMessage = (PBYTE)OutBuffers[0].pvBuffer;
+    cbMessage = OutBuffers[0].cbBuffer;
+
+
+    // Send the close notify message to the server.
+    if (pbMessage != NULL && cbMessage != 0)
+    {
+        cbData = send(Client_Socket, (const char *)pbMessage, cbMessage, 0);
+        if (cbData == SOCKET_ERROR || cbData == 0)
+        {
+            Status = WSAGetLastError();
+            printf("**** Error %d sending close notify\n", Status);
+        }
+        initializer.g_pSSPI->FreeContextBuffer(pbMessage); // Free output buffer.
+    }
+    initializer.g_pSSPI->DeleteSecurityContext(&hContext); // Free the security context.
+    closesocket(Client_Socket); // Close the socket.
+
+    return Status;
+}
+
+
 void SChannelSocket::cleanup()
 {
+    // Send notify close
+    DisconnectFromServer();
 	// Free the server certificate context.
 	if (pRemoteCertContext)
 	{
