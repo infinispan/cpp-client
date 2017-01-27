@@ -9,7 +9,7 @@
 #include "infinispan/hotrod/ImportExport.h"
 #include "infinispan/hotrod/ConnectionPoolConfiguration.h"
 #include "infinispan/hotrod/ServerConfiguration.h"
-#include "infinispan/hotrod/SslConfiguration.h"
+#include "infinispan/hotrod/SecurityConfiguration.h"
 #include "infinispan/hotrod/NearCacheConfiguration.h"
 #include "infinispan/hotrod/FailOverRequestBalancingStrategy.h"
 #include "infinispan/hotrod/JBasicEventMarshaller.h"
@@ -58,10 +58,35 @@ class Configuration
                 connectionTimeout(_connectionTimeout), forceReturnValue(_forceReturnValue),
                 keySizeEstimate(_keySizeEstimate),
                 serversMap(_serversConfiguration),
-                socketTimeout(_socketTimeout), sslConfiguration(_sslConfiguration),tcpNoDelay(_tcpNoDelay),
+                socketTimeout(_socketTimeout), securityConfiguration(_sslConfiguration),tcpNoDelay(_tcpNoDelay),
                 valueSizeEstimate(_valueSizeEstimate), maxRetries(_maxRetries), nearCacheConfiguration(_nearCacheConfiguration), balancingStrategyProducer(bsp),
 				eventMarshaller(eventMarshaller)
     {}
+
+    Configuration(const std::string &_protocolVersion,
+            const ConnectionPoolConfiguration& _connectionPoolConfiguration,
+            int _connectionTimeout,
+            bool _forceReturnValue,
+            int _keySizeEstimate,
+            std::map<std::string,std::vector<ServerConfiguration> > _serversConfiguration,
+            int _socketTimeout,
+            const SecurityConfiguration _securityConfiguration,
+            bool _tcpNoDelay,
+            int _valueSizeEstimate,
+            int _maxRetries,
+            NearCacheConfiguration _nearCacheConfiguration,
+            FailOverRequestBalancingStrategy::ProducerFn bsp=0,
+            const event::EventMarshaller &eventMarshaller = event::JBasicEventMarshaller()):
+                protocolVersion(_protocolVersion), protocolVersionPtr(),
+                connectionPoolConfiguration(_connectionPoolConfiguration),
+                connectionTimeout(_connectionTimeout), forceReturnValue(_forceReturnValue),
+                keySizeEstimate(_keySizeEstimate),
+                serversMap(_serversConfiguration),
+                socketTimeout(_socketTimeout), securityConfiguration(_securityConfiguration),tcpNoDelay(_tcpNoDelay),
+                valueSizeEstimate(_valueSizeEstimate), maxRetries(_maxRetries), nearCacheConfiguration(_nearCacheConfiguration), balancingStrategyProducer(bsp),
+                eventMarshaller(eventMarshaller)
+    {}
+
 
     /**
      * DEPRECATED. Use getProtocolVersionCString().
@@ -162,10 +187,13 @@ class Configuration
 
     HR_EXTERN FailOverRequestBalancingStrategy::ProducerFn getBalancingStrategy() const;
 
-    SslConfiguration& getSslConfiguration() { return sslConfiguration; }
+    const SslConfiguration& getSslConfiguration() { return securityConfiguration.getSslConfiguration(); }
+
     HR_EXTERN const event::EventMarshaller &getEventMarshaller() const;
 
     const NearCacheConfiguration& getNearCacheConfiguration() const { return nearCacheConfiguration; }
+
+    const SecurityConfiguration& getSecurityConfiguration() const { return securityConfiguration; }
 
 private:
     std::string protocolVersion;
@@ -176,7 +204,7 @@ private:
     int keySizeEstimate;
     std::map<std::string,std::vector<ServerConfiguration> > serversMap;
     int socketTimeout;
-    SslConfiguration sslConfiguration;
+    SecurityConfiguration securityConfiguration;
     bool tcpNoDelay;
     int valueSizeEstimate;
     int maxRetries;

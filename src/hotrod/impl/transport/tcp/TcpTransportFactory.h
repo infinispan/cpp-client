@@ -60,6 +60,7 @@ class TcpTransportFactory : public TransportFactory
             & getConsistentHashFactory();
     Transport& borrowTransportFromPool(const InetSocketAddress& server);
     virtual ~TcpTransportFactory() { }
+    const Configuration& getConfiguration() { return configuration; }
 
   private:
     sys::Mutex lock;

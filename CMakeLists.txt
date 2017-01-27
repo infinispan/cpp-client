@@ -49,7 +49,6 @@ include_directories ("${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_SOUR
 
 find_package(Protobuf REQUIRED)
 
-
 function(HR_PROTOBUF_GENERATE_CPP SRCS HDRS)
   if(NOT ARGN)
     message(SEND_ERROR "Error: PROTOBUF_GENERATE_CPP() called without any proto files")
@@ -117,7 +116,7 @@ elseif (APPLE)
   # OSX does not need rt
   set (platform_libs pthread)
 else (WIN32 AND NOT CYGWIN)
-  set (platform_libs pthread rt)
+  set (platform_libs pthread rt sasl2)
 endif(WIN32 AND NOT CYGWIN)
 
 
@@ -405,6 +404,8 @@ endif(ENABLE_INTERNAL_TESTING)
       src/hotrod/impl/event/ClientListenerNotifier.cpp
       src/hotrod/impl/operations/AddClientListenerOperation.cpp
       src/hotrod/impl/operations/RemoveClientListenerOperation.cpp
+      src/hotrod/impl/operations/AuthOperation.cpp
+      src/hotrod/impl/operations/AuthMechListOperation.cpp
       src/hotrod/impl/event/EventDispatcher.cpp
       ${platform_sources}
       ${internal_test_sources}  
