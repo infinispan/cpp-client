@@ -31,6 +31,8 @@
 #include <infinispan/hotrod/JBasicEventMarshaller.h>
 #include <infinispan/hotrod/ServerConfiguration.h>
 #include <infinispan/hotrod/SslConfiguration.h>
+#include <infinispan/hotrod/AuthenticationConfiguration.h>
+#include <infinispan/hotrod/SecurityConfiguration.h>
 #include <infinispan/hotrod/NearCacheConfiguration.h>
 #include <infinispan/hotrod/Configuration.h>
 #include <infinispan/hotrod/ServerConfigurationBuilder.h>
@@ -59,6 +61,8 @@ using namespace infinispan::hotrod;
 %include "infinispan/hotrod/ConnectionPoolConfiguration.h"
 %include "infinispan/hotrod/ServerConfiguration.h"
 %include "infinispan/hotrod/SslConfiguration.h"
+%include "infinispan/hotrod/AuthenticationConfiguration.h"
+%include "infinispan/hotrod/SecurityConfiguration.h"
 %include "infinispan/hotrod/NearCacheConfiguration.h"
 
 %immutable infinispan::hotrod::Configuration::PROTOCOL_VERSION_10;
@@ -86,6 +90,8 @@ using namespace infinispan::hotrod;
 %include "infinispan/hotrod/FailOverRequestBalancingStrategy.h"
 %include "infinispan/hotrod/ConfigurationChildBuilder.h"
 %include "infinispan/hotrod/SslConfigurationBuilder.h"
+%include "infinispan/hotrod/AuthenticationConfigurationBuilder.h"
+%include "infinispan/hotrod/SecurityConfigurationBuilder.h"
 %include "infinispan/hotrod/ServerConfigurationBuilder.h"
 %include "infinispan/hotrod/ConnectionPoolConfigurationBuilder.h"
 %include "infinispan/hotrod/ConfigurationBuilder.h"

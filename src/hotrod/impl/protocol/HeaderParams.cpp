@@ -82,6 +82,10 @@ uint8_t HeaderParams::toOpRespCode(uint8_t code) {
         return HotRodConstants::EXEC_RESPONSE;
     case HotRodConstants::QUERY_REQUEST:
         return HotRodConstants::QUERY_RESPONSE;
+    case HotRodConstants::AUTH_MECH_LIST_REQUEST:
+        return HotRodConstants::AUTH_MECH_LIST_RESPONSE;
+    case HotRodConstants::AUTH_REQUEST:
+        return HotRodConstants::AUTH_RESPONSE;
     case HotRodConstants::ADD_CLIENT_LISTENER_REQUEST:
     	return HotRodConstants::ADD_CLIENT_LISTENER_RESPONSE;
     case HotRodConstants::REMOVE_CLIENT_LISTENER_REQUEST:

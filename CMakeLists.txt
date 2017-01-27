@@ -50,7 +50,6 @@ include_directories ("${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_SOUR
 
 find_package(Protobuf REQUIRED)
 
-
 function(HR_PROTOBUF_GENERATE_CPP SRCS HDRS)
   if(NOT ARGN)
     message(SEND_ERROR "Error: PROTOBUF_GENERATE_CPP() called without any proto files")
@@ -118,7 +117,7 @@ elseif (APPLE)
   # OSX does not need rt
   set (platform_libs pthread)
 else (WIN32 AND NOT CYGWIN)
-  set (platform_libs pthread rt)
+  set (platform_libs pthread rt sasl2 krb5)
 endif(WIN32 AND NOT CYGWIN)
 
 
@@ -406,6 +405,8 @@ endif(ENABLE_INTERNAL_TESTING)
       src/hotrod/impl/event/ClientListenerNotifier.cpp
       src/hotrod/impl/operations/AddClientListenerOperation.cpp
       src/hotrod/impl/operations/RemoveClientListenerOperation.cpp
+      src/hotrod/impl/operations/AuthOperation.cpp
+      src/hotrod/impl/operations/AuthMechListOperation.cpp
       src/hotrod/impl/event/EventDispatcher.cpp
       ${platform_sources}
       ${internal_test_sources}  
@@ -562,6 +563,18 @@ set_target_properties(nearCacheTest PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_
 set_target_properties (nearCacheTest PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${NO_UNUSED_FLAGS}")
 target_link_libraries (nearCacheTest hotrod hotrod_protobuf ${PROTOBUF_LIBRARY} ${platform_libs})
 
+if (NOT DEFINED WIN32)
+    add_executable (simpleSasl test/SimpleSasl.cpp)
+    target_include_directories(simpleSasl PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
+                                         "${INCLUDE_FILES_DIR}"
+                                         "${CMAKE_CURRENT_BINARY_DIR}"
+                                         "${PROTOBUF_INCLUDE_DIR}")
+    set_property(TARGET simpleSasl PROPERTY CXX_STANDARD 11)
+    set_property(TARGET simpleSasl PROPERTY CXX_STANDARD_REQUIRED ON)
+    set_target_properties(simpleSasl PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}")
+    set_target_properties (simpleSasl PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${NO_UNUSED_FLAGS}")
+    target_link_libraries (simpleSasl hotrod hotrod_protobuf ${PROTOBUF_LIBRARY} ${platform_libs})
+endif (NOT DEFINED WIN32)
     add_executable (simple-tls test/SimpleTLS.cpp)
     target_include_directories(simple-tls PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
                                          "${INCLUDE_FILES_DIR}"
@@ -573,6 +586,20 @@ target_link_libraries (nearCacheTest hotrod hotrod_protobuf ${PROTOBUF_LIBRARY} 
     set_target_properties(simple-tls PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}")
     set_target_properties (simple-tls PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${NO_UNUSED_FLAGS}")
     target_link_libraries (simple-tls hotrod hotrod_protobuf ${PROTOBUF_LIBRARY} ${platform_libs} ${OPENSSL_LIBRARIES})
+
+    if (NOT DEFINED WIN32)
+    add_executable (simpleSaslTls test/SimpleSaslTls.cpp)
+    target_include_directories(simpleSaslTls PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
+                                         "${INCLUDE_FILES_DIR}"
+                                         "${CMAKE_CURRENT_BINARY_DIR}"
+                                         "${PROTOBUF_INCLUDE_DIR}")
+    set_property(TARGET simpleSaslTls PROPERTY CXX_STANDARD 11)
+    set_property(TARGET simpleSaslTls PROPERTY CXX_STANDARD_REQUIRED ON)
+    set_target_properties(simpleSaslTls PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}")
+    set_target_properties (simpleSaslTls PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${NO_UNUSED_FLAGS}")
+    target_link_libraries (simpleSaslTls hotrod hotrod_protobuf ${PROTOBUF_LIBRARY} ${platform_libs})
+endif (NOT DEFINED WIN32)
+
     add_executable (simple-tls-sni test/SimpleTLS-SNI.cpp)
     target_include_directories(simple-tls-sni PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
                                          "${INCLUDE_FILES_DIR}"
@@ -626,6 +653,7 @@ if (ENABLE_INTERNAL_TESTING)
 endif (ENABLE_INTERNAL_TESTING)    
 
 find_package(Java)
+find_program(MVN_PROGRAM "mvn")
 
 if (NOT DEFINED HOTROD_JBOSS_HOME)
    if (NOT DEFINED ENV{JBOSS_HOME})
@@ -635,6 +663,14 @@ if (NOT DEFINED HOTROD_JBOSS_HOME)
    endif (NOT DEFINED ENV{JBOSS_HOME})
 endif (NOT DEFINED HOTROD_JBOSS_HOME)
 
+set(KRBSERVER_DIR "${CMAKE_CURRENT_BINARY_DIR}/krbserver")
+add_custom_command(OUTPUT ${KRBSERVER_DIR}/target/classes/krbserver/Server.class
+    COMMAND ${MVN_PROGRAM} ARGS "package"
+    WORKING_DIRECTORY "${KRBSERVER_DIR}"
+)
+
+add_custom_target(krbserver ALL DEPENDS ${KRBSERVER_DIR}/target/classes/krbserver/Server.class)
+
 if (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.sh") AND (EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.bat")))
     message(WARNING "JBOSS_HOME ${HOTROD_JBOSS_HOME} does not have needed startup scripts")
 else (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.sh") AND (EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.bat")))
@@ -642,6 +678,8 @@ else (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.sh") AND (EXISTS "${HOTR
         message(FATAL_ERROR "Java not found")
     endif (NOT JAVA_RUNTIME)
     find_package(PythonInterp REQUIRED)
+    file(COPY ${CMAKE_SOURCE_DIR}/krbserver DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
+    file(COPY ${CMAKE_SOURCE_DIR}/test/data/krb5.conf DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
     add_test (start_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py start ${JAVA_RUNTIME} ${HOTROD_JBOSS_HOME} standalone.xml)
     add_test (probe_port ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/probe_port.py localhost 11222 60)
     add_test (simple simple)
@@ -652,6 +690,16 @@ else (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.sh") AND (EXISTS "${HOTR
     add_test (nearCacheTest nearCacheTest)
     add_test (stop_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py stop)
     add_test (probe_port_stop ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/probe_port.py localhost 11222 60 down)
+    if (NOT DEFINED WIN32)
+	    add_test (start_krbserver  ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/start_and_probe_port.py localhost 10389 60 "${MVN_PROGRAM} -f krbserver/pom.xml exec:java -Dexec.mainClass=krbserver.Server")
+    add_test (start_sals_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py start ${JAVA_RUNTIME} ${HOTROD_JBOSS_HOME} standalone-sasl.xml)
+    add_test (probe_sasl_port ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/probe_port.py localhost 11222 60)
+    add_test (simpleSasl simpleSasl)
+    add_test (stop_sasl_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py stop)
+    add_test (probe_port_stop_sasl ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/probe_port.py localhost 11222 60 down)
+    add_test (stop_krbserver ${MVN_PROGRAM} -f krbserver/pom.xml exec:java -Dexec.mainClass=krbserver.Server -Dexec.args=stop)
+endif(NOT DEFINED WIN32)
+
     add_test (start_ssl_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py start ${JAVA_RUNTIME} ${HOTROD_JBOSS_HOME} standalone-hotrod-ssl.xml)
     add_test (probe_ssl_port ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/probe_port.py localhost 11222 60)
     add_test (simple-tls simple-tls ${CMAKE_CURRENT_SOURCE_DIR}/test/data/infinispan-ca.pem)
@@ -663,11 +711,16 @@ else (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.sh") AND (EXISTS "${HOTR
     if (WIN32)    
         add_test (simple-tls-client-auth simple-tls ${CMAKE_CURRENT_SOURCE_DIR}/test/data/infinispan-ca.pem ${CMAKE_CURRENT_SOURCE_DIR}/test/data/truststore_client.p12)
         add_test (simple-tls-sni-client-auth simple-tls-sni ${CMAKE_CURRENT_SOURCE_DIR}/test/data/keystore_server_cert.pem ${CMAKE_CURRENT_SOURCE_DIR}/test/data/truststore_client.p12)
+        add_test (stop_ssl_server_client_auth ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py stop)
     else (WIN32)
         add_test (simple-tls-client-auth simple-tls ${CMAKE_CURRENT_SOURCE_DIR}/test/data/infinispan-ca.pem ${CMAKE_CURRENT_SOURCE_DIR}/test/data/truststore_client.pem)
         add_test (simple-tls-sni-client-auth simple-tls-sni ${CMAKE_CURRENT_SOURCE_DIR}/test/data/keystore_server_cert.pem ${CMAKE_CURRENT_SOURCE_DIR}/test/data/truststore_client.pem)
+        add_test (stop_ssl_server_client_auth ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py stop)
+        add_test (start_sals_ssl_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py start ${JAVA_RUNTIME} ${HOTROD_JBOSS_HOME} standalone-sasl-ssl.xml)
+        add_test (probe_sasl_ssl_port ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/probe_port.py localhost 11222 60)
+	add_test (simpleSaslTls simpleSaslTls ${CMAKE_CURRENT_SOURCE_DIR}/test/data/infinispan-ca.pem ${CMAKE_CURRENT_SOURCE_DIR}/test/data/truststore_client.pem)
+        add_test (stop_sasl_ssl_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py stop)
     endif(WIN32)
-    add_test (stop_ssl_server_client_auth ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py stop)
 endif (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.sh") AND (EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.bat")))
 
 if (ENABLE_SWIG_TESTING)
@@ -730,11 +783,11 @@ get_filename_component(real_protobuf_library "${PROTOBUF_LIBRARY}" REALPATH)
 get_filename_component(real_protoc_library "${PROTOBUF_PROTOC_LIBRARY}" REALPATH)
 install (FILES ${real_protobuf_library} ${real_protoc_library} ${PROTOBUF_LIBRARY} ${PROTOBUF_PROTOC_LIBRARY} DESTINATION lib${LIB_SUFFIX})
 install (FILES ${PROTOBUF_PROTOC_EXECUTABLE} DESTINATION bin)
-if (NOT WIN32)
+if (NOT DEFINED WIN32)
     get_filename_component(protobuf_dir "${PROTOBUF_LIBRARY}" PATH)
     file(GLOB libproto_glob "${protobuf_dir}/libproto*")
     install (FILES ${libproto_glob} DESTINATION lib${LIB_SUFFIX})
-endif (NOT WIN32)
+endif (NOT DEFINED WIN32)
 
 if(NOT DEFINED HOTROD_PREBUILT_LIB_DIR)
     set_property(TARGET hotrod PROPERTY CXX_STANDARD 11)
