@@ -15,7 +15,6 @@ class SslConfigurationBuilder
   public:
     SslConfigurationBuilder(ConfigurationBuilder &parent): ConfigurationChildBuilder(parent),
         m_enabled(false), m_serverCAPath(), m_serverCAFile(), m_clientCertificateFile(), m_sniHostName() {}
-
     SslConfiguration create() {
         return SslConfiguration(m_enabled, m_serverCAPath, m_serverCAFile, m_clientCertificateFile, m_sniHostName);
     }
