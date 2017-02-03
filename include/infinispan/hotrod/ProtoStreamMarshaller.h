@@ -36,8 +36,11 @@ template <class T> class ProtoStreamMarshaller : public infinispan::hotrod::Mars
     }
 
     T* unmarshall(const std::vector<char>& b) {
+        WrappedMessage wm;
+        wm.ParseFromArray(b.data(),b.size());
+        const std::string &wmb=wm.wrappedmessagebytes();
     	auto *bt = new T();
-    	bt->ParseFromArray(b.data(),b.size());
+    	bt->ParseFromArray(wmb.data(),wmb.size());
     	return bt;
     }
 
@@ -51,9 +54,12 @@ public:
         delete buf->data();
     }
     static T unmarshall(char *b, size_t size) {
-        	T bt;
-        	bt.ParseFromArray(b,size);
-        	return bt;
+        WrappedMessage wm;
+        wm.ParseFromArray(b, size);
+        const std::string &wmb=wm.wrappedmessagebytes();
+        T bt;
+        bt.ParseFromArray(wmb.data(),wmb.size());
+        return bt;
     }};
 
 }} // namespace

@@ -26,7 +26,7 @@ template <class T> bool unwrapResults(QueryResponse resp, std::vector<T> &res)
     		WrappedMessage wmn;
     		wmn.ParseFromString(wm.wrappedbytes());
 			if (wmn.has_wrappedmessagebytes()) {
-				sample_bank_account::User u1;
+				T u1;
 				u1.ParseFromString(wmn.wrappedmessagebytes());
 				res.push_back(u1);
 			}

@@ -81,6 +81,17 @@ int main(int argc, char** argv) {
     user1.set_surname("Mouse");
     user1.set_gender(sample_bank_account::User_Gender_MALE);
     testCache.put(4, user1);
+    std::string s;
+    // Check if standard get still work with protobuf marshaller
+    sample_bank_account::User * userResult1= testCache.get(4);
+    if (userResult1->name().compare(user1.name())) {
+        std::cerr << "fail: got troubles with .get() method"
+                << std::endl;
+        result = -1;
+        delete(userResult1);
+        return result;
+    }
+    delete(userResult1);
 
     {
         QueryRequest qr;
