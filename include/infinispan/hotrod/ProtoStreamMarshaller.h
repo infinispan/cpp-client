@@ -24,13 +24,13 @@ namespace hotrod {
  * A Marshaller for a few simple types that pretends to be compatible with JBoss Marshaller.
  * See below the Helper class for a list of the managed types.
  */
-template <class T> class ProtoStreamMarshaller : public infinispan::hotrod::Marshaller<T> {
+template <class T, unsigned int TypeId = 42> class ProtoStreamMarshaller : public infinispan::hotrod::Marshaller<T> {
     void marshall(const T& obj, std::vector<char>& b) {
     	std::vector<char> msg(obj.ByteSize());
     	obj.SerializeToArray(msg.data(),obj.ByteSize());
     	WrappedMessage wm;
     	wm.set_wrappedmessagebytes(msg.data(), msg.size());
-    	wm.set_wrappeddescriptorid(42);
+    	wm.set_wrappeddescriptorid(TypeId);
     	b.resize(wm.ByteSize());
     	wm.SerializeToArray(b.data(),wm.ByteSize());
     }
