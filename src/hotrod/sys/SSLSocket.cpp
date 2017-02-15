@@ -35,12 +35,6 @@ void SSLSocket::connect(const std::string& host, int port, int timeout) {
         logAndThrow(host, port, "SSL_CTX_new");
     }
     SSL_CTX_set_verify(m_ctx, SSL_VERIFY_PEER, 0);
-    if (!m_clientCertificateFile.empty()) {
-        DEBUG("Using user-supplied client certificate %s", m_clientCertificateFile.c_str());
-        if (!SSL_CTX_use_certificate_file(m_ctx, m_clientCertificateFile.c_str(), SSL_FILETYPE_PEM)) {
-            logAndThrow(host, port, "SSL_CTX_use_certificate_file");
-        }
-    }
     SSL_CTX_set_options(m_ctx, SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_NO_TLSv1 | SSL_OP_NO_TLSv1_1);
     if (m_serverCAFile.empty() &&  m_serverCAPath.empty()) {
         if(!SSL_CTX_set_default_verify_paths(m_ctx)) {
@@ -49,6 +43,16 @@ void SSLSocket::connect(const std::string& host, int port, int timeout) {
     }
     if (!SSL_CTX_load_verify_locations(m_ctx, m_serverCAFile.empty() ? 0 : m_serverCAFile.c_str(), m_serverCAPath.empty() ? 0 : m_serverCAPath.c_str())) {
         logAndThrow(host, port, "SSL_CTX_load_verify_locations");
+    }
+    
+    if (!m_clientCertificateFile.empty()) {
+        DEBUG("Using user-supplied client certificate %s", m_clientCertificateFile.c_str());
+        if (!SSL_CTX_use_certificate_file(m_ctx, m_clientCertificateFile.c_str(), SSL_FILETYPE_PEM)) {
+            logAndThrow(host, port, "SSL_CTX_use_certificate_file");
+        }
+        if (!SSL_CTX_use_PrivateKey_file(m_ctx, m_clientCertificateFile.c_str(), SSL_FILETYPE_PEM)) {
+            logAndThrow(host, port, "SSL_CTX_use_certificate_file");
+        }
     }
     m_ssl = SSL_new(m_ctx);
     if (!m_ssl) {
@@ -91,6 +95,7 @@ void SSLSocket::write(const char *p, size_t n) {
 }
 
 void SSLSocket::close() {
+    SSL_shutdown(m_ssl);
     if(m_bio != 0)
         BIO_free_all(m_bio);
     if(m_ctx != 0)
