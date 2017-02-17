@@ -55,7 +55,7 @@ class Socket: public infinispan::hotrod::sys::Socket {
 
 namespace {
 
-void throwIOErr (const std::string& host, int port, const char *msg, int errnum) {
+static void throwIOErr (const std::string& host, int port, const char *msg, int errnum) {
     std::ostringstream m;
     m << msg;
     m << " (host: " << host;
