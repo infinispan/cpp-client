@@ -34,6 +34,9 @@ class SSLSocket: public infinispan::hotrod::sys::Socket
     std::string m_serverCAPath;
     std::string m_serverCAFile;
     std::string m_clientCertificateFile;
+    std::string m_sniHostName;
+    std::string host;
+    int port;
 
     class OpenSSLInitializer
     {

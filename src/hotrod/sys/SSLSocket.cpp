@@ -28,7 +28,8 @@ SSLSocket::~SSLSocket()
 
 void SSLSocket::connect(const std::string& host, int port, int timeout) {
     m_socket->connect(host, port, timeout);
-
+    this->host = host;
+    this->port = port;
     const SSL_METHOD* method = TLSv1_2_client_method();
     m_ctx = SSL_CTX_new(method);
     if (!m_ctx) {
@@ -79,13 +80,44 @@ void SSLSocket::connect(const std::string& host, int port, int timeout) {
     } else {
         logAndThrow(host, port, "SSL_get_peer_certificate");
     }
-    /*if (SSL_get_verify_result(m_ssl) != X509_V_OK) {
-        logAndThrow(host, port, "SSL_get_verify_result");
-    }*/
+}
+
+static void throwIOErr (const std::string& host, int port, const char *msg, int errnum) {
+    std::ostringstream m;
+    m << msg;
+    m << " (host: " << host;
+    m << " port: " << port << ")";
+
+    if (errnum != 0) {
+        char buf[200];
+        if (strerror_r(errnum, buf, 200) == 0) {
+            m << " " << buf;
+        } else {
+            m << " " << strerror(errnum);
+        }
+    }
+    throw infinispan::hotrod::TransportException(host, port, m.str());
 }
 
 size_t SSLSocket::read(char *p, size_t n) {
-    return SSL_read(m_ssl, p, n);
+    int ret= SSL_read(m_ssl, p, n);
+    if (ret > 0)
+    {
+        return ret;
+    }
+    int errcode = SSL_get_error(m_ssl, ret);
+    if (ret == 0)
+    {
+        if ( errcode==SSL_ERROR_ZERO_RETURN)
+        {
+           throwIOErr(host, port, "SSL: No read. Shutdown complete.", errcode);
+        }
+        else
+        {
+           throwIOErr(host, port, "SSL: No read. Shutdown incomplete.", errcode);
+        }
+    }
+    throwIOErr(host, port, "SSL: Read error. Error code: ", errcode);
 }
 
 void SSLSocket::write(const char *p, size_t n) {
