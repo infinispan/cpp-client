@@ -26,10 +26,10 @@ transport::Transport& RemoveClientListenerOperation::getTransport(int /*retryCou
 
 char RemoveClientListenerOperation::executeOperation(transport::Transport& transport)
 {
-    protocol::HeaderParams params = this->writeHeader(transport, REMOVE_CLIENT_LISTENER_REQUEST);
+    std::unique_ptr<HeaderParams> params(this->writeHeader(transport, REMOVE_CLIENT_LISTENER_REQUEST));
     transport.writeArray(clientListener.getListenerId());
     transport.flush();
-    uint8_t status = readHeaderAndValidate(transport, params);
+    uint8_t status = readHeaderAndValidate(transport, *params);
     if (HotRodConstants::isSuccess(status))
     {
       listenerNotifier.removeClientListener(clientListener.getListenerId());

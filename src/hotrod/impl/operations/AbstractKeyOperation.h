@@ -45,8 +45,7 @@ template<class T> class AbstractKeyOperation : public RetryOnFailureOperation<T>
         uint8_t opCode, uint8_t /*opRespCode*/)
     {
         // 1) write [header][key length][key]
-        std::unique_ptr<protocol::HeaderParams> params(
-            &(this->writeHeader(transport, opCode)));
+        std::unique_ptr<protocol::HeaderParams> params(this->writeHeader(transport, opCode));
         transport.writeArray(_key);
         transport.flush();
 
