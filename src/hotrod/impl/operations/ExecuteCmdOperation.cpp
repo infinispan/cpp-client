@@ -32,7 +32,7 @@ std::vector<char> ExecuteCmdOperation::sendExecuteOperation(
     uint8_t                                       /*opRespCode*/)
 {
     // 1) write header
-    std::unique_ptr<protocol::HeaderParams> params(&(this->writeHeader(transport, opCode)));
+    std::unique_ptr<protocol::HeaderParams> params(this->writeHeader(transport, opCode));
 
     // 2) write key and value
     transport.writeArray(this->cmdName);

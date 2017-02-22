@@ -30,8 +30,7 @@ public:
 	virtual ~QueryOperation();
 
 	QueryResponse executeOperation(transport::Transport &t) {
-        std::unique_ptr<protocol::HeaderParams> params(
-            &(this->writeHeader(t, QUERY_REQUEST)));
+        std::unique_ptr<protocol::HeaderParams> params((this->writeHeader(t, QUERY_REQUEST)));
 
     int size = queryRequest.ByteSize();
     std::vector<char> queryToChar(size);

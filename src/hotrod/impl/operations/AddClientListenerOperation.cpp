@@ -48,7 +48,7 @@ transport::Transport& AddClientListenerOperation::getTransport(int, const std::s
 
 char AddClientListenerOperation::executeOperation(transport::Transport& transport)
 {
-    std::unique_ptr<protocol::HeaderParams> params(&this->writeHeader(transport, ADD_CLIENT_LISTENER_REQUEST));
+    std::unique_ptr<protocol::HeaderParams> params(this->writeHeader(transport, ADD_CLIENT_LISTENER_REQUEST));
     const Codec20& codec20 = dynamic_cast<const Codec20&>(codec);
     try
     {

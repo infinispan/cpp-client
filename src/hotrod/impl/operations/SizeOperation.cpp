@@ -20,7 +20,7 @@ SizeOperation::SizeOperation(
 uint64_t SizeOperation::executeOperation(infinispan::hotrod::transport::Transport& transport)
 {
     TRACE("Executing size(flags=%u)", flags);
-    std::unique_ptr<HeaderParams> params(&(RetryOnFailureOperation<uint64_t>::writeHeader(transport, SIZE_REQUEST)));
+    std::unique_ptr<HeaderParams> params(RetryOnFailureOperation<uint64_t>::writeHeader(transport, SIZE_REQUEST));
     transport.flush();
     RetryOnFailureOperation<uint64_t>::readHeaderAndValidate(transport, *params);
     TRACE("Finished Size");

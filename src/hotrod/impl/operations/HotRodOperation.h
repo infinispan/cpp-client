@@ -25,7 +25,7 @@ template<class T> class HotRodOperation : public protocol::HotRodConstants
             cacheName(_cacheName), topologyId(_topologyId) {
     }
 
-    protocol::HeaderParams& writeHeader(
+    protocol::HeaderParams* writeHeader(
         transport::Transport& transport, uint8_t opCode)
     {
         protocol::HeaderParams* params =
@@ -33,9 +33,8 @@ template<class T> class HotRodOperation : public protocol::HotRodConstants
         (*params).setOpCode(opCode).setCacheName(cacheName)
             .setFlags(flags).setClientIntel(CLIENT_INTELLIGENCE_HASH_DISTRIBUTION_AWARE)
             .setTxMarker(NO_TX).setTopologyAge(0);
-
-        return codec.writeHeader(transport, *params);
-
+        codec.writeHeader(transport, *params);
+        return params;
     }
 
     uint8_t readHeaderAndValidate(

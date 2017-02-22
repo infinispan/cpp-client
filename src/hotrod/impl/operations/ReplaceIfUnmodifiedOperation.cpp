@@ -6,6 +6,7 @@ namespace operations {
 
 using infinispan::hotrod::protocol::Codec;
 using namespace infinispan::hotrod::transport;
+using namespace infinispan::hotrod::protocol;
 
 ReplaceIfUnmodifiedOperation::ReplaceIfUnmodifiedOperation(
     const Codec& _codec, std::shared_ptr<TransportFactory> _transportFactory, const std::vector<char>& _key,
@@ -23,9 +24,7 @@ VersionedOperationResponse ReplaceIfUnmodifiedOperation::executeOperation(
     TRACEBYTES("key = ", key);
     TRACEBYTES("value = ", value);
     // 1) write header
-    std::unique_ptr<infinispan::hotrod::protocol::HeaderParams> params(
-        &(AbstractKeyOperation<VersionedOperationResponse>::writeHeader(
-            transport, REPLACE_IF_UNMODIFIED_REQUEST)));
+    std::unique_ptr<HeaderParams> params(AbstractKeyOperation<VersionedOperationResponse>::writeHeader(transport, REPLACE_IF_UNMODIFIED_REQUEST));
 
     //2) write message body
     transport.writeArray(key);

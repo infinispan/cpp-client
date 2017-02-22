@@ -6,7 +6,7 @@ namespace operations {
 
 using infinispan::hotrod::protocol::Codec;
 using namespace infinispan::hotrod::transport;
-
+using namespace infinispan::hotrod::protocol;
 RemoveIfUnmodifiedOperation::RemoveIfUnmodifiedOperation(
     const Codec&      codec_,
     std::shared_ptr<transport::TransportFactory> transportFactory_,
@@ -25,9 +25,7 @@ VersionedOperationResponse RemoveIfUnmodifiedOperation::executeOperation(Transpo
     TRACE("Execute RemoteIfUnmodified(flags=%u, version=%lld)", flags, version);
     TRACEBYTES("key = ", key);
     // 1) write header
-    std::unique_ptr<infinispan::hotrod::protocol::HeaderParams> params(
-        &(AbstractKeyOperation<VersionedOperationResponse>::writeHeader(
-            transport, REMOVE_IF_UNMODIFIED_REQUEST)));
+    std::unique_ptr<HeaderParams> params(AbstractKeyOperation<VersionedOperationResponse>::writeHeader(transport, REMOVE_IF_UNMODIFIED_REQUEST));
 
     //2) write message body
     transport.writeArray(key);

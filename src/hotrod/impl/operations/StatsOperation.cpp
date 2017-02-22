@@ -20,7 +20,7 @@ StatsOperation::StatsOperation(
 std::map<std::string, std::string> StatsOperation::executeOperation(Transport& transport)
 {
     TRACE("Executing Stats");
-    std::unique_ptr<HeaderParams> params(&(RetryOnFailureOperation<std::map<std::string, std::string> >::writeHeader(transport, STATS_REQUEST)));
+    std::unique_ptr<HeaderParams> params(RetryOnFailureOperation<std::map<std::string, std::string> >::writeHeader(transport, STATS_REQUEST));
     transport.flush();
     RetryOnFailureOperation<std::map<std::string, std::string> >::readHeaderAndValidate(transport, *params);
 
