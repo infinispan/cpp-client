@@ -87,6 +87,7 @@ public:
                 VersionedValueImpl<std::vector<char> > valueForMap;
                 rcb.baseValueMarshall(value, vbuf);
                 valueForMap.setValue(vbuf);
+                valueForMap.setVersion(version->version);
                 addElementToMap(kbuf, valueForMap);
             }
             return value;
