@@ -49,7 +49,7 @@ public:
 
 
 
-    virtual void processEvent(ClientCacheEntryCreatedEvent<std::vector<char>> marshEv, std::vector<char >listId, uint8_t isCustom) const
+    virtual void processEvent(ClientCacheEntryCreatedEvent<std::vector<char>> marshEv, std::vector<char >/*listId*/, uint8_t /*isCustom*/) const
     {
           for (auto callable: createdCallbacks)
           {
@@ -57,7 +57,7 @@ public:
           }
     }
 
-    virtual void processEvent(ClientCacheEntryModifiedEvent<std::vector<char>> marshEv, std::vector<char >listId, uint8_t isCustom) const
+    virtual void processEvent(ClientCacheEntryModifiedEvent<std::vector<char>> marshEv, std::vector<char >/*listId*/, uint8_t /*isCustom*/) const
     {
           for (auto callable: modifiedCallbacks)
           {
@@ -65,7 +65,7 @@ public:
           }
     }
 
-    virtual void processEvent(ClientCacheEntryRemovedEvent<std::vector<char>> marshEv, std::vector<char >listId, uint8_t isCustom) const
+    virtual void processEvent(ClientCacheEntryRemovedEvent<std::vector<char>> marshEv, std::vector<char >/*listId*/, uint8_t /*isCustom*/) const
     {
           for (auto callable: removedCallbacks)
           {
@@ -73,7 +73,7 @@ public:
           }
     }
 
-    virtual void processEvent(ClientCacheEntryExpiredEvent<std::vector<char>> marshEv, std::vector<char >listId, uint8_t isCustom) const
+    virtual void processEvent(ClientCacheEntryExpiredEvent<std::vector<char>> marshEv, std::vector<char >/*listId*/, uint8_t /*isCustom*/) const
     {
           for (auto callable: expiredCallbacks)
           {
@@ -81,7 +81,7 @@ public:
           }
     }
 
-    virtual void processEvent(ClientCacheEntryCustomEvent ev, std::vector<char >listId, uint8_t isCustom) const
+    virtual void processEvent(ClientCacheEntryCustomEvent ev, std::vector<char >/*listId*/, uint8_t /*isCustom*/) const
     {
           for (auto callable: customCallbacks)
           {

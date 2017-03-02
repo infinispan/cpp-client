@@ -130,7 +130,7 @@ private:
         _nearMap[key] = value;
     }
 
-    void removeElementFromMap(std::vector<char>& key) {
+    void removeElementFromMap(const std::vector<char>& key) {
         std::lock_guard<std::mutex> guard(_nearMutex);
         auto it = std::find(_nearFifo.begin(), _nearFifo.end(), key);
         if (it != _nearFifo.end()) {
@@ -150,59 +150,25 @@ private:
         _nearMap.clear();
     }
     void startListener() {
-        std::string convStr("___eager-key-value-version-converter");
-        cl.converterFactoryName = std::vector<char>(convStr.begin(),
-                convStr.end());
-        cl.useRawData = true;
-        std::function<void(ClientCacheEntryCustomEvent ce)> f =
-                [this] (ClientCacheEntryCustomEvent ce) {listener(this->_nearMap, ce);};
+        std::function<void(ClientCacheEntryCreatedEvent<std::vector<char>> ev)> created =
+                [this] (ClientCacheEntryCreatedEvent<std::vector<char>> ev) {removeElementFromMap(ev.getKey());};
+        std::function<void(ClientCacheEntryRemovedEvent<std::vector<char>> ev)> removed =
+                [this] (ClientCacheEntryRemovedEvent<std::vector<char>> ev) {removeElementFromMap(ev.getKey());};
+        std::function<void(ClientCacheEntryExpiredEvent<std::vector<char>> ev)> expired =
+                [this] (ClientCacheEntryExpiredEvent<std::vector<char>> ev) {removeElementFromMap(ev.getKey());};
+        std::function<void(ClientCacheEntryModifiedEvent<std::vector<char>> ev)> modified =
+                [this] (ClientCacheEntryModifiedEvent<std::vector<char>> ev) {removeElementFromMap(ev.getKey());};
         std::function < void() > failOverHandler =
                 [this] () {
                     this->invalidateCache();
                 };
-        cl.add_listener(f);
+        cl.add_listener(created);
+        cl.add_listener(removed);
+        cl.add_listener(modified);
+        cl.add_listener(expired);
         this->addClientListener(cl, filterFactoryParams, converterFactoryParams,
                 failOverHandler);
     }
-    void listener(
-            std::map<std::vector<char>, VersionedValueImpl<std::vector<char> > > &map,
-            ClientCacheEntryCustomEvent &ce) {
-        // bytearray format is <keyLen[1]><key[keyLen]><valueLen[1]><value[valueLen]>
-        const std::vector<char> &v = ce.getEventData();
-        if (v.size() == 0)
-            return;
-        unsigned int sizeKey = v[0];
-        if (sizeKey == 0)
-            return;
-        auto i = v.begin() + 1;
-        auto f = v.begin() + 1 + sizeKey;
-        std::vector<char> key(i, f);
-        unsigned int sizeValue;
-        std::vector<char> value;
-        if (sizeKey + 1 < v.size()) {
-            sizeValue = *(v.data() + sizeKey + 1);
-            const char* i1 = v.data() + sizeKey + 2;
-            const char* f1 = v.data() + sizeKey + 2 + sizeValue;
-            value = std::vector<char>(i1, f1);
-        }
-        else
-        {
-            // If no value it's an entry removed event
-            removeElementFromMap(key);
-            return;
-        }
-        unsigned long version = 0;
-        if (v.size() - sizeKey - sizeValue - 2 >= 8) {
-            for (unsigned int i = 0; i < 8; i++) {
-                version = (version << 8) + v[sizeKey + sizeValue + 2 + i];
-            }
-        }
-        VersionedValueImpl<std::vector<char> > vv;
-        vv.setValue(value);
-        vv.setVersion(version);
-        addElementToMap(key, vv);
-    }
-
 };
 
 }
