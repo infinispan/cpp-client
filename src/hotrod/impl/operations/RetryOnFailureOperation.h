@@ -41,6 +41,9 @@ template<class T> class RetryOnFailureOperation : public HotRodOperation<T>
                 // from which this node was received
                 releaseTransport(transport);
                 logErrorAndThrowExceptionIfNeeded(retryCount, rnse);
+            } catch (const HotRodClientException& hrex) {
+                releaseTransport(transport);
+                logErrorAndThrowExceptionIfNeeded(retryCount, hrex);
             }
             ++retryCount;
         }
