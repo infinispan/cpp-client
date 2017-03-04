@@ -137,11 +137,14 @@ char AddClientListenerOperation::executeOperation(transport::Transport& transpor
         TransportException tex(tcpT.getServerAddress().getHostname(), tcpT.getServerAddress().getPort(), ex.what(), ex.getErrnum());
     	listenerNotifier.removeClientListener(listenerId);
     	throw tex;
+    } 
+    catch (const HotRodClientException& hrex)
+    {
+        listenerNotifier.removeClientListener(listenerId);
+        throw hrex;
     }
     catch (const Exception& ex)
     {
-        transport::TcpTransport& tcpT = dynamic_cast<transport::TcpTransport&>(transport);
-        TransportException tex(tcpT.getServerAddress().getHostname(), tcpT.getServerAddress().getPort(), ex.what(), 0);
         listenerNotifier.removeClientListener(listenerId);
         throw ex;
     }
