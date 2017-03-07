@@ -30,10 +30,6 @@ class AbstractTransport : public Transport
     TransportFactory& getTransportFactory();
     virtual ~AbstractTransport() {}
 
-  protected:
-    virtual void writeBytes(const std::vector<char>& bytes) = 0;
-    virtual std::vector<char> readBytes(uint32_t size) = 0;
-
   private:
     TransportFactory& transportFactory;
 };

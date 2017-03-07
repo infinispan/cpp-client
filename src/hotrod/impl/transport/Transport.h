@@ -40,6 +40,10 @@ class Transport
 
     virtual bool targets(const InetSocketAddress&) const = 0;
     virtual Transport* clone() = 0;
+
+    virtual void writeBytes(const std::vector<char>& bytes) = 0;
+    virtual std::vector<char> readBytes(uint32_t size) = 0;
+
     virtual ~Transport() {}
 
 };
