@@ -30,7 +30,7 @@ int main(int argc, char** argv) {
     std::cout << "Events and Listeners" << std::endl;
     {
         ConfigurationBuilder builder;
-                builder.balancingStrategyProducer(nullptr);
+        builder.balancingStrategyProducer(nullptr);
         builder.addServer().host(argc > 1 ? argv[1] : "127.0.0.1").port(argc > 2 ? atoi(argv[2]) : 11222);
         builder.protocolVersion(Configuration::PROTOCOL_VERSION_24);
         RemoteCacheManager cacheManager(builder.build(), false);
@@ -49,10 +49,39 @@ int main(int argc, char** argv) {
         // We're using future and promise to have a basic listeners/main thread synch
         int setFutureEventKey=0;
         std::promise<void> promise;
-        std::function<void(ClientCacheEntryCreatedEvent<int>)> listenerCreated = [&createdCount, &setFutureEventKey, &promise](ClientCacheEntryCreatedEvent<int> e) { createdCount++; if (setFutureEventKey==e.getKey()) promise.set_value(); };
-        std::function<void(ClientCacheEntryModifiedEvent<int>)> listenerModified = [&modifiedCount, &setFutureEventKey, &promise](ClientCacheEntryModifiedEvent <int> e) { modifiedCount++; if (setFutureEventKey==e.getKey()) promise.set_value(); };
-        std::function<void(ClientCacheEntryRemovedEvent<int>)> listenerRemoved = [&removedCount, &setFutureEventKey, &promise](ClientCacheEntryRemovedEvent <int> e) { removedCount++; if (setFutureEventKey==e.getKey()) promise.set_value(); };
-        std::function<void(ClientCacheEntryExpiredEvent<int>)> listenerExpired = [&expiredCount, &setFutureEventKey, &promise](ClientCacheEntryExpiredEvent <int> e) { expiredCount++; if (setFutureEventKey==e.getKey()) promise.set_value(); };
+        // Listeners definitions
+        std::function<void(ClientCacheEntryCreatedEvent<int>)> listenerCreated
+            = [&createdCount, &setFutureEventKey, &promise](ClientCacheEntryCreatedEvent<int> e) {
+                createdCount++;
+                if (setFutureEventKey==e.getKey())
+                {
+                    promise.set_value();
+                };
+            };
+        std::function<void(ClientCacheEntryModifiedEvent<int>)> listenerModified
+            = [&modifiedCount, &setFutureEventKey, &promise](ClientCacheEntryModifiedEvent <int> e) {
+                modifiedCount++;
+                if (setFutureEventKey==e.getKey())
+                {
+                    promise.set_value();
+                }
+            };
+        std::function<void(ClientCacheEntryRemovedEvent<int>)> listenerRemoved
+            = [&removedCount, &setFutureEventKey, &promise](ClientCacheEntryRemovedEvent <int> e) {
+                removedCount++;
+                if (setFutureEventKey==e.getKey())
+                {
+                    promise.set_value();
+                }
+            };
+        std::function<void(ClientCacheEntryExpiredEvent<int>)> listenerExpired
+            = [&expiredCount, &setFutureEventKey, &promise](ClientCacheEntryExpiredEvent <int> e) {
+                expiredCount++;
+                if (setFutureEventKey==e.getKey())
+                {
+                    promise.set_value();
+                }
+            };
 
         cl.add_listener(listenerCreated);
         cl.add_listener(listenerModified);
@@ -65,36 +94,35 @@ int main(int argc, char** argv) {
         cache.put(3,"v3");
 
         cache.addClientListener(cl, filterFactoryParams, converterFactoryParams);
-        
         // This tells the listener to fill the promise on event with key = 6
-	setFutureEventKey=6;
+        setFutureEventKey=6;
         cache.put(4,"v4");
         cache.put(5,"v5");
         cache.put(6,"v6");
         if (std::future_status::timeout==promise.get_future().wait_for(std::chrono::seconds(30)))
         { 
-          std::cout << "FAIL: Events and Listeners (Timeout)" << std::endl;
+          std::cout << "FAIL: Events and Listeners on Create (Timeout)" << std::endl;
           return -1;
         }
         ASSERT(createdCount, createdCount == 3, result, "created count mismatch");
 
-	setFutureEventKey=2;
+        setFutureEventKey=2;
         promise= std::promise<void>();
         cache.put(1,"v1a");
         cache.put(2,"v2a");
-	if (std::future_status::timeout==promise.get_future().wait_for(std::chrono::seconds(30)))
+        if (std::future_status::timeout==promise.get_future().wait_for(std::chrono::seconds(30)))
         { 
-          std::cout << "FAIL: Events and Listeners (Timeout)" << std::endl;
+          std::cout << "FAIL: Events and Listeners on Modify (Timeout)" << std::endl;
           return -1;
         }
         ASSERT(modifiedCount, modifiedCount == 2, result, "modified count mismatch");
 
-	setFutureEventKey=3;
-    promise= std::promise<void>();
-    cache.remove(3);
-	if (std::future_status::timeout==promise.get_future().wait_for(std::chrono::seconds(30)))
+        setFutureEventKey=3;
+        promise= std::promise<void>();
+        cache.remove(3);
+        if (std::future_status::timeout==promise.get_future().wait_for(std::chrono::seconds(30)))
         { 
-          std::cout << "FAIL: Events and Listeners (Timeout)" << std::endl;
+          std::cout << "FAIL: Events and Listeners on Remove (Timeout)" << std::endl;
           return -1;
         }
         ASSERT(removedCount, removedCount == 1, result, "removed count mismatch");
@@ -106,18 +134,18 @@ int main(int argc, char** argv) {
         cache.put(10,"exp1",3);
 
         if (std::future_status::timeout==promise.get_future().wait_for(std::chrono::seconds(30)))
-            {
+        {
               std::cout << "FAIL: Events and Listeners (Timeout)" << std::endl;
               return -1;
-            }
+        }
 
         promise= std::promise<void>();
         if (std::future_status::timeout==promise.get_future().wait_for(std::chrono::seconds(30)))
-            {
+        {
               std::cout << "FAIL: Events and Listeners (Timeout)" << std::endl;
               return -1;
-            }
-            ASSERT(expiredCount, expiredCount == 1, result, "removed count mismatch");
+        }
+        ASSERT(expiredCount, expiredCount == 1, result, "removed count mismatch");
 
 
 
@@ -128,45 +156,69 @@ int main(int argc, char** argv) {
         clCS.includeCurrentState=true;
         int createdCountCS=0, modifiedCountCS=0, removedCountCS=0;
 
-        std::function<void(ClientCacheEntryCreatedEvent<int>)> listenerCreatedCS = [&createdCountCS, &setFutureEventKey, &promise](ClientCacheEntryCreatedEvent<int> e) { createdCountCS++; if (setFutureEventKey==e.getKey()) promise.set_value(); };
-        std::function<void(ClientCacheEntryModifiedEvent<int>)> listenerModifiedCS = [&modifiedCountCS, &setFutureEventKey, &promise](ClientCacheEntryModifiedEvent <int> e) { modifiedCountCS++; if (setFutureEventKey==e.getKey()) promise.set_value(); };
-        std::function<void(ClientCacheEntryRemovedEvent<int>)> listenerRemovedCS = [&removedCountCS, &setFutureEventKey, &promise](ClientCacheEntryRemovedEvent <int> e) { removedCountCS++; if (setFutureEventKey==e.getKey()) promise.set_value(); };
+        std::function<void(ClientCacheEntryCreatedEvent<int>)> listenerCreatedCS
+            = [&createdCountCS, &setFutureEventKey, &promise](ClientCacheEntryCreatedEvent<int> e) {
+                createdCountCS++;
+                if (setFutureEventKey==e.getKey())
+                {
+                    promise.set_value();
+                }
+            };
+        std::function<void(ClientCacheEntryModifiedEvent<int>)> listenerModifiedCS
+            = [&modifiedCountCS, &setFutureEventKey, &promise](ClientCacheEntryModifiedEvent <int> e) {
+                 modifiedCountCS++;
+                 if (setFutureEventKey==e.getKey())
+                 {
+                     promise.set_value();
+                 }
+            };
+        std::function<void(ClientCacheEntryRemovedEvent<int>)> listenerRemovedCS
+            = [&removedCountCS, &setFutureEventKey, &promise](ClientCacheEntryRemovedEvent <int> e) {
+                removedCountCS++;
+                if (setFutureEventKey==e.getKey())
+                {
+                    promise.set_value();
+                }
+            };
 
         clCS.add_listener(listenerCreatedCS);
         clCS.add_listener(listenerModifiedCS);
         clCS.add_listener(listenerRemovedCS);
 
-	setFutureEventKey=8;
+        setFutureEventKey=8;
         promise=std::promise<void>();
         cache.addClientListener(clCS, filterFactoryParams, converterFactoryParams);
         cache.put(8,"v8");
-	if (std::future_status::timeout==promise.get_future().wait_for(std::chrono::seconds(30)))
+        if (std::future_status::timeout==promise.get_future().wait_for(std::chrono::seconds(30)))
         { 
           std::cout << "FAIL: Events and Listeners (Timeout)" << std::endl;
           return -1;
         }
         ASSERT(createdCountCS, createdCountCS == 7, result, "created with current state");
+        std::cout << "9 Events and Listeners" << std::endl;
 
-	setFutureEventKey=2;
+        setFutureEventKey=2;
         promise=std::promise<void>();
         cache.put(1,"v1a");
         cache.put(2,"v2a");
-	if (std::future_status::timeout==promise.get_future().wait_for(std::chrono::seconds(30)))
+        if (std::future_status::timeout==promise.get_future().wait_for(std::chrono::seconds(30)))
         { 
           std::cout << "FAIL: Events and Listeners (Timeout)" << std::endl;
           return -1;
         }
         ASSERT(modifiedCountCS, modifiedCountCS == 2, result, "modified count mismatch");
 
-	setFutureEventKey=8;
+        setFutureEventKey=8;
         promise=std::promise<void>();
         cache.remove(8);
-	if (std::future_status::timeout==promise.get_future().wait_for(std::chrono::seconds(30)))
+        if (std::future_status::timeout==promise.get_future().wait_for(std::chrono::seconds(30)))
         { 
           std::cout << "FAIL: Events and Listeners (Timeout)" << std::endl;
           return -1;
         }
         ASSERT(removedCountCS, removedCountCS == 1, result, "removed count mismatch");
+
+        cache.removeClientListener(clCS);
 
         cacheManager.stop();
     }
