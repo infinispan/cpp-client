@@ -37,7 +37,7 @@ ClientListenerNotifier* ClientListenerNotifier::create(std::shared_ptr<Transport
 
 void ClientListenerNotifier::addClientListener(const std::vector<char> listenerId, const ClientListener& clientListener, const std::vector<char> cacheName, Transport& t, const Codec20& codec20, std::shared_ptr<void> operationPtr, const std::function<void()> &recoveryCallback)
 {
-	EventDispatcher ed(listenerId, clientListener, cacheName, t, codec20, operationPtr, recoveryCallback);
+	auto ed = std::shared_ptr<EventDispatcher>(new EventDispatcher(listenerId, clientListener, cacheName, t, codec20, operationPtr, recoveryCallback));
 	eventDispatchers.insert(std::make_pair(listenerId, ed));
 }
 
@@ -47,11 +47,9 @@ void ClientListenerNotifier::failoverClientListeners(const std::vector<transport
 	{
 		for (auto &edPair : eventDispatchers)
 		{
-			if (edPair.second.getTransport().targets(server))
+			if (edPair.second->getTransport().targets(server))
 			{
-				//removeClientListener(edPair.second.listenerId);
-//				edPair.second.cl.processFailoverEvent();
-				auto op = (AddClientListenerOperation*)edPair.second.operationPtr.get();
+				auto op = (AddClientListenerOperation*)edPair.second->operationPtr.get();
 				// Add the listener to the failover servers
 				op->execute();
 			}
@@ -63,13 +61,14 @@ void ClientListenerNotifier::stop()
 {
 	for(auto& kv : eventDispatchers)
 	{
-		kv.second.stop();
+		kv.second->stop();
 	}
 }
 
 void ClientListenerNotifier::removeClientListener(const std::vector<char> listenerId)
 {
-    transportFactory->releaseTransport(eventDispatchers.find(listenerId)->second.getTransport());
+    eventDispatchers.find(listenerId)->second->getTransport().release();
+    transportFactory->releaseTransport(eventDispatchers.find(listenerId)->second->getTransport());
 	eventDispatchers.erase(listenerId);
 }
 
@@ -77,14 +76,14 @@ void ClientListenerNotifier::startClientListener(const std::vector<char> listene
 {
       auto it = eventDispatchers.find(listenerId);
       if (it != eventDispatchers.end())
-    	  it->second.start();
+          it->second->start();
 }
 
 const ClientListener& ClientListenerNotifier::findClientListener(const std::vector<char> listenerId)
 {
     auto it = eventDispatchers.find(listenerId);
     if (it!=eventDispatchers.end())
-    	return it->second.cl;
+        return it->second->cl;
     throw HotRodClientException("Internal: client listener not found");
 }
 
@@ -92,7 +91,7 @@ const Transport& ClientListenerNotifier::findClientListenerTransport(const std::
 {
     auto it = eventDispatchers.find(listenerId);
     if (it!=eventDispatchers.end())
-    	return it->second.getTransport();
+        return it->second->getTransport();
     throw HotRodClientException("Internal: client listener not found");
 }
 

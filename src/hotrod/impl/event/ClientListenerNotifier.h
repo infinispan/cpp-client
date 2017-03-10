@@ -35,7 +35,7 @@ public:
 protected:
 	ClientListenerNotifier(std::shared_ptr<TransportFactory> factory);
 private:
-	std::map<std::vector<char>, EventDispatcher> eventDispatchers;
+	std::map<std::vector<char>, std::shared_ptr<EventDispatcher>> eventDispatchers;
 	std::shared_ptr<TransportFactory> transportFactory;
 };
 
