@@ -180,7 +180,9 @@
                 <topology-state-transfer lazy-retrieval="false" lock-timeout="1000" replication-timeout="5000"/>
             </hotrod-connector>
             <memcached-connector socket-binding="memcached" cache-container="local"/>
-            <rest-connector socket-binding="rest" cache-container="local" security-domain="other" auth-method="BASIC"/>
+	    <rest-connector socket-binding="rest" cache-container="local">
+                <authentication security-realm="ApplicationRealm" auth-method="BASIC"/>
+            </rest-connector>
             <websocket-connector socket-binding="websocket" cache-container="local"/>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:jca:4.0">
