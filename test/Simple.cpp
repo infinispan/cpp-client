@@ -4,6 +4,8 @@
 #include "infinispan/hotrod/Version.h"
 
 #include "infinispan/hotrod/JBasicMarshaller.h"
+#include <sasl/saslplug.h>
+
 #include <stdlib.h>
 #include <iostream>
 #include <memory>
@@ -399,51 +401,91 @@ int basicTest(RemoteCacheManager &cacheManager, RemoteCache<K,V> &cache) {
     return 0;
 }
 
+//static char simple_data[]="writer@INFINISPAN.ORG"; // kerberos
+static char simple_data[]="testuser"; // plain
+static char realm_data[]="applicationRealm";
+static char path_data[]="/usr/lib64/sasl2";
+
+static int simple(void *context __attribute__((unused)),
+          int id,
+          const char **result,
+          unsigned *len)
+{
+    *result=simple_data;
+    if (len) *len=9;
+    return SASL_OK;
+}
+
+static int getrealm(void *context __attribute__((unused)),
+          int id,
+          const char **result,
+          unsigned *len)
+{
+    *result=realm_data;
+    if (len) *len=17;
+    return SASL_OK;
+}
+
+#define PLUGINDIR "/usr/lib64/sasl2"
+
+static int
+getpath(void *context,
+    const char ** path)
+{
+  const char *searchpath = (const char *) context;
+
+  if (! path)
+    return SASL_BADPARAM;
+
+  if (searchpath) {
+      *path = searchpath;
+  } else {
+      *path = PLUGINDIR;
+  }
+
+  return SASL_OK;
+}
+
+
+static char secret_data[]="testpassword";
+
+static int
+getsecret(sasl_conn_t *conn,
+      void *context __attribute__((unused)),
+      int id,
+      sasl_secret_t **psecret)
+{
+    size_t len;
+    static sasl_secret_t *x;
+
+    /* paranoia check */
+    if (! conn || ! psecret || id != SASL_CB_PASS)
+    return SASL_BADPARAM;
+
+    len = 12;
+
+    x = (sasl_secret_t *) realloc(x, sizeof(sasl_secret_t) + len);
+
+    x->len = len;
+    strcpy((char *)x->data, secret_data);
+
+    *psecret = x;
+    return SASL_OK;
+}
+
+
+static         std::vector<sasl_callback_t> callbackHandler{
+   {SASL_CB_USER, (sasl_callback_ft)&simple, NULL},
+   {SASL_CB_AUTHNAME, (sasl_callback_ft)&simple, NULL},
+   {SASL_CB_PASS, (sasl_callback_ft)&getsecret, NULL},
+   {SASL_CB_GETREALM, (sasl_callback_ft)&getrealm, NULL},
+   {SASL_CB_GETPATH, (sasl_callback_ft)&getpath, NULL},
+    {SASL_CB_LIST_END, NULL, NULL }};
+
+
 int main(int argc, char** argv) {
 
     int result=0;
-	std::cout << "Tests for CacheManager" << std::endl;
-    {
-        ConfigurationBuilder builder;
-        builder.addServer().host(argc > 1 ? argv[1] : "127.0.0.1").port(argc > 2 ? atoi(argv[2]) : 11222);
-        builder.protocolVersion(Configuration::PROTOCOL_VERSION_24);
-//        builder.balancingStrategyProducer(transport::MyRoundRobinBalancingStrategy::newInstance);
-        builder.balancingStrategyProducer(nullptr);
-        RemoteCacheManager cacheManager(builder.build(), false);
-        RemoteCache<std::string, std::string> &cachef1 = cacheManager.getCache<std::string, std::string>(false);
-        RemoteCache<std::string, std::string> &cachet1 = cacheManager.getCache<std::string, std::string>(true);
-        RemoteCache<std::string, std::string> &cachenf1 = cacheManager.getCache<std::string, std::string>("namedCache",false);
-        RemoteCache<std::string, std::string> &cachent1 = cacheManager.getCache<std::string, std::string>("namedCache",true);
-
-        RemoteCache<std::string, std::string> &cachet2 = cacheManager.getCache<std::string, std::string>(true);
-        RemoteCache<std::string, std::string> &cachef2 = cacheManager.getCache<std::string, std::string>(false);
-        RemoteCache<std::string, std::string> &cachenf2 = cacheManager.getCache<std::string, std::string>("namedCache",false);
-        RemoteCache<std::string, std::string> &cachent2 = cacheManager.getCache<std::string, std::string>("namedCache",true);
-        if (&cachef1 != &cachef2)
-        {
-            std::cerr << "Got two different cache instances(false): " << &cachef1 << "   " << &cachef2 << std::endl;
-            result=1;
-        }
-        if (&cachet1 != &cachet2)
-        {
-            std::cerr << "Got two different cache instances(false): " << &cachet1 << "   " << &cachet2 << std::endl;
-            result=1;
-        }
-        if (&cachef1 != &cachef2)
-        {
-            std::cerr << "Got two different cache instances(false): " << &cachenf1 << "   " << &cachenf2 << std::endl;
-            result=1;
-        }
-        if (&cachef1 != &cachef2)
-        {
-            std::cerr << "Got two different cache instances(false): " << &cachent1 << "   " << &cachent2 << std::endl;
-            result=1;
-        }
-    }
-
-    if (result!=0)
-    	return result;
-    std::cout << "PASS: Tests for CacheManager" << std::endl;
     // Call basic test for every marshaller and every codec
     std::cout << "Basic Test with BasicMarshaller" << std::endl;
     {
@@ -451,6 +493,7 @@ int main(int argc, char** argv) {
         builder.addServer().host(argc > 1 ? argv[1] : "127.0.0.1").port(argc > 2 ? atoi(argv[2]) : 11222);
         builder.protocolVersion(Configuration::PROTOCOL_VERSION_24);
 //        builder.balancingStrategyProducer(transport::MyRoundRobinBalancingStrategy::newInstance);
+        builder.getSecurityConfigurationBuilder().getAuthConfigurationBuilder().saslMechanism("DIGEST-MD5").serverFQDN("node0").callbackHandler(callbackHandler).enable();
         builder.balancingStrategyProducer(nullptr);
         RemoteCacheManager cacheManager(builder.build(), false);
         BasicMarshaller<std::string> *km = new BasicMarshaller<std::string>();

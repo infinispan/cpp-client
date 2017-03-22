@@ -21,6 +21,7 @@ public:
        return SecurityConfiguration(ssl.create(), authentication.create());
     }
     SslConfigurationBuilder& getSslConfigurationBuilder() { return ssl; }
+    AuthenticationConfigurationBuilder& getAuthConfigurationBuilder() { return authentication; }
 private:
     AuthenticationConfigurationBuilder authentication;
     SslConfigurationBuilder ssl;

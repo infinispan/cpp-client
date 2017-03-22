@@ -24,44 +24,6 @@ void saslfail(int why, const char *what)
     throw HotRodClientException(s);
 }
 
-static char simple_data[]="name";
-
-static int simple(void *context __attribute__((unused)),
-          int id,
-          const char **result,
-          unsigned *len)
-{
-    *result=simple_data;
-    if (len) *len=5;
-    return SASL_OK;
-}
-
-static char secret_data[]="password";
-
-static int
-getsecret(sasl_conn_t *conn,
-      void *context __attribute__((unused)),
-      int id,
-      sasl_secret_t **psecret)
-{
-    size_t len;
-    static sasl_secret_t *x;
-
-    /* paranoia check */
-    if (! conn || ! psecret || id != SASL_CB_PASS)
-    return SASL_BADPARAM;
-
-    len = 8;
-
-    x = (sasl_secret_t *) realloc(x, sizeof(sasl_secret_t) + len);
-
-    x->len = len;
-    strcpy((char *)x->data, secret_data);
-
-    *psecret = x;
-    return SASL_OK;
-}
-
 TransportObjectFactory::TransportObjectFactory(
     Codec& c, TcpTransportFactory& factory)
     : tcpTransportFactory(factory),
@@ -70,23 +32,14 @@ TransportObjectFactory::TransportObjectFactory(
     // TODO: move in the initialization sequence
     /* callbacks we support */
 
-    static sasl_callback_t callbacks[] = {
-       {
-              SASL_CB_AUTHNAME, (sasl_callback_ft)&simple, NULL
-            }, {
-              SASL_CB_PASS, (sasl_callback_ft)&getsecret, NULL
-            },
-        SASL_CB_LIST_END, NULL, NULL
-
-    };
-
     int r;
     /* initialize the sasl library */
+    const sasl_callback_t *callbacks = tcpTransportFactory.getConfiguration().getSecurityConfiguration().getAuthenticationConfiguration().getCallbackHandler().data();
     r = sasl_client_init(callbacks);
     if (r != SASL_OK) saslfail(r, "initializing libsasl");
 }
 
-void do_sasl_authentication(Codec& codec, Transport& t) {
+void do_sasl_authentication(Codec& codec, Transport& t, const AuthenticationConfiguration& conf) {
     sasl_conn_t *conn;
     int r;
     const char *data;
@@ -96,10 +49,10 @@ void do_sasl_authentication(Codec& codec, Transport& t) {
     AuthMechListOperation am(codec, t);
     std::vector<std::string> respOpAm(am.execute());
 
-    r = sasl_client_new("hotrod", "localhost", nullptr, nullptr, nullptr, 0, &conn);
+    r = sasl_client_new("hotrod", conf.getServerFqdn().c_str(), nullptr, nullptr, nullptr, 0, &conn);
     if (r != SASL_OK)
         saslfail(r, "allocating connection state");
-    r = sasl_client_start(conn, "PLAIN", NULL, &data, (unsigned int *) &len, &chosenmech);
+    r = sasl_client_start(conn, conf.getSaslMechanism().c_str(), NULL, &data, (unsigned int *) &len, &chosenmech);
     if (r != SASL_OK && r != SASL_CONTINUE) {
         saslfail(r, "starting SASL negotiation");
     }
@@ -127,7 +80,7 @@ TcpTransport& TransportObjectFactory::makeObject(const InetSocketAddress& addres
                 tcpTransportFactory.getSslServerCAPath(), tcpTransportFactory.getSslServerCAFile(), tcpTransportFactory.getSslClientCertificateFile(), tcpTransportFactory.getSniHostName()));
        if (tcpTransportFactory.getConfiguration().getSecurityConfiguration().getAuthenticationConfiguration().isEnabled())
        {
-          do_sasl_authentication(codec, *t);
+          do_sasl_authentication(codec, *t, tcpTransportFactory.getConfiguration().getSecurityConfiguration().getAuthenticationConfiguration());
        }
        return *t;
 #else
@@ -135,7 +88,7 @@ TcpTransport& TransportObjectFactory::makeObject(const InetSocketAddress& addres
 	            tcpTransportFactory.getSslServerCAPath(), tcpTransportFactory.getSslServerCAFile(), tcpTransportFactory.getSslClientCertificateFile(), tcpTransportFactory.getSniHostName()));
        if (tcpTransportFactory.getConfiguration().getSecurityConfiguration().getAuthenticationConfiguration().isEnabled())
        {
-          do_sasl_authentication(codec, *t);
+          do_sasl_authentication(codec, *t, tcpTransportFactory.getConfiguration().getSecurityConfiguration().getAuthenticationConfiguration());
        }
        return *t;
 #endif
@@ -144,7 +97,7 @@ TcpTransport& TransportObjectFactory::makeObject(const InetSocketAddress& addres
         TcpTransport* t = new TcpTransport(address, tcpTransportFactory);
         if (tcpTransportFactory.getConfiguration().getSecurityConfiguration().getAuthenticationConfiguration().isEnabled())
         {
-           do_sasl_authentication(codec, *t);
+           do_sasl_authentication(codec, *t,tcpTransportFactory.getConfiguration().getSecurityConfiguration().getAuthenticationConfiguration());
         }
         return *t;
     }

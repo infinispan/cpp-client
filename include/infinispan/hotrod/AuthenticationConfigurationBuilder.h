@@ -16,12 +16,12 @@ class AuthenticationConfigurationBuilder
 {
 public:
     AuthenticationConfiguration create() {
-       return AuthenticationConfiguration(m_callbackHandler/*, m_clientSubject*/, m_enabled, m_saslMechanism, m_saslProperties, m_serverName);
+       return AuthenticationConfiguration(m_callbackHandler, m_enabled, m_saslMechanism, m_serverFQDN);
     }
     /**
      * Specifies a set of callbacks to be used during the authentication handshake.
      */
-    AuthenticationConfigurationBuilder& callbackHandler(std::vector<sasl_callback_t> callbackHandler) {
+    AuthenticationConfigurationBuilder& callbackHandler(std::vector<sasl_callback_t> &callbackHandler) {
        m_callbackHandler = callbackHandler;
        return *this;
     }
@@ -58,14 +58,6 @@ public:
        return *this;
     }
 
-    /**
-     * Sets the SASL properties
-     */
-    AuthenticationConfigurationBuilder& saslProperties(std::map<std::string,std::string> saslProperties) {
-       m_saslProperties = saslProperties;
-       return *this;
-    }
-
 //    /**
 //     * Sets the SASL QOP property. If multiple values are specified they will determine preference order
 //     */
@@ -99,26 +91,16 @@ public:
     /**
      * Sets the name of the server as expected by the SASL protocol
      */
-    AuthenticationConfigurationBuilder& serverName(std::string serverName) {
-       m_serverName = serverName;
+    AuthenticationConfigurationBuilder& serverFQDN(std::string serverFQDN) {
+       m_serverFQDN = serverFQDN;
        return *this;
     }
-
-//    /**
-//     * Sets the client subject, necessary for those SASL mechanisms which require it to access client credentials (i.e. GSSAPI)
-//     */
-//    AuthenticationConfigurationBuilder& clientSubject(std::map<std::string, std::string> clientSubject) {
-//       m_clientSubject = clientSubject;
-//       return this;
-//    }
 
 private:
     bool m_enabled=false;
     std::vector<sasl_callback_t> m_callbackHandler;
-//    std::map<std::string, std::string> m_clientSubject;
     std::string m_saslMechanism;
-    std::map<std::string, std::string> m_saslProperties;
-    std::string m_serverName;
+    std::string m_serverFQDN;
 };
 
 }}

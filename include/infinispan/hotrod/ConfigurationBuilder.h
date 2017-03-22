@@ -333,7 +333,10 @@ class ConfigurationBuilder
         m_eventMarshaller = configuration.getEventMarshaller();
         return *this;
     }
-
+    SecurityConfigurationBuilder& getSecurityConfigurationBuilder()
+    {
+        return securityConfigurationBuilder;
+    }
   private:
     int m_connectionTimeout;
     bool m_forceReturnValue;

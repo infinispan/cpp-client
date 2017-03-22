@@ -20,18 +20,28 @@ namespace hotrod {
 class AuthenticationConfiguration
 {
 public:
-    AuthenticationConfiguration(std::vector<sasl_callback_t> callbackHandler, /*std::map<std::string, std::string> userTraits,*/ bool enabled, std::string saslMechanism, std::map<std::string, std::string> saslProperties, std::string serverName)
-                      : enabled(enabled), callbackHandler(callbackHandler), /* userTraits(userTraits),*/ saslMechanism(saslMechanism),
-                        saslProperties(saslProperties), serverName(serverName) {}
+    AuthenticationConfiguration(std::vector<sasl_callback_t> callbackHandler, bool enabled, std::string saslMechanism, std::string serverFQDN)
+                      : enabled(enabled), callbackHandler(callbackHandler), saslMechanism(saslMechanism), serverFQDN(serverFQDN) {}
     AuthenticationConfiguration() : enabled(false) {}
     bool isEnabled() const { return enabled; }
+
+    const std::string& getSaslMechanism() const {
+        return saslMechanism;
+    }
+
+    const std::vector<sasl_callback_t>& getCallbackHandler() const {
+        return callbackHandler;
+    }
+
+    const std::string& getServerFqdn() const {
+        return serverFQDN;
+    }
+
 private:
     bool enabled;
     std::vector<sasl_callback_t> callbackHandler;
-//    std::map<std::string, std::string> clientSubject;
     std::string saslMechanism;
-    std::map<std::string, std::string> saslProperties;
-    std::string serverName;
+    std::string serverFQDN;
 };
 
 }}
