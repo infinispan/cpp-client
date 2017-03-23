@@ -643,7 +643,7 @@ void SChannelSocket::connect(const std::string & host, int port, int timeout)
         }
         
         pClientContext = CertFindCertificateInStore(certStore, X509_ASN_ENCODING | PKCS_7_ASN_ENCODING
-            , 0, CERT_FIND_HAS_PRIVATE_KEY, NULL, NULL);
+            , 0, CERT_FIND_ANY, NULL, NULL);
         
 /*        pClientContext = CertCreateCertificateContext(X509_ASN_ENCODING | PKCS_7_ASN_ENCODING,
             (BYTE*)derClientCert,
