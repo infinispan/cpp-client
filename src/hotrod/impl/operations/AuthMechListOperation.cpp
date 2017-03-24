@@ -21,10 +21,10 @@ AuthMechListOperation::~AuthMechListOperation() {
 std::vector<std::string> AuthMechListOperation::execute() {
     std::vector<std::string> result;
 
-   HeaderParams params = writeHeader(transport, AUTH_MECH_LIST_REQUEST);
+    std::unique_ptr<protocol::HeaderParams> params(writeHeader(transport, AUTH_MECH_LIST_REQUEST));
    transport.flush();
 
-   readHeaderAndValidate(transport, params);
+   readHeaderAndValidate(transport, *params);
    int mechCount = transport.readVInt();
 
    for (int i = 0; i < mechCount; i++) {

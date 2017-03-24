@@ -23,12 +23,12 @@ AuthOperation::AuthOperation(Codec& codec, Transport &transport,
    }
 
    std::vector<char> AuthOperation::execute() {
-      HeaderParams params = writeHeader(transport, AUTH_REQUEST);
+       std::unique_ptr<protocol::HeaderParams> params(writeHeader(transport, AUTH_REQUEST));
       transport.writeArray(saslMechanism);
       transport.writeArray(response);
       transport.flush();
 
-      readHeaderAndValidate(transport, params);
+      readHeaderAndValidate(transport, *params);
       bool complete = transport.readByte() > 0;
       std::vector<char> c = transport.readArray();
       return complete ? std::vector<char>() : c;
