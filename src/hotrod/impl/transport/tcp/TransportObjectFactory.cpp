@@ -24,19 +24,17 @@ void saslfail(int why, const char *what)
     throw HotRodClientException(s);
 }
 
-TransportObjectFactory::TransportObjectFactory(
-    Codec& c, TcpTransportFactory& factory)
-    : tcpTransportFactory(factory),
-      codec(c)
-{
-    // TODO: move in the initialization sequence
+TransportObjectFactory::TransportObjectFactory(Codec& c, TcpTransportFactory& factory) :
+        tcpTransportFactory(factory), codec(c)  {
     /* callbacks we support */
-
     int r;
     /* initialize the sasl library */
-    const sasl_callback_t *callbacks = tcpTransportFactory.getConfiguration().getSecurityConfiguration().getAuthenticationConfiguration().getCallbackHandler().data();
+    /* Some tests don't create a tcpTransportFactory */
+    const sasl_callback_t *callbacks =
+            tcpTransportFactory.getConfiguration().getSecurityConfiguration().getAuthenticationConfiguration().getCallbackHandler().data();
     r = sasl_client_init(callbacks);
-    if (r != SASL_OK) saslfail(r, "initializing libsasl");
+    if (r != SASL_OK)
+        saslfail(r, "initializing libsasl");
 }
 
 void do_sasl_authentication(Codec& codec, Transport& t, const AuthenticationConfiguration& conf) {
@@ -103,7 +101,7 @@ TcpTransport& TransportObjectFactory::makeObject(const InetSocketAddress& addres
     }
 }
 
-bool TransportObjectFactory::validateObject(const InetSocketAddress& /*address*/, TcpTransport& transport) {
+bool AbstractObjectFactory::validateObject(const InetSocketAddress& /*address*/, TcpTransport& transport) {
     return ping(transport) == SUCCESS;
 }
 
@@ -112,11 +110,11 @@ void TransportObjectFactory::destroyObject(const InetSocketAddress& /*address*/,
     delete &transport;
 }
 
-void TransportObjectFactory::activateObject(const InetSocketAddress& /*address*/, TcpTransport& /*transport*/) {
+void AbstractObjectFactory::activateObject(const InetSocketAddress& /*address*/, TcpTransport& /*transport*/) {
     // empty
 }
 
-void TransportObjectFactory::passivateObject(
+void AbstractObjectFactory::passivateObject(
     const InetSocketAddress& /*address*/, TcpTransport& /*transport*/)
 {
     // empty
