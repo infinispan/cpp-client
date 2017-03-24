@@ -50,6 +50,7 @@ void do_sasl_authentication(Codec& codec, Transport& t, const AuthenticationConf
     r = sasl_client_new("hotrod", conf.getServerFqdn().c_str(), nullptr, nullptr, nullptr, 0, &conn);
     if (r != SASL_OK)
         saslfail(r, "allocating connection state");
+    sasl_setprop( conn, SASL_AUTH_EXTERNAL, "fake authority" );
     r = sasl_client_start(conn, conf.getSaslMechanism().c_str(), NULL, &data, (unsigned int *) &len, &chosenmech);
     if (r != SASL_OK && r != SASL_CONTINUE) {
         saslfail(r, "starting SASL negotiation");
