@@ -333,7 +333,7 @@ class ConfigurationBuilder
         m_eventMarshaller = configuration.getEventMarshaller();
         return *this;
     }
-    SecurityConfigurationBuilder& getSecurityConfigurationBuilder()
+    SecurityConfigurationBuilder& security()
     {
         return securityConfigurationBuilder;
     }

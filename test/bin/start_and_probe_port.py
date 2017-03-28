@@ -11,7 +11,7 @@ def main():
     if (len(sys.argv)>4):
         if os.name == 'nt' :
             # Hangs on standalone.bat script.  Call Java directly.
-            jproc = subprocess.Popen(sys.argv[4], close_fds=True, creationflags=subprocess.CREATE_NEW_CONSOLE);
+            jproc = subprocess.Popen(sys.argv[4].split(), close_fds=True, creationflags=subprocess.CREATE_NEW_CONSOLE);
         else:
             new_env = os.environ.copy()
             # Tell standalone.sh that you want termination signals to get through to the java process

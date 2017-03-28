@@ -148,7 +148,7 @@ int main(int argc, char** argv) {
           std::cout << "Using supplied client certificate" << std::endl;
           builder.ssl().clientCertificateFile(argv[2]);
       }
-      builder.getSecurityConfigurationBuilder().getAuthConfigurationBuilder().saslMechanism("EXTERNAL").serverFQDN("node0").callbackHandler(callbackHandler).enable();
+      builder.security().authentication().saslMechanism("EXTERNAL").serverFQDN("node0").callbackHandler(callbackHandler).enable();
       RemoteCacheManager cacheManager(builder.build(), false);
       BasicMarshaller<std::string> *km = new BasicMarshaller<std::string>();
       BasicMarshaller<std::string> *vm = new BasicMarshaller<std::string>();

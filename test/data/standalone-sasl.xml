@@ -250,7 +250,7 @@
             <security-domains>
 		<security-domain name="hotrod-service" cache-type="default">
                     <authentication>
-                        <login-module code="Kerberos" flag="required">
+                        <login-module code="Kerberos" flag="optional">
                             <module-option name="storeKey" value="true"/>
                             <module-option name="useKeyTab" value="true"/>
                             <module-option name="refreshKrb5Config" value="true"/>
