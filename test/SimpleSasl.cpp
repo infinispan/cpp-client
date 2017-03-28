@@ -4,9 +4,11 @@
 #include "infinispan/hotrod/Version.h"
 
 #include "infinispan/hotrod/JBasicMarshaller.h"
+#if !defined _WIN32 && !defined _WIN64
 #include <sasl/saslplug.h>
 #include <krb5.h>
 #include <err.h>
+#endif
 #include <stdlib.h>
 #include <iostream>
 #include <memory>
@@ -72,7 +74,6 @@ private:
 }
 }
 
-
 template<class T>
 void assert_not_null(const std::string& message, int line, const std::unique_ptr<T>& pointer) {
     if (pointer.get() == 0) {
@@ -82,21 +83,32 @@ void assert_not_null(const std::string& message, int line, const std::unique_ptr
     }
 }
 
+#if !defined _WIN32 && !defined _WIN64
+int kinit();
+void kdestroy();
+#endif
+
 static char *simple_data; // plain
+
+#if !defined _WIN32 && !defined _WIN64
 static char realm_data[] = "applicationRealm";
+#else
+static char realm_data[] = "ApplicationRealm";
+#endif
+
 static char path_data[] = "/usr/lib64/sasl2";
 
-static int simple(void *context __attribute__((unused)), int id, const char **result, unsigned *len) {
+static int simple(void* /* context */, int id, const char **result, unsigned *len) {
     *result = simple_data;
     if (len)
         *len = strlen(simple_data);
     return SASL_OK;
 }
 
-static int getrealm(void *context __attribute__((unused)), int id, const char **result, unsigned *len) {
+static int getrealm(void* /* context */, int id, const char **result, unsigned *len) {
     *result = realm_data;
     if (len)
-        *len = strlen(simple_data);
+        *len = strlen(realm_data);
     return SASL_OK;
 }
 
@@ -112,14 +124,10 @@ static int getpath(void *context, const char ** path) {
 }
 
 static char *secret_data;
-static int getsecret(sasl_conn_t *conn, void *context __attribute__((unused)), int id, sasl_secret_t **psecret) {
+
+static int getsecret(void* /* conn */, void* /* context */, int id, sasl_secret_t **psecret) {
     size_t len;
     static sasl_secret_t *x;
-
-    /* paranoia check */
-    if (!conn || !psecret || id != SASL_CB_PASS)
-        return SASL_BADPARAM;
-
     len = strlen(secret_data);
 
     x = (sasl_secret_t *) realloc(x, sizeof(sasl_secret_t) + len);
@@ -136,8 +144,10 @@ SASL_CB_AUTHNAME, (sasl_callback_ft) &simple, NULL }, { SASL_CB_PASS, (sasl_call
 SASL_CB_GETREALM, (sasl_callback_ft) &getrealm, NULL }, { SASL_CB_GETPATH, (sasl_callback_ft) &getpath, NULL }, {
 SASL_CB_LIST_END, NULL, NULL } };
 
+#if !defined _WIN32 && !defined _WIN64
 int kinit();
 void kdestroy();
+#endif
 
 int main(int argc, char** argv) {
 
@@ -148,7 +158,7 @@ int main(int argc, char** argv) {
         secret_data = "somePassword";
         builder.addServer().host(argc > 1 ? argv[1] : "127.0.0.1").port(argc > 2 ? atoi(argv[2]) : 11222);
         builder.protocolVersion(Configuration::PROTOCOL_VERSION_24);
-        builder.getSecurityConfigurationBuilder().getAuthConfigurationBuilder().saslMechanism("PLAIN").serverFQDN(
+        builder.security().authentication().saslMechanism("PLAIN").serverFQDN(
                 "node0").callbackHandler(callbackHandler).enable();
         builder.balancingStrategyProducer(nullptr);
         RemoteCacheManager cacheManager(builder.build(), false);
@@ -175,7 +185,7 @@ int main(int argc, char** argv) {
         secret_data = "password";
         builder.addServer().host(argc > 1 ? argv[1] : "127.0.0.1").port(argc > 2 ? atoi(argv[2]) : 11222);
         builder.protocolVersion(Configuration::PROTOCOL_VERSION_24);
-        builder.getSecurityConfigurationBuilder().getAuthConfigurationBuilder().saslMechanism("DIGEST-MD5").serverFQDN(
+        builder.security().authentication().saslMechanism("DIGEST-MD5").serverFQDN(
                 "node0").callbackHandler(callbackHandler).enable();
         builder.balancingStrategyProducer(nullptr);
         RemoteCacheManager cacheManager(builder.build(), false);
@@ -196,6 +206,7 @@ int main(int argc, char** argv) {
         cacheManager.stop();
     }
 
+#if !defined _WIN32 && !defined _WIN64
     {
         kinit();
         ConfigurationBuilder builder;
@@ -203,7 +214,7 @@ int main(int argc, char** argv) {
         secret_data = "lessStrongPassword";
         builder.addServer().host(argc > 1 ? argv[1] : "127.0.0.1").port(argc > 2 ? atoi(argv[2]) : 11222);
         builder.protocolVersion(Configuration::PROTOCOL_VERSION_24);
-        builder.getSecurityConfigurationBuilder().getAuthConfigurationBuilder().saslMechanism("GSSAPI").serverFQDN(
+        builder.security().authentication().saslMechanism("GSSAPI").serverFQDN(
                 "node0").callbackHandler(callbackHandler).enable();
         builder.balancingStrategyProducer(nullptr);
         RemoteCacheManager cacheManager(builder.build(), false);
@@ -224,9 +235,11 @@ int main(int argc, char** argv) {
         std::cout << "PASS: 'GSSAPI' sasl authorization" << std::endl;
         kdestroy();
     }
+#endif
     return result;
 }
 
+#if !defined _WIN32 && !defined _WIN64
 krb5_context context;
 krb5_creds creds;
 krb5_principal client_princ = NULL;
@@ -240,4 +253,4 @@ int kinit() {
 void kdestroy() {
     std::system("kdestroy");
 }
-
+#endif

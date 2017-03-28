@@ -16,15 +16,15 @@ namespace hotrod {
 class SecurityConfigurationBuilder : public ConfigurationChildBuilder
 {
 public:
-    SecurityConfigurationBuilder(ConfigurationBuilder& _builder) : ConfigurationChildBuilder(_builder), ssl(_builder) {}
+    SecurityConfigurationBuilder(ConfigurationBuilder& _builder) : ConfigurationChildBuilder(_builder), sslConfigurationBuilder(_builder) {}
     SecurityConfiguration create() {
-       return SecurityConfiguration(ssl.create(), authentication.create());
+       return SecurityConfiguration(sslConfigurationBuilder.create(), authenticationConfigurationBuilder.create());
     }
-    SslConfigurationBuilder& getSslConfigurationBuilder() { return ssl; }
-    AuthenticationConfigurationBuilder& getAuthConfigurationBuilder() { return authentication; }
+    SslConfigurationBuilder& getSslConfigurationBuilder() { return sslConfigurationBuilder; }
+    AuthenticationConfigurationBuilder& authentication() { return authenticationConfigurationBuilder; }
 private:
-    AuthenticationConfigurationBuilder authentication;
-    SslConfigurationBuilder ssl;
+    AuthenticationConfigurationBuilder authenticationConfigurationBuilder;
+    SslConfigurationBuilder sslConfigurationBuilder;
 };
 
 }}

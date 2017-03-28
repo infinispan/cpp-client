@@ -55,7 +55,7 @@ cpack -G ZIP -C RelWithDebInfo -DCPACK_PACKAGE_VERSION_MAJOR=%version_1major% -D
 
 %home_drive%
 
-subst Y: /D
+subst /D Y:
 
 if %errorlevel% neq 0 goto fail
 
@@ -76,6 +76,7 @@ goto:eof
 
 
 :fail
+    subst /D Y:
     echo "Failure!"
     ()
     exit /b 1
