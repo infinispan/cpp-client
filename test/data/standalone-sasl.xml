@@ -17,7 +17,7 @@
         <extension module="org.wildfly.extension.security.manager"/>
     </extensions>
     <system-properties>
-         <property name="java.security.krb5.conf" value="/etc/krb5.conf"/>
+         <property name="java.security.krb5.conf" value="${jboss.server.config.dir}/krb5.conf"/>
          <property name="java.security.krb5.debug" value="true"/>
          <property name="jboss.security.disable.secdomain.option" value="true"/>
     </system-properties>

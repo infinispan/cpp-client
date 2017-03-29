@@ -233,6 +233,7 @@ krb5_principal client_princ = NULL;
 int kinit() {
     // Delegate Kerberos setup to the system
     setenv("KRB5CCNAME", "krb5cc_hotrod", 1);
+    setenv("KRB5_CONFIG", "krb5.conf", 1);
     std::system("echo lessStrongPassword | kinit -c krb5cc_hotrod supervisor@INFINISPAN.ORG");
 }
 void kdestroy() {
