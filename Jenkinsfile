@@ -2,6 +2,12 @@
 
 pipeline {
     agent any
+    stage('Cleanup') {
+        steps{
+            step([$class: 'WsCleanup'])
+        }
+    }
+    
     stages {
         stage('SCM Checkout') {
             steps {
@@ -11,7 +17,7 @@ pipeline {
 
         stage('Build') {
             steps {
-		sh ./build.sh
+                sh ./build.sh
             }
         }
     }
