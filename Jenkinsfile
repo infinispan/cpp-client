@@ -2,13 +2,23 @@
 
 pipeline {
     agent any
-    stage('Cleanup') {
-        steps{
-            step([$class: 'WsCleanup'])
-        }
+    
+    environment {
+      HOTROD_LOG_LEVEL = 'TRACE'
+      INFINISPAN_VERSION = '9.0.0.Alpha4'
+      JAVA_HOME = '/opt/oracle-jdk8'
+      JBOSS_HOME = '/home/ec2-user/ispn/infinispan-server'
+      M2_HOME = '/opt/maven'
+      PATH = "${JAVA_HOME}/bin:${M2_HOME}/bin:${PATH}"
     }
     
     stages {
+        stage('Cleanup') {
+            steps{
+                step([$class: 'WsCleanup'])
+            }
+        }
+    
         stage('SCM Checkout') {
             steps {
                 checkout scm
@@ -17,7 +27,10 @@ pipeline {
 
         stage('Build') {
             steps {
-                sh ./build.sh
+                script {
+                    env.PATH=''
+                    sh "./build.sh"
+                }
             }
         }
     }
