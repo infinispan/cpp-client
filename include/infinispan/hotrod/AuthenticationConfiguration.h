@@ -14,6 +14,15 @@ namespace hotrod {
 #include "sasl/sasl.h"
 
 #else
+#define SASL_CB_USER 0x4001
+#define SASL_CB_AUTHNAME 0x4002
+#define SASL_CB_PASS 0x4004
+#define SASL_CB_GETREALM 0x4008 
+#define SASL_CB_GETPATH 0x0003
+#define SASL_CB_LIST_END 0x0000
+
+#define SASL_OK          0   /* successful result */
+#define SASL_BADPARAM   -7
 
 typedef struct sasl_callback {
     /* Identifies the type of the callback function.
