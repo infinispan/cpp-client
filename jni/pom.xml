@@ -17,8 +17,8 @@
    <description>Infinispan HotRod JNI Wrapper</description>
 
    <properties>
-      <version.org.infinispan>9.0.0.Alpha2</version.org.infinispan>
-      <version.org.jboss.logging.processor>1.1.0.Final</version.org.jboss.logging.processor>
+      <version.org.infinispan>9.0.0.Final</version.org.infinispan>
+      <version.org.jboss.logging.processor>1.2.1.Final</version.org.jboss.logging.processor>
       <version.org.jboss.jbossts>4.17.13.Final</version.org.jboss.jbossts>
       <version.org.testng>6.8</version.org.testng>
       <maven.test.skip.exec>true</maven.test.skip.exec>

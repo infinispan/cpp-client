@@ -48,7 +48,6 @@ public class JniTest implements IMethodSelector {
             // CacheContainerTest.class,             // not relevant
             CacheManagerNotStartedTest.class, 
             CacheManagerStoppedTest.class, 
-            ClientAsymmetricClusterTest.class,       // HRCPP-120
             // ClientConnectionPoolingTest.class,    // requires transport extraction
             ClientSocketReadTimeoutTest.class,
             // omitting ConsistentHash* tests
