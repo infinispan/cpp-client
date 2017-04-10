@@ -9,7 +9,6 @@ pipeline {
       JAVA_HOME = '/opt/oracle-jdk8'
       JBOSS_HOME = '/home/ec2-user/ispn/infinispan-server'
       M2_HOME = '/opt/maven'
-      PATH = "${JAVA_HOME}/bin:${M2_HOME}/bin:${PATH}"
     }
     
     stages {
@@ -28,8 +27,7 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    env.PATH=''
-                    sh "./build.sh"
+                    sh "PATH=\"${env.JAVA_HOME}/bin:${env.M2_HOME}/bin:${PATH}\" ./build.sh"
                 }
             }
         }
