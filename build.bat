@@ -36,6 +36,12 @@ cd %build_dir%
 cmake -G "%~1" -DCPACK_PACKAGE_VERSION_MAJOR=%version.1major% -DCPACK_PACKAGE_VERSION_MINOR=%version.2minor% -DCPACK_PACKAGE_VERSION_PATCH="%version.3micro%.%version.4qualifier%" -DSWIG_DIR=%SWIG_DIR% -DSWIG_EXECUTABLE=%SWIG_EXECUTABLE% -DMVN_PROGRAM=%MVN_PROGRAM% -DPROTOBUF_LIBRARY="%PROTOBUF_LIBRARY%" -DPROTOBUF_PROTOC_LIBRARY="%PROTOBUF_PROTOC_LIBRARY%" -DPROTOBUF_INCLUDE_DIR="%PROTOBUF_INCLUDE_DIR%" -DPROTOBUF_PROTOC_EXECUTABLE="%PROTOBUF_PROTOC_EXECUTABLE%" -DOPENSSL_ROOT_DIR="%OPENSSL_ROOT_DIR%" ..
 if %errorlevel% neq 0 goto fail
 
+set home_drive=%CD:~0,2%
+
+subst Y: %CD%
+
+Y:
+
 cmake --build . --config RelWithDebInfo
 if %errorlevel% neq 0 goto fail
 
@@ -43,6 +49,11 @@ ctest -V --timeout 3000
 if %errorlevel% neq 0 goto fail
 
 cpack -G ZIP -C RelWithDebInfo -DCPACK_PACKAGE_VERSION_MAJOR=%version.1major% -DCPACK_PACKAGE_VERSION_MINOR=%version.2minor% -DCPACK_PACKAGE_VERSION_PATCH="%version.3micro%.%version.4qualifier%"
+
+%home_drive%
+
+subst Y: /D
+
 if %errorlevel% neq 0 goto fail
 
 endlocal
