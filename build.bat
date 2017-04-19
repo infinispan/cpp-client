@@ -38,6 +38,7 @@ if %errorlevel% neq 0 goto fail
 
 set home_drive=%CD:~0,2%
 
+subst Y: /D
 subst Y: %CD%
 
 Y:
