@@ -46,7 +46,7 @@ Y:
 cmake --build . --config RelWithDebInfo
 if %errorlevel% neq 0 goto fail
 
-rem ctest -V --timeout 3000
+ctest -V --timeout 3000
 if %errorlevel% neq 0 goto fail
 
 cpack -G ZIP -C RelWithDebInfo -DCPACK_PACKAGE_VERSION_MAJOR=%version_1major% -DCPACK_PACKAGE_VERSION_MINOR=%version_2minor% -DCPACK_PACKAGE_VERSION_PATCH="%version_3micro%.%version_4qualifier%"
