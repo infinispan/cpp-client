@@ -36,7 +36,6 @@ namespace infinispan {
 				static void     displayWinVerifyTrustError(DWORD Status);
 				static INT      connectToServer(std::string host, int iPortNumber, SOCKET * pSocket);
 				static DWORD    verifyServerCertificate(HCERTSTORE hCertStore, PCCERT_CONTEXT pServerCert, std::string host, DWORD dwCertFlags);
-				static void     logAndThrow(const std::string& host, const int port, const std::string& msg);
 
 				SECURITY_STATUS readDecrypt(const DWORD bufsize, size_t *read_counter);
 				DWORD           encryptSend(size_t len, SecPkgContext_StreamSizes Sizes);
@@ -44,6 +43,10 @@ namespace infinispan {
 				SECURITY_STATUS performClientHandshake(std::string host, SecBuffer  *pExtraData);
                 LONG DisconnectFromServer();
 				void            cleanup();
+
+                void setupCertStoreServer();
+                void setupCertClient(SCHANNEL_CRED& schannelCred);
+                void logAndThrow(const std::string& msg);
 
 				class SChannelInitializer
 				{
@@ -53,15 +56,16 @@ namespace infinispan {
 				};
 
 				static SChannelInitializer initializer;
-                static PCCERT_CONTEXT  pServerContext, pClientContext;
                 static HCERTSTORE hMemStore;
 
 				PCCERT_CONTEXT pRemoteCertContext = NULL;
-				std::string    m_serverCAPath;
-				std::string    m_serverCAFile;
+                std::string    m_serverCAFile;
+                std::string    m_serverCAPath;
 				std::string    m_clientCertificateFile;
                 std::string    m_hostName;
-				SOCKET            Client_Socket;
+                int            m_port;
+                std::string    m_host;
+                SOCKET            Client_Socket;
 				CredHandle        hCred;
 				struct _SecHandle hCtxt;
 				CtxtHandle   hContext;
@@ -74,6 +78,7 @@ namespace infinispan {
 				boolean      isContextInitialized = false;
 				boolean      isCredsInitialized = false;
 				boolean      onlyVerified = true;
+
 			};
 
 		}

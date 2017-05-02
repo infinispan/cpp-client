@@ -114,8 +114,8 @@ void Log::log(const char *level, const char *fname, const int lineno, const char
 void Log::log(const char *level, const char *fname, const int lineno, const char *message, const std::vector<char> &bytes) {
     std::ostringstream buf;
     buf << message << "[length=" << bytes.size() << " string=";
-    unsigned maxLength = std::min(m_traceBytesMax, (size_t) bytes.size());
-    for (unsigned tbi = 0; tbi < maxLength; ++tbi) {
+    size_t maxLength = std::min(m_traceBytesMax, bytes.size());
+    for (size_t tbi = 0; tbi < maxLength; ++tbi) {
         unsigned char byte = (unsigned char) bytes.data()[tbi];
         buf << (char) (byte >= 0x20 && byte < 0x7F ? byte : '?');
     }
@@ -123,7 +123,7 @@ void Log::log(const char *level, const char *fname, const int lineno, const char
         buf << "...";
     }
     buf << ", hex=" << std::hex << std::setfill('0');
-    for (unsigned tbi = 0; tbi < maxLength; ++tbi) {
+    for (size_t tbi = 0; tbi < maxLength; ++tbi) {
         buf << ' ' << std::setw(2) << (unsigned int) (unsigned char) bytes.data()[tbi];
     }            
     if (bytes.size() > m_traceBytesMax) {

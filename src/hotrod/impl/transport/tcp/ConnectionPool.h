@@ -71,7 +71,7 @@ class ConnectionPool
     int getNumActive(const InetSocketAddress& key) {
         sys::ScopedLock<sys::Mutex> l(lock);
         if (busy.find(key) != busy.end()) {
-            return busy[key]->size();
+            return (int)busy[key]->size();
         }
         return 0;
     }
@@ -84,7 +84,7 @@ class ConnectionPool
     int getNumIdle(const InetSocketAddress& key) {
         sys::ScopedLock<sys::Mutex> l(lock);
         if (idle.find(key) != idle.end()) {
-            return idle[key]->size();
+            return (int)idle[key]->size();
         }
         return 0;
     }
@@ -92,6 +92,7 @@ class ConnectionPool
     void addObject(const InetSocketAddress& key);
     void returnObject(const InetSocketAddress& key, TcpTransport& val);
     TcpTransport& borrowObject(const InetSocketAddress& key);
+    bool tryRemoveIdleOrAskAllocate(const InetSocketAddress& key);
     void invalidateObject(const InetSocketAddress& key, TcpTransport* val);
     void clear();
     void clear(const InetSocketAddress& key);
@@ -110,6 +111,8 @@ class ConnectionPool
     int calculateMinIdleGrow(const InetSocketAddress& key);
     bool hasReachedMaxTotal();
     bool tryRemoveIdle();
+	bool isValidOrDestroy(const InetSocketAddress& key,
+			const TransportQueuePtr& busyQ, TcpTransport* obj);
 
     std::shared_ptr<TransportObjectFactory> factory;
     const ConnectionPoolConfiguration& configuration;

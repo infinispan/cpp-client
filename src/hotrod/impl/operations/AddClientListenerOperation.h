@@ -36,7 +36,7 @@ public:
 							 recoveryCallback(recoveryCallback), cacheName(cacheName)
 							 {};
     virtual void releaseTransport(transport::Transport* transport);
-    virtual void invalidateTransport(const infinispan::hotrod::transport::InetSocketAddress & addr, transport::Transport* transport);
+    virtual void invalidateTransport(const infinispan::hotrod::transport::InetSocketAddress &, transport::Transport*);
 
     virtual transport::Transport& getTransport(int retryCount, const std::set<transport::InetSocketAddress>& failedServers);
 	char executeOperation(transport::Transport& transport);
@@ -51,6 +51,9 @@ public:
 private:
     const std::vector<char> cacheName;
     std::vector<char> generateV4UUID();
+	void processEvent(const protocol::Codec20& codec20, uint8_t respOpCode,
+			transport::Transport& transport);
+
     /**
      * Dedicated transport instance for adding client listener. This transport
      * is used to send events back to client and it's only released when the

@@ -13,7 +13,7 @@ template<class V> class VersionedValueImpl : public VersionedValue
         version = _version;
     }
 
-    unsigned long getVersion() {
+    int64_t getVersion() {
         return version;
     }
 

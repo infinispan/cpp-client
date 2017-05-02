@@ -188,7 +188,7 @@ void Codec20::readNewTopologyAndHash(Transport& transport, HeaderParams& params)
     {
       currentTopology = tf.getTopologyId(params.cacheName);
     }
-    catch (std::exception &e)
+    catch (std::exception &)
     {
     	noTopologyInfo=true;
     }
@@ -281,7 +281,7 @@ void Codec20::writeNamedFactory(transport::Transport &t, const std::vector<char>
    if (!factoryName.empty()) {
       // A named factory was written, how many parameters?
       if (!params.empty()) {
-         t.writeByte((short) params.size());
+         t.writeByte((uint8_t) params.size());
          for (auto item: params)
             t.writeArray(item);
       } else {

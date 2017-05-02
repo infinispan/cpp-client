@@ -154,7 +154,7 @@ private:
 
 class ClientCacheEntryCustomEvent : ClientEvent {
 public:
-	ClientCacheEntryCustomEvent(std::vector<char> data, int commandRetried) : data(data), commandRetried(commandRetried) {}
+	ClientCacheEntryCustomEvent(std::vector<char> data, int commandRetried) : data(data), commandRetried(commandRetried!=0) {}
    /**
     * Customized event data. It can be any type as long as it can be converted
     * to binary format for shipping between the server and client.
