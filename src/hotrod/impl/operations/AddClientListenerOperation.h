@@ -36,7 +36,7 @@ public:
 							 recoveryCallback(recoveryCallback), cacheName(cacheName)
 							 {};
     virtual void releaseTransport(transport::Transport* transport);
-    virtual void invalidateTransport(const infinispan::hotrod::transport::InetSocketAddress & addr, transport::Transport* transport);
+    virtual void invalidateTransport(const infinispan::hotrod::transport::InetSocketAddress &, transport::Transport*);
 
     virtual transport::Transport& getTransport(int retryCount, const std::set<transport::InetSocketAddress>& failedServers);
 	char executeOperation(transport::Transport& transport);

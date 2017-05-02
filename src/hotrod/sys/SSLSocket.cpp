@@ -103,40 +103,29 @@ void SSLSocket::connect(const std::string& host, int port, int timeout) {
     }
 }
 
-static void throwIOErr (const std::string& host, int port, const char *msg, int errnum) {
-    std::ostringstream m;
-    m << msg;
-    m << " (host: " << host;
-    m << " port: " << port << ")";
-
-    if (errnum != 0) {
-        char buf[200];
-        if (strerror_r(errnum, buf, 200) == 0) {
-            m << " " << buf;
-        } else {
-            m << " " << strerror(errnum);
-        }
-    }
-    throw infinispan::hotrod::TransportException(host, port, m.str(), errnum);
-}
-
 size_t SSLSocket::read(char *p, size_t n) {
     int ret= SSL_read(m_ssl, p, n);
     if (ret > 0)
         return ret;
     int errcode = SSL_get_error(m_ssl, ret);
-    if (ret == 0)
+    std::string errMsg;
+    if (ret < 0)
     {
-        if ( errcode==SSL_ERROR_ZERO_RETURN)
-        {
-           throwIOErr(host, port, "SSL: No read. Shutdown complete.", errcode);
-        }
-        else
-        {
-           throwIOErr(host, port, "SSL: No read. Shutdown incomplete.", errcode);
-        }
+    	errMsg = "SSL: Read error. Error code: ";
     }
-    throwIOErr(host, port, "SSL: Read error. Error code: ", errcode);
+    else
+    {
+        errMsg= ( errcode==SSL_ERROR_ZERO_RETURN)
+        		? "SSL: No read. Shutdown complete."
+        		: "SSL: No read. Shutdown incomplete.";
+    }
+    errMsg+=" (host: "+host+" port: "+(port)+")";
+    if (errcode != 0) {
+        char buf[256];
+        strerror_r(errcode, buf, 256);
+        errMsg+" "+buf;
+    }
+    throw infinispan::hotrod::TransportException(host, port, errMsg, errcode);
 }
 
 void SSLSocket::write(const char *p, size_t n) {

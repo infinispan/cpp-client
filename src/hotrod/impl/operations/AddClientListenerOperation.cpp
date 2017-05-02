@@ -38,7 +38,7 @@ std::vector<char> AddClientListenerOperation::generateV4UUID()
 void AddClientListenerOperation::releaseTransport(transport::Transport* )
 {
 }
-void AddClientListenerOperation::invalidateTransport(const infinispan::hotrod::transport::InetSocketAddress & addr, transport::Transport* transport){
+void AddClientListenerOperation::invalidateTransport(const infinispan::hotrod::transport::InetSocketAddress&, transport::Transport*){
 }
 
 transport::Transport& AddClientListenerOperation::getTransport(int, const std::set<transport::InetSocketAddress>& failedServers) {
