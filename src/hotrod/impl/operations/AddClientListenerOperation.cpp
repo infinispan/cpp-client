@@ -78,7 +78,11 @@ char AddClientListenerOperation::executeOperation(transport::Transport& transpor
 			{
 				uint8_t status = codec20.readPartialEventHeader(transport, params);
 				if (!HotRodConstants::isSuccess(status))
-					break;
+				{
+				    auto errLen = transport.readVInt();
+				    auto errMsg = transport.readBytes(errLen);
+				    throw HotRodClientException(std::string(errMsg.begin(), errMsg.end()));
+				}
 			}
 			catch (HotRodClientException e) {
 				continue;
