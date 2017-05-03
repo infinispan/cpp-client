@@ -64,6 +64,10 @@ set_target_properties(hotrod-swig PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT}" 
 if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     set_source_files_properties("${JNI_DIR}/src/main/swig/javaJAVA_wrap.cxx" PROPERTIES COMPILE_FLAGS "-w -std=c++11")
 endif (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+if (MSVC)
+        set_target_properties(hotrod-swig PROPERTIES COMPILE_FLAGS "/wd4275 /wd4251")
+        set_source_files_properties("${JNI_DIR}/src/main/swig/javaJAVA_wrap.cxx" PROPERTIES COMPILE_FLAGS "/wd4275 /wd4251")
+endif (MSVC)
 
 file(GLOB_RECURSE JAVA_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/jni *.java)
 

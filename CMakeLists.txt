@@ -155,7 +155,7 @@ if (MSVC)
    set(DLLIMPORT "HR_PROTO_EXPORT=__declspec(dllimport)")
    set(DLLEXPORT_STATIC "HR_PROTO_EXPORT= ")
    set (COMPILER_FLAGS "/DNOMINMAX /EHsc")
-   set (WARNING_FLAGS "")
+   set (WARNING_FLAGS "/wd4275 /wd4251")
 endif (MSVC)
 
 set (STATIC_FLAGS "-DHOTROD_DECLARE_STATIC")
