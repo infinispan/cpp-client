@@ -85,9 +85,8 @@ std::vector<ServerConfiguration> TcpTransportFactory::getNextWorkingServersConfi
 				currCluster=p.first;
 				return p.second;
 			}
-			catch (Exception &e)
+			catch (Exception &)
 			{
-
 			}
 		}
 	}

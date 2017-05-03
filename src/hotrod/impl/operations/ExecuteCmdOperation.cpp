@@ -36,14 +36,16 @@ std::vector<char> ExecuteCmdOperation::sendExecuteOperation(
 
     // 2) write key and value
     transport.writeArray(this->cmdName);
-    transport.writeVInt(this->cmdArgs.size());
+    transport.writeVInt((int)this->cmdArgs.size());
 
-    for (int i=this->cmdArgs.size()-1; i>=0; i--)
-    for (auto it = cmdArgs.begin(); it!=cmdArgs.end(); it++)
+    for (auto i=(int)this->cmdArgs.size()-1; i>=0; i--)
     {
+      for (auto it = cmdArgs.begin(); it!=cmdArgs.end(); it++)
+      {
         std::vector<char> nameBuf, valBuf;
-    	transport.writeArray(it->first);
-    	transport.writeArray(it->second);
+        transport.writeArray(it->first);
+        transport.writeArray(it->second);
+      }
     }
     transport.flush();
 

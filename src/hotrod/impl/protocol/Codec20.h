@@ -12,9 +12,6 @@ namespace transport {
 class Transport;
 }
 
-namespace event {
-class EventHeaderParams;
-}
 
 namespace protocol {
 class HeaderParams;

@@ -141,7 +141,7 @@ QueryResponse RemoteCacheBase::base_query(const QueryRequest &qr)
 std::vector<unsigned char> RemoteCacheBase::base_query_char(std::vector<unsigned char> qr, size_t size)
 {
 	QueryRequest req;
-	req.ParseFromArray(qr.data(),size);
+	req.ParseFromArray(qr.data(),(int)size);
 
 	QueryResponse resp= IMPL->query(req);
 

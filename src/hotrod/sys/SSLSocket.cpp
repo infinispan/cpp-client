@@ -119,7 +119,7 @@ size_t SSLSocket::read(char *p, size_t n) {
         		? "SSL: No read. Shutdown complete."
         		: "SSL: No read. Shutdown incomplete.";
     }
-    errMsg+=" (host: "+host+" port: "+(port)+")";
+    errMsg+=" (host: "+host+" port: ("+std::to_string(port)+")";
     if (errcode != 0) {
         char buf[256];
         strerror_r(errcode, buf, 256);

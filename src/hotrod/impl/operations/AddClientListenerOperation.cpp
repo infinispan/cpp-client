@@ -56,8 +56,7 @@ char AddClientListenerOperation::executeOperation(transport::Transport& transpor
     codec20.writeClientListenerParams(transport, clientListener, filterFactoryParams, converterFactoryParams);
     transport.flush();
     }
-    catch (Exception& e) {
-    }
+    catch (Exception& ) { }
     listenerNotifier.addClientListener(listenerId, clientListener, cacheName, transport, codec20, (std::shared_ptr<void>)this->shared_from_this(), recoveryCallback);
     this->shared=true;
     const_cast <ClientListener&>(clientListener).setListenerId(listenerId);

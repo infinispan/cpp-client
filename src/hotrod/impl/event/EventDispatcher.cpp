@@ -76,7 +76,7 @@ void EventDispatcher::run() {
                     break;
                 }
             }
-        } catch (TransportException& ex) {
+        } catch (TransportException& ) {
             if (recoveryCallback) {
                 recoveryCallback();
             }

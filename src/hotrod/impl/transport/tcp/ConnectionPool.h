@@ -71,7 +71,7 @@ class ConnectionPool
     int getNumActive(const InetSocketAddress& key) {
         sys::ScopedLock<sys::Mutex> l(lock);
         if (busy.find(key) != busy.end()) {
-            return busy[key]->size();
+            return (int)busy[key]->size();
         }
         return 0;
     }
@@ -84,7 +84,7 @@ class ConnectionPool
     int getNumIdle(const InetSocketAddress& key) {
         sys::ScopedLock<sys::Mutex> l(lock);
         if (idle.find(key) != idle.end()) {
-            return idle[key]->size();
+            return (int)idle[key]->size();
         }
         return 0;
     }

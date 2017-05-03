@@ -29,7 +29,7 @@ void ConnectionPool::ensureMinIdle(const InetSocketAddress& key) {
 
 int ConnectionPool::calculateMinIdleGrow(const InetSocketAddress& key) {
 	TransportQueuePtr idleQ = idle[key];
-	int grown = configuration.getMinIdle() - idleQ->size();
+	int grown = configuration.getMinIdle() - (int)idleQ->size();
 	//Note: if we need to check maxActive, uncomment the code above
 	/*if (configuration.getMaxActive() > 0) {
 		int growLimit = std::max(0, configuration.getMaxActive() - (int) busy[key]->size() - (int) idleQ->size());
@@ -54,14 +54,14 @@ bool ConnectionPool::tryRemoveIdle() {
 
 	do {
 		const InetSocketAddress* keyToRemove = NULL;
-		int longerQueueSize = 0;
+		size_t longerQueueSize = 0;
 
 		for (std::map<InetSocketAddress, TransportQueuePtr>::iterator it = idle.begin(); it != idle.end(); ++it) {
 			TransportQueuePtr idleQ = it->second;
 			if (minIdle > 0 && (int) idleQ->size() > minIdle) {
 				keyToRemove = &it->first;
 				break;
-			} else if ((int) idleQ->size() > longerQueueSize) {
+			} else if (idleQ->size() > longerQueueSize) {
 				keyToRemove = &it->first;
 				longerQueueSize = idleQ->size();
 			}
@@ -234,7 +234,7 @@ void ConnectionPool::clear(const InetSocketAddress& key) {
     TransportQueuePtr idleQ = idle[key];
     if (!idleQ)
     	return;
-    totalIdle -= idleQ->size();
+    totalIdle -= (int)idleQ->size();
     clear(key, idleQ);
     idle.erase(key);
 }
