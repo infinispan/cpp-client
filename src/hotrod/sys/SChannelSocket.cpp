@@ -536,9 +536,9 @@ void SChannelSocket::connect(const std::string & host, int port, int timeout)
     ALG_ID           rgbSupportedAlgs[16];
     TimeStamp        tsExpiry;
     SecBuffer        ExtraData;
-    HANDLE           hFile, hClientFile;
-    char             servCert[8192], pemClientCert[8192];
-    BYTE             derServCert[8192], derClientCert[8192];
+    HANDLE           hFile;
+    char             servCert[8192];
+    BYTE             derServCert[8192];
     DWORD            derCertLen = 8192;
     DWORD            readLen;
 
@@ -618,7 +618,6 @@ void SChannelSocket::connect(const std::string & host, int port, int timeout)
         // Read it and build certificate and set credentials for the schannel
         BYTE             clientCertStore[8192];
         DWORD            clientCertStoreLen = 8192;
-        DWORD            readLen;
         CRYPT_DATA_BLOB blob;
         // User provided the certificate to validate the server in a file
         // Read it and build certificate and certificates store
@@ -645,9 +644,6 @@ void SChannelSocket::connect(const std::string & host, int port, int timeout)
         pClientContext = CertFindCertificateInStore(certStore, X509_ASN_ENCODING | PKCS_7_ASN_ENCODING
             , 0, CERT_FIND_ANY, NULL, NULL);
         
-/*        pClientContext = CertCreateCertificateContext(X509_ASN_ENCODING | PKCS_7_ASN_ENCODING,
-            (BYTE*)derClientCert,
-            derCertLen); */
         if (pClientContext == NULL)
         {
             printf("**** Error 0x%x returned by CertCreateCertificateContext. Cannot create certificate. File corrupted?\n", GetLastError());
@@ -769,7 +765,7 @@ SECURITY_STATUS SChannelSocket::readDecrypt(const DWORD bufsize, size_t *read_co
 	SECURITY_STATUS    scRet;
 	SecBufferDesc      Message;
 	SecBuffer          Buffers[4];
-	DWORD              cbData, length;
+	DWORD              cbData;
 	int i;
 
 	// Read data from server until done.
@@ -908,12 +904,11 @@ DWORD SChannelSocket::encryptSend(size_t len, SecPkgContext_StreamSizes Sizes)
 	cbData = send(Client_Socket, (const PCHAR)pbWBuffer, Buffers[0].cbBuffer + Buffers[1].cbBuffer + Buffers[2].cbBuffer, 0);
 
 	DEBUG("%d bytes of encrypted data sent\n", cbData);
-	return cbData; // send( Socket, pbIoBuffer,    Sizes.cbHeader + strlen(pbMessage) + Sizes.cbTrailer,  0 );
+	return cbData; 
 }
 
 void SChannelSocket::write(const char *p, size_t length)
 {
-	PBYTE pbIoBuffer;
 	SecPkgContext_StreamSizes Sizes;
 	initializer.g_pSSPI->QueryContextAttributes(&hContext, SECPKG_ATTR_STREAM_SIZES, &Sizes);
 	auto cbIoBufferLength = Sizes.cbHeader + Sizes.cbMaximumMessage + Sizes.cbTrailer;
