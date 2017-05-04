@@ -60,3 +60,10 @@ CTestTestfile.cmake
 cmake_install.cmake
 build
 infinispan-server-*
+
+# Exclude vim tmp files  #
+##########################
+*~
+*.swp
+*.swo
+
