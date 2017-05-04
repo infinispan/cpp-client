@@ -47,6 +47,9 @@ class Socket: public infinispan::hotrod::sys::Socket {
     virtual size_t read(char *p, size_t n);
     virtual void write(const char *p, size_t n);
     virtual int getSocket();
+    std::string getHost() { return host; }
+    int getPort() { return port; }
+    void setFd(int fd) { this->fd=fd; }
   private:
     int fd;
     std::string host;
@@ -78,114 +81,101 @@ Socket::Socket() : fd(-1), port(-1) {}
 
 Socket::~Socket() { close(); }
 
+/* Try a non blocking connect with a timeout */
+static int attemptConnect(const char* ip, int port, int sock, int timeout,
+		struct addrinfo* addr) {
+	// Connect
+	DEBUG("Attempting connection to %s:%d", ip, port);
+	int s = ::connect(sock, addr->ai_addr, addr->ai_addrlen);
+	if (s < 0 && errno == EINPROGRESS) {
+		pollfd fds[1];
+		fds[0].fd = sock;
+		fds[0].events = POLLOUT;
+		auto evCount = poll(fds, 1, timeout);
+		if (evCount > 0) {
+			if ((POLLOUT ^ fds[0].revents) != 0) {
+				DEBUG("Failed to connect to %s:%d", ip, port);
+			} else {
+				int opt;
+				socklen_t optlen = sizeof(opt);
+				s = getsockopt(sock, SOL_SOCKET, SO_ERROR, (void*) ((&opt)),
+						&optlen);
+			}
+		} else if (evCount == 0) {
+			DEBUG("Timed out connecting to %s:%d", ip, port);
+		}
+	}
+	return s;
+}
+
+/* Connect to host using trying all the available addresses */
+static bool connectToHost(Socket* usrSocket, bool preferred, int timeout, struct addrinfo* addr_list) {
+	char ip[INET6_ADDRSTRLEN];
+	int flags = 0, sock = 0;
+	struct addrinfo *addr;
+	for (addr = addr_list; addr != NULL; addr = addr->ai_next) {
+		inet_ntop(addr->ai_family,
+				get_in_addr((struct sockaddr*) (addr->ai_addr)), ip,
+				sizeof(ip));
+		if ((preferredIPStack == addr->ai_family) != preferred) {
+			// Skip non-preferred addresses on the first run and preferred ones on the second one.
+			continue;
+		}
+		TRACE("Trying to connect to %s (%s).", ip, usrSocket->getHost().c_str());
+		sock = socket(addr->ai_family, addr->ai_socktype, addr->ai_protocol);
+		if (sock == -1) {
+			DEBUG("Failed to obtain socket for address family %d",
+					addr->ai_family);
+			continue;
+		}
+		sendFlag = MSG_NOSIGNAL;
+		// Make the socket non-blocking for the connection
+		flags = fcntl(sock, F_GETFL, 0);
+		fcntl(sock, F_SETFL, flags | O_NONBLOCK);
+		// Connect
+		int s = attemptConnect(ip, usrSocket->getPort(), sock, timeout, addr);
+		if (s < 0) {
+			::close(sock);
+		} else {
+			// We got a successful connection
+			// Set to blocking mode again
+			fcntl(sock, F_SETFL, flags & ~O_NONBLOCK);
+			usrSocket->setFd(sock);
+			return true;
+		}
+	}
+	return false;
+}
+
 void Socket::connect(const std::string& h, int p, int timeout) {
-    struct addrinfo *addr, *addr_list;
-    char ip[INET6_ADDRSTRLEN];
-    int error = 0, flags = 0, sock = 0;
+	struct addrinfo *addr_list;
 
-    host = h;
-    port = p;
-    if (fd != -1) throwIOErr(host, port, "reconnect attempt", 0);
+	host = h;
+	port = p;
+	if (fd != -1)
+		throwIOErr(host, port, "reconnect attempt", 0);
 
-    int ec = getaddrinfo(host, port, &addr_list);
-    if (ec) {
-        std::ostringstream msg;
-        msg << "Error while invoking getaddrinfo: " << gai_strerror(ec);
-        throwIOErr(host, port, msg.str().c_str(), 0);
-    }
+	int ec = getaddrinfo(host, port, &addr_list);
+	if (ec) {
+		std::ostringstream msg;
+		msg << "Error while invoking getaddrinfo: " << gai_strerror(ec);
+		throwIOErr(host, port, msg.str().c_str(), 0);
+	}
 
-    // Cycle through all returned addresses
-    bool preferred = true;
-    while (true) {
-        bool found = false;
-        for(addr = addr_list; addr != NULL; addr = addr->ai_next ) {
-            inet_ntop(addr->ai_family, get_in_addr((struct sockaddr *)addr->ai_addr), ip, sizeof(ip));
-            if ((preferred && (preferredIPStack != addr->ai_family))
-                || (!preferred && (preferredIPStack == addr->ai_family))) {
-                // Skip non-preferred addresses on the first run and preferred ones on the second one.
-                continue;
-            }
-            TRACE("Trying to connect to %s (%s).", ip, host.c_str());
+	// Cycle through all returned addresses
+	bool preferred = true;
+	if (!connectToHost(this, preferred, timeout, addr_list)) {
+		preferred = false;
+		connectToHost(this, preferred, timeout, addr_list);
+	}
 
-            sock = socket(addr->ai_family, addr->ai_socktype, addr->ai_protocol);
-            if (sock == -1) {
-                DEBUG("Failed to obtain socket for address family %d", addr->ai_family);
-                continue;
-            }
-
-            // OSX portability as MSG_NOSIGNAL is not defined on OSX
-#ifdef MSG_NOSIGNAL
-            sendFlag = MSG_NOSIGNAL;
-#else
-            sendFlag = 0;
-            int optval = 1;
-            if (setsockopt(sock, SOL_SOCKET, SO_NOSIGPIPE, &optval, sizeof(optval)) == -1) {
-                close();
-                DEBUG("Error %d while invoking setsockopt", errno);
-                continue;
-            }
-#endif
-
-
-            // Make the socket non-blocking for the connection
-            flags = fcntl(sock,F_GETFL,0);
-            fcntl(sock, F_SETFL, flags | O_NONBLOCK);
-
-            // Connect
-            DEBUG("Attempting connection to %s:%d", ip, port);
-            int s = ::connect(sock, addr->ai_addr, addr->ai_addrlen);
-            error = errno;
-
-            if (s < 0) {
-                if (error == EINPROGRESS) {
-                    pollfd fds[1];
-                    fds[0].fd = sock;
-                    fds[0].events = POLLOUT;
-                    s = poll(fds, 1, timeout);
-                    if (s > 0) {
-                        if ((POLLOUT ^ fds[0].revents) != 0) {
-                            ::close(sock);
-                            DEBUG("Failed to connect to %s:%d", ip, port);
-                            continue;
-                        }
-                        int opt;
-                        socklen_t optlen = sizeof(opt);
-                        s = getsockopt(sock, SOL_SOCKET, SO_ERROR, (void*)(&opt), &optlen);
-                    } else if (s == 0) {
-                        ::close(sock);
-                        DEBUG("Timed out connecting to %s:%d", ip, port);
-                        continue;
-                    } else {
-                        error = errno;
-                    }
-                } else {
-                    s = -1;
-                }
-            }
-            if (s < 0) {
-                ::close(sock);
-            } else {
-                // We got a successful connection
-                found = true;
-                break;
-            }
-        }
-        if (!found && preferred) {
-            // Try the non-preferred addresses.
-            preferred = false;
-        } else {
-            break;
-        }
-    }
-    freeaddrinfo(addr_list);
-    /* No address succeeded */
-    if(addr == NULL) {
-        throwIOErr(host, port, "Failed to connect", error);
-    }
-    DEBUG("Connected to %s:%d", ip, port);
-    // Set to blocking mode again
-    fcntl(sock, F_SETFL, flags & ~O_NONBLOCK);
-    fd = sock;
+	freeaddrinfo(addr_list);
+	/* No address succeeded */
+	if (fd == -1) {
+		// TODO: the exception is build with the last errno. Maybe this need a fix
+		throwIOErr(host, port, "Failed to connect", errno);
+	}
+	DEBUG("Connected to %s:%d", host.c_str(), port);
 }
 
 void Socket::close() {
