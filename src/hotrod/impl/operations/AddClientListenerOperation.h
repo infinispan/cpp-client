@@ -51,6 +51,9 @@ public:
 private:
     const std::vector<char> cacheName;
     std::vector<char> generateV4UUID();
+	void processEvent(const protocol::Codec20& codec20, uint8_t respOpCode,
+			transport::Transport& transport);
+
     /**
      * Dedicated transport instance for adding client listener. This transport
      * is used to send events back to client and it's only released when the

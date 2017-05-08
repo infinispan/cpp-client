@@ -46,98 +46,90 @@ transport::Transport& AddClientListenerOperation::getTransport(int, const std::s
     return *dedicatedTransport;
 }
 
+//
+static void processImmediateEvent(const ClientListener &clientListener, const Codec20& codec20,
+		uint8_t respOpCode, transport::Transport& transport) {
+	std::vector<char> listId = codec20.readEventListenerId(transport);
+	uint8_t isCustom = codec20.readEventIsCustomFlag(transport);
+	uint8_t isRetried = codec20.readEventIsRetriedFlag(transport);
+	if (isCustom != 0) {
+		ClientCacheEntryCustomEvent ev = codec20.readCustomEvent(transport,
+				isRetried);
+		clientListener.processEvent(ev, listId, isCustom);
+	} else {
+		switch (respOpCode) {
+		case HotRodConstants::CACHE_ENTRY_CREATED_EVENT_RESPONSE: {
+			ClientCacheEntryCreatedEvent<std::vector<char> > marshEvent =
+					codec20.readCreatedEvent(transport, isRetried);
+			clientListener.processEvent(marshEvent, listId, isCustom);
+		}
+			break;
+		case HotRodConstants::CACHE_ENTRY_MODIFIED_EVENT_RESPONSE: {
+			ClientCacheEntryModifiedEvent<std::vector<char> > marshEvent =
+					codec20.readModifiedEvent(transport, isRetried);
+			clientListener.processEvent(marshEvent, listId, isCustom);
+		}
+			break;
+		case HotRodConstants::CACHE_ENTRY_REMOVED_EVENT_RESPONSE: {
+			ClientCacheEntryRemovedEvent<std::vector<char> > marshEvent =
+					codec20.readRemovedEvent(transport, isRetried);
+			clientListener.processEvent(marshEvent, listId, isCustom);
+		}
+			break;
+		case HotRodConstants::CACHE_ENTRY_EXPIRED_EVENT_RESPONSE:
+			break;
+		default:
+			break;
+		}
+	}
+}
+
 char AddClientListenerOperation::executeOperation(transport::Transport& transport)
 {
     std::unique_ptr<protocol::HeaderParams> params(this->writeHeader(transport, ADD_CLIENT_LISTENER_REQUEST));
     const Codec20& codec20 = dynamic_cast<const Codec20&>(codec);
-    try
-    {
     transport.writeArray(listenerId);
     codec20.writeClientListenerParams(transport, clientListener, filterFactoryParams, converterFactoryParams);
     transport.flush();
-    }
-    catch (Exception& ) { }
     listenerNotifier.addClientListener(listenerId, clientListener, cacheName, transport, codec20, (std::shared_ptr<void>)this->shared_from_this(), recoveryCallback);
     this->shared=true;
     const_cast <ClientListener&>(clientListener).setListenerId(listenerId);
-    bool readMore = true;
     uint64_t respMessageId = 0;
     try
     {
-    do
-    {
+		uint8_t status = NO_ERROR_STATUS;
     	uint8_t respOpCode = codec20.readAddEventListenerResponseType(transport, respMessageId);
-    	// The response contains immediate event to process
-    	if (isEvent(respOpCode))
-    	{
+    	while (isEvent(respOpCode))
+    	{    	// The response contains immediate event to process
 			EventHeaderParams params;
 			params.messageId=respMessageId;
 			params.opCode=respOpCode;
 			try
 			{
-				uint8_t status = codec20.readPartialEventHeader(transport, params);
-				if (!HotRodConstants::isSuccess(status))
-					break;
+				status = codec20.readPartialEventHeader(transport, params);
+				if (HotRodConstants::isSuccess(status))
+				{
+					processImmediateEvent(clientListener, codec20, respOpCode, transport);
+				}
 			}
 			catch (HotRodClientException e) {
-				continue;
 			}
-		    std::vector<char> listId=codec20.readEventListenerId(transport);
-		    uint8_t isCustom = codec20.readEventIsCustomFlag(transport);
-		    uint8_t isRetried = codec20.readEventIsRetriedFlag(transport);
-		    if (isCustom != 0)
-		    {
-		    	ClientCacheEntryCustomEvent ev = codec20.readCustomEvent(transport,isRetried);
-		    	clientListener.processEvent(ev, listId, isCustom);
-		    }
-		    else
-		    {
-				switch (respOpCode) {
-				case CACHE_ENTRY_CREATED_EVENT_RESPONSE: {
-					ClientCacheEntryCreatedEvent<std::vector<char>> marshEvent =
-							codec20.readCreatedEvent(transport, isRetried);
-					clientListener.processEvent(marshEvent, listId, isCustom);
-				}
-					break;
-				case CACHE_ENTRY_MODIFIED_EVENT_RESPONSE: {
-					ClientCacheEntryModifiedEvent<std::vector<char>> marshEvent =
-							codec20.readModifiedEvent(transport, isRetried);
-					clientListener.processEvent(marshEvent, listId, isCustom);
-				}
-					break;
-				case CACHE_ENTRY_REMOVED_EVENT_RESPONSE: {
-					ClientCacheEntryRemovedEvent<std::vector<char>> marshEvent =
-							codec20.readRemovedEvent(transport, isRetried);
-					clientListener.processEvent(marshEvent, listId, isCustom);
-				}
-				break;
-				case CACHE_ENTRY_EXPIRED_EVENT_RESPONSE:
-					break;
-				default:
-					break;
-				}
-			}
+	    	respOpCode = codec20.readAddEventListenerResponseType(transport, respMessageId);
     	}
-        else
-        {
-        	if (respMessageId != params->getMessageId() && respMessageId != 0) {
-        	    std::ostringstream message;
-        	    message << "Invalid message id. Expected " <<
-        	        params->getMessageId() << " and received " << respMessageId;
-        	    throw InvalidResponseException(message.str());
-        	}
-        	uint8_t status = codec20.readPartialHeader(transport, *params, respOpCode);
-        	if (HotRodConstants::isSuccess(status))
-        	{
-        		listenerNotifier.startClientListener(listenerId);
-        	}
-        	else
-        	{
-        		listenerNotifier.removeClientListener(listenerId);
-        	}
-        	readMore=false;
-    	}
-    } while (readMore);
+        if (respMessageId != params->getMessageId() && respMessageId != 0) {
+            std::ostringstream message;
+            message << "Invalid message id. Expected "
+                << params->getMessageId() << " and received "
+                << respMessageId;
+            throw InvalidResponseException(message.str());
+        }
+        if (HotRodConstants::isSuccess(status)
+                && HotRodConstants::isSuccess(codec20.readPartialHeader(transport, *params,respOpCode)))
+    	{
+			listenerNotifier.startClientListener(listenerId);
+		} else {
+			listenerNotifier.removeClientListener(listenerId);
+		}
     }
     catch (const TransportException& ex)
     {
