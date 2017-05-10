@@ -20,7 +20,6 @@
 #pragma comment(lib, "Secur32.lib")
 
 using namespace infinispan::hotrod::sys;
-PCCERT_CONTEXT  SChannelSocket::pServerContext = NULL, SChannelSocket::pClientContext = NULL;
 HCERTSTORE SChannelSocket::hMemStore = NULL;
 SChannelSocket::SChannelInitializer SChannelSocket::initializer;
 
@@ -29,11 +28,11 @@ SChannelSocket::SChannelInitializer::SChannelInitializer() {
 	g_pSSPI=InitSecurityInterface();
 	if (g_pSSPI == NULL)
 	{
-		logAndThrow("", 0, "InitSecurityInferface: initialization failure");
+        throw HotRodClientException("InitSecurityInferface: initialization failure");
 	}
 	if (WSAStartup(0x0101, &wsaData))
 	{
-		logAndThrow("",0,"Could not initialize winsock");
+        throw HotRodClientException("Could not initialize winsock");
 	}
 }
 
@@ -160,7 +159,7 @@ SECURITY_STATUS SChannelSocket::clientHandshakeLoop(BOOL doInitialRead, SecBuffe
 		OutBuffer.ulVersion = SECBUFFER_VERSION;
 
 		// Call InitializeSecurityContext.
-		scRet = initializer.g_pSSPI->InitializeSecurityContextA(&hCred,
+		scRet = InitializeSecurityContext(&hCred,
 			&hContext,
 			m_hostName.empty() ? NULL : (LPSTR)m_hostName.c_str(),
 			dwSSPIFlags,
@@ -273,7 +272,7 @@ SECURITY_STATUS SChannelSocket::clientHandshakeLoop(BOOL doInitialRead, SecBuffe
 	}
 
 	// Delete the security context in the case of a fatal error.
-	if (FAILED(scRet)) initializer.g_pSSPI->DeleteSecurityContext(&hContext);
+	if (FAILED(scRet)) DeleteSecurityContext(&hContext);
 	return scRet;
 }
 
@@ -298,7 +297,7 @@ SECURITY_STATUS SChannelSocket::performClientHandshake(std::string host, SecBuff
 	OutBuffer.pBuffers = OutBuffers;
 	OutBuffer.ulVersion = SECBUFFER_VERSION;
 
-	scRet = initializer.g_pSSPI->InitializeSecurityContextA(&hCred,
+	scRet = InitializeSecurityContext(&hCred,
 		NULL,
 		pszServerName,
 		dwSSPIFlags,
@@ -324,16 +323,15 @@ SECURITY_STATUS SChannelSocket::performClientHandshake(std::string host, SecBuff
 		if (cbData == SOCKET_ERROR || cbData == 0)
 		{
 			ERROR("**** Error %d sending data to server (1)\n", WSAGetLastError());
-			initializer.g_pSSPI->FreeContextBuffer(OutBuffers[0].pvBuffer);
-			initializer.g_pSSPI->DeleteSecurityContext(&hContext);
+			FreeContextBuffer(OutBuffers[0].pvBuffer);
+			DeleteSecurityContext(&hContext);
 			return SEC_E_INTERNAL_ERROR;
 		}
 		DEBUG("%d bytes of handshake data sent\n", cbData);
 		//{ PrintHexDump(cbData, OutBuffers[0].pvBuffer); printf("\n"); }
-		initializer.g_pSSPI->FreeContextBuffer(OutBuffers[0].pvBuffer); // Free output buffer.
+		FreeContextBuffer(OutBuffers[0].pvBuffer); // Free output buffer.
 		OutBuffers[0].pvBuffer = NULL;
 	}
-
 	return clientHandshakeLoop(TRUE, pExtraData);
 }
 
@@ -526,6 +524,124 @@ bool is_pem_filename(const std::string &str)
         str.compare(str.size() - 4, 4, suffix) == 0;
 }
 
+void SChannelSocket::setupCertStoreServer()
+{
+    HANDLE           hFile;
+    char             servCert[8192];
+    DWORD            readLen;
+    BYTE             derServCert[8192];
+    DWORD            derCertLen = 8192;
+    PCCERT_CONTEXT   pServerContext = NULL;
+    // Read the user provided file with the certificate to validate the server 
+    hFile = CreateFile(m_serverCAFile.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+    if (hFile == INVALID_HANDLE_VALUE)
+    {
+        fprintf(stderr, "**** Error %d. Failed to open server certificate file %s.\n", GetLastError(), m_serverCAFile.c_str());
+    }
+
+    if (!ReadFile(hFile, servCert, 8192, &readLen, NULL))
+    {
+        fprintf(stderr, "**** Error %d. Failed to open read certificate file %s.\n", GetLastError(), m_serverCAFile.c_str());
+    }
+    CloseHandle(hFile);
+    
+    // Build the certificates store
+    // .pem if pem all others are supposed to be p12 pfx
+    if (is_pem_filename(m_serverCAFile.c_str()))
+    {
+        if (!CryptStringToBinary(servCert, readLen, CRYPT_STRING_BASE64_ANY, derServCert, &derCertLen, NULL, NULL))
+        {
+            printf("**** Error 0x%x returned by CryptStringToBinary server cert\n", GetLastError());
+            logAndThrow("ERROR");
+        }
+        pServerContext = CertCreateCertificateContext(X509_ASN_ENCODING | PKCS_7_ASN_ENCODING,
+            (BYTE*)derServCert,
+            derCertLen);
+        if (pServerContext == NULL)
+        {
+            printf("**** Error 0x%x returned by CertCreateCertificateContext. Cannot create certificate. File corrupted?\n", GetLastError());
+            logAndThrow("ERROR");
+        }
+        if (!(SChannelSocket::hMemStore = CertOpenStore(
+            CERT_STORE_PROV_MEMORY,   // The memory provider type
+            0,                        // The encoding type is not needed
+            NULL,                     // Use the default HCRYPTPROV
+            0,                        // Accept the default dwFlags
+            NULL                      // pvPara is not used
+        )))
+        {
+            printf("**** Error 0x%x returned by CertOpenStore\n", GetLastError());
+            logAndThrow("ERROR");
+        }
+        if (!CertAddCertificateContextToStore(SChannelSocket::hMemStore, pServerContext,
+            CERT_STORE_ADD_REPLACE_EXISTING,
+            NULL
+        ))
+        {
+            printf("**** Error 0x%x returned by CertAddCertificateContextToStore\n", GetLastError());
+            logAndThrow("ERROR");
+        }
+    }
+    else
+    {
+        // p12 can be imported directly as certstore
+        CRYPT_DATA_BLOB sblob;
+        sblob.cbData = (DWORD)readLen;
+        sblob.pbData = (BYTE*)servCert;
+
+        // Importing the cert. The file cannot be password protected
+        HCERTSTORE servCertStore = PFXImportCertStore(&sblob, L"", CRYPT_MACHINE_KEYSET);
+        if (servCertStore == NULL) {
+            printf("PFXImportCertStore failed. hr=0x%x\n", GetLastError());
+            logAndThrow("ERROR");
+        }
+    }
+}
+
+void SChannelSocket::setupCertClient(SCHANNEL_CRED& schannelCred)
+{
+    // User provided the certificate to validate the client against the server
+    // Read it and build certificate and set credentials for the schannel
+    HANDLE           hFile;
+    BYTE             clientCertStore[8192];
+    DWORD            clientCertStoreLen = 8192;
+    CRYPT_DATA_BLOB blob;
+    PCCERT_CONTEXT pClientContext;
+
+    // User provided the certificate to validate the server in a file
+    // Read it and build certificate and certificates store
+    hFile = CreateFile(m_clientCertificateFile.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+    if (hFile == INVALID_HANDLE_VALUE)
+    {
+        fprintf(stderr, "**** Error %d. Failed to open server certificate file %s.\n", GetLastError(), m_clientCertificateFile.c_str());
+    }
+
+    if (!ReadFile(hFile, clientCertStore, 8192, &clientCertStoreLen, NULL))
+    {
+        fprintf(stderr, "**** Error %d. Failed to open read certificate file %s.\n", GetLastError(), m_clientCertificateFile.c_str());
+    }
+    CloseHandle(hFile);
+    blob.cbData = (DWORD)clientCertStoreLen;
+    blob.pbData = clientCertStore;
+
+    HCERTSTORE certStore = PFXImportCertStore(&blob, L"", CRYPT_EXPORTABLE);
+    if (certStore == NULL) {
+        printf("PFXImportCertStore failed. hr=0x%x\n", GetLastError());
+        logAndThrow("ERROR");
+    }
+
+    pClientContext = CertFindCertificateInStore(certStore, X509_ASN_ENCODING | PKCS_7_ASN_ENCODING
+        , 0, CERT_FIND_ANY, NULL, NULL);
+
+    if (pClientContext == NULL)
+    {
+        printf("**** Error 0x%x returned by CertCreateCertificateContext. Cannot create certificate. File corrupted?\n", GetLastError());
+        logAndThrow("ERROR");
+    }
+    schannelCred.cCreds = 1;
+    schannelCred.paCred = &pClientContext;
+}
+
 void SChannelSocket::connect(const std::string & host, int port, int timeout)
 {
     SCHANNEL_CRED    SchannelCred;
@@ -536,124 +652,25 @@ void SChannelSocket::connect(const std::string & host, int port, int timeout)
     ALG_ID           rgbSupportedAlgs[16];
     TimeStamp        tsExpiry;
     SecBuffer        ExtraData;
-    HANDLE           hFile;
-    char             servCert[8192];
-    BYTE             derServCert[8192];
-    DWORD            derCertLen = 8192;
-    DWORD            readLen;
 
+    m_host = host;
+    m_port = port;
+    // Setup server certificate data
     if (hMemStore==NULL && !m_serverCAFile.empty())
     {
-        // User provided the certificate to validate the server in a file
-        // Read it and build certificate and certificates store
-        hFile = CreateFile(m_serverCAFile.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-        if (hFile == INVALID_HANDLE_VALUE)
-        {
-            fprintf(stderr, "**** Error %d. Failed to open server certificate file %s.\n", GetLastError(), m_serverCAFile.c_str());
-        }
-
-        if (!ReadFile(hFile, servCert, 8192, &readLen, NULL))
-        {
-            fprintf(stderr, "**** Error %d. Failed to open read certificate file %s.\n", GetLastError(), m_serverCAFile.c_str());
-        }
-        CloseHandle(hFile);
-
-        // .pem if pem all others are supposed to be p12 pfx
-        if (is_pem_filename(m_serverCAFile.c_str()))
-        {
-            if (!CryptStringToBinary(servCert, readLen, CRYPT_STRING_BASE64_ANY, derServCert, &derCertLen, NULL, NULL))
-            {
-                printf("**** Error 0x%x returned by CryptStringToBinary server cert\n", GetLastError());
-                logAndThrow(host, port, "ERROR");
-            }
-            pServerContext = CertCreateCertificateContext(X509_ASN_ENCODING | PKCS_7_ASN_ENCODING,
-                (BYTE*)derServCert,
-                derCertLen);
-            if (pServerContext == NULL)
-            {
-                printf("**** Error 0x%x returned by CertCreateCertificateContext. Cannot create certificate. File corrupted?\n", GetLastError());
-                logAndThrow(host, port, "ERROR");
-            }
-            if (!(hMemStore = CertOpenStore(
-                CERT_STORE_PROV_MEMORY,   // The memory provider type
-                0,                        // The encoding type is not needed
-                NULL,                     // Use the default HCRYPTPROV
-                0,                        // Accept the default dwFlags
-                NULL                      // pvPara is not used
-                )))
-            {
-                printf("**** Error 0x%x returned by CertOpenStore\n", GetLastError());
-                logAndThrow(host, port, "ERROR");
-            }
-            if (!CertAddCertificateContextToStore(hMemStore, pServerContext,
-                CERT_STORE_ADD_REPLACE_EXISTING,
-                NULL
-                ))
-            {
-                printf("**** Error 0x%x returned by CertAddCertificateContextToStore\n", GetLastError());
-                logAndThrow(host, port, "ERROR");
-            }
-        }
-        else
-        {
-            // p12 can be imported directly as certstore
-            CRYPT_DATA_BLOB sblob;
-            sblob.cbData = (DWORD)readLen;
-            sblob.pbData = (BYTE*)servCert;
-
-            // Importing the cert. The file cannot be password protected
-            HCERTSTORE servCertStore = PFXImportCertStore(&sblob, L"", CRYPT_MACHINE_KEYSET);
-            if (servCertStore == NULL) {
-                printf("PFXImportCertStore failed. hr=0x%x\n", GetLastError());
-                logAndThrow(host, port, "ERROR");
-            }
-        }
+        setupCertStoreServer();
     }
 
     ZeroMemory(&SchannelCred, sizeof(SchannelCred));
     SchannelCred.dwVersion = SCHANNEL_CRED_VERSION;
-    if (pClientContext==NULL && !m_clientCertificateFile.empty())
+
+    // Setup client certificate data
+    if (!m_clientCertificateFile.empty())
     {
-        // User provided the certificate to validate the client against the server
-        // Read it and build certificate and set credentials for the schannel
-        BYTE             clientCertStore[8192];
-        DWORD            clientCertStoreLen = 8192;
-        CRYPT_DATA_BLOB blob;
-        // User provided the certificate to validate the server in a file
-        // Read it and build certificate and certificates store
-        hFile = CreateFile(m_clientCertificateFile.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-        if (hFile == INVALID_HANDLE_VALUE)
-        {
-            fprintf(stderr, "**** Error %d. Failed to open server certificate file %s.\n", GetLastError(), m_clientCertificateFile.c_str());
-        }
-
-        if (!ReadFile(hFile, clientCertStore, 8192, &clientCertStoreLen, NULL))
-        {
-            fprintf(stderr, "**** Error %d. Failed to open read certificate file %s.\n", GetLastError(), m_clientCertificateFile.c_str());
-        }
-        CloseHandle(hFile);
-        blob.cbData = (DWORD)clientCertStoreLen;
-        blob.pbData = clientCertStore;
-
-        HCERTSTORE certStore = PFXImportCertStore(&blob, L"", CRYPT_EXPORTABLE);
-        if (certStore == NULL) {
-            printf("PFXImportCertStore failed. hr=0x%x\n", GetLastError());
-            logAndThrow(host, port, "ERROR");
-        }
-        
-        pClientContext = CertFindCertificateInStore(certStore, X509_ASN_ENCODING | PKCS_7_ASN_ENCODING
-            , 0, CERT_FIND_ANY, NULL, NULL);
-        
-        if (pClientContext == NULL)
-        {
-            printf("**** Error 0x%x returned by CertCreateCertificateContext. Cannot create certificate. File corrupted?\n", GetLastError());
-            logAndThrow(host, port, "ERROR");
-        }
-        SchannelCred.cCreds = 1;
-        SchannelCred.paCred = &pClientContext;
+        setupCertClient(SchannelCred);
     }
-    SchannelCred.grbitEnabledProtocols = dwProtocol;
 
+    SchannelCred.grbitEnabledProtocols = dwProtocol;
     if (aiKeyExch) rgbSupportedAlgs[cSupportedAlgs++] = aiKeyExch;
 
     if (cSupportedAlgs)
@@ -670,7 +687,7 @@ void SChannelSocket::connect(const std::string & host, int port, int timeout)
     }
 
     // Create an SSPI credential.
-    Status = SChannelSocket::initializer.g_pSSPI->AcquireCredentialsHandleA(NULL,                 // Name of principal    
+    Status = AcquireCredentialsHandle(NULL,                 // Name of principal    
         UNISP_NAME_A,         // Name of package
         SECPKG_CRED_OUTBOUND, // Flags indicating use
         NULL,                 // Pointer to logon ID
@@ -679,24 +696,25 @@ void SChannelSocket::connect(const std::string & host, int port, int timeout)
         NULL,                 // Value to pass to GetKey()
         &hCred,              // (out) Cred Handle
         &tsExpiry);          // (out) Lifetime (optional)
-
     if (Status != SEC_E_OK)
     {
         ERROR("**** Error 0x%x returned by AcquireCredentialsHandle\n", Status);
     }
+
     Client_Socket = INVALID_SOCKET;
+    // Setup the socket
     connectToServer(host, port, &Client_Socket);
-    performClientHandshake(m_hostName.empty() ? host : m_hostName, &ExtraData);
+    // Setup security
+    performClientHandshake(m_hostName.empty() ? m_host : m_hostName, &ExtraData);
     isContextInitialized = true;
     // Authenticate server's credentials. Get server's certificate.
-    Status = initializer.g_pSSPI->QueryContextAttributes(&hContext, SECPKG_ATTR_REMOTE_CERT_CONTEXT, (PVOID)&pRemoteCertContext);
+    Status = QueryContextAttributes(&hContext, SECPKG_ATTR_REMOTE_CERT_CONTEXT, (PVOID)&pRemoteCertContext);
     if (Status != SEC_E_OK)
     {
         cleanup();
         ERROR("Error 0x%x querying remote certificate\n", Status);
-        logAndThrow(host, port, "Error querying remote certificate\n");
-    } //
-
+        logAndThrow("Error querying remote certificate\n");
+    } 
     // Attempt to validate server certificate.
     if (this->onlyVerified)
     {
@@ -705,14 +723,14 @@ void SChannelSocket::connect(const std::string & host, int port, int timeout)
         {
             ERROR("**** Error 0x%x the server certificate did not validate correctly.\n", Status);
             cleanup();
-            logAndThrow(host, port, "**** The server certificate did not validate correctly.\n");
+            logAndThrow("**** The server certificate did not validate correctly.\n");
         }
     }
     CertFreeCertificateContext(pRemoteCertContext);
     pRemoteCertContext = NULL;
     DEBUG("----- Server certificate context released \n");
     SecPkgContext_StreamSizes Sizes;
-    initializer.g_pSSPI->QueryContextAttributes(&hContext, SECPKG_ATTR_STREAM_SIZES, &Sizes);
+    QueryContextAttributes(&hContext, SECPKG_ATTR_STREAM_SIZES, &Sizes);
     auto cbIoBufferLength = Sizes.cbHeader + Sizes.cbMaximumMessage + Sizes.cbTrailer;
     pbRBuffer = (PBYTE)LocalAlloc(LMEM_FIXED, cbIoBufferLength);
     pbWBuffer = (PBYTE)LocalAlloc(LMEM_FIXED, cbIoBufferLength);
@@ -846,17 +864,17 @@ SECURITY_STATUS SChannelSocket::readDecrypt(const DWORD bufsize, size_t *read_co
 
 		// The server wants to perform another handshake sequence.
 		if (scRet == SEC_I_RENEGOTIATE)
-		{
-			printf("Server requested renegotiate!\n");
-			scRet = clientHandshakeLoop(FALSE, &ExtraBuffer);
-			if (scRet != SEC_E_OK) return scRet;
+        {
+            printf("Server requested renegotiate!\n");
+            scRet = clientHandshakeLoop(FALSE, &ExtraBuffer);
+            if (scRet != SEC_E_OK) return scRet;
 
-			if (ExtraBuffer.pvBuffer) // Move any "extra" data to the input buffer.
-			{
-				MoveMemory(pbRBuffer, ExtraBuffer.pvBuffer, ExtraBuffer.cbBuffer);
-				cbRBuffer = ExtraBuffer.cbBuffer;
-			}
-		}
+            if (ExtraBuffer.pvBuffer) // Move any "extra" data to the input buffer.
+            {
+                MoveMemory(pbRBuffer, ExtraBuffer.pvBuffer, ExtraBuffer.cbBuffer);
+                cbRBuffer = ExtraBuffer.cbBuffer;
+            }
+        }
 	} 
 	while (scRet == SEC_E_INCOMPLETE_MESSAGE || cbRBuffer>0);
 	return SEC_E_OK;
@@ -919,7 +937,7 @@ void SChannelSocket::write(const char *p, size_t length)
 size_t SChannelSocket::read(char *p, size_t length)
 {
 	unsigned int count = this->ready_bytes - this->offset_bytes;
-	// On emprty buffer read bytes from TLS
+	// On empty buffer read bytes from TLS
 	if (count <= 0)
 	{
 		SecPkgContext_StreamSizes Sizes;
@@ -954,9 +972,9 @@ SChannelSocket* SChannelSocket::create(const std::string& _serverCAPath, const s
 	return new SChannelSocket(_serverCAPath, _serverCAFile, _clientCertificateFile, _hostName);
 }
 
-void SChannelSocket::logAndThrow(const std::string& host, const int port, const std::string& msg) {
+void SChannelSocket::logAndThrow(const std::string& msg) {
 	DEBUG(msg.c_str());
-	throw TransportException(host, port, msg, -1);
+	throw TransportException(m_host, m_port, msg, -1);
 }
 
 /*****************************************************************************/
@@ -1065,19 +1083,7 @@ void SChannelSocket::cleanup()
     if (hMemStore) CertCloseStore(hMemStore, 0);
     hMemStore = NULL;
 
-    // Free certificates
-    if (pClientContext)
-    {
-        CertFreeCertificateContext(pClientContext);
-        pClientContext = NULL;
-    }
-    if (pServerContext)
-    {
-        CertFreeCertificateContext(pServerContext);
-        pServerContext = NULL;
-    }
-
-	if (recvBuff != NULL) LocalFree(recvBuff);
+    if (recvBuff != NULL) LocalFree(recvBuff);
 	if (pbWBuffer != NULL) LocalFree(pbWBuffer);
 	if (pbRBuffer != NULL) LocalFree(pbRBuffer);
 	recvBuff = pbWBuffer = pbRBuffer = NULL;
