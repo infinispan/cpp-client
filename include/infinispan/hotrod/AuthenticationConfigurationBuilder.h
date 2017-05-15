@@ -12,6 +12,8 @@
 namespace infinispan {
 namespace hotrod {
 
+
+
 class AuthenticationConfigurationBuilder
 {
 public:

@@ -7,9 +7,27 @@
 
 #ifndef INCLUDE_INFINISPAN_HOTROD_AUTHENTICATIONCONFIGURATION_H_
 #define INCLUDE_INFINISPAN_HOTROD_AUTHENTICATIONCONFIGURATION_H_
-#include <sasl/sasl.h>
 namespace infinispan {
 namespace hotrod {
+
+#if !defined _WIN32 && !defined _WIN64
+#include "sasl/sasl.h"
+
+#else
+
+typedef struct sasl_callback {
+    /* Identifies the type of the callback function.
+     * Mechanisms must ignore callbacks with id's they don't recognize.
+     */
+    unsigned long id;
+    int (*proc)(void);
+    void *context;
+} sasl_callback_t;
+
+
+#endif
+
+typedef int (*hr_sasl_callback_ft)(void);
 
 /**
  * AuthenticationConfiguration object along with its factory AuthenticationConfigurationBuilder represent

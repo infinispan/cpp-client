@@ -72,6 +72,7 @@ private:
 }
 }
 
+
 template<class T>
 void assert_not_null(const std::string& message, int line, const std::unique_ptr<T>& pointer) {
     if (pointer.get() == 0) {
