@@ -83,28 +83,32 @@ void assert_not_null(const std::string& message, int line, const std::unique_ptr
     }
 }
 
+#if !defined _WIN32 && !defined _WIN64
 int kinit();
 void kdestroy();
+#endif
 
 static char *simple_data; // plain
+
 #if !defined _WIN32 && !defined _WIN64
 static char realm_data[] = "applicationRealm";
 #else
 static char realm_data[] = "ApplicationRealm";
+#endif
 
 static char path_data[] = "/usr/lib64/sasl2";
 
-static int simple(void *context __attribute__((unused)), int id, const char **result, unsigned *len) {
+static int simple(void* /* context */, int id, const char **result, unsigned *len) {
     *result = simple_data;
     if (len)
         *len = strlen(simple_data);
     return SASL_OK;
 }
 
-static int getrealm(void *context __attribute__((unused)), int id, const char **result, unsigned *len) {
+static int getrealm(void* /* context */, int id, const char **result, unsigned *len) {
     *result = realm_data;
     if (len)
-        *len = strlen(simple_data);
+        *len = strlen(realm_data);
     return SASL_OK;
 }
 
@@ -120,12 +124,29 @@ static int getpath(void *context, const char ** path) {
 }
 
 static char *secret_data;
-static int getsecret(void *context, int id, const char **psecret, unsigned *retLen) {
+
+#if !defined _WIN32 && !defined _WIN64
+static int getsecret(void* /* conn */, void* /* context */, int id, sasl_secret_t **psecret) {
+    size_t len;
+    static sasl_secret_t *x;
+    len = strlen(secret_data);
+
+    x = (sasl_secret_t *) realloc(x, sizeof(sasl_secret_t) + len);
+
+    x->len = len;
+    strcpy((char *) x->data, secret_data);
+
+    *psecret = x;
+    return SASL_OK;
+}
+#else
+static int getsecret(void *context, int id, void **psecret, unsigned *retLen) {
     *psecret = secret_data;
     if (retLen)
         *retLen = strlen(secret_data);
     return SASL_OK;
 }
+#endif
 
 static std::vector<sasl_callback_t> callbackHandler { { SASL_CB_USER, (sasl_callback_ft) &simple, NULL }, {
 SASL_CB_AUTHNAME, (sasl_callback_ft) &simple, NULL }, { SASL_CB_PASS, (sasl_callback_ft) &getsecret, NULL }, {
