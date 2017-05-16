@@ -36,7 +36,7 @@ typedef struct sasl_callback {
 
 #endif
 
-typedef int (*hr_sasl_callback_ft)(void);
+typedef int (*sasl_callback_ft)(void);
 
 /**
  * AuthenticationConfiguration object along with its factory AuthenticationConfigurationBuilder represent

@@ -12,7 +12,7 @@ pipeline{
             INFINISPAN_VERSION = '9.0.0.Final'
             JAVA_HOME = 'C:\\\\PROGRA~1\\\\JAVA\\\\JDK18~1.0_7'
             M2_HOME = 'C:\\\\APACHE~1.9'
-            MVN_PROGRAM = 'C:\\\\APACHE~1.9\\\\BIN\\\\MVN'
+            MVN_PROGRAM = 'C:\\\\APACHE~1.9\\\\BIN\\\\MVN.BAT'
             PROTOBUF_INCLUDE_DIR = 'C:\\\\protobuf-2.6.1-pack\\\\include'
             PROTOBUF_LIBRARY = 'C:\\\\protobuf-2.6.1-pack\\\\lib\\\\libprotobuf-static.lib'
             PROTOBUF_PROTOC_EXECUTABLE = 'C:\\\\protobuf-2.6.1-pack\\\\bin\\\\protoc.exe'

@@ -4,9 +4,11 @@
 #include "infinispan/hotrod/Version.h"
 
 #include "infinispan/hotrod/JBasicMarshaller.h"
+#if !defined _WIN32 && !defined _WIN64
 #include <sasl/saslplug.h>
 #include <krb5.h>
 #include <err.h>
+#endif
 #include <stdlib.h>
 #include <iostream>
 #include <memory>
@@ -72,10 +74,6 @@ private:
 }
 }
 
-<<<<<<< ffaaa46432465eff9064d7cecaf2c2914fe23736
-
-=======
->>>>>>> working version with tests
 template<class T>
 void assert_not_null(const std::string& message, int line, const std::unique_ptr<T>& pointer) {
     if (pointer.get() == 0) {
@@ -85,8 +83,15 @@ void assert_not_null(const std::string& message, int line, const std::unique_ptr
     }
 }
 
+int kinit();
+void kdestroy();
+
 static char *simple_data; // plain
+#if !defined _WIN32 && !defined _WIN64
 static char realm_data[] = "applicationRealm";
+#else
+static char realm_data[] = "ApplicationRealm";
+
 static char path_data[] = "/usr/lib64/sasl2";
 
 static int simple(void *context __attribute__((unused)), int id, const char **result, unsigned *len) {
@@ -115,22 +120,10 @@ static int getpath(void *context, const char ** path) {
 }
 
 static char *secret_data;
-static int getsecret(sasl_conn_t *conn, void *context __attribute__((unused)), int id, sasl_secret_t **psecret) {
-    size_t len;
-    static sasl_secret_t *x;
-
-    /* paranoia check */
-    if (!conn || !psecret || id != SASL_CB_PASS)
-        return SASL_BADPARAM;
-
-    len = strlen(secret_data);
-
-    x = (sasl_secret_t *) realloc(x, sizeof(sasl_secret_t) + len);
-
-    x->len = len;
-    strcpy((char *) x->data, secret_data);
-
-    *psecret = x;
+static int getsecret(void *context, int id, const char **psecret, unsigned *retLen) {
+    *psecret = secret_data;
+    if (retLen)
+        *retLen = strlen(secret_data);
     return SASL_OK;
 }
 
@@ -139,8 +132,10 @@ SASL_CB_AUTHNAME, (sasl_callback_ft) &simple, NULL }, { SASL_CB_PASS, (sasl_call
 SASL_CB_GETREALM, (sasl_callback_ft) &getrealm, NULL }, { SASL_CB_GETPATH, (sasl_callback_ft) &getpath, NULL }, {
 SASL_CB_LIST_END, NULL, NULL } };
 
+#if !defined _WIN32 && !defined _WIN64
 int kinit();
 void kdestroy();
+#endif
 
 int main(int argc, char** argv) {
 
@@ -199,6 +194,7 @@ int main(int argc, char** argv) {
         cacheManager.stop();
     }
 
+#if !defined _WIN32 && !defined _WIN64
     {
         kinit();
         ConfigurationBuilder builder;
@@ -227,9 +223,11 @@ int main(int argc, char** argv) {
         std::cout << "PASS: 'GSSAPI' sasl authorization" << std::endl;
         kdestroy();
     }
+#endif
     return result;
 }
 
+#if !defined _WIN32 && !defined _WIN64
 krb5_context context;
 krb5_creds creds;
 krb5_principal client_princ = NULL;
@@ -243,4 +241,4 @@ int kinit() {
 void kdestroy() {
     std::system("kdestroy");
 }
-
+#endif

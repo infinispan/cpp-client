@@ -4,6 +4,11 @@
 #include "infinispan/hotrod/Version.h"
 
 #include "infinispan/hotrod/JBasicMarshaller.h"
+#if !defined _WIN32 && !defined _WIN64
+#include <sasl/saslplug.h>
+#include <krb5.h>
+#include <err.h>
+#endif
 #include <stdlib.h>
 #include <iostream>
 #include <memory>
@@ -78,21 +83,29 @@ void assert_not_null(const std::string& message, int line, const std::unique_ptr
     }
 }
 
+#if !defined _WIN32 && !defined _WIN64
 int kinit();
 void kdestroy();
+#endif
 
 static char *simple_data; // plain
+
+#if !defined _WIN32 && !defined _WIN64
+static char realm_data[] = "applicationRealm";
+#else
 static char realm_data[] = "ApplicationRealm";
+#endif
+
 static char path_data[] = "/usr/lib64/sasl2";
 
-static int simple(void *context, int id, const char **result, unsigned *len) {
+static int simple(void* /* context */, int id, const char **result, unsigned *len) {
     *result = simple_data;
     if (len)
         *len = strlen(simple_data);
     return SASL_OK;
 }
 
-static int getrealm(void *context, int id, const char **result, unsigned *len) {
+static int getrealm(void* /* context */, int id, const char **result, unsigned *len) {
     *result = realm_data;
     if (len)
         *len = strlen(realm_data);
@@ -102,7 +115,7 @@ static int getrealm(void *context, int id, const char **result, unsigned *len) {
 #define PLUGINDIR "/usr/lib64/sasl2"
 
 static int getpath(void *context, const char ** path) {
-    const char *searchpath = (const char *)context;
+    const char *searchpath = (const char *) context;
 
     if (!path)
         return SASL_BADPARAM;
@@ -118,10 +131,15 @@ static int getsecret(void *context, int id, const char **psecret, unsigned *retL
     return SASL_OK;
 }
 
-static std::vector<sasl_callback_t> callbackHandler{ { HOTROD_SASL_CB_USER, (sasl_callback_ft)&simple, NULL },{
-    HOTROD_SASL_CB_AUTHNAME, (sasl_callback_ft)&simple, NULL },{ HOTROD_SASL_CB_PASS, (sasl_callback_ft)&getsecret, NULL },{
-        HOTROD_SASL_CB_GETREALM, (sasl_callback_ft)&getrealm, NULL },{ HOTROD_SASL_CB_GETPATH, (sasl_callback_ft)&getpath, NULL },{
-            HOTROD_SASL_CB_LIST_END, NULL, NULL } };
+static std::vector<sasl_callback_t> callbackHandler { { SASL_CB_USER, (sasl_callback_ft) &simple, NULL }, {
+SASL_CB_AUTHNAME, (sasl_callback_ft) &simple, NULL }, { SASL_CB_PASS, (sasl_callback_ft) &getsecret, NULL }, {
+SASL_CB_GETREALM, (sasl_callback_ft) &getrealm, NULL }, { SASL_CB_GETPATH, (sasl_callback_ft) &getpath, NULL }, {
+SASL_CB_LIST_END, NULL, NULL } };
+
+#if !defined _WIN32 && !defined _WIN64
+int kinit();
+void kdestroy();
+#endif
 
 int main(int argc, char** argv) {
 
@@ -179,7 +197,8 @@ int main(int argc, char** argv) {
         std::cout << "PASS: 'DIGEST-MD5' sasl authorization" << std::endl;
         cacheManager.stop();
     }
-/*
+
+#if !defined _WIN32 && !defined _WIN64
     {
         kinit();
         ConfigurationBuilder builder;
@@ -208,19 +227,22 @@ int main(int argc, char** argv) {
         std::cout << "PASS: 'GSSAPI' sasl authorization" << std::endl;
         kdestroy();
     }
-*/
+#endif
     return result;
 }
 
+#if !defined _WIN32 && !defined _WIN64
+krb5_context context;
+krb5_creds creds;
+krb5_principal client_princ = NULL;
+
 int kinit() {
     // Delegate Kerberos setup to the system
-    //setenv("KRB5CCNAME", "krb5cc_hotrod", 1);
-    //setenv("KRB5_CONFIG", "krb5.conf", 1);
+    setenv("KRB5CCNAME", "krb5cc_hotrod", 1);
+    setenv("KRB5_CONFIG", "krb5.conf", 1);
     std::system("echo lessStrongPassword | kinit -c krb5cc_hotrod supervisor@INFINISPAN.ORG");
-    return 1;
 }
-
 void kdestroy() {
     std::system("kdestroy");
 }
-
+#endif
