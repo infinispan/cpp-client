@@ -33,6 +33,13 @@ typedef struct sasl_callback {
     void *context;
 } sasl_callback_t;
 
+/* Plain text password structure.
+ *  len is the length of the password, data is the text.
+ */
+typedef struct sasl_secret {
+    unsigned long len;
+    unsigned char data[1];		/* variable sized */
+} sasl_secret_t;
 
 #endif
 

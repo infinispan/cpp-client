@@ -125,7 +125,6 @@ static int getpath(void *context, const char ** path) {
 
 static char *secret_data;
 
-#if !defined _WIN32 && !defined _WIN64
 static int getsecret(void* /* conn */, void* /* context */, int id, sasl_secret_t **psecret) {
     size_t len;
     static sasl_secret_t *x;
@@ -139,14 +138,6 @@ static int getsecret(void* /* conn */, void* /* context */, int id, sasl_secret_
     *psecret = x;
     return SASL_OK;
 }
-#else
-static int getsecret(void *context, int id, void **psecret, unsigned *retLen) {
-    *psecret = secret_data;
-    if (retLen)
-        *retLen = strlen(secret_data);
-    return SASL_OK;
-}
-#endif
 
 static std::vector<sasl_callback_t> callbackHandler { { SASL_CB_USER, (sasl_callback_ft) &simple, NULL }, {
 SASL_CB_AUTHNAME, (sasl_callback_ft) &simple, NULL }, { SASL_CB_PASS, (sasl_callback_ft) &getsecret, NULL }, {
