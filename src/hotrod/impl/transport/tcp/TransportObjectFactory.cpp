@@ -5,8 +5,10 @@
 #include "hotrod/impl/transport/tcp/TcpTransportFactory.h"
 #include "hotrod/impl/operations/AuthOperation.h"
 #include "hotrod/impl/operations/AuthMechListOperation.h"
+#if !defined _WIN32 && !defined _WIN64
 #include <sasl/sasl.h>
 #include <sasl/saslplug.h>
+#endif
 #include <string.h>
 namespace infinispan {
 namespace hotrod {
@@ -16,16 +18,9 @@ using namespace operations;
 
 namespace transport {
 
-void saslfail(int why, const char *what)
-{
-    // TODO: error handling
-    std::string s("Sasl error ");
-    s.append(std::to_string(why)).append(" : ").append(what);
-    throw HotRodClientException(s);
-}
-
 TransportObjectFactory::TransportObjectFactory(Codec& c, TcpTransportFactory& factory) :
         tcpTransportFactory(factory), codec(c)  {
+#if !defined _WIN32 && !defined _WIN64
     /* callbacks we support */
     int r;
     /* initialize the sasl library */
@@ -35,6 +30,16 @@ TransportObjectFactory::TransportObjectFactory(Codec& c, TcpTransportFactory& fa
     r = sasl_client_init(callbacks);
     if (r != SASL_OK)
         saslfail(r, "initializing libsasl");
+#endif
+}
+
+#if !defined _WIN32 && !defined _WIN64
+void saslfail(int why, const char *what)
+{
+    // TODO: error handling
+    std::string s("Sasl error ");
+    s.append(std::to_string(why)).append(" : ").append(what);
+    throw HotRodClientException(s);
 }
 
 void do_sasl_authentication(Codec& codec, Transport& t, const AuthenticationConfiguration& conf) {
@@ -71,6 +76,7 @@ void do_sasl_authentication(Codec& codec, Transport& t, const AuthenticationConf
         saslfail(r, "performing SASL negotiation");
     }
 }
+#endif
 
 TcpTransport& TransportObjectFactory::makeObject(const InetSocketAddress& address) {
     if(tcpTransportFactory.isSslEnabled()) {
@@ -81,23 +87,24 @@ TcpTransport& TransportObjectFactory::makeObject(const InetSocketAddress& addres
        {
           do_sasl_authentication(codec, *t, tcpTransportFactory.getConfiguration().getSecurityConfiguration().getAuthenticationConfiguration());
        }
-       return *t;
 #else
        TcpTransport *t =  (new SChannelTcpTransport(address, tcpTransportFactory,
 	            tcpTransportFactory.getSslServerCAPath(), tcpTransportFactory.getSslServerCAFile(), tcpTransportFactory.getSslClientCertificateFile(), tcpTransportFactory.getSniHostName()));
        if (tcpTransportFactory.getConfiguration().getSecurityConfiguration().getAuthenticationConfiguration().isEnabled())
        {
-          do_sasl_authentication(codec, *t, tcpTransportFactory.getConfiguration().getSecurityConfiguration().getAuthenticationConfiguration());
+          //do_sasl_authentication(codec, *t, tcpTransportFactory.getConfiguration().getSecurityConfiguration().getAuthenticationConfiguration());
        }
-       return *t;
 #endif
+       return *t;
 
 	} else {
         TcpTransport* t = new TcpTransport(address, tcpTransportFactory);
+#if !defined _WIN32 && !defined _WIN64
         if (tcpTransportFactory.getConfiguration().getSecurityConfiguration().getAuthenticationConfiguration().isEnabled())
         {
            do_sasl_authentication(codec, *t,tcpTransportFactory.getConfiguration().getSecurityConfiguration().getAuthenticationConfiguration());
         }
+#endif
         return *t;
     }
 }
