@@ -18,6 +18,16 @@ using namespace operations;
 
 namespace transport {
 
+#if !defined _WIN32 && !defined _WIN64
+void saslfail(int why, const char *what)
+{
+    // TODO: error handling
+    std::string s("Sasl error ");
+    s.append(std::to_string(why)).append(" : ").append(what);
+    throw HotRodClientException(s);
+}
+#endif
+
 TransportObjectFactory::TransportObjectFactory(Codec& c, TcpTransportFactory& factory) :
         tcpTransportFactory(factory), codec(c)  {
 #if !defined _WIN32 && !defined _WIN64
@@ -34,14 +44,6 @@ TransportObjectFactory::TransportObjectFactory(Codec& c, TcpTransportFactory& fa
 }
 
 #if !defined _WIN32 && !defined _WIN64
-void saslfail(int why, const char *what)
-{
-    // TODO: error handling
-    std::string s("Sasl error ");
-    s.append(std::to_string(why)).append(" : ").append(what);
-    throw HotRodClientException(s);
-}
-
 void do_sasl_authentication(Codec& codec, Transport& t, const AuthenticationConfiguration& conf) {
     sasl_conn_t *conn;
     int r;
