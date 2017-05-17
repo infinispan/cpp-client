@@ -690,7 +690,7 @@ else (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.sh") AND (EXISTS "${HOTR
     add_test (stop_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py stop)
     add_test (probe_port_stop ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/probe_port.py localhost 11222 60 down)
     if (NOT DEFINED WIN32)
-	    add_test (start_krbserver  ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/start_and_probe_port.py localhost 51099 10 "${MVN_PROGRAM} -f krbserver/pom.xml exec:java -Dexec.mainClass=krbserver.Server")
+	    add_test (start_krbserver  ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/start_and_probe_port.py localhost 10389 60 "${MVN_PROGRAM} -f krbserver/pom.xml exec:java -Dexec.mainClass=krbserver.Server")
     add_test (start_sals_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py start ${JAVA_RUNTIME} ${HOTROD_JBOSS_HOME} standalone-sasl.xml)
     add_test (probe_sasl_port ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/probe_port.py localhost 11222 60)
     add_test (simpleSasl simpleSasl)
