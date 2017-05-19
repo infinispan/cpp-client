@@ -60,36 +60,6 @@ public:
        return *this;
     }
 
-//    /**
-//     * Sets the SASL QOP property. If multiple values are specified they will determine preference order
-//     */
-//    public AuthenticationConfigurationBuilder saslQop(SaslQop... qop) {
-//       StringBuilder s = new StringBuilder();
-//       for(int i=0; i < qop.length; i++) {
-//          if (i > 0) {
-//             s.append(",");
-//          }
-//          s.append(qop[i].toString());
-//       }
-//       this.saslProperties.put(Sasl.QOP, s.toString());
-//       return this;
-//    }
-//
-//    /**
-//     * Sets the SASL strength property. If multiple values are specified they will determine preference order
-//     */
-//    public AuthenticationConfigurationBuilder saslStrength(SaslStrength... strength) {
-//       StringBuilder s = new StringBuilder();
-//       for(int i=0; i < strength.length; i++) {
-//          if (i > 0) {
-//             s.append(",");
-//          }
-//          s.append(strength[i].toString());
-//       }
-//       this.saslProperties.put(Sasl.STRENGTH, s.toString());
-//       return this;
-//    }
-
     /**
      * Sets the name of the server as expected by the SASL protocol
      */

@@ -81,7 +81,6 @@ void assert_not_null(const std::string& message, int line, const std::unique_ptr
 
 static char *simple_data; // plain
 static char realm_data[] = "applicationRealm";
-static char path_data[] = "/usr/lib64/sasl2";
 
 static int simple(void *context __attribute__((unused)), int id, const char **result, unsigned *len) {
     *result = simple_data;
@@ -130,7 +129,7 @@ static int getsecret(sasl_conn_t *conn, void *context __attribute__((unused)), i
 
 static std::vector<sasl_callback_t> callbackHandler { { SASL_CB_USER, (sasl_callback_ft) &simple, NULL }, {
 SASL_CB_AUTHNAME, (sasl_callback_ft) &simple, NULL }, { SASL_CB_PASS, (sasl_callback_ft) &getsecret, NULL }, {
-SASL_CB_GETREALM, (sasl_callback_ft) &getrealm, NULL }, { SASL_CB_GETPATH, (sasl_callback_ft) &getpath, NULL }, {
+SASL_CB_GETREALM, (sasl_callback_ft) &getrealm, NULL }, /*{ SASL_CB_GETPATH, (sasl_callback_ft) &getpath, NULL },*/ {
 SASL_CB_LIST_END, NULL, NULL } };
 
 int main(int argc, char** argv) {

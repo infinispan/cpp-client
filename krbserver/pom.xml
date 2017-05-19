@@ -7,7 +7,7 @@
 	<name>Kerberos Server</name>
 	<description>Server kerberos for hotrod client devs and test</description>
 	<properties>
-		<version.org.infinispan>9.0.0-SNAPSHOT</version.org.infinispan>
+		<version.org.infinispan>9.0.0.Final</version.org.infinispan>
 	</properties>
 	<build>
 		<plugins>
