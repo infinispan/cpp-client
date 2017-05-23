@@ -21,16 +21,13 @@ pipeline{
             SWIG_EXECUTABLE = 'C:\\\\PROGRA~1\\\\SWIGWI~1.12\\\\SWIG.EXE'
             test32 = 'empty'
             test64 = 'empty'
-            version_1major = '8'
-            version_2minor = '1'
-            version_3micro = '0'
-            version_4qualifier = 'Final'
             HOTROD_LOG_LEVEL = 'TRACE'
         }
         steps {
             checkout scm
             script {
                 bat 'build.bat'
+                archiveArtifacts artifacts: 'build_win\\_CPack_Packages\\WIN-x86_64\\ZIP\\*.zip'
             }
         }
     }
@@ -52,6 +49,7 @@ pipeline{
             }
             script {
                 sh "PATH=\"${env.JAVA_HOME}/bin:${env.M2_HOME}/bin:${PATH}\" ./build.sh"
+                archiveArtifacts artifacts: 'build/_CPack_Packages/RHEL-x86_64/RPM/*.rpm, build/*Source.zip'
             }
         }
     }
