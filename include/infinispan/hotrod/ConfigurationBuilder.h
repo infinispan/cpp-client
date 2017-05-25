@@ -13,7 +13,7 @@
 #include "Configuration.h"
 #include "ConnectionPoolConfigurationBuilder.h"
 #include "ServerConfigurationBuilder.h"
-#include "SslConfigurationBuilder.h"
+#include "SecurityConfigurationBuilder.h"
 #include "NearCacheConfiguration.h"
 
 using namespace infinispan::hotrod::event;
@@ -93,7 +93,7 @@ class ConfigurationBuilder
         __pragma(warning(suppress:4355)) // passing uninitialized 'this'
         connectionPoolConfigurationBuilder(*this),
         __pragma(warning(suppress:4355))
-        sslConfigurationBuilder(*this),
+        securityConfigurationBuilder(*this),
         nearCacheConfigurationBuilder(*this)
         {}
 
@@ -215,7 +215,7 @@ class ConfigurationBuilder
      *\return SslConfigurationBuilder instance to be used for SSL configuration
      */
     SslConfigurationBuilder& ssl() {
-        return sslConfigurationBuilder;
+        return securityConfigurationBuilder.getSslConfigurationBuilder();
     }
 
     /**
@@ -304,7 +304,7 @@ class ConfigurationBuilder
             m_keySizeEstimate,
             serversMap,
             m_socketTimeout,
-            sslConfigurationBuilder.create(),
+            securityConfigurationBuilder.create(),
             m_tcpNoDelay,
             m_valueSizeEstimate,
             m_maxRetries,
@@ -333,7 +333,10 @@ class ConfigurationBuilder
         m_eventMarshaller = configuration.getEventMarshaller();
         return *this;
     }
-
+    SecurityConfigurationBuilder& getSecurityConfigurationBuilder()
+    {
+        return securityConfigurationBuilder;
+    }
   private:
     int m_connectionTimeout;
     bool m_forceReturnValue;
@@ -346,7 +349,7 @@ class ConfigurationBuilder
     int m_maxRetries;
     FailOverRequestBalancingStrategy::ProducerFn m_balancingStrategyProducer;
     ConnectionPoolConfigurationBuilder connectionPoolConfigurationBuilder;
-    SslConfigurationBuilder sslConfigurationBuilder;
+    SecurityConfigurationBuilder securityConfigurationBuilder;
     JBasicEventMarshaller m_defaultEventMarshaller;
     NearCacheConfigurationBuilder nearCacheConfigurationBuilder;
 

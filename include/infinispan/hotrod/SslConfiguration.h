@@ -12,7 +12,14 @@ class HR_EXTERN SslConfiguration
   public:
     SslConfiguration(const bool _enabled, const std::string& _serverCAPath, const std::string& _serverCAFile, const std::string& _clientCertificateFile, const std::string& _sniHostName):
         m_enabled(_enabled), m_serverCAPath(_serverCAPath), m_serverCAFile(_serverCAFile), m_clientCertificateFile(_clientCertificateFile), m_sniHostName(_sniHostName) {};
-
+    SslConfiguration(const SslConfiguration& conf)
+    {
+        m_enabled=conf.m_enabled;
+        m_serverCAPath=conf.m_serverCAPath;
+        m_serverCAFile=conf.m_serverCAFile;
+        m_clientCertificateFile=conf.m_clientCertificateFile;
+        m_sniHostName=conf.m_sniHostName;
+    }
     /**
      * Returns whether SSL is enabled
      *

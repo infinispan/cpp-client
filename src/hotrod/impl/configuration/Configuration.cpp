@@ -48,7 +48,7 @@ const int& Configuration::getSocketTimeout() const
 
 const SslConfiguration& Configuration::getSslConfiguration() const
 {
-  return Configuration::sslConfiguration;
+  return securityConfiguration.getSslConfiguration();
 }
 
 const bool& Configuration::isTcpNoDelay() const
