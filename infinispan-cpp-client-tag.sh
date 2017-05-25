@@ -26,5 +26,5 @@ fi
 
 echo "Usage: call me with #1 argument MAJ.MIN.MICRO[.QUALIF]"
 echo "eg: $0 1.2.3-Fix"
-echo -e "\t will create a tag '1.2.3-Fix' on both local and origin repo"
+echo -e "\t will create a tag '1.2.3.Fix' on both local and origin repo"
 echo -e "\t CMakeFiles.txt will be updated according."
