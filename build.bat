@@ -15,7 +15,7 @@ if not exist %JBOSS_HOME% (
   if not exist %JBOSS_ZIP% (
      powershell.exe -Command "(new-object System.Net.WebClient).DownloadFile('%JBOSS_URL%','%JBOSS_ZIP%')"
    )
-"C:\Program Files\7-zip\7z.exe" x %JBOSS_ZIP% 
+"C:\Program Files\7-zip\7z.exe" x %JBOSS_ZIP% -aoa
 )
 copy test\data\*.* %JBOSS_HOME%\standalone\configuration
 
