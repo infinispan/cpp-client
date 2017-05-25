@@ -42,7 +42,7 @@ set home_drive=%CD:~0,2%
 
 subst /D Y:
 
-subst Y: "%CD%"
+subst Y: .
 
 Y:
 
