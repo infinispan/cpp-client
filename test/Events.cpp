@@ -99,7 +99,7 @@ int main(int argc, char** argv) {
         cache.put(4,"v4");
         cache.put(5,"v5");
         cache.put(6,"v6");
-        if (std::future_status::timeout==promise.get_future().wait_for(std::chrono::seconds(30)))
+        if (std::future_status::timeout==promise.get_future().wait_for(std::chrono::seconds(45)))
         { 
           std::cout << "FAIL: Events and Listeners on Create (Timeout)" << std::endl;
           return -1;
@@ -110,7 +110,7 @@ int main(int argc, char** argv) {
         promise= std::promise<void>();
         cache.put(1,"v1a");
         cache.put(2,"v2a");
-        if (std::future_status::timeout==promise.get_future().wait_for(std::chrono::seconds(30)))
+        if (std::future_status::timeout==promise.get_future().wait_for(std::chrono::seconds(45)))
         { 
           std::cout << "FAIL: Events and Listeners on Modify (Timeout)" << std::endl;
           return -1;
@@ -120,7 +120,7 @@ int main(int argc, char** argv) {
         setFutureEventKey=3;
         promise= std::promise<void>();
         cache.remove(3);
-        if (std::future_status::timeout==promise.get_future().wait_for(std::chrono::seconds(30)))
+        if (std::future_status::timeout==promise.get_future().wait_for(std::chrono::seconds(45)))
         { 
           std::cout << "FAIL: Events and Listeners on Remove (Timeout)" << std::endl;
           return -1;
@@ -133,14 +133,14 @@ int main(int argc, char** argv) {
         cache.put(11,"nexp");
         cache.put(10,"exp1",3);
 
-        if (std::future_status::timeout==promise.get_future().wait_for(std::chrono::seconds(30)))
+        if (std::future_status::timeout==promise.get_future().wait_for(std::chrono::seconds(45)))
         {
               std::cout << "FAIL: Events and Listeners (Timeout)" << std::endl;
               return -1;
         }
 
         promise= std::promise<void>();
-        if (std::future_status::timeout==promise.get_future().wait_for(std::chrono::seconds(30)))
+        if (std::future_status::timeout==promise.get_future().wait_for(std::chrono::seconds(45)))
         {
               std::cout << "FAIL: Events and Listeners (Timeout)" << std::endl;
               return -1;
@@ -189,7 +189,7 @@ int main(int argc, char** argv) {
         promise=std::promise<void>();
         cache.addClientListener(clCS, filterFactoryParams, converterFactoryParams);
         cache.put(8,"v8");
-        if (std::future_status::timeout==promise.get_future().wait_for(std::chrono::seconds(30)))
+        if (std::future_status::timeout==promise.get_future().wait_for(std::chrono::seconds(45)))
         { 
           std::cout << "FAIL: Events and Listeners (Timeout)" << std::endl;
           return -1;
@@ -201,7 +201,7 @@ int main(int argc, char** argv) {
         promise=std::promise<void>();
         cache.put(1,"v1a");
         cache.put(2,"v2a");
-        if (std::future_status::timeout==promise.get_future().wait_for(std::chrono::seconds(30)))
+        if (std::future_status::timeout==promise.get_future().wait_for(std::chrono::seconds(45)))
         { 
           std::cout << "FAIL: Events and Listeners (Timeout)" << std::endl;
           return -1;
@@ -211,7 +211,7 @@ int main(int argc, char** argv) {
         setFutureEventKey=8;
         promise=std::promise<void>();
         cache.remove(8);
-        if (std::future_status::timeout==promise.get_future().wait_for(std::chrono::seconds(30)))
+        if (std::future_status::timeout==promise.get_future().wait_for(std::chrono::seconds(45)))
         { 
           std::cout << "FAIL: Events and Listeners (Timeout)" << std::endl;
           return -1;
