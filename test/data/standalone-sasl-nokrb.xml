@@ -1,6 +1,7 @@
-<?xml version="1.0" ?>
+<?xml version='1.0' encoding='UTF-8'?>
 
-<server xmlns="urn:jboss:domain:4.0">
+<server xmlns="urn:jboss:domain:4.2">
+
     <extensions>
         <extension module="org.infinispan.extension"/>
         <extension module="org.infinispan.server.endpoint"/>
@@ -16,6 +17,14 @@
         <extension module="org.wildfly.extension.io"/>
         <extension module="org.wildfly.extension.security.manager"/>
     </extensions>
+
+    <system-properties>
+        <property name="java.security.krb5.conf" value="${jboss.server.config.dir}/krb5.conf"/>
+        <property name="java.security.krb5.debug" value="true"/>
+        <property name="jboss.security.disable.secdomain.option" value="true"/>
+    </system-properties>
+
+
     <management>
         <security-realms>
             <security-realm name="ManagementRealm">
@@ -30,16 +39,11 @@
             <security-realm name="ApplicationRealm">
                 <authentication>
                     <local default-user="$local" allowed-users="*" skip-group-loading="true"/>
-                    <truststore path="truststore.jks" relative-to="jboss.server.config.dir" keystore-password="secret"/>
+                    <properties path="application-users.properties" relative-to="jboss.server.config.dir"/>
                 </authentication>
                 <authorization>
                     <properties path="application-roles.properties" relative-to="jboss.server.config.dir"/>
                 </authorization>
-                <server-identities>
-                    <ssl>
-                        <keystore path="keystore.jks" relative-to="jboss.server.config.dir" keystore-password="secret"/>
-                    </ssl>
-                </server-identities>
             </security-realm>
         </security-realms>
         <audit-log>
@@ -47,7 +51,7 @@
                 <json-formatter name="json-formatter"/>
             </formatters>
             <handlers>
-                <file-handler name="file" formatter="json-formatter" relative-to="jboss.server.data.dir" path="audit-log.log"/>
+                <file-handler name="file" formatter="json-formatter" path="audit-log.log" relative-to="jboss.server.data.dir"/>
             </handlers>
             <logger log-boot="true" log-read-only="false" enabled="false">
                 <handlers>
@@ -70,6 +74,7 @@
             </role-mapping>
         </access-control>
     </management>
+
     <profile>
         <subsystem xmlns="urn:jboss:domain:logging:3.0">
             <console-handler name="CONSOLE">
@@ -86,6 +91,24 @@
                 <suffix value=".yyyy-MM-dd"/>
                 <append value="true"/>
             </periodic-rotating-file-handler>
+            <size-rotating-file-handler name="HR-ACCESS-FILE" autoflush="true">
+                <formatter>
+                    <pattern-formatter pattern="(%t) %s%e%n"/>
+                </formatter>
+                <file relative-to="jboss.server.log.dir" path="hotrod-access.log"/>
+                <rotate-size value="10M"/>
+                <max-backup-index value="10"/>
+                <append value="true"/>
+            </size-rotating-file-handler>
+            <size-rotating-file-handler name="REST-ACCESS-FILE" autoflush="true">
+                <formatter>
+                    <pattern-formatter pattern="(%t) %s%e%n"/>
+                </formatter>
+                <file relative-to="jboss.server.log.dir" path="rest-access.log"/>
+                <rotate-size value="10M"/>
+                <max-backup-index value="10"/>
+                <append value="true"/>
+            </size-rotating-file-handler>
             <logger category="com.arjuna">
                 <level name="WARN"/>
             </logger>
@@ -94,6 +117,18 @@
             </logger>
             <logger category="sun.rmi">
                 <level name="WARN"/>
+            </logger>
+            <logger category="org.infinispan.server.hotrod.logging.HotRodAccessLoggingHandler">
+                <level name="INFO"/>
+                <handlers>
+                    <handler name="HR-ACCESS-FILE"/>
+                </handlers>
+            </logger>
+            <logger category="org.infinispan.rest.logging.RestAccessLoggingHandler">
+                <level name="INFO"/>
+                <handlers>
+                    <handler name="REST-ACCESS-FILE"/>
+                </handlers>
             </logger>
             <root-logger>
                 <level name="INFO"/>
@@ -129,53 +164,59 @@
                 </drivers>
             </datasources>
         </subsystem>
-        <subsystem xmlns="urn:infinispan:server:core:9.0" default-cache-container="local">
+        <subsystem xmlns="urn:jboss:domain:io:1.1">
+            <worker name="default"/>
+            <buffer-pool name="default"/>
+        </subsystem>
+        <subsystem xmlns="urn:infinispan:server:core:9.0">
             <cache-container name="local" default-cache="default" statistics="true">
-                <global-state/>
                 <security>
                     <authorization>
                         <identity-role-mapper/>
                         <role name="admin" permissions="ALL"/>
                         <role name="reader" permissions="READ"/>
-                        <role name="writer" permissions="READ WRITE"/>
+                        <role name="writer" permissions="WRITE"/>
                         <role name="supervisor" permissions="READ WRITE EXEC BULK_READ BULK_WRITE"/>
                         <role name="executor" permissions="READ WRITE BULK_READ EXEC ADMIN"/>
                     </authorization>
                 </security>
+                <global-state/>
                 <local-cache name="default" start="EAGER">
-                    <locking acquire-timeout="30000" concurrency-level="1000" striping="false"/>
+                    <locking striping="false" acquire-timeout="30000" concurrency-level="1000"/>
                     <transaction mode="NONE"/>
+                    <expiration interval="1000"/>
                 </local-cache>
                 <local-cache name="memcachedCache" start="EAGER">
-                    <locking acquire-timeout="30000" concurrency-level="1000" striping="false"/>
+                    <locking striping="false" acquire-timeout="30000" concurrency-level="1000"/>
                     <transaction mode="NONE"/>
                 </local-cache>
                 <local-cache name="namedCache" start="EAGER"/>
                 <local-cache name="authCache" start="EAGER">
                     <security>
-                        <authorization roles="admin reader writer supervisor" enabled="true"/>
+                        <authorization enabled="true" roles="admin reader writer supervisor"/>
                     </security>
                 </local-cache>
             </cache-container>
         </subsystem>
         <subsystem xmlns="urn:infinispan:server:endpoint:9.0">
-            <hotrod-connector socket-binding="hotrod" cache-container="local">
-                <topology-state-transfer lock-timeout="1000" replication-timeout="5000"/>
-		<authentication security-realm="ApplicationRealm">
-                    <sasl server-name="node0" mechanisms="EXTERNAL" qop="auth" strength="high medium low">
+            <hotrod-connector cache-container="local" socket-binding="hotrod">
+                <topology-state-transfer lazy-retrieval="false" lock-timeout="1000" replication-timeout="5000"/>
+                <authentication security-realm="ApplicationRealm">
+                    <sasl mechanisms="DIGEST-MD5 PLAIN" qop="auth" server-name="node0" strength="high medium low">
                         <policy>
                             <no-anonymous value="true"/>
                         </policy>
-                        <property name="com.sun.security.sasl.digest.utf8">true</property>
+                        <property name="com.sun.security.sasl.digest.utf8">
+                            true
+                        </property>
                     </sasl>
                 </authentication>
-                <encryption security-realm="ApplicationRealm" require-ssl-client-auth="true">
-                </encryption>
             </hotrod-connector>
-        </subsystem>
-        <subsystem xmlns="urn:jboss:domain:io:1.1">
-            <worker name="default"/>
-            <buffer-pool name="default"/>
+            <memcached-connector cache-container="local" socket-binding="memcached"/>
+            <rest-connector cache-container="local" socket-binding="rest">
+                <authentication security-realm="ApplicationRealm" auth-method="BASIC"/>
+            </rest-connector>
+            <websocket-connector cache-container="local" socket-binding="websocket"/>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:jca:4.0">
             <archive-validation enabled="true" fail-on-error="true" fail-on-warn="false"/>
@@ -257,6 +298,7 @@
             <recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>
         </subsystem>
     </profile>
+
     <interfaces>
         <interface name="management">
             <inet-address value="${jboss.bind.address.management:127.0.0.1}"/>
@@ -265,6 +307,7 @@
             <inet-address value="${jboss.bind.address:127.0.0.1}"/>
         </interface>
     </interfaces>
+
     <socket-binding-group name="standard-sockets" default-interface="public" port-offset="${jboss.socket.binding.port-offset:0}">
         <socket-binding name="management-http" interface="management" port="${jboss.management.http.port:9990}"/>
         <socket-binding name="management-https" interface="management" port="${jboss.management.https.port:9993}"/>
@@ -282,4 +325,5 @@
             <remote-destination host="remote-host" port="8080"/>
         </outbound-socket-binding>
     </socket-binding-group>
+
 </server>
