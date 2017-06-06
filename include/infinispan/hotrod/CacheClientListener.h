@@ -33,22 +33,34 @@ template <class K, class V>
 class CacheClientListener : public ClientListener
 {
 public:
+
+    static const unsigned char INTEREST_FLAG_CREATED  = 0x01;
+    static const unsigned char INTEREST_FLAG_MODIFIED = 0x02;
+    static const unsigned char INTEREST_FLAG_REMOVED  = 0x04;
+    static const unsigned char INTEREST_FLAG_EXPIRED  = 0x08;
+    static const unsigned char INTEREST_FLAG_ALL      = 0x0f;
+
     RemoteCacheBase& cache;
 
     CacheClientListener(RemoteCache<K,V>& cache) : cache((RemoteCacheBase&)cache) {};
     void add_listener(std::function<void(ClientCacheEntryCreatedEvent<K>)> callback) {
+        interestFlag|=INTEREST_FLAG_CREATED;
         createdCallbacks.push_back(callback);
     }
     void add_listener(std::function<void(ClientCacheEntryExpiredEvent<K>)> callback) {
+        interestFlag|=INTEREST_FLAG_EXPIRED;
         expiredCallbacks.push_back(callback);
     }
     void add_listener(std::function<void(ClientCacheEntryModifiedEvent<K>)> callback) {
+        interestFlag|=INTEREST_FLAG_MODIFIED;
         modifiedCallbacks.push_back(callback);
     }
     void add_listener(std::function<void(ClientCacheEntryRemovedEvent<K>)> callback) {
+        interestFlag|=INTEREST_FLAG_REMOVED;
         removedCallbacks.push_back(callback);
     }
     void add_listener(std::function<void(ClientCacheEntryCustomEvent)> callback) {
+        interestFlag|=INTEREST_FLAG_ALL;
         customCallbacks.push_back(callback);
     }
 

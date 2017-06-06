@@ -11,7 +11,11 @@
 #include "infinispan/hotrod/Query.h"
 #include <tuple>
 using namespace org::infinispan::protostream;
+using namespace google::protobuf;
+using namespace org::infinispan::query::remote::client;
 
+
+// extract a resultset of entities from a QueryResponse obj
 template <class T> bool unwrapResults(QueryResponse resp, std::vector<T> &res)
 {
 	if (resp.projectionsize()>0)
@@ -35,9 +39,10 @@ template <class T> bool unwrapResults(QueryResponse resp, std::vector<T> &res)
     return true;
 }
 
+// typesafe method to extract the value obj from a WrappedMessage obj
 template <typename T> T unwrapSingleValue(const WrappedMessage& wm);
 
-template <> std::string unwrapSingleValue<std::string>(const WrappedMessage& wm)
+template <> inline std::string unwrapSingleValue<std::string>(const WrappedMessage& wm)
 {
 	if (wm.has_wrappedstring())
 	{
@@ -49,7 +54,7 @@ template <> std::string unwrapSingleValue<std::string>(const WrappedMessage& wm)
 	}
 }
 
-template <> int unwrapSingleValue<int>(const WrappedMessage& wm)
+template <> inline int unwrapSingleValue<int>(const WrappedMessage& wm)
 {
 	if (wm.has_wrappedint32())
 	{
@@ -72,6 +77,30 @@ template <typename T> T unwrapSingleResult(const QueryResponse &qr)
 
 
 #if !defined (_MSC_VER) || (_MSC_VER>=1800)
+
+// typesafe method to turn one projection row of a array of WrappedMessage objs into a tuple
+template <typename H, typename... Params> std::tuple<H, Params...> popTuple(const RepeatedPtrField<WrappedMessage >& wMsgs,  int &k)
+{
+	H s = unwrapSingleValue<H>(wMsgs.Get(k++));
+	std::tuple<Params...> p = popTuple<Params... >(wMsgs,k);
+	return std::tuple_cat(std::tie(s),p);
+}
+
+template<>
+inline std::tuple<int> popTuple<int>(const RepeatedPtrField<WrappedMessage >& wMsgs, int &k)
+		{
+	  int s(unwrapSingleValue<int>(wMsgs.Get(k++)));
+	  return std::make_tuple<int>(std::move(s));
+}
+
+template<>
+inline std::tuple<std::string> popTuple<std::string>(const RepeatedPtrField<WrappedMessage >& wMsgs, int &k)
+		{
+	  std::string s(unwrapSingleValue<std::string>(wMsgs.Get(k++)));
+	  return std::make_tuple<std::string>(std::move(s));
+}
+
+// typesafe method to turn one projection row of a QueryResponse obj into a tuple
 template <typename H, typename... Params> std::tuple<H, Params...> popTuple(QueryResponse &resp,  int &k)
 {
 	H s = unwrapSingleValue<H>(resp.results(k++));
@@ -80,20 +109,20 @@ template <typename H, typename... Params> std::tuple<H, Params...> popTuple(Quer
 }
 
 template<>
-std::tuple<std::string> popTuple<std::string>(QueryResponse & resp, int &k)
+inline std::tuple<std::string> popTuple<std::string>(QueryResponse& resp, int &k)
 		{
 	  std::string s(unwrapSingleValue<std::string>(resp.results(k++)));
 	  return std::make_tuple<std::string>(std::move(s));
 }
 
 template<>
-std::tuple<int> popTuple<int>(QueryResponse & resp, int &k)
+inline std::tuple<int> popTuple<int>(QueryResponse & resp, int &k)
 		{
 	  int s(unwrapSingleValue<int>(resp.results(k++)));
 	  return std::make_tuple<int>(std::move(s));
 }
 
-
+// typesafe method to convert QueryResponse containing a resultset of projections to a std::tuple
 template<typename... Params> bool unwrapProjection(QueryResponse &resp, std::vector<std::tuple<Params...> > &prjRes)
 {
 	if (resp.projectionsize() == 0) {

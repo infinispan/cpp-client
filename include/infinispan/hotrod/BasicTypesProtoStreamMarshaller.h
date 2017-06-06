@@ -33,13 +33,13 @@ public:
     template <class T> static T unmarshall(char *, size_t size);
 };
 
-    template <> std::string BasicTypesProtoStreamMarshallerHelper::unmarshall(char *b, size_t size) {
+    template <> inline std::string BasicTypesProtoStreamMarshallerHelper::unmarshall(char *b, size_t size) {
     	protobuf::base_types bt;
     	bt.ParseFromArray(b,size);
     	return bt.str();
     }
 
-    template <> int BasicTypesProtoStreamMarshallerHelper::unmarshall(char *b, size_t size) {
+    template <> inline int BasicTypesProtoStreamMarshallerHelper::unmarshall(char *b, size_t size) {
     	protobuf::base_types bt;
     	bt.ParseFromArray(b,size);
     	return bt.i32();

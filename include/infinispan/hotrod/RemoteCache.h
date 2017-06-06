@@ -11,6 +11,9 @@
 #include "infinispan/hotrod/exceptions.h"
 #include "infinispan/hotrod/ClientListener.h"
 #include "infinispan/hotrod/Query.h"
+#include "infinispan/hotrod/QueryUtils.h"
+#include "infinispan/hotrod/ContinuousQueryListener.h"
+#include <infinispan/hotrod/BasicTypesProtoStreamMarshaller.h>
 #include <cmath>
 #include <set>
 #include <map>
@@ -857,15 +860,65 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
         base_ping();
     }
 
+    /**
+     * Start client listener and register it on the server
+     *
+     * \param clientListener object defining the listener, filter and converter and the callback funcs
+     * \param filterFactoryParams parameters for optional server filter setup
+     * \param converterFactoryParams parameter for optional server converter setup
+     * \param recoveryCallback function to be called if transport goes down
+     * \return
+     *
+     */
     void addClientListener(ClientListener& clientListener, std::vector<std::vector<char> > filterFactoryParams, std::vector<std::vector<char> > converterFactoryParams, const std::function<void()> &recoveryCallback = nullptr)
     {
     	base_addClientListener(clientListener, filterFactoryParams, converterFactoryParams, recoveryCallback);
     }
 
+    /**
+     * Stop and remove client listener
+     *
+     * \param clientListener the listener to be removed
+     * \return
+     *
+     */
     void removeClientListener(ClientListener& clientListener)
     {
     	base_removeClientListener(clientListener);
     }
+
+#if !defined(SWIG) && !defined(SWIGCSHARP)
+    /**
+     * Start a client listener on the specified query and register it on the server
+     *
+     * \param cql object defining the query to be observed
+     **/
+    void addContinuousQueryListener(ContinuousQueryListener<K,V>& cql)
+    {
+		base_addContinuousQueryListener(cql);
+    }
+template <typename... Params>
+   /**
+    * Start a client listener on a query that returns projection or aggregate and register it on the server
+    *
+    * \param cql object defining the query to be observed
+    **/
+    void addContinuousQueryListener(ContinuousQueryListener<K,V, Params...>& cql)
+    {
+		base_addContinuousQueryListener(cql);
+    }
+
+   /**
+    * Start a client listener on the specified query and register it on the server
+    *
+    * \param cql object defining the query to be observed
+    **/
+template<typename... Params>
+   void removeContinuousQueryListener(ContinuousQueryListener<Params...>& cql)
+   {
+	   base_removeClientListener(cql.cl);
+   }
+#endif
 
     CacheTopologyInfo getCacheTopologyInfo(){
     	return base_getCacheTopologyInfo();

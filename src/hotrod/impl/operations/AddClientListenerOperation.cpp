@@ -90,6 +90,7 @@ char AddClientListenerOperation::executeOperation(transport::Transport& transpor
     const Codec20& codec20 = dynamic_cast<const Codec20&>(codec);
     transport.writeArray(listenerId);
     codec20.writeClientListenerParams(transport, clientListener, filterFactoryParams, converterFactoryParams);
+    codec20.writeClientListenerInterests(transport, this->clientListener.interestFlag);
     transport.flush();
     listenerNotifier.addClientListener(listenerId, clientListener, cacheName, transport, codec20, (std::shared_ptr<void>)this->shared_from_this(), recoveryCallback);
     this->shared=true;

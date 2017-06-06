@@ -163,16 +163,17 @@
         <subsystem xmlns="urn:infinispan:server:core:9.0" default-cache-container="local">
             <cache-container name="local" default-cache="default" statistics="true">
                 <global-state/>
-                <local-cache name="default" start="EAGER">
+                <local-cache name="default">
                     <locking acquire-timeout="30000" concurrency-level="1000" striping="false"/>
                     <transaction mode="NONE"/>
                     <expiration interval="1000"/>
                 </local-cache>
-                <local-cache name="memcachedCache" start="EAGER">
+                <local-cache name="memcachedCache">
                     <locking acquire-timeout="30000" concurrency-level="1000" striping="false"/>
                     <transaction mode="NONE"/>
                 </local-cache>
-                <local-cache name="namedCache" start="EAGER"/>
+                <local-cache name="namedCache"/>
+                <local-cache name="queryCache"/>
             </cache-container>
         </subsystem>
         <subsystem xmlns="urn:infinispan:server:endpoint:9.0">
