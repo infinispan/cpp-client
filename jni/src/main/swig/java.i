@@ -164,6 +164,7 @@ using namespace infinispan::hotrod;
 %ignore clearAsync;
 %ignore removeAsync;
 %ignore replaceAsync;
+%ignore addContinuousQueryListener;
 
 //%shared_ptr(RelayShrPointer)
 

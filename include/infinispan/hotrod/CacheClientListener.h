@@ -37,18 +37,23 @@ public:
 
     CacheClientListener(RemoteCache<K,V>& cache) : cache((RemoteCacheBase&)cache) {};
     void add_listener(std::function<void(ClientCacheEntryCreatedEvent<K>)> callback) {
+        interestFlag|=0x01;
         createdCallbacks.push_back(callback);
     }
     void add_listener(std::function<void(ClientCacheEntryExpiredEvent<K>)> callback) {
+        interestFlag|=0x08;
         expiredCallbacks.push_back(callback);
     }
     void add_listener(std::function<void(ClientCacheEntryModifiedEvent<K>)> callback) {
+        interestFlag|=0x02;
         modifiedCallbacks.push_back(callback);
     }
     void add_listener(std::function<void(ClientCacheEntryRemovedEvent<K>)> callback) {
+        interestFlag|=0x04;
         removedCallbacks.push_back(callback);
     }
     void add_listener(std::function<void(ClientCacheEntryCustomEvent)> callback) {
+        interestFlag|=0x0f;
         customCallbacks.push_back(callback);
     }
 

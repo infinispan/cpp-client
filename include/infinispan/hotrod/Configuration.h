@@ -36,6 +36,8 @@ class Configuration
     HR_EXTERN static const char* PROTOCOL_VERSION_22;
     HR_EXTERN static const char* PROTOCOL_VERSION_23;
     HR_EXTERN static const char* PROTOCOL_VERSION_24;
+    HR_EXTERN static const char* PROTOCOL_VERSION_25;
+    HR_EXTERN static const char* PROTOCOL_VERSION_26;
 	HR_EXTERN static const char* DEFAULT_CLUSTER_NAME;
 
 

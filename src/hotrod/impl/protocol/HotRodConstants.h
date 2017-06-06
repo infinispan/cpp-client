@@ -24,6 +24,8 @@ class HotRodConstants
     static const uint8_t VERSION_22 = 22;
     static const uint8_t VERSION_23 = 23;
     static const uint8_t VERSION_24 = 24;
+    static const uint8_t VERSION_25 = 25;
+    static const uint8_t VERSION_26 = 26;
 
     //hotrod consistenthash version
     static const uint8_t CONSISTENT_HASH_V2      = 2;

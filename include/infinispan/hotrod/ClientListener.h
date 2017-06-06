@@ -39,6 +39,9 @@ public:
 	std::vector<char> filterFactoryName;
 	std::vector<char> converterFactoryName;
 	bool useRawData = false ;
+    unsigned char interestFlag=0;
+
+    void setInterestFlag(unsigned char flag) { interestFlag=flag; }
 	virtual void processEvent(ClientCacheEntryCreatedEvent<std::vector<char> >, std::vector<char >listId, uint8_t isCustom) const = 0;
 	virtual void processEvent(ClientCacheEntryModifiedEvent<std::vector<char> >, std::vector<char >listId, uint8_t isCustom) const = 0;
 	virtual void processEvent(ClientCacheEntryRemovedEvent<std::vector<char> >, std::vector<char >listId, uint8_t isCustom) const = 0;

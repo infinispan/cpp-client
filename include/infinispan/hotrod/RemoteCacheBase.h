@@ -5,10 +5,13 @@
 
 #include <infinispan/hotrod/CacheTopologyInfo.h>
 #include "infinispan/hotrod/ClientListener.h"
+#include "infinispan/hotrod/ContinuousQueryListener.h"
 #include "infinispan/hotrod/ImportExport.h"
 #include "infinispan/hotrod/Flag.h"
 #include "infinispan/hotrod/MetadataValue.h"
 #include "infinispan/hotrod/Query.h"
+#include "infinispan/hotrod/QueryUtils.h"
+#include "infinispan/hotrod/BasicTypesProtoStreamMarshaller.h"
 #include <map>
 #include <set>
 #include <vector>
@@ -25,6 +28,7 @@ class OperationsFactory;
 
 namespace event {
 template <class K, class V> class CacheClientListener;
+template <typename... Params> class ContinuousQueryListener;
 }
 typedef void (*MarshallHelperFn) (void*, const void*, std::vector<char> &);
 typedef void* (*UnmarshallHelperFn) (void*, const std::vector<char> &);
@@ -66,6 +70,104 @@ protected:
 
     RemoteCacheBase() {}
     HR_EXTERN void setMarshallers(void* rc, MarshallHelperFn kf, MarshallHelperFn vf, UnmarshallHelperFn ukf, UnmarshallHelperFn uvf);
+
+    template<class K, class V, typename... Params>
+	void base_addContinuousQueryListener(ContinuousQueryListener<K, V, Params...>& cql) {
+		static char CONTINUOUS_QUERY_FILTER_FACTORY_NAME[] =
+				"continuous-query-filter-converter-factory";
+		cql.cl.filterFactoryName = std::vector<char>(
+				CONTINUOUS_QUERY_FILTER_FACTORY_NAME,
+				CONTINUOUS_QUERY_FILTER_FACTORY_NAME
+						+ strlen(CONTINUOUS_QUERY_FILTER_FACTORY_NAME));
+		cql.cl.converterFactoryName = std::vector<char>(
+				CONTINUOUS_QUERY_FILTER_FACTORY_NAME,
+				CONTINUOUS_QUERY_FILTER_FACTORY_NAME
+						+ strlen(CONTINUOUS_QUERY_FILTER_FACTORY_NAME));
+		BasicTypesProtoStreamMarshaller<std::string> paramMarshaller;
+		std::vector<std::vector<char> > filterFactoryParams;
+		std::vector<char> param;
+		paramMarshaller.marshall(cql.getQuery(), param);
+		filterFactoryParams.push_back(param);
+		std::vector<std::vector<char> > converterFactoryParams;
+		cql.cl.useRawData = true;
+		cql.listenerCustomEvent =
+				[this, &cql](ClientCacheEntryCustomEvent e) {
+					ContinuousQueryResult r;
+					WrappedMessage wm;
+					wm.ParseFromArray(e.getEventData().data(), e.getEventData().size());
+					r.ParseFromString(wm.wrappedmessagebytes());
+					auto resultType = r.resulttype();
+					auto i=0;
+					std::tuple<Params...> tp= popTuple<Params...>(r.projection(), i) ;
+					K* k = (K*)this->baseKeyUnmarshall(std::vector<char>(r.key().begin(), r.key().end()));
+					switch (resultType) {
+						case ContinuousQueryResult_ResultType_JOINING:
+						cql.getJoiningListener()(*k, tp);
+						break;
+						case ContinuousQueryResult_ResultType_LEAVING:
+						cql.getLeavingListener()(*k, tp);
+						break;
+						case ContinuousQueryResult_ResultType_UPDATED:
+						cql.getUpdatedListener()(*k, tp);
+						break;
+						default:
+						//uIgnore unknown types
+						break;
+					}
+				};
+		cql.cl.add_listener(cql.listenerCustomEvent);
+		this->base_addClientListener(cql.cl, filterFactoryParams,
+				converterFactoryParams, cql.getFailoverListener());
+    }
+    template <class K, class V>
+	void base_addContinuousQueryListener(ContinuousQueryListener<K, V>& cql) {
+		static char CONTINUOUS_QUERY_FILTER_FACTORY_NAME[] =
+				"continuous-query-filter-converter-factory";
+		cql.cl.filterFactoryName = std::vector<char>(
+				CONTINUOUS_QUERY_FILTER_FACTORY_NAME,
+				CONTINUOUS_QUERY_FILTER_FACTORY_NAME
+						+ strlen(CONTINUOUS_QUERY_FILTER_FACTORY_NAME));
+		cql.cl.converterFactoryName = std::vector<char>(
+				CONTINUOUS_QUERY_FILTER_FACTORY_NAME,
+				CONTINUOUS_QUERY_FILTER_FACTORY_NAME
+						+ strlen(CONTINUOUS_QUERY_FILTER_FACTORY_NAME));
+		BasicTypesProtoStreamMarshaller<std::string> paramMarshaller;
+		std::vector<std::vector<char> > filterFactoryParams;
+		std::vector<char> param;
+		paramMarshaller.marshall(cql.getQuery(), param);
+		filterFactoryParams.push_back(param);
+		std::vector<std::vector<char> > converterFactoryParams;
+		cql.cl.useRawData = true;
+		cql.listenerCustomEvent =
+				[this, &cql](ClientCacheEntryCustomEvent e) {
+					ContinuousQueryResult r;
+					WrappedMessage wm;
+					wm.ParseFromArray(e.getEventData().data(), e.getEventData().size());
+					r.ParseFromString(wm.wrappedmessagebytes());
+					auto resultType = r.resulttype();
+					K* k = (K*)this->baseKeyUnmarshall(std::vector<char>(r.key().begin(), r.key().end()));
+					V* v = (V*)this->baseValueUnmarshall(std::vector<char>(r.value().begin(), r.value().end()));
+					switch (resultType) {
+						case ContinuousQueryResult_ResultType_JOINING:
+						cql.getJoiningListener()(*k, *v);
+						break;
+						case ContinuousQueryResult_ResultType_LEAVING:
+						cql.getLeavingListener()(*k, *v);
+						break;
+						case ContinuousQueryResult_ResultType_UPDATED:
+						cql.getUpdatedListener()(*k, *v);
+						break;
+						default:
+						//uIgnore unknown types
+						break;
+					}
+				};
+		cql.cl.add_listener(cql.listenerCustomEvent);
+		this->base_addClientListener(cql.cl, filterFactoryParams,
+				converterFactoryParams, cql.getFailoverListener());
+	}
+
+
 private:
     std::shared_ptr<RemoteCacheImpl> impl; // pointer to RemoteCacheImpl;
     void *remoteCachePtr=nullptr; // TODO: pointer to self, is it really necessary?
@@ -86,6 +188,8 @@ friend class KeyUnmarshallerFtor;
 friend class ValueUnmarshallerFtor;
 template <class K, class V>
 friend class ::infinispan::hotrod::event::CacheClientListener;
+template <class K, class V>
+friend class ::infinispan::hotrod::event::ContinuousQueryListener;
 };
 
 }} // namespace

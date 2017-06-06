@@ -389,6 +389,7 @@ endif(ENABLE_INTERNAL_TESTING)
       src/hotrod/impl/protocol/Codec20.cpp
       src/hotrod/impl/protocol/Codec21.cpp
       src/hotrod/impl/protocol/Codec22.cpp
+      src/hotrod/impl/protocol/Codec26.cpp
       src/hotrod/impl/protocol/CodecFactory.cpp
       src/hotrod/impl/transport/AbstractTransport.cpp
       src/hotrod/impl/transport/tcp/ConnectionPool.cpp
@@ -433,7 +434,7 @@ target_include_directories(hotrod_protobuf PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/t
 configure_file(src/hotrod/impl/Version.cpp.in ${CMAKE_BINARY_DIR}/Version.cpp @ONLY)
 if (MSVC)
     set_target_properties(hotrod_protobuf PROPERTIES COMPILE_FLAGS "/wd4244 /wd4267" )
-endif (MSVC) 
+endif (MSVC)
     
     # Build a shared library
     add_library (hotrod SHARED ${library_sources})
@@ -518,9 +519,9 @@ set_property(TARGET queryTest PROPERTY CXX_STANDARD 11)
 set_property(TARGET queryTest PROPERTY CXX_STANDARD_REQUIRED ON)
 if (MSVC)
     set_target_properties (queryTest PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS} /wd4244 /wd4267")
-else (MSVC) 
+else (MSVC)
     set_target_properties (queryTest PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${NO_UNUSED_FLAGS}")
-endif (MSVC) 
+endif (MSVC)
 set_target_properties(queryTest PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}")
 target_link_libraries (queryTest hotrod hotrod_protobuf  ${PROTOBUF_LIBRARY} ${platform_libs})
 
@@ -536,10 +537,43 @@ set_property(TARGET queryTest-static PROPERTY CXX_STANDARD_REQUIRED ON)
 set_target_properties(queryTest-static PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}" )
 if (MSVC)
 set_target_properties (queryTest-static PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS} ${STATIC_FLAGS} /wd4244 /wd4267")
-else (MSVC) 
+else (MSVC)
 set_target_properties (queryTest-static PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${STATIC_FLAGS} ${NO_UNUSED_FLAGS}")
-endif (MSVC) 
+endif (MSVC)
 target_link_libraries (queryTest-static hotrod-static hotrod_protobuf ${PROTOBUF_LIBRARY} ${OPENSSL_LIBRARIES} ${platform_libs})
+
+add_executable (continuousQueryTest test/ContinuousQueryTest.cpp ${TEST_PROTO_SRCS})
+target_include_directories(continuousQueryTest PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
+                                     "${INCLUDE_FILES_DIR}"
+                                     "${INCLUDE_FILES_DIR}/infinispan/hotrod"
+                                     "${CMAKE_CURRENT_BINARY_DIR}"
+                                     "${PROTOBUF_INCLUDE_DIR}")
+set_property(TARGET continuousQueryTest PROPERTY CXX_STANDARD 11)
+set_property(TARGET continuousQueryTest PROPERTY CXX_STANDARD_REQUIRED ON)
+if (MSVC)
+    set_target_properties (continuousQueryTest PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS} /wd4244 /wd4267")
+else (MSVC)
+    set_target_properties (continuousQueryTest PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${NO_UNUSED_FLAGS}")
+endif (MSVC)
+set_target_properties(continuousQueryTest PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}")
+target_link_libraries (continuousQueryTest hotrod hotrod_protobuf  ${PROTOBUF_LIBRARY} ${platform_libs})
+
+add_executable (continuousQueryTest-static ${TEST_PROTO_SRCS} test/ContinuousQueryTest.cpp)
+target_include_directories(continuousQueryTest-static PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
+                                     "${INCLUDE_FILES_DIR}"
+                                     "${INCLUDE_FILES_DIR}/infinispan/hotrod"
+                                     "${CMAKE_CURRENT_BINARY_DIR}"
+                                     "${PROTOBUF_INCLUDE_DIR}")
+
+set_property(TARGET continuousQueryTest-static PROPERTY CXX_STANDARD 11)
+set_property(TARGET continuousQueryTest-static PROPERTY CXX_STANDARD_REQUIRED ON)
+set_target_properties(continuousQueryTest-static PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}" )
+if (MSVC)
+set_target_properties (continuousQueryTest-static PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS} ${STATIC_FLAGS} /wd4244 /wd4267")
+else (MSVC)
+set_target_properties (continuousQueryTest-static PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${STATIC_FLAGS} ${NO_UNUSED_FLAGS}")
+endif (MSVC)
+target_link_libraries (continuousQueryTest-static hotrod-static hotrod_protobuf ${PROTOBUF_LIBRARY} ${OPENSSL_LIBRARIES} ${platform_libs})
 
 add_executable (events test/Events.cpp)
 target_include_directories(events PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
@@ -689,6 +723,8 @@ else (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.sh") AND (EXISTS "${HOTR
     add_test (queryTest-static queryTest-static)
     add_test (events events)
     add_test (nearCacheTest nearCacheTest)
+    add_test (continuousQueryTest continuousQueryTest)
+    add_test (continuousQueryTest-static continuousQueryTest-static)
     add_test (stop_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py stop)
     add_test (probe_port_stop ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/probe_port.py localhost 11222 60 down)
     if (WIN32)
