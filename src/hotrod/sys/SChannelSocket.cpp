@@ -1034,7 +1034,7 @@ LONG SChannelSocket::DisconnectFromServer()
 
 
     // Send the close notify message to the server.
-    if (pbMessage != NULL && cbMessage != 0)
+    if (pbMessage != NULL && cbMessage != 0 && Client_Socket!=INVALID_SOCKET)
     {
         cbData = send(Client_Socket, (const char *)pbMessage, cbMessage, 0);
         if (cbData == SOCKET_ERROR || cbData == 0)
@@ -1043,10 +1043,10 @@ LONG SChannelSocket::DisconnectFromServer()
             printf("**** Error %d sending close notify\n", Status);
         }
         initializer.g_pSSPI->FreeContextBuffer(pbMessage); // Free output buffer.
+        closesocket(Client_Socket); // Close the socket.
+        Client_Socket = INVALID_SOCKET;
     }
     initializer.g_pSSPI->DeleteSecurityContext(&hContext); // Free the security context.
-    closesocket(Client_Socket); // Close the socket.
-
     return Status;
 }
 

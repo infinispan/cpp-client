@@ -4,7 +4,9 @@
 #include "infinispan/hotrod/Version.h"
 
 #include "infinispan/hotrod/JBasicMarshaller.h"
+#if !defined _WIN32 && !defined _WIN64
 #include <sasl/saslplug.h>
+#endif
 
 #include <stdlib.h>
 #include <iostream>
@@ -79,58 +81,8 @@ void assert_not_null(const std::string& message, int line, const std::unique_ptr
     }
 }
 
-static char *simple_data; // plain
-static char realm_data[] = "applicationRealm";
-
-static int simple(void *context __attribute__((unused)), int id, const char **result, unsigned *len) {
-    *result = simple_data;
-    if (len)
-        *len = strlen(simple_data);
-    return SASL_OK;
-}
-
-static int getrealm(void *context __attribute__((unused)), int id, const char **result, unsigned *len) {
-    *result = realm_data;
-    if (len)
-        *len = strlen(simple_data);
-    return SASL_OK;
-}
-
-#define PLUGINDIR "/usr/lib64/sasl2"
-
-static int getpath(void *context, const char ** path) {
-    const char *searchpath = (const char *) context;
-
-    if (!path)
-        return SASL_BADPARAM;
-    *path = PLUGINDIR;
-    return SASL_OK;
-}
-
-static char *secret_data;
-static int getsecret(sasl_conn_t *conn, void *context __attribute__((unused)), int id, sasl_secret_t **psecret) {
-    size_t len;
-    static sasl_secret_t *x;
-
-    /* paranoia check */
-    if (!conn || !psecret || id != SASL_CB_PASS)
-        return SASL_BADPARAM;
-
-    len = strlen(secret_data);
-
-    x = (sasl_secret_t *) realloc(x, sizeof(sasl_secret_t) + len);
-
-    x->len = len;
-    strcpy((char *) x->data, secret_data);
-
-    *psecret = x;
-    return SASL_OK;
-}
-
-static std::vector<sasl_callback_t> callbackHandler { { SASL_CB_USER, (sasl_callback_ft) &simple, NULL }, {
-SASL_CB_AUTHNAME, (sasl_callback_ft) &simple, NULL }, { SASL_CB_PASS, (sasl_callback_ft) &getsecret, NULL }, {
-SASL_CB_GETREALM, (sasl_callback_ft) &getrealm, NULL }, /*{ SASL_CB_GETPATH, (sasl_callback_ft) &getpath, NULL },*/ {
-SASL_CB_LIST_END, NULL, NULL } };
+static std::vector<sasl_callback_t> callbackHandler { 
+	{ SASL_CB_LIST_END, NULL, NULL } };
 
 int main(int argc, char** argv) {
     std::cout << "TLS Test" << std::endl;
@@ -139,6 +91,7 @@ int main(int argc, char** argv) {
         std::cerr << "Usage: " << argv[0] << " ca_path [client_ca_file]" << std::endl;
         return 1;
     }
+    try
     {
       ConfigurationBuilder builder;
       builder.addServer().host("127.0.0.1").port(11222);
@@ -153,7 +106,7 @@ int main(int argc, char** argv) {
       BasicMarshaller<std::string> *km = new BasicMarshaller<std::string>();
       BasicMarshaller<std::string> *vm = new BasicMarshaller<std::string>();
       RemoteCache<std::string, std::string> cache = cacheManager.getCache<std::string, std::string>(km,
-          &Marshaller<std::string>::destroy, vm, &Marshaller<std::string>::destroy);
+          &Marshaller<std::string>::destroy, vm, &Marshaller<std::string>::destroy, std::string("authCache"));
       cacheManager.start();
       cache.clear();
       std::string k1("key13");
@@ -165,8 +118,12 @@ int main(int argc, char** argv) {
           std::cerr << "get/put fail for " << k1 << " got " << *rv << " expected " << v1 << std::endl;
           return 1;
       }
-      cacheManager.stop();
-    }
-    return 0;
+        cacheManager.stop();
+        return 0;
+      }
+    catch (Exception &ex)
+      {
+        std::cout << "Error: " << ex.what() << std::endl;
+      }
 }
 
