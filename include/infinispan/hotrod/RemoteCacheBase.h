@@ -28,7 +28,9 @@ class OperationsFactory;
 
 namespace event {
 template <class K, class V> class CacheClientListener;
+#ifndef SWIGCSHARP
 template <typename... Params> class ContinuousQueryListener;
+#endif
 }
 typedef void (*MarshallHelperFn) (void*, const void*, std::vector<char> &);
 typedef void* (*UnmarshallHelperFn) (void*, const std::vector<char> &);
@@ -71,6 +73,7 @@ protected:
     RemoteCacheBase() {}
     HR_EXTERN void setMarshallers(void* rc, MarshallHelperFn kf, MarshallHelperFn vf, UnmarshallHelperFn ukf, UnmarshallHelperFn uvf);
 
+#ifndef SWIGCSHARP
     template<class K, class V, typename... Params>
 	void base_addContinuousQueryListener(ContinuousQueryListener<K, V, Params...>& cql) {
 		static char CONTINUOUS_QUERY_FILTER_FACTORY_NAME[] =
@@ -166,6 +169,7 @@ protected:
 		this->base_addClientListener(cql.cl, filterFactoryParams,
 				converterFactoryParams, cql.getFailoverListener());
 	}
+#endif
 
 
 private:
@@ -188,8 +192,10 @@ friend class KeyUnmarshallerFtor;
 friend class ValueUnmarshallerFtor;
 template <class K, class V>
 friend class ::infinispan::hotrod::event::CacheClientListener;
-template <class K, class V>
+#ifndef SWIGCSHARP
+template <typename... Params>
 friend class ::infinispan::hotrod::event::ContinuousQueryListener;
+#endif
 };
 
 }} // namespace

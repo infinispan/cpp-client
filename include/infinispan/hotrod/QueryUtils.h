@@ -82,7 +82,7 @@ template <typename T> T unwrapSingleResult(const QueryResponse &qr)
 template <typename H, typename... Params> std::tuple<H, Params...> popTuple(const RepeatedPtrField<WrappedMessage >& wMsgs,  int &k)
 {
 	H s = unwrapSingleValue<H>(wMsgs.Get(k++));
-	std::tuple<Params...> p=popTuple<Params... >(wMsgs,k);
+	std::tuple<Params...> p = popTuple<Params... >(wMsgs,k);
 	return std::tuple_cat(std::tie(s),p);
 }
 

@@ -887,6 +887,7 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
     	base_removeClientListener(clientListener);
     }
 
+#if !defined(SWIG) && !defined(SWIGCSHARP)
     /**
      * Start a client listener on the specified query and register it on the server
      *
@@ -896,7 +897,6 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
     {
 		base_addContinuousQueryListener(cql);
     }
-#ifndef SWIG
 template <typename... Params>
    /**
     * Start a client listener on a query that returns projection or aggregate and register it on the server
@@ -946,23 +946,6 @@ template<typename... Params>
         valueMarshaller = other.valueMarshaller;
         setMarshallers(this, &keyMarshall, &valueMarshall, &keyUnmarshall, &valueUnmarshall);
         return *this;
-    }
-
-    K* keyUnmarshall(const std::vector<char> &buf) const
-    {
-        return keyMarshaller->unmarshall(buf);
-    }
-
-    V* valueUnmarshall(const std::vector<char> &buf) const
-    {
-        return valueMarshaller->unmarshall(buf);
-    }
-
-    void keyMarshall(K key, std::vector<char> &buf) {
-        keyMarshaller->marshall(key, buf);
-    }
-    void valueMarshall(V val, std::vector<char> &buf) {
-        valueMarshaller->marshall(val, buf);
     }
 
   protected:

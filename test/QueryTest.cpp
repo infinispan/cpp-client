@@ -31,6 +31,23 @@ std::string read(std::string file)
     return buffer.str();
 }
 
+class ResourceManager{
+private:
+	std::vector<std::function<void()> > cleanups;
+public:
+	~ResourceManager() {
+        while (cleanups.size() > 0)
+        {
+            cleanups.back()();
+            cleanups.pop_back();
+        }
+	}
+	void add(std::function<void()> cleanup)
+	{
+		cleanups.push_back(cleanup);
+	}
+};
+
 
 int main(int argc, char** argv) {
 
@@ -50,6 +67,8 @@ int main(int argc, char** argv) {
     RemoteCache<std::string, std::string> metadataCache = cacheManager.getCache<std::string, std::string>(
             km, &Marshaller<std::string>::destroy, vm, &Marshaller<std::string>::destroy,PROTOBUF_METADATA_CACHE_NAME, false);
 
+    ResourceManager rMain;
+    rMain.add([&cacheManager] { cacheManager.stop();});
 
     metadataCache.put("sample_bank_account/bank.proto", read("query_proto/bank.proto"));
     if (metadataCache.containsKey(ERRORS_KEY_SUFFIX))
@@ -59,10 +78,12 @@ int main(int argc, char** argv) {
       return result;
     }
 
+    rMain.add([&metadataCache] { metadataCache.remove("sample_bank_account/bank.proto");});
+
     auto *testkm = new BasicTypesProtoStreamMarshaller<int>();
     auto *testvm = new ProtoStreamMarshaller<sample_bank_account::User>();
     RemoteCache<int, sample_bank_account::User> testCache = cacheManager.getCache<int, sample_bank_account::User>(
-            testkm, &Marshaller<int>::destroy, testvm, &Marshaller<sample_bank_account::User>::destroy, "namedCache", false);
+            testkm, &Marshaller<int>::destroy, testvm, &Marshaller<sample_bank_account::User>::destroy, "queryCache", false);
     testCache.clear();
     sample_bank_account::User_Address a;
     sample_bank_account::User user1;
@@ -174,7 +195,6 @@ int main(int argc, char** argv) {
         std::cout << "result is: " << i << std::endl;
     }
 
-    cacheManager.stop();
     return result;
 }
 

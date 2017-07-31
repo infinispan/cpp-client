@@ -277,7 +277,7 @@ void Codec20::writeClientListenerParams(transport::Transport& t, const ClientLis
 
 void Codec20::writeClientListenerInterests(transport::Transport& t, unsigned char) const
 {
-	// no op until 2.6 protocol
+	// Called by the Add Listener operation, but no op until 2.6
 }
 
 void Codec20::writeNamedFactory(transport::Transport &t, const std::vector<char> &factoryName, const std::vector<std::vector<char> > & params) const

@@ -108,7 +108,7 @@ int main(int argc, char** argv) {
       RemoteCache<std::string, std::string> cache = cacheManager.getCache<std::string, std::string>(km,
           &Marshaller<std::string>::destroy, vm, &Marshaller<std::string>::destroy, std::string("authCache"));
       cacheManager.start();
-        cache.clear();
+      cache.clear();
       std::string k1("key13");
       std::string v1("boron");
 
