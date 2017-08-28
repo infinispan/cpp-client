@@ -5,6 +5,7 @@
 #include <iostream>
 #include <sstream>
 #include <iomanip>
+#include <string.h>
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 
@@ -30,7 +31,11 @@ void SSLSocket::connect(const std::string& host, int port, int timeout) {
     m_socket->connect(host, port, timeout);
     this->host = host;
     this->port = port;
-    const SSL_METHOD* method = TLSv1_2_client_method();
+	#if (OPENSSL_VERSION_NUMBER >= 0x10100000L)
+    	const SSL_METHOD* method = SSLv23_client_method();
+	#else
+    	const SSL_METHOD* method = TLSv1_2_client_method();
+    #endif
     m_ctx = SSL_CTX_new(method);
     if (!m_ctx) {
         logAndThrow(host, port, "SSL_CTX_new");
@@ -95,7 +100,15 @@ void SSLSocket::connect(const std::string& host, int port, int timeout) {
     }
     X509* cert = SSL_get_peer_certificate(m_ssl);
     if (cert) {
+    #if (OPENSSL_VERSION_NUMBER >= 0x10100000L)
+	#define MAX_SIZE 1000
+    	char* line = new char[ MAX_SIZE + 1 ];
+    	X509_NAME_oneline( X509_get_subject_name( cert ), line, MAX_SIZE);
+    	DEBUG("X509 Certificate %s", line);
+    	delete[] line;
+#else
         DEBUG("X509 Certificate %s", cert->name);
+#endif
         X509_free(cert);
     } else {
         close();
