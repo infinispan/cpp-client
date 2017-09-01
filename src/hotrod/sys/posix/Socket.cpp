@@ -151,7 +151,7 @@ void Socket::connect(const std::string& h, int p, int timeout) {
 	struct addrinfo *addr_list;
 
 	host = h;
-	port = p;
+	port = (unsigned short)p;
 	if (fd != -1)
 		throwIOErr(host, port, "reconnect attempt", 0);
 
