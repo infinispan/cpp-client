@@ -7,7 +7,7 @@ namespace infinispan {
 namespace hotrod {
 namespace transport {
 
-HR_EXPORT InetSocketAddress::InetSocketAddress(const std::string& host, int p): hostname(host), port(p) {
+HR_EXPORT InetSocketAddress::InetSocketAddress(const std::string& host, int p): hostname(host), port((unsigned short)p) {
     addresses = resolve(host, true);
 }
 
