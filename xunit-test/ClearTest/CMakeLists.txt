@@ -11,6 +11,6 @@ target_link_libraries(ClearTest
     hotrod
 )
 
-install(TARGETS ClearTest DESTINATION bin)
+add_test(xunit_ClearTest ClearTest)
 
 
