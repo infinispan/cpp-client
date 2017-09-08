@@ -11,6 +11,5 @@ target_link_libraries(PutGetTest
     hotrod
 )
 
-install(TARGETS PutGetTest DESTINATION bin)
-
+add_test(xunit_PutGetTest PutGetTest)
 

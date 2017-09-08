@@ -87,8 +87,6 @@ set_target_properties(libgmock PROPERTIES
 include_directories("${source_dir}/googletest/include"
                     "${source_dir}/googlemock/include")
 
-ADD_SUBDIRECTORY(xunit-test)
-
 find_package(Protobuf REQUIRED)
 
 function(HR_PROTOBUF_GENERATE_CPP SRCS HDRS)
@@ -683,6 +681,8 @@ target_link_libraries (itest hotrod hotrod_protobuf ${PROTOBUF_LIBRARY} ${OPENSS
 
 # the CTest include must be after the MEMORYCHECK settings are processed
 include (CTest)
+
+ADD_SUBDIRECTORY(xunit-test)
 
 if (ENABLE_INTERNAL_TESTING)
     add_test (unittest unittest)
