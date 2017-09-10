@@ -55,6 +55,8 @@ ExternalProject_Add(
     gtest
     URL https://github.com/google/googletest/archive/master.zip
     PREFIX ${CMAKE_CURRENT_BINARY_DIR}/gtest
+    CMAKE_ARGS -DCMAKE_BUILD_TYPE:STRING=Debug -Dgtest_force_shared_crt=ON
+    BUILD_COMMAND cmake --build . --config RelWithDebInfo
     # Disable install step
     INSTALL_COMMAND ""
 )
@@ -67,9 +69,15 @@ ExternalProject_Get_Property(gtest source_dir binary_dir)
 add_library(libgtest IMPORTED STATIC GLOBAL)
 add_dependencies(libgtest gtest)
 
+if(WIN32 AND NOT CYGWIN)
+    set(GTEST_LIBRARY "${binary_dir}/googlemock/gtest/RelWithDebInfo/gtest.lib")
+else(WIN32 AND NOT CYGWIN)
+    set(GTEST_LIBRARY "${binary_dir}/googlemock/gtest/libgtest.a")
+endif(WIN32 AND NOT CYGWIN)
+
 # Set libgtest properties
 set_target_properties(libgtest PROPERTIES
-    "IMPORTED_LOCATION" "${binary_dir}/googlemock/gtest/libgtest.a"
+    "IMPORTED_LOCATION" "${GTEST_LIBRARY}"
     "IMPORTED_LINK_INTERFACE_LIBRARIES" "${CMAKE_THREAD_LIBS_INIT}"
 )
 
@@ -78,8 +86,15 @@ add_library(libgmock IMPORTED STATIC GLOBAL)
 add_dependencies(libgmock gtest)
 
 # Set libgmock properties
+
+if(WIN32 AND NOT CYGWIN)
+    set(GMOCK_LIBRARY "${binary_dir}/googlemock/RelWithDebInfo/gmock.lib")
+else(WIN32 AND NOT CYGWIN)
+    set(GMOCK_LIBRARY "${binary_dir}/googlemock/libgmock.a")
+endif(WIN32 AND NOT CYGWIN)
+
 set_target_properties(libgmock PROPERTIES
-    "IMPORTED_LOCATION" "${binary_dir}/googlemock/libgmock.a"
+    "IMPORTED_LOCATION" "${GMOCK_LIBRARY}"
     "IMPORTED_LINK_INTERFACE_LIBRARIES" "${CMAKE_THREAD_LIBS_INIT}"
 )
 
@@ -759,7 +774,7 @@ else (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.sh") AND (EXISTS "${HOTR
         add_test (stop_ssl_server_client_auth ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py stop)
         add_test (start_sals_ssl_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py start ${JAVA_RUNTIME} ${HOTROD_JBOSS_HOME} standalone-sasl-ssl.xml)
         add_test (probe_sasl_ssl_port ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/probe_port.py localhost 11222 60)
-	add_test (simpleSaslTls simpleSaslTls ${CMAKE_CURRENT_SOURCE_DIR}/test/data/infinispan-ca.pem ${CMAKE_CURRENT_SOURCE_DIR}/test/data/truststore_client.pem)
+        add_test (simpleSaslTls simpleSaslTls ${CMAKE_CURRENT_SOURCE_DIR}/test/data/infinispan-ca.pem ${CMAKE_CURRENT_SOURCE_DIR}/test/data/truststore_client.pem)
         add_test (stop_sasl_ssl_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py stop)
     endif(WIN32)
 endif (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.sh") AND (EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.bat")))
