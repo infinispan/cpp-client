@@ -1,6 +1,6 @@
-#include "PutGetTest.h"
 #include "infinispan/hotrod/ConfigurationBuilder.h"
 #include "infinispan/hotrod/RemoteCacheManager.h"
+#include "PutGetTest.h"
 
 using ::infinispan::hotrod::ConfigurationBuilder;
 using ::infinispan::hotrod::Configuration;
