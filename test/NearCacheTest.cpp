@@ -65,9 +65,13 @@ int main(int argc, char** argv) {
     auto missesEnd = std::stoi(statsEnd["misses"]);
     std::cout << "Remote misses is: " << missesEnd-missesBegin << "" << std::endl;
     std::cout << "Remote hits is: " << hitsEnd-hitsBegin << "" << std::endl;
-    nearCacheManager.stop();
     }
     catch (Exception &e) {
+    }
+    try
+    {
         nearCacheManager.stop();
+    }
+    catch (Exception &e) {
     }
 }
