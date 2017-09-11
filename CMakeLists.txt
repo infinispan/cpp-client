@@ -696,21 +696,9 @@ target_link_libraries (itest hotrod hotrod_protobuf ${PROTOBUF_LIBRARY} ${OPENSS
 
 # the CTest include must be after the MEMORYCHECK settings are processed
 include (CTest)
-
-ADD_SUBDIRECTORY(xunit-test)
-
-if (ENABLE_INTERNAL_TESTING)
-    add_test (unittest unittest)
-    add_test (unittest-static unittest-static)
-endif (ENABLE_INTERNAL_TESTING)    
-
 find_package(Java)
-
-find_program(MVN_PROGRAM "mvn")
-if (MVN_PROGRAM STREQUAL "MVN_PROGRAM-NOTFOUND")
-    message(FATAL_ERROR "Apache Maven (mvn) not found in path")
-endif (MVN_PROGRAM STREQUAL "MVN_PROGRAM-NOTFOUND")
-
+find_package(PythonInterp REQUIRED)
+set (CMAKE_ROOT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 if (NOT DEFINED HOTROD_JBOSS_HOME)
    if (NOT DEFINED ENV{JBOSS_HOME})
@@ -719,6 +707,19 @@ if (NOT DEFINED HOTROD_JBOSS_HOME)
       set(HOTROD_JBOSS_HOME $ENV{JBOSS_HOME} CACHE FILEPATH "Infinispan HOME dir")
    endif (NOT DEFINED ENV{JBOSS_HOME})
 endif (NOT DEFINED HOTROD_JBOSS_HOME)
+
+ADD_SUBDIRECTORY(xunit-test)
+
+if (ENABLE_INTERNAL_TESTING)
+    add_test (unittest unittest)
+    add_test (unittest-static unittest-static)
+endif (ENABLE_INTERNAL_TESTING)    
+
+
+find_program(MVN_PROGRAM "mvn")
+if (MVN_PROGRAM STREQUAL "MVN_PROGRAM-NOTFOUND")
+    message(FATAL_ERROR "Apache Maven (mvn) not found in path")
+endif (MVN_PROGRAM STREQUAL "MVN_PROGRAM-NOTFOUND")
 
 set(KRBSERVER_DIR "${CMAKE_CURRENT_BINARY_DIR}/krbserver")
 add_custom_command(OUTPUT ${KRBSERVER_DIR}/target/classes/krbserver/Server.class
@@ -734,7 +735,6 @@ else (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.sh") AND (EXISTS "${HOTR
     if (NOT JAVA_RUNTIME)
         message(FATAL_ERROR "Java not found")
     endif (NOT JAVA_RUNTIME)
-    find_package(PythonInterp REQUIRED)
     file(COPY ${CMAKE_SOURCE_DIR}/krbserver DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
     file(COPY ${CMAKE_SOURCE_DIR}/test/data/krb5.conf DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
     add_test (start_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py start ${JAVA_RUNTIME} ${HOTROD_JBOSS_HOME} standalone.xml)
