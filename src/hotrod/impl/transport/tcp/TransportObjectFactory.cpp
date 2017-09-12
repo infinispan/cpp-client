@@ -128,6 +128,17 @@ void do_sasl_authentication(Codec& codec, Transport& t, const AuthenticationConf
     ULONG             ContextAttributes;
 
     ULONG cPackages = 0; PSecPkgInfo pInfo = NULL;
+
+    const char* choosenmech = conf.getSaslMechanism().data();
+    std::vector<char> mech(choosenmech, choosenmech + strlen(choosenmech)), resp;
+
+    if (!strcmp("EXTERNAL", choosenmech))
+    {
+        AuthOperation a(codec, t, mech, resp);
+        std::vector<char> respOp(a.execute());
+        return;
+    }
+
     SECURITY_STATUS stat = EnumerateSecurityPackages(&cPackages, &pInfo);
     SEC_WINNT_AUTH_IDENTITY credentials;
     memset(&credentials, '\0', sizeof(SEC_WINNT_AUTH_IDENTITY));
@@ -137,19 +148,22 @@ void do_sasl_authentication(Codec& codec, Transport& t, const AuthenticationConf
     sasl_secret_t *secret;
     const char *realm;
     unsigned int realmLen;
-    auto sasl_cb = get_auth_callback(SASL_CB_USER, conf);
-    ((int(*)(void *, int, const char**, unsigned*))sasl_cb->proc)(sasl_cb->context, sasl_cb->id, &username, &userLen);
-    sasl_cb = get_auth_callback(SASL_CB_PASS, conf);
-    ((int(*)(void *, void*, int, sasl_secret_t**))sasl_cb->proc)(nullptr, sasl_cb->context, sasl_cb->id, &secret);
-    sasl_cb = get_auth_callback(SASL_CB_GETREALM, conf);
-    ((int(*)(void *, int, const char**, unsigned*))sasl_cb->proc)(sasl_cb->context, sasl_cb->id, &realm, &realmLen);
-    credentials.User = (unsigned char*)username;
-    credentials.UserLength = userLen;
-    credentials.Password = (unsigned char*)secret->data;
-    credentials.PasswordLength = secret->len;
-    credentials.Domain = (unsigned char*)realm;
-    credentials.DomainLength = realmLen;
-    ss = AcquireCredentialsHandle(NULL, "WDigest", SECPKG_CRED_OUTBOUND, NULL, &credentials, NULL, NULL, &hCred, &tsExpiry);
+    auto sasl_cb_user = get_auth_callback(SASL_CB_USER, conf);
+    auto sasl_cb_pass = get_auth_callback(SASL_CB_PASS, conf);
+    auto sasl_cb_realm = get_auth_callback(SASL_CB_GETREALM, conf);
+    if (sasl_cb_user && sasl_cb_pass && sasl_cb_realm)
+    {
+        ((int(*)(void *, int, const char**, unsigned*))sasl_cb_user->proc)(sasl_cb_user->context, sasl_cb_user->id, &username, &userLen);
+        ((int(*)(void *, void*, int, sasl_secret_t**))sasl_cb_pass->proc)(nullptr, sasl_cb_pass->context, sasl_cb_pass->id, &secret);
+        ((int(*)(void *, int, const char**, unsigned*))sasl_cb_realm->proc)(sasl_cb_realm->context, sasl_cb_realm->id, &realm, &realmLen);
+        credentials.User = (unsigned char*)username;
+        credentials.UserLength = userLen;
+        credentials.Password = (unsigned char*)secret->data;
+        credentials.PasswordLength = secret->len;
+        credentials.Domain = (unsigned char*)realm;
+        credentials.DomainLength = realmLen;
+        ss = AcquireCredentialsHandle(NULL, "WDigest", SECPKG_CRED_OUTBOUND, NULL, &credentials, NULL, NULL, &hCred, &tsExpiry);
+    }
     OutBuffers[0].pvBuffer = NULL;
     OutBuffers[0].BufferType = SECBUFFER_TOKEN;
     OutBuffers[0].cbBuffer = 0;
@@ -177,20 +191,17 @@ void do_sasl_authentication(Codec& codec, Transport& t, const AuthenticationConf
         &OutBuffer,
         &dwSSPIOutFlags,
         &tsExpiry);
-    const char* choosenmech = conf.getSaslMechanism().data();
-    std::vector<char> mech(choosenmech, choosenmech + strlen(choosenmech)), resp;
     if (!strcmp("PLAIN", choosenmech))
     {
         resp.insert(resp.end(), username, username + userLen + 1);
         resp.insert(resp.end(), username, username + userLen + 1);
         resp.insert(resp.end(), (char*)secret->data, ((char*)secret->data) + secret->len);
+        AuthOperation a(codec, t, mech, resp);
+        std::vector<char> respOp(a.execute());
+        return;
     }
     AuthOperation a(codec, t, mech, resp);
     std::vector<char> respOp(a.execute());
-    if (!strcmp("PLAIN", choosenmech))
-    {
-        return;
-    }
     memcpy(IoBuffer, respOp.data(), respOp.size());
     InBuffers[0].pvBuffer = IoBuffer;
     InBuffers[0].cbBuffer = respOp.size();
