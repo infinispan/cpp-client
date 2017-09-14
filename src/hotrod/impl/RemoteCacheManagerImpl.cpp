@@ -98,7 +98,8 @@ std::shared_ptr<RemoteCacheImpl> RemoteCacheManagerImpl::createRemoteCache(
     const std::string& name, bool forceReturnValue, NearCacheConfiguration nc)
 {
     ScopedLock<Mutex> l(lock);
-    std::map<std::string, RemoteCacheHolder>::iterator iter = cacheName2RemoteCache.find(name);
+    std::string nameAndForceFlag = (forceReturnValue) ? name+"/true" : name+"/false";
+    std::map<std::string, RemoteCacheHolder>::iterator iter = cacheName2RemoteCache.find(nameAndForceFlag);
     // Cache found
     if (iter != cacheName2RemoteCache.end()) {
         return iter->second.first;
@@ -123,7 +124,7 @@ std::shared_ptr<RemoteCacheImpl> RemoteCacheManagerImpl::createRemoteCache(
            }
         }
         // If ping on startup is disabled, or cache is defined in server
-        cacheName2RemoteCache[name] = RemoteCacheHolder(rcache_sptr, forceReturnValue);
+        cacheName2RemoteCache[nameAndForceFlag] = RemoteCacheHolder(rcache_sptr, forceReturnValue);
         return rcache_sptr;
     }
     catch (...)
