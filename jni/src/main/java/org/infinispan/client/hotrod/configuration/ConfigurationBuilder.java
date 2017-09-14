@@ -178,9 +178,8 @@ public class ConfigurationBuilder implements ConfigurationChildBuilder, Builder<
 
    @Override
    public ConfigurationBuilder marshaller(Marshaller marshaller) {
-      throw new UnsupportedOperationException();
-//      this.marshaller = marshaller;
-//      return this;
+      this.marshaller = marshaller;
+      return this;
    }
 
    @Override
@@ -290,8 +289,9 @@ public class ConfigurationBuilder implements ConfigurationChildBuilder, Builder<
 
    @Override
    public Configuration build() {
-      return new Configuration(this.jniConfigurationBuilder.build());
-   }
+      return (marshaller != null) ? new Configuration(this.jniConfigurationBuilder.build(), marshaller)
+			: new Configuration(this.jniConfigurationBuilder.build(), marshaller);
+	   }
 
    public Configuration build(boolean validate) {
       if (validate) {

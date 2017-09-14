@@ -55,7 +55,8 @@ public class RemoteCacheManager /* implements BasicCacheContainer */{
 
     public RemoteCacheManager(Configuration config, boolean start) {
        jniRemoteCacheManager = new org.infinispan.client.hotrod.jni.RemoteCacheManager(config.getJniConfiguration(), start);
-       marshaller = new org.infinispan.commons.marshall.jboss.GenericJBossMarshaller();
+       marshaller = (config.marshaller()!=null) ? config.marshaller() :
+           new org.infinispan.commons.marshall.jboss.GenericJBossMarshaller();
     }
 
    public RemoteCacheManager(URL config, boolean start) throws IOException {

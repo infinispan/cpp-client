@@ -49,6 +49,20 @@ public class Configuration {
       this.transportFactory = null;
    }
 
+   public Configuration(org.infinispan.client.hotrod.jni.Configuration jniConfiguration, Marshaller marshaller2) {
+      super();
+      this.jniConfiguration = jniConfiguration;
+      this.asyncExecutorFactory = null;
+      this.balancingStrategy = null;
+      this.classLoader = null;
+      this.consistentHashImpl = null;
+      this.marshallerClass = (marshaller2==null) ? null : marshaller2.getClass();
+      this.marshaller = marshaller2;
+      this.servers = null;
+      this.failoverServers = null;
+    this.transportFactory = null;
+	}
+
    Configuration(ExecutorFactoryConfiguration asyncExecutorFactory, Class<? extends RequestBalancingStrategy> balancingStrategy, ClassLoader classLoader,
          ConnectionPoolConfiguration connectionPool, int connectionTimeout, Class<? extends ConsistentHash>[] consistentHashImpl, boolean forceReturnValues, int keySizeEstimate, Class<? extends Marshaller> marshallerClass,
          boolean pingOnStartup, String protocolVersion, List<ServerConfiguration> servers, List<ServerConfiguration> failOverServers, int socketTimeout, SslConfiguration ssl, boolean tcpNoDelay,
