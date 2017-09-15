@@ -50,6 +50,8 @@ class RemoteCacheManagerImpl
     std::shared_ptr<ClientListenerNotifier> listenerNotifier;
 
     void startRemoteCache(RemoteCacheImpl& remoteCache, bool forceReturnValue);
+    void stopRemoteCache(RemoteCacheImpl& remoteCache);
+
 };
 
 }} // namespace infinispan::hotrod

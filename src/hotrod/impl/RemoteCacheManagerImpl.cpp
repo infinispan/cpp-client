@@ -61,9 +61,9 @@ void RemoteCacheManagerImpl::start() {
         listenerNotifier.reset(ClientListenerNotifier::create(transportFactory));
         transportFactory->start(*codec, defaultCacheTopologyId, listenerNotifier.get());
 
-       for(std::map<std::string, RemoteCacheHolder>::iterator iter = cacheName2RemoteCache.begin(); iter != cacheName2RemoteCache.end(); ++iter ) {
+        for(std::map<std::string, RemoteCacheHolder>::iterator iter = cacheName2RemoteCache.begin(); iter != cacheName2RemoteCache.end(); ++iter ) {
            startRemoteCache(*iter->second.first.get(), iter->second.second);
-       }
+        }
 
         started = true;
 	}
@@ -72,11 +72,14 @@ void RemoteCacheManagerImpl::start() {
 void RemoteCacheManagerImpl::stop() {
 	ScopedLock<Mutex> l(lock);
 	if (started) {
-        if  (listenerNotifier)
-            listenerNotifier->stop();
-        transportFactory->destroy();
-        started = false;
-    }
+		for (std::map<std::string, RemoteCacheHolder>::iterator iter = cacheName2RemoteCache.begin(); iter != cacheName2RemoteCache.end(); ++iter) {
+			stopRemoteCache(*iter->second.first.get());
+		}
+		if (listenerNotifier)
+			listenerNotifier->stop();
+		transportFactory->destroy();
+		started = false;
+	}
 }
 
 bool RemoteCacheManagerImpl::isStarted() {
@@ -141,6 +144,11 @@ void RemoteCacheManagerImpl::startRemoteCache(RemoteCacheImpl& remoteCache, bool
         *CodecFactory::getCodec(configuration.getProtocolVersionCString()));
 
     remoteCache.init(operationsFactory);
+
+}
+
+void RemoteCacheManagerImpl::stopRemoteCache(RemoteCacheImpl& remoteCache)
+{
 
 }
 
