@@ -60,8 +60,8 @@ public class Configuration {
       this.marshaller = marshaller2;
       this.servers = null;
       this.failoverServers = null;
-    this.transportFactory = null;
-	}
+      this.transportFactory = null;
+   }
 
    Configuration(ExecutorFactoryConfiguration asyncExecutorFactory, Class<? extends RequestBalancingStrategy> balancingStrategy, ClassLoader classLoader,
          ConnectionPoolConfiguration connectionPool, int connectionTimeout, Class<? extends ConsistentHash>[] consistentHashImpl, boolean forceReturnValues, int keySizeEstimate, Class<? extends Marshaller> marshallerClass,
