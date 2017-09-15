@@ -95,8 +95,7 @@ public class JniTest implements IMethodSelector {
             "BulkGetReplTest.testBulkGetAfterLifespanExpire",
             "BulkGetSimpleTest.testBulkGetAfterLifespanExpire",
             "ForceReturnValuesTest.testSameInstanceForSameForceReturnValues",
-            "HotRodIntegrationTest.testGetWithMetadata",
-            "RemoteCacheManagerTest.testGetUndefinedCache"
+            "HotRodIntegrationTest.testGetWithMetadata"
       ));
       Set<String> expectedSkips = Collections.emptySet();
 
