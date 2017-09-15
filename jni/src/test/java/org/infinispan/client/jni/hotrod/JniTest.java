@@ -14,22 +14,21 @@ import org.testng.IMethodSelectorContext;
 import org.testng.ITestNGMethod;
 import org.testng.ITestResult;
 import org.testng.TestNG;
-import org.testng.reporters.TextReporter;
 
 public class JniTest implements IMethodSelector {
-	private final static String [] passOverTestList = {
-	"CacheManagerNotStartedTest.testPutAllAsync",
-	"CacheManagerNotStartedTest.testPutAsync",
-	"CacheManagerNotStartedTest.testReplaceAsync",
-	"CacheManagerNotStartedTest.testVersionedRemoveAsync",
-	"CacheManagerStoppedTest.testPutAllAsync",
-	"CacheManagerStoppedTest.testPutAsync",
-	"CacheManagerStoppedTest.testReplaceAsync",
-	"CacheManagerStoppedTest.testVersionedRemoveAsync",
+        private final static String [] passOverTestList = {
+        "CacheManagerNotStartedTest.testPutAllAsync",
+        "CacheManagerNotStartedTest.testPutAsync",
+        "CacheManagerNotStartedTest.testReplaceAsync",
+        "CacheManagerNotStartedTest.testVersionedRemoveAsync",
+        "CacheManagerStoppedTest.testPutAllAsync",
+        "CacheManagerStoppedTest.testPutAsync",
+        "CacheManagerStoppedTest.testReplaceAsync",
+        "CacheManagerStoppedTest.testVersionedRemoveAsync",
         "HotRodAsyncReplicationTest.testPutKeyValue"};
-	
+        
    private final static HashSet<String> passOverTestSet = new HashSet<String>(Arrays.asList(passOverTestList));
-	
+        
    public static void main(String[] args) {
       TestNG testng = new TestNG();
       testng.addMethodSelector("org.infinispan.client.jni.hotrod.JniTest", 1);
@@ -115,7 +114,7 @@ public class JniTest implements IMethodSelector {
       if (!unexpectedFails.isEmpty()) {
          exitCode = 1;
          System.err.println("These test fail (but should not!):");
-	 for (String testName : unexpectedFails) {
+      for (String testName : unexpectedFails) {
             System.err.println("\t" + testName);
          } 
       }
@@ -124,7 +123,7 @@ public class JniTest implements IMethodSelector {
       if (!notFailing.isEmpty()) {
          exitCode = 1;
          System.err.println("These test should fail (but don't!):");
-	 for (String testName : notFailing) {
+      for (String testName : notFailing) {
             System.err.println("\t" + testName);
          }
       }
@@ -133,7 +132,7 @@ public class JniTest implements IMethodSelector {
       if (!unexpectedSkips.isEmpty()) {
          exitCode = 1;
          System.err.println("These test have been skipped (but should not!):");
-	 for (String testName : unexpectedSkips) {
+      for (String testName : unexpectedSkips) {
             System.err.println("\t" + testName);
          } 
       }
@@ -142,7 +141,7 @@ public class JniTest implements IMethodSelector {
       if (!notSkipped.isEmpty()) {
          exitCode = 1;
          System.err.println("These test should have been skipped (but haven't!):");
-	 for (String testName : notSkipped) {
+         for (String testName : notSkipped) {
             System.err.println("\t" + testName);
          }
       }
@@ -153,20 +152,18 @@ public class JniTest implements IMethodSelector {
       System.exit(exitCode);
    }
 
-@Override
-public boolean includeMethod(IMethodSelectorContext context, ITestNGMethod method, boolean isTestMethod) {
-	String testName = method.getRealClass().getSimpleName()+"."+method.getMethodName();
-	if (passOverTestSet.contains(testName))
-	{
-		context.setStopped(true);
-		return false;
-	}
-	return true;
-}
+   @Override
+   public boolean includeMethod(IMethodSelectorContext context, ITestNGMethod method, boolean isTestMethod) {
+      String testName = method.getRealClass().getSimpleName()+"."+method.getMethodName();
+      if (passOverTestSet.contains(testName)) {
+         context.setStopped(true);
+         return false;
+      }
+      return true;
+   }
 
-@Override
-public void setTestMethods(List<ITestNGMethod> testMethods) {
-	// TODO Auto-generated method stub
-	
-}
+   @Override
+   public void setTestMethods(List<ITestNGMethod> testMethods) {
+        // TODO Auto-generated method stub
+   }
 }

@@ -69,11 +69,11 @@ public class ConfigurationBuilder implements ConfigurationChildBuilder, Builder<
 
    @Override
    public ServerConfigurationBuilder addServer() {
-	  return new ServerConfigurationBuilder(this,jniConfigurationBuilder.addServer());
+      return new ServerConfigurationBuilder(this,jniConfigurationBuilder.addServer());
    }
    
    public ClusterConfigurationBuilder addCluster(String clusterName) {
-	   return new ClusterConfigurationBuilder(this, jniConfigurationBuilder.addCluster(clusterName));	   
+      return new ClusterConfigurationBuilder(this, jniConfigurationBuilder.addCluster(clusterName));
    }
    
 
@@ -171,9 +171,8 @@ public class ConfigurationBuilder implements ConfigurationChildBuilder, Builder<
 
    @Override
    public ConfigurationBuilder marshaller(Class<? extends Marshaller> marshaller) {
-      throw new UnsupportedOperationException();
-//      this.marshallerClass = marshaller;
-//      return this;
+      this.marshallerClass = marshaller;
+      return this;
    }
 
    @Override
@@ -237,7 +236,7 @@ public class ConfigurationBuilder implements ConfigurationChildBuilder, Builder<
    
    @Override
    public ConfigurationBuilder maxRetries(int maxRetries) {
-	  this.jniConfigurationBuilder.maxRetries(maxRetries);
+      this.jniConfigurationBuilder.maxRetries(maxRetries);
       this.maxRetries = maxRetries;
       return this;
    }
@@ -290,8 +289,8 @@ public class ConfigurationBuilder implements ConfigurationChildBuilder, Builder<
    @Override
    public Configuration build() {
       return (marshaller != null) ? new Configuration(this.jniConfigurationBuilder.build(), marshaller)
-			: new Configuration(this.jniConfigurationBuilder.build(), marshaller);
-	   }
+                                  : new Configuration(this.jniConfigurationBuilder.build());
+   }
 
    public Configuration build(boolean validate) {
       if (validate) {
