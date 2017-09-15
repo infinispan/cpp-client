@@ -45,6 +45,7 @@ public:
     void addClientListener(ClientListener&, const std::vector<std::vector<char> >, const std::vector<std::vector<char> >, const std::function<void()> &);
     void removeClientListener(ClientListener&);
     virtual void init(operations::OperationsFactory* operationsFactory);
+    virtual void stop() {}
 
     void withFlags(Flag flag);
 

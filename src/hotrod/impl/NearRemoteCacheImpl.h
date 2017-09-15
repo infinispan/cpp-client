@@ -170,6 +170,10 @@ private:
         this->addClientListener(cl, filterFactoryParams, converterFactoryParams,
                 failOverHandler);
     }
+    virtual void stop()
+    {
+        this->removeClientListener(cl);
+    }
 };
 
 }
