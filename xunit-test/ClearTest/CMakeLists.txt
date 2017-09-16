@@ -10,7 +10,6 @@ set_target_properties(ClearTest PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STAT
 target_link_libraries(ClearTest
     hotrod-static
     libgtest
-    libgmock
     ${platform_libs}
 )
 

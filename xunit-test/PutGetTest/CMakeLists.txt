@@ -11,7 +11,6 @@ set_target_properties(PutGetTest PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STA
 target_link_libraries(PutGetTest
     hotrod-static
     libgtest
-    libgmock
     ${platform_libs}
 )
 
