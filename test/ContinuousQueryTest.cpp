@@ -279,6 +279,7 @@ int main(int argc, char** argv) {
         testCache.clear();
 
         std::promise<void> promise;
+        std::promise<void> promise_where;
         int createdCount = 0, changedCount = 0, removedCount = 0;
 
         std::function<void(int, sample_bank_account::User)> join =
@@ -315,21 +316,22 @@ int main(int argc, char** argv) {
         int createdCount_where = 0, changedCount_where = 0, removedCount_where = 0;
 
         std::function<void(int, sample_bank_account::User)> join_where =
-                [&promise, &createdCount_where](int k, sample_bank_account::User u)
+                [&createdCount_where](int k, sample_bank_account::User u)
                 {
                     std::cout << "JOINING WHERE: key="<< u.id() << " value="<< u.name() << std::endl;
                     ++createdCount_where;
                 };
 
         std::function<void(int, sample_bank_account::User)> leave_where =
-                [&promise, &removedCount_where](int k, sample_bank_account::User u)
+                [&promise_where, &removedCount_where](int k, sample_bank_account::User u)
                 {
                     std::cout << "LEAVING WHERE: key="<< u.id() << " value="<< u.name() << std::endl;
                     ++removedCount_where;
+                    promise_where.set_value();
                 };
 
         std::function<void(int, sample_bank_account::User)> change_where =
-                [&promise, &changedCount_where](int k, sample_bank_account::User u)
+                [&changedCount_where](int k, sample_bank_account::User u)
                 {
                     std::cout << "CHANGING WHERE: key="<< u.id() << " value="<< u.name() << std::endl;
                     ++changedCount_where;
@@ -375,6 +377,12 @@ int main(int argc, char** argv) {
             return -1;
         }
 
+        if (std::future_status::timeout
+            == promise_where.get_future().wait_for(std::chrono::seconds(30))) {
+            std::cout << "FAIL: Continuous query events (Timeout-query-with-where)" << std::endl;
+            return -1;
+        }
+
         if (createdCount != 2 || changedCount != 2 || removedCount != 2) {
             std::cout
             << "FAIL: (createdCount,changedCount,removedCount) is  ("
@@ -383,6 +391,7 @@ int main(int argc, char** argv) {
                     << std::endl;
             return -1;
         }
+
         if (createdCount_where != 1 || changedCount_where != 1 || removedCount_where != 1) {
             std::cout
             << "FAIL: (createdCount_where,changedCount_where,removedCount_where) is  ("
@@ -395,6 +404,5 @@ int main(int argc, char** argv) {
 
     std::cout << "PASS: continuous query" << std::endl;
     return result;
-
 }
 
