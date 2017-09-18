@@ -909,14 +909,14 @@ if (DOXYGEN_FOUND)
   #-- Configure the Template Doxyfile for our specific project
   configure_file(Doxyfile.in ${PROJECT_BINARY_DIR}/Doxyfile  @ONLY IMMEDIATE)
   # Delete any previously generated docs
-  if(EXISTS ${CMAKE_BINARY_DIR}/api_docs)
-      file(REMOVE_RECURSE ${CMAKE_BINARY_DIR}/api_docs)
-  endif(EXISTS ${CMAKE_BINARY_DIR}/api_docs)
+  if(EXISTS ${PROJECT_SOURCE_DIR}/documentation/api_docs)
+      file(REMOVE_RECURSE ${PROJECT_SOURCE_DIR}/documentation/api_docs)
+  endif(EXISTS ${PROJECT_SOURCE_DIR}/documentation/api_docs)
   #-- Add a custom target to run Doxygen when ever the project is built
   add_custom_target (docs ALL
                      COMMAND ${DOXYGEN_EXECUTABLE} ${PROJECT_BINARY_DIR}/Doxyfile
                      SOURCES ${PROJECT_BINARY_DIR}/Doxyfile)
   #Include the API docs in the package.
-  install (FILES ${CMAKE_BINARY_DIR}/api_docs/html/ DESTINATION ${DOCDIR}/api)
+  install (FILES ${PROJECT_SOURCE_DIR}/documentation/api_docs/html/ DESTINATION ${DOCDIR}/api)
 endif (DOXYGEN_FOUND)
 endif(NOT DEFINED HOTROD_PREBUILT_LIB_DIR)

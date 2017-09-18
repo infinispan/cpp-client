@@ -8,24 +8,24 @@ The Infinispan Community
 == Introduction
 Since Hot Rod is a binary, language neutral, protocol an Infinispan client can use any programming 
 language to interact with Java based Infinispan Hot Rod server as long as client APIs exist for that 
-particular client runtime. C\++ Hot Rod client allows C++ runtime applications to connect and interact 
+particular client runtime. C{plus}{plus} Hot Rod client allows C{plus}{plus} runtime applications to connect and interact 
 with an Infinispan Hot Rod server. 
 
 
 == Installation
 === Pre-requisites
-We provide HotRod C\++ client in two library formats: static and shared/dynamic. Depending on user's 
+We provide HotRod C{plus}{plus} client in two library formats: static and shared/dynamic. Depending on user's 
 preference and deployment scenario one would usually choose static library to ensure that the version 
-of the Hot Rod C++ library that application was compiled with would be the version of the library used 
+of the Hot Rod C{plus}{plus} library that application was compiled with would be the version of the library used 
 at runtime. As it names implies static library is statically linked to an application thus increasing the 
-size of the final executable. In other cases shared Hot Rod C\++ library might be more suitable. Shared 
-libraries are usually stored and versioned separately. If an updated HotRod C++ library is considered 
-binary compatible with the original version shipped along user's application an updated Hot Rod C++ 
+size of the final executable. In other cases shared Hot Rod C{plus}{plus} library might be more suitable. Shared 
+libraries are usually stored and versioned separately. If an updated HotRod C{plus}{plus} library is considered 
+binary compatible with the original version shipped along user's application an updated Hot Rod C{plus}{plus} 
 library could be used in such a scenario without recompiling client application.
 
 
 === Download
-For more information regarding downloads of various forms of Hot Rod C++ client library refer to 
+For more information regarding downloads of various forms of Hot Rod C{plus}{plus} client library refer to 
 link:http://infinispan.org/hotrod-clients/[Hot Rod client web page] 
 
 == Usage
@@ -40,9 +40,9 @@ intuitive fluent API. Users can configure specifics of the underlying connection
 timeout, particular Hot Rod protocol version and so on. Refer to ConfigurationBuilder API 
 documentation for more details.
 
-For example, this simple C\++ main executable file below uses application paramaters in combination 
+For example, this simple C{plus}{plus} main executable file below uses application paramaters in combination 
 with ConfigurationBuilder API to configure a RemoteCacheManager instance and in turn RemoteCache 
-instance interacting with a remote Hot Rod server. Note the most important C++ Hot Rod includes as 
+instance interacting with a remote Hot Rod server. Note the most important C{plus}{plus} Hot Rod includes as 
 well.       
 
 .SimpleMain.cpp
@@ -55,8 +55,8 @@ well.
 using namespace infinispan::hotrod;
 
 int main(int argc, char** argv) {
-    ConfigurationBuilder b;
-    b.addServer().host(argc>1?argv[1]:"127.0.0.1").port(argc>2?atoi(argv[2]):11222);
+    ConfigurationBuilder builder;
+    builder.addServer().host(argc>1?argv[1]:"127.0.0.1").port(argc>2?atoi(argv[2]):11222);
     RemoteCacheManager cm(builder.build(), false);
     RemoteCache<std::string, std::string> cache = cm.getCache<std::string, std::string>();
     cm.start();
@@ -76,26 +76,41 @@ others methods such as iterating key/value pairs, bulk get operations, clear met
 After interaction with a remote server is completed all related client resources are reclaimed once 
 RemoteCacheManager is stopped. 
 
+The full API documentation is available here: link:api_docs/html/index.html[C++ Api Docs] 
+
 .SimpleMain.cpp
 ----
-    RemoteCache<std::string, std::string> rc = cm.getCache<std::string, std::string>();
+#include "infinispan/hotrod/ConfigurationBuilder.h"
+#include "infinispan/hotrod/RemoteCacheManager.h"
+#include "infinispan/hotrod/RemoteCache.h"
+#include <stdlib.h>
+
+using namespace infinispan::hotrod;
+
+int main(int argc, char** argv) {
+    ConfigurationBuilder builder;
+    builder.addServer().host(argc>1?argv[1]:"127.0.0.1").port(argc>2?atoi(argv[2]):11222);
+    RemoteCacheManager cm(builder.build(), false);
+    RemoteCache<std::string, std::string> cache = cm.getCache<std::string, std::string>();
     cm.start();
 
-    std::string k1("key13");   
+    std::string k1("key13");
     std::string v1("boron");
 
     // put
-    rc.put(k1, v1);
-    std::auto_ptr<std::string> rv(rc.get(k1));
-    
-    rc.putIfAbsent(k1, v1);
-    std::auto_ptr<std::string> rv2(rc.get(k1));
-    
-    std::map<HR_SHARED_PTR<std::string>,HR_SHARED_PTR<std::string> > map = rc.getBulk(0);
-    std::cout << "getBulk size" << map.size() << std::endl;
-    ..
-    .
+    cache.put(k1, v1);
+
+    // get
+    std::unique_ptr<std::string> rv(cache.get(k1));
+
+    cache.putIfAbsent(k1, v1);
+    std::unique_ptr<std::string> rv2(cache.get(k1));
+
+    auto map = cache.getBulk(0);
+    std::cout << "getBulk size: " << map.size() << std::endl;
     cm.stop();
+    return 0;
+}
 ---- 
 
 == Contributing back
