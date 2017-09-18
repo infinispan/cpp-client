@@ -60,6 +60,7 @@ CTestTestfile.cmake
 cmake_install.cmake
 build
 infinispan-server-*
+documentation/api_docs
 
 # Exclude vim tmp files  #
 ##########################
