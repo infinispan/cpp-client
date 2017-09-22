@@ -35,6 +35,7 @@ namespace operations {
 
 class PingOperation;
 class GetOperation;
+class GetAllOperation;
 class PutOperation;
 class PutIfAbsentOperation;
 class ReplaceOperation;
@@ -64,6 +65,8 @@ class OperationsFactory
       infinispan::hotrod::transport::Transport& transport);
 
     GetOperation* newGetKeyOperation(const std::vector<char>& key);
+
+    GetAllOperation* newGetAllOperation(const std::set<std::vector<char>>& keySet);
 
     PutOperation* newPutKeyValueOperation(
       const std::vector<char>& key, const std::vector<char>& value,

@@ -3,6 +3,7 @@
 #include "hotrod/impl/protocol/CodecFactory.h"
 #include "hotrod/impl/transport/Transport.h"
 #include "hotrod/impl/operations/GetOperation.h"
+#include "hotrod/impl/operations/GetAllOperation.h"
 #include "hotrod/impl/operations/PutOperation.h"
 #include "hotrod/impl/operations/PutIfAbsentOperation.h"
 #include "hotrod/impl/operations/ReplaceOperation.h"
@@ -57,6 +58,12 @@ GetOperation* OperationsFactory::newGetKeyOperation(const std::vector<char>& key
     return new GetOperation(
         codec, transportFactory, key, cacheNameBytes, topologyId, getFlags());
 }
+
+GetAllOperation* OperationsFactory::newGetAllOperation(const std::set<std::vector<char>>& keySet)
+{
+	return new GetAllOperation(codec, transportFactory, keySet, cacheNameBytes, topologyId, getFlags());
+}
+
 
 PutOperation* OperationsFactory::newPutKeyValueOperation(
     const std::vector<char>& key, const std::vector<char>& value,

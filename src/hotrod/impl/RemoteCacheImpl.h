@@ -23,6 +23,7 @@ class RemoteCacheImpl
 public:
     RemoteCacheImpl(RemoteCacheManagerImpl& rcm, const std::string& name);
     virtual void *get(RemoteCacheBase& rcb, const void* key);
+    std::map<std::vector<char>,std::vector<char>> getAll(const std::set<std::vector<char>>& keySet);
     virtual void *put(RemoteCacheBase& rcb, const void *key, const void* val, uint64_t life, uint64_t idle);
     void *putIfAbsent(RemoteCacheBase& rcb, const void *key, const void* val, uint64_t life, uint64_t idle);
     virtual void *replace(RemoteCacheBase& rcb, const void *key, const void* val, uint64_t life, uint64_t idle);
