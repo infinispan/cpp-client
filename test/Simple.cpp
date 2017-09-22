@@ -115,8 +115,21 @@ int basicTest(RemoteCacheManager &cacheManager, RemoteCache<K,V> &cache) {
         std::cout << "non-existent key failure, got " << *badValue << std::endl;
         return 1;
     }
-
     std::cout << "PASS: simple get/put" << std::endl;
+
+    std::set<std::string> getAllKeySet {"key13", "key14"};
+    std::map<std::shared_ptr<std::string>, std::shared_ptr<std::string> > getAllResult = cache.getAll(getAllKeySet);
+    for (const auto& item : getAllResult)
+    {
+        std::unique_ptr<std::string> rvItem(cache.get(*item.first));
+        std::cout << "    key: " << *item.first << ", getAll value: " << *item.second << ", get value: "<< *rvItem << std::endl;
+        if (rvItem->compare(*item.second))
+        {
+            std::cerr << "getAll fail for " << *item.first << " got " << *item.second << " expected " << *rvItem << std::endl;
+        }
+
+    }
+    std::cout << "PASS: getAll" << std::endl;
 
     {
       std::string k3("rolling");

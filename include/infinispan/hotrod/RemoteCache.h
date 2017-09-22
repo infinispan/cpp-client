@@ -19,6 +19,7 @@
 #include <vector>
 #include <functional>
 #include <future>
+#include <iterator>
 
 namespace infinispan {
 namespace hotrod {
@@ -107,6 +108,33 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
     V* get(const K& key) {
         return (V *) base_get(&key);
     }
+
+    /**
+     * Returns the value to which the specified key is mapped, or NULL if this cache contains no mapping for the key.
+     *
+     * \param keySet the set of the keys whose associated values are to be returned
+     * \return a map containing the key, value pairs
+     *
+     */
+    std::map<std::shared_ptr<K>,std::shared_ptr<V>> getAll(const std::set<K>& keySet) {
+        std::set<std::vector<char> > keySetMarshalled;
+        for(auto item = keySet.begin(); item != keySet.end(); item++)
+        {
+            std::vector<char> v;
+            this->keyMarshaller->marshall(*item, v);
+            keySetMarshalled.insert(v);
+        }
+        auto marshalledResult =base_getAll(keySetMarshalled);
+        std::map<std::shared_ptr<K>,std::shared_ptr<V>> result;
+        for (auto item : marshalledResult)
+        {
+            std::shared_ptr<K> rk(this->keyMarshaller->unmarshall(item.first));
+            std::shared_ptr<V> rv(this->keyMarshaller->unmarshall(item.second));
+            result[rk] = rv;
+        }
+        return result;
+    }
+
 
     /**
      * Asynchronous version of get. Executes function f when get() returns

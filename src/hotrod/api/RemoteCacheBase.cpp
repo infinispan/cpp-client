@@ -43,6 +43,10 @@ void *RemoteCacheBase::base_get(const void *key) {
     return IMPL->get(*this, key);
 }
 
+std::map<std::vector<char>,std::vector<char>> RemoteCacheBase::base_getAll(const std::set<std::vector<char>>& keySet) {
+	return IMPL->getAll(keySet);
+}
+
 void *RemoteCacheBase::base_put(const void *key, const void *val, int64_t life, int64_t idle) {
     return IMPL->put(*this, key, val, life, idle);
 }

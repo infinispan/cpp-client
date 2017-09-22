@@ -40,6 +40,7 @@ public:
 protected:
     HR_EXTERN const char *base_getName();
     HR_EXTERN void *base_get(const void *key);
+    HR_EXTERN std::map<std::vector<char>,std::vector<char>> base_getAll(const std::set<std::vector<char>>& keySet);
     HR_EXTERN void *base_put(const void *key, const void *value, int64_t life, int64_t idle);
     HR_EXTERN void *base_putIfAbsent(const void *key, const void *value, int64_t life, int64_t idle);
     HR_EXTERN void *base_replace(const void *key, const void *value, int64_t life, int64_t idle);

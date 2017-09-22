@@ -3,6 +3,7 @@
 #include "hotrod/impl/RemoteCacheManagerImpl.h"
 #include "hotrod/impl/operations/OperationsFactory.h"
 #include "hotrod/impl/operations/GetOperation.h"
+#include "hotrod/impl/operations/GetAllOperation.h"
 #include "hotrod/impl/operations/PutOperation.h"
 #include "hotrod/impl/operations/PingOperation.h"
 #include "hotrod/impl/operations/PutIfAbsentOperation.h"
@@ -49,6 +50,12 @@ void *RemoteCacheImpl::get(RemoteCacheBase& remoteCacheBase, const void *k) {
     std::unique_ptr<GetOperation> gco(operationsFactory->newGetKeyOperation(keyBytes));
     std::vector<char> bytes = gco->execute();
     return bytes.data() ? remoteCacheBase.baseValueUnmarshall(bytes) : NULL;
+}
+
+std::map<std::vector<char>,std::vector<char>> RemoteCacheImpl::getAll(const std::set<std::vector<char>>& keySet) {
+    assertRemoteCacheManagerIsStarted();
+    std::unique_ptr<GetAllOperation> gco(operationsFactory->newGetAllOperation(keySet));
+    return gco->execute();
 }
 
 void *RemoteCacheImpl::put(RemoteCacheBase& remoteCacheBase, const void *k, const void* v, uint64_t life, uint64_t idle) {

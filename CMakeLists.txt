@@ -367,6 +367,7 @@ endif(ENABLE_INTERNAL_TESTING)
       src/hotrod/impl/operations/QueryOperation.cpp
       src/hotrod/impl/operations/PingOperation.cpp
       src/hotrod/impl/operations/GetOperation.cpp
+      src/hotrod/impl/operations/GetAllOperation.cpp
       src/hotrod/impl/operations/PutOperation.cpp
       src/hotrod/impl/operations/PutIfAbsentOperation.cpp
       src/hotrod/impl/operations/ReplaceOperation.cpp
