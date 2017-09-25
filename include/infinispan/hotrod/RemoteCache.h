@@ -119,7 +119,7 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      * \return a map containing the key, value pairs
      *
      */
-    std::map<std::shared_ptr<K>,std::shared_ptr<V>> getAll(const std::set<K>& keySet) {
+    std::map<std::shared_ptr<K>,std::shared_ptr<V> > getAll(const std::set<K>& keySet) {
         std::set<std::vector<char> > keySetMarshalled;
         for(auto item = keySet.begin(); item != keySet.end(); item++)
         {
@@ -128,7 +128,7 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
             keySetMarshalled.insert(v);
         }
         auto marshalledResult =base_getAll(keySetMarshalled);
-        std::map<std::shared_ptr<K>,std::shared_ptr<V>> result;
+        std::map<std::shared_ptr<K>,std::shared_ptr<V> > result;
         for (auto item : marshalledResult)
         {
             std::shared_ptr<K> rk(this->keyMarshaller->unmarshall(item.first));
