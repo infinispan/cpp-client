@@ -16,6 +16,7 @@ namespace infinispan {
 namespace hotrod {
 
 class RemoteCacheManagerImpl;
+class RemoteCacheImpl;
 class Topology;
 
 namespace transport {
@@ -118,6 +119,9 @@ class OperationsFactory
 
     CacheTopologyInfo getCacheTopologyInfo();
 
+    std::shared_ptr<infinispan::hotrod::transport::TransportFactory> getTransportFactory() { return transportFactory; }
+
+
     virtual ~OperationsFactory() { }
 
 private:
@@ -136,7 +140,6 @@ private:
       const infinispan::hotrod::protocol::Codec& codec);
 
   friend class infinispan::hotrod::RemoteCacheManagerImpl;
-
 };
 
 }}} // namespace infinispan::hotrod::operations
