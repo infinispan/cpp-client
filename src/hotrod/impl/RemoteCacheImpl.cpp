@@ -54,8 +54,23 @@ void *RemoteCacheImpl::get(RemoteCacheBase& remoteCacheBase, const void *k) {
 
 std::map<std::vector<char>,std::vector<char>> RemoteCacheImpl::getAll(const std::set<std::vector<char>>& keySet) {
     assertRemoteCacheManagerIsStarted();
-    std::unique_ptr<GetAllOperation> gco(operationsFactory->newGetAllOperation(keySet));
-    return gco->execute();
+    // split key set according to server address
+    std::map<const InetSocketAddress, std::set<std::vector<char> > > splittedKeySet;
+    for ( auto key : keySet)
+    {
+       std::vector<char> cacheNameBytes(name.begin(), name.end());
+       const InetSocketAddress& addr = operationsFactory->getTransportFactory()->getTopologyInfo()->getHashAwareServer(key, cacheNameBytes);
+       splittedKeySet[addr].insert(key);
+    }
+    std::map<std::vector<char>,std::vector<char>> result;
+    // Execute separated GetAllOperations and merge the result
+    for (auto item: splittedKeySet)
+    {
+        std::unique_ptr<GetAllOperation> gco(operationsFactory->newGetAllOperation(item.second));
+        std::map<std::vector<char>,std::vector<char>> splittedResult = gco->execute();
+        result.insert(splittedResult.begin(), splittedResult.end());
+    }
+    return result;
 }
 
 void *RemoteCacheImpl::put(RemoteCacheBase& remoteCacheBase, const void *k, const void* v, uint64_t life, uint64_t idle) {

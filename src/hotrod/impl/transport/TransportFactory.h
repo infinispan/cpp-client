@@ -31,6 +31,7 @@ class InetSocketAddress;
 class TransportFactory
 {
   friend class infinispan::hotrod::RemoteCacheManagerImpl;
+
   public:
     virtual void start(protocol::Codec& codec, int defaultTopologyId, ClientListenerNotifier*) = 0;
     virtual void destroy() = 0;
@@ -86,6 +87,9 @@ class TransportFactory
     {
     	return topologyInfo->getCacheTopologyInfo(cacheName);
     }
+
+    TopologyInfo* getTopologyInfo() { return topologyInfo; }
+
     // TODO: ssl
     // getSSLContext
   protected:
@@ -95,6 +99,7 @@ class TransportFactory
 
   private:
     static TransportFactory* newInstance(const Configuration& config);
+
 };
 
 }}} // namespace infinispan::hotrod::transport

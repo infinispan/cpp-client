@@ -113,7 +113,7 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
     }
 
     /**
-     * Returns the value to which the specified key is mapped, or NULL if this cache contains no mapping for the key.
+     * Returns a map of key,value pairs according to the set of keys passed in input
      *
      * \param keySet the set of the keys whose associated values are to be returned
      * \return a map containing the key, value pairs
