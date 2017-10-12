@@ -22,9 +22,9 @@ namespace infinispan {
 
 class MyRoundRobinBalancingStrategy: public FailOverRequestBalancingStrategy {
             public:
-	MyRoundRobinBalancingStrategy() :
-			index(0) {
-	}
+    MyRoundRobinBalancingStrategy() :
+            index(0) {
+    }
 
                 static FailOverRequestBalancingStrategy *newInstance() {
                     return new MyRoundRobinBalancingStrategy();
@@ -38,8 +38,8 @@ class MyRoundRobinBalancingStrategy: public FailOverRequestBalancingStrategy {
                     }
                 }
 
-	~MyRoundRobinBalancingStrategy() {
-	}
+    ~MyRoundRobinBalancingStrategy() {
+    }
 
                 const transport::InetSocketAddress &getServerByIndex(size_t pos) {
                     const transport::InetSocketAddress &server = servers[pos];
@@ -48,22 +48,22 @@ class MyRoundRobinBalancingStrategy: public FailOverRequestBalancingStrategy {
             private:
                 std::vector<transport::InetSocketAddress> servers;
                 size_t index;
-	const transport::InetSocketAddress &nextServer(
-			const std::set<transport::InetSocketAddress>& failedServers) {
-		for (unsigned int i = 0; i <= servers.size(); i++) {
-			const transport::InetSocketAddress &server = getServerByIndex(
-					index++);
-			if (failedServers.empty() || failedServers.find(server)!=failedServers.end() || i>failedServers.size()) {
+    const transport::InetSocketAddress &nextServer(
+            const std::set<transport::InetSocketAddress>& failedServers) {
+        for (unsigned int i = 0; i <= servers.size(); i++) {
+            const transport::InetSocketAddress &server = getServerByIndex(
+                    index++);
+            if (failedServers.empty() || failedServers.find(server)!=failedServers.end() || i>failedServers.size()) {
                     if (index >= servers.size()) {
                         index = 0;
-				}
+                }
                     }
                     return server;
                 }
 
 
-		throw Exception("Bad news, no server available.");
-	}
+        throw Exception("Bad news, no server available.");
+    }
             };
 
 }
@@ -360,25 +360,25 @@ int basicTest(RemoteCacheManager &cacheManager, RemoteCache<K,V> &cache) {
     // Now user pass a lambda func that will be executed in the async thread after the put completion
     std::future<std::string*> future_put1= cache.putAsync(ak2,av2,0,0,[&] (std::string *v){flag=true; return v;});
     {
-    	// If the async put is not completed flag must be false
-    	if (future_put1.wait_for(std::chrono::seconds(0))!=std::future_status::ready)
-    	{
-    		if (flag)
-    		{
-    			std::cerr << "fail: expected false got true" << std::endl;
-    			return 1;
-    		}
-    	}
+        // If the async put is not completed flag must be false
+        if (future_put1.wait_for(std::chrono::seconds(0))!=std::future_status::ready)
+        {
+            if (flag)
+            {
+                std::cerr << "fail: expected false got true" << std::endl;
+                return 1;
+            }
+        }
     }
     // Now wait for put completion
     future_put1.wait();
     {
-    	// The user lambda must be executed so flag must be true
-    	if (!flag)
-    	{
-    		std::cerr << "fail: expected true got false" << std::endl;
-    		return 1;
-    	}
+        // The user lambda must be executed so flag must be true
+        if (!flag)
+        {
+            std::cerr << "fail: expected true got false" << std::endl;
+            return 1;
+        }
     }
     // Same test for get
     flag=false;
@@ -386,26 +386,26 @@ int basicTest(RemoteCacheManager &cacheManager, RemoteCache<K,V> &cache) {
 
     if (future_get1.wait_for(std::chrono::seconds(0))!=std::future_status::ready)
     {
-    	if (flag)
-    	{
-    		std::cerr << "fail: expected false got true" << std::endl;
-    		return 1;
-    	}
+        if (flag)
+        {
+            std::cerr << "fail: expected false got true" << std::endl;
+            return 1;
+        }
     }
     future_get1.wait();
     {
-    	if (!flag)
-    	{
-    		std::cerr << "fail: expected true got false" << std::endl;
-    		return 1;
-    	}
+        if (!flag)
+        {
+            std::cerr << "fail: expected true got false" << std::endl;
+            return 1;
+        }
     }
     std::string* arv3= future_get1.get();
 
     if (!arv3 || arv3->compare(av2))
     {
-    	std::cerr << "fail: expected " << av2 << " got " << (arv3 ? *arv3 : "null") << std::endl;
-    	return 1;
+        std::cerr << "fail: expected " << av2 << " got " << (arv3 ? *arv3 : "null") << std::endl;
+        return 1;
     }
     delete arv3;
     std::cout << "PASS: Async test" << std::endl;
@@ -415,7 +415,7 @@ int basicTest(RemoteCacheManager &cacheManager, RemoteCache<K,V> &cache) {
 int main(int argc, char** argv) {
 
     int result=0;
-	std::cout << "Tests for CacheManager" << std::endl;
+    std::cout << "Tests for CacheManager" << std::endl;
     {
         ConfigurationBuilder builder;
         builder.addServer().host(argc > 1 ? argv[1] : "127.0.0.1").port(argc > 2 ? atoi(argv[2]) : 11222);
@@ -455,7 +455,7 @@ int main(int argc, char** argv) {
     }
 
     if (result!=0)
-    	return result;
+        return result;
     std::cout << "PASS: Tests for CacheManager" << std::endl;
     // Call basic test for every marshaller and every codec
     std::cout << "Basic Test with BasicMarshaller" << std::endl;
@@ -499,49 +499,49 @@ int main(int argc, char** argv) {
             }
         }
 
-		try {
-			result = basicTest<std::string, std::string>(cacheManager, cache);
-			std::map<std::string, std::string> s;
-			std::string argName = std::string("a");
-			std::string argValue = std::string("b");
-			// execute() operation needs explicit JBossMarshalling<string> format for argument values
-			s.insert(
-					std::pair<std::string, std::string>(argName,
-							JBasicMarshaller<std::string>::addPreamble(
-									argValue)));
-			std::string script("// mode=local,language=javascript\n "
-					"var cache = cacheManager.getCache(\"namedCache\");\n"
-					"cache.put(\"a\", \"abc\");\n"
-					"cache.put(\"b\", \"b\");\n"
-					"cache.get(\"a\");\n");
-			std::string script_name("script.js");
-			std::string p_script_name =
-					JBasicMarshaller<std::string>::addPreamble(script_name);
-			std::string p_script = JBasicMarshaller<std::string>::addPreamble(
-					script);
-			RemoteCache<std::string, std::string> scriptCache =
-					cacheManager.getCache<std::string, std::string>(
-							"___script_cache", false);
-			scriptCache.put(p_script_name, p_script);
-			std::vector<unsigned char> execResult = cache.execute(script_name,
-					s);
+        try {
+            result = basicTest<std::string, std::string>(cacheManager, cache);
+            std::map<std::string, std::string> s;
+            std::string argName = std::string("a");
+            std::string argValue = std::string("abc");
+            // execute() operation needs explicit JBossMarshalling<string> format for argument values
+            s.insert(
+                    std::pair<std::string, std::string>(argName,
+                            JBasicMarshaller<std::string>::addPreamble(
+                                    argValue)));
+            std::string script("// mode=local,language=javascript, parameters=[a]\n"
+                    "var cache = cacheManager.getCache(\"namedCache\");\n"
+                    "cache.put(\"a\", a);\n"
+                    "cache.put(\"b\", \"b\");\n"
+                    "cache.get(\"a\");\n");
+            std::string script_name("script.js");
+            std::string p_script_name =
+                    JBasicMarshaller<std::string>::addPreamble(script_name);
+            std::string p_script = JBasicMarshaller<std::string>::addPreamble(
+                    script);
+            RemoteCache<std::string, std::string> scriptCache =
+                    cacheManager.getCache<std::string, std::string>(
+                            "___script_cache", false);
+            scriptCache.put(p_script_name, p_script);
+            std::vector<unsigned char> execResult = cache.execute(script_name,
+                    s);
 
-			// We know the remote script returns a string and
-			// we use the helper to unmarshall
-			std::string res(
-					JBasicMarshallerHelper::unmarshall<std::string>(
-							(char*) execResult.data()));
-			if (res.compare("abc") != 0) {
-				std::cerr << "fail: cache.exec() returned unexpected result"
-						<< std::endl;
-				return 1;
-			}
-		} catch (const Exception& e) {
-	        cacheManager.stop();
-			std::cout << "is: " << typeid(e).name() << '\n';
-			std::cerr << "fail unexpected exception: " << e.what() << std::endl;
-			return 1;
-		}
+            // We know the remote script returns a string and
+            // we use the helper to unmarshall
+            std::string res(
+                    JBasicMarshallerHelper::unmarshall<std::string>(
+                            (char*) execResult.data()));
+            if (res.compare("abc") != 0) {
+                std::cerr << "fail: cache.exec() returned unexpected result"
+                        << std::endl;
+                return 1;
+            }
+        } catch (const Exception& e) {
+            cacheManager.stop();
+            std::cout << "is: " << typeid(e).name() << '\n';
+            std::cerr << "fail unexpected exception: " << e.what() << std::endl;
+            return 1;
+        }
         std::cout << "PASS: script execution on server" << std::endl;
 
         cacheManager.stop();
@@ -569,14 +569,14 @@ int main(int argc, char** argv) {
             result = basicTest<std::string, std::string>(cacheManager, cache);
             std::map<std::string,std::string> s;
             std::string argName = std::string("a");
-            std::string argValue = std::string("b");
+            std::string argValue = std::string("abc");
             // execute() operation needs explicit JBossMarshalling<string> format for argument values
             JBasicMarshaller<std::string> *km1 = new JBasicMarshaller<std::string>();
             JBasicMarshaller<std::string> *vm1 = new JBasicMarshaller<std::string>();
             s.insert(std::pair<std::string, std::string>(argName,JBasicMarshaller<std::string>::addPreamble(argValue)));
-            std::string script ("// mode=local,language=javascript\n "
+            std::string script ("// mode=local,language=javascript, parameters=[a]\n "
             "var cache = cacheManager.getCache(\"namedCache\");\n"
-            "cache.put(\"a\", \"abc\");\n"
+            "cache.put(\"a\", a);\n"
             "cache.put(\"b\", \"b\");\n"
             "cache.get(\"a\");\n");
             std::string script_name("script.js");
