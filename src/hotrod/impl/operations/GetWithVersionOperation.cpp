@@ -25,7 +25,7 @@ VersionedValueImpl<std::vector<char>> GetWithVersionOperation::executeOperation(
     VersionedValueImpl<std::vector<char>> result;
     uint8_t status = sendKeyOperation(
         key, transport, GET_WITH_VERSION_REQUEST, GET_WITH_VERSION_RESPONSE);
-    if (status == NO_ERROR_STATUS) {
+    if (HotRodConstants::isSuccess(status)) {
         result.setVersion(transport.readLong());
         result.setValue(transport.readArray());
         TRACE("return version = %lld", result.version);
