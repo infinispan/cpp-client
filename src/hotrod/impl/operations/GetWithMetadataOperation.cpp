@@ -25,7 +25,7 @@ MetadataValueImpl<std::vector<char>> GetWithMetadataOperation::executeOperation(
     TRACEBYTES("key = ", key);
     uint8_t status = sendKeyOperation(
         key, transport, GET_WITH_METADATA_REQUEST, GET_WITH_METADATA_RESPONSE);
-    if (status == NO_ERROR_STATUS) {
+    if (HotRodConstants::isSuccess(status)) {
         uint8_t flag = transport.readByte();
         if ((flag & INFINITE_LIFESPAN) != INFINITE_LIFESPAN) {
         	result.setCreated(transport.readLong());

@@ -25,7 +25,7 @@ bool ContainsKeyOperation::executeOperation(Transport& transport)
     bool containsKey = false;
     uint8_t status = sendKeyOperation(key,
         transport, CONTAINS_KEY_REQUEST, CONTAINS_KEY_RESPONSE);
-    if (status == NO_ERROR_STATUS) {
+    if (HotRodConstants::isSuccess(status)) {
         containsKey = true;
         TRACE("Result is true");
     } else {

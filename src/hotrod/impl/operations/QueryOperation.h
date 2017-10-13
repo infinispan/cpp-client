@@ -44,7 +44,7 @@ public:
     int8_t status=readHeaderAndValidate(t, *params);
 
     QueryResponse qr;
-    if (status == NO_ERROR_STATUS) {
+    if (HotRodConstants::isSuccess(status)) {
 			std::vector<char> responseBytes = t.readArray();
 			qr.ParseFromArray(responseBytes.data(), (int)responseBytes.size());
 		}
