@@ -10,18 +10,18 @@ class RemoteCacheManager;
 
 // The fixture for testing class Foo.
 
-class NearCacheStaleReadsTest : public ::testing::Test {
+class NearCacheEvictionTest: public ::testing::Test {
 public:
     static std::unique_ptr<infinispan::hotrod::RemoteCacheManager> remoteCacheManager;
-    static ConfigurationBuilder builder;
 
 protected:
 
     // You can do set-up work for each test here.
-    NearCacheStaleReadsTest();
+    NearCacheEvictionTest();
 
     // You can do clean-up work that doesn't throw exceptions here.
-    virtual ~NearCacheStaleReadsTest() {} ;
+    virtual ~NearCacheEvictionTest() {
+    }
 
     // If the constructor and destructor are not enough for setting up
     // and cleaning up each test, you can define the following methods:

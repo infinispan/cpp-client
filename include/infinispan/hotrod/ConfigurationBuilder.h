@@ -47,7 +47,7 @@ public:
         return m_maxEntries;
     }
 
-    NearCacheConfigurationBuilder& maxEntries(int maxEntries = 0) {
+    NearCacheConfigurationBuilder& maxEntries(unsigned int maxEntries = 0) {
         this->m_maxEntries = maxEntries;
         return *this;
     }
