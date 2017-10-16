@@ -21,7 +21,7 @@ class HR_EXTERN NearCacheConfiguration
 public:
     NearCacheConfiguration(NearCacheMode mode=DISABLED, int maxEntries=0) : m_mode(mode), m_maxEntries(maxEntries) {}
 
-    int getMaxEntries() const {
+    unsigned int getMaxEntries() const {
         return m_maxEntries;
     }
 
@@ -38,7 +38,7 @@ public:
     }
 private:
     NearCacheMode m_mode=DISABLED;
-    int m_maxEntries=0;
+    unsigned int m_maxEntries=0;
 };
 }
 }

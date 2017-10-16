@@ -21,76 +21,7 @@ milliseconds end = duration_cast< milliseconds >(system_clock::now().time_since_
     ASSERT_TRUE(func()) << "Error timeout";
 }
 
-NearCacheStaleReadsTest::NearCacheStaleReadsTest()
-{
-}
-
-void NearCacheStaleReadsTest::SetUp() {
-    if (NearCacheStaleReadsTest::remoteCacheManager == nullptr){
-        ConfigurationBuilder builder;
-        builder.addServer().host("127.0.0.1").port(11222);
-        builder.protocolVersion(Configuration::PROTOCOL_VERSION_24);
-        builder.balancingStrategyProducer(nullptr);
-        builder.nearCache().mode(NearCacheMode::INVALIDATED).maxEntries(-1);
-        NearCacheStaleReadsTest::remoteCacheManager.reset(new RemoteCacheManager(builder.build(), false));
-    }
-};
-
-void NearCacheStaleReadsTest::TearDown() {
-    NearCacheStaleReadsTest::remoteCacheManager->stop();
-}
-
-TEST_F(NearCacheStaleReadsTest, AvoidStaleReadAfterPutRemoveTest) {
-    std::function<void(int, RemoteCache<std::string, std::string>)> f = [](int i, RemoteCache<std::string, std::string> cache) {
-    std::string value = std::string("v") + std::to_string(i);
-    cache.put("k", value);
-    ASSERT_EQ(value, *cache.get("k"));
-    cache.remove("k");
-    ASSERT_EQ(nullptr, cache.get("k"));
-};
-}
-
-TEST_F(NearCacheStaleReadsTest, AvoidStaleReadAfterPutAllTest) {
-    std::function<void(int, RemoteCache<std::string, std::string>)> f = [](int i, RemoteCache<std::string, std::string> cache) {
-        std::map<std::string, std::string> map;
-        std::string value = std::string("v") + std::to_string(i);
-        map["k"]=value;
-        cache.putAll(map);
-        ASSERT_EQ(value, *cache.get("k"));
-};
-}
-
-TEST_F(NearCacheStaleReadsTest, AvoidStaleReadAfterReplaceTest) {
-    std::function<void(int, RemoteCache<std::string, std::string>)> f = [](int i, RemoteCache<std::string, std::string> cache) {
-        std::string value = std::string("v") + std::to_string(i);
-        cache.replace("k", value);
-        auto versioned = cache.getWithVersion("k");
-        ASSERT_EQ(value, *versioned.first);
-};
-}
-
-TEST_F(NearCacheStaleReadsTest, AvoidStaleReadAfterReplaceWithVersionTest) {
-    std::function<void(int, RemoteCache<std::string, std::string>)> f = [](int i, RemoteCache<std::string, std::string> cache) {
-        std::string value = std::string("v") + std::to_string(i);
-        auto versioned = cache.getWithVersion("k");
-        ASSERT_TRUE(cache.replaceWithVersion("k", value, (uint64_t) versioned.second.version)) << "Not replaced!";
-        ASSERT_EQ(value, *cache.get("k"));
-    };
-}
-
-TEST_F(NearCacheStaleReadsTest, AvoidStaleReadAfterPutAsyncRemoveWithVersionTest) {
-    std::function<void(int, RemoteCache<std::string, std::string>)> f = [](int i, RemoteCache<std::string, std::string> cache) {
-        std::string value = std::string("v") + std::to_string(i);
-        cache.putAsync("k", value).wait();
-        auto versioned = cache.getWithVersion("k");
-        ASSERT_EQ(value, *versioned.first);
-        ASSERT_TRUE(cache.removeWithVersion("k", (uint64_t) versioned.second.version)) << "Not removed!";
-        ASSERT_EQ(value, *cache.get("k"));
-        ASSERT_EQ(nullptr, cache.get("k"));
-    };
-}
-
-void Repeat(std::function<void(int, RemoteCache<std::string, std::string>)> &f)
+void Repeat(std::function<void(int, RemoteCache<std::string, std::string>&)> f)
 {
     BasicMarshaller<std::string> *km1 = new BasicMarshaller<std::string>();
     BasicMarshaller<std::string> *vm1 = new BasicMarshaller<std::string>();
@@ -107,3 +38,77 @@ void Repeat(std::function<void(int, RemoteCache<std::string, std::string>)> &f)
     }
 }
 
+NearCacheStaleReadsTest::NearCacheStaleReadsTest()
+{
+}
+
+void NearCacheStaleReadsTest::SetUp() {
+    if (NearCacheStaleReadsTest::remoteCacheManager == nullptr){
+        ConfigurationBuilder builder;
+        builder.addServer().host("127.0.0.1").port(11222);
+        builder.protocolVersion(Configuration::PROTOCOL_VERSION_24);
+        builder.balancingStrategyProducer(nullptr);
+        builder.nearCache().mode(NearCacheMode::INVALIDATED).maxEntries(0);
+        NearCacheStaleReadsTest::remoteCacheManager.reset(new RemoteCacheManager(builder.build(), false));
+    }
+    remoteCacheManager->start();
+};
+
+void NearCacheStaleReadsTest::TearDown() {
+    remoteCacheManager->stop();
+
+}
+
+TEST_F(NearCacheStaleReadsTest, AvoidStaleReadAfterPutRemoveTest) {
+    std::function<void(int, RemoteCache<std::string, std::string>&)> f = [](int i, RemoteCache<std::string, std::string> &cache) {
+    std::string value = std::string("v") + std::to_string(i);
+    cache.put("k", value);
+    ASSERT_EQ(value, *cache.get("k"));
+    cache.remove("k");
+    ASSERT_EQ(nullptr, cache.get("k"));
+};
+    Repeat(f);
+}
+
+TEST_F(NearCacheStaleReadsTest, AvoidStaleReadAfterPutAllTest) {
+    std::function<void(int, RemoteCache<std::string, std::string>&)> f = [](int i, RemoteCache<std::string, std::string> &cache) {
+        std::map<std::string, std::string> map;
+        std::string value = std::string("v") + std::to_string(i);
+        map["k"]=value;
+        cache.putAll(map);
+        ASSERT_EQ(value, *cache.get("k"));
+};
+    Repeat(f);
+}
+
+TEST_F(NearCacheStaleReadsTest, AvoidStaleReadAfterReplaceTest) {
+    std::function<void(int, RemoteCache<std::string, std::string>&)> f = [](int i, RemoteCache<std::string, std::string> &cache) {
+        std::string value = std::string("v") + std::to_string(i);
+        cache.replace("k", value);
+        auto versioned = cache.getWithVersion("k");
+        ASSERT_EQ(value, *versioned.first);
+};
+    Repeat(f);
+}
+
+TEST_F(NearCacheStaleReadsTest, AvoidStaleReadAfterReplaceWithVersionTest) {
+    std::function<void(int, RemoteCache<std::string, std::string>&)> f = [](int i, RemoteCache<std::string, std::string> &cache) {
+        std::string value = std::string("v") + std::to_string(i);
+        auto versioned = cache.getWithVersion("k");
+        ASSERT_TRUE(cache.replaceWithVersion("k", value, (uint64_t) versioned.second.version)) << "Not replaced!";
+        ASSERT_EQ(value, *cache.get("k"));
+    };
+    Repeat(f);
+}
+
+TEST_F(NearCacheStaleReadsTest, AvoidStaleReadAfterPutAsyncRemoveWithVersionTest) {
+    std::function<void(int, RemoteCache<std::string, std::string>&)> f = [](int i, RemoteCache<std::string, std::string> &cache) {
+        std::string value = std::string("v") + std::to_string(i);
+        cache.putAsync("k", value).wait();
+        auto versioned = cache.getWithVersion("k");
+        ASSERT_EQ(value, *versioned.first);
+        ASSERT_TRUE(cache.removeWithVersion("k", (uint64_t) versioned.second.version)) << "Not removed!";
+        ASSERT_EQ(nullptr, cache.get("k"));
+    };
+    Repeat(f);
+}

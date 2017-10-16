@@ -133,9 +133,16 @@ private:
 
     void removeElementFromMap(const std::vector<char>& key) {
         std::lock_guard<std::mutex> guard(_nearMutex);
-        auto it = std::find(_nearFifo.begin(), _nearFifo.end(), key);
-        if (it != _nearFifo.end()) {
-            _nearFifo.erase(it);
+        if (maxEntries > 0)
+        {
+            auto it = std::find(_nearFifo.begin(), _nearFifo.end(), key);
+            if (it != _nearFifo.end()) {
+                _nearFifo.erase(it);
+                _nearMap.erase(key);
+            }
+        }
+        else
+        {
             _nearMap.erase(key);
         }
     }
