@@ -68,7 +68,7 @@ public:
 
     private:
     NearCacheMode m_mode=DISABLED;
-    int m_maxEntries=0;
+    unsigned int m_maxEntries=0;
 };
 
 /**
@@ -346,7 +346,7 @@ class ConfigurationBuilder
     int m_socketTimeout;
     bool m_tcpNoDelay;
     int m_valueSizeEstimate;
-    int m_maxRetries;
+    unsigned int m_maxRetries;
     FailOverRequestBalancingStrategy::ProducerFn m_balancingStrategyProducer;
     ConnectionPoolConfigurationBuilder connectionPoolConfigurationBuilder;
     SecurityConfigurationBuilder securityConfigurationBuilder;
