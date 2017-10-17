@@ -72,7 +72,13 @@ TEST_F(NearCacheEvictionTest, EvictionOnFullNearCacheTest) {
     {
         cache.put(std::string("key") + std::to_string(i + 2), std::string("value") + std::to_string(i + 2));
         //call Get to populate the near cache
-        cache.get(std::string("key") + std::to_string(i + 2));
+        auto currStats = cache.stats();
+        auto oneMoreHit = [&cache, &currStats,i]()->bool{
+            cache.get(std::string("key") + std::to_string(i + 2));
+            auto tmpStat = cache.stats();
+            return (std::stoi(currStats["hits"]) + 1 == std::stoi(tmpStat["hits"]));
+        };
+        waitFor(oneMoreHit);
     }
     // key1 is now far
     auto stats2 = cache.stats();
