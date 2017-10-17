@@ -180,6 +180,7 @@ private:
     virtual void stop()
     {
         this->removeClientListener(cl);
+        this->invalidateCache();
     }
 };
 

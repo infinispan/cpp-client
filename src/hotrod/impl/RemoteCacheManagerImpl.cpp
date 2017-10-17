@@ -150,7 +150,7 @@ void RemoteCacheManagerImpl::startRemoteCache(RemoteCacheImpl& remoteCache, bool
 
 void RemoteCacheManagerImpl::stopRemoteCache(RemoteCacheImpl& remoteCache)
 {
-
+    remoteCache.stop();
 }
 
 PingResult RemoteCacheManagerImpl::ping(RemoteCacheImpl& remoteCache) {
