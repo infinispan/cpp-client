@@ -85,14 +85,14 @@ int main(int argc, char** argv) {
     RemoteCache<int, sample_bank_account::User> testCache = cacheManager.getCache<int, sample_bank_account::User>(
             testkm, &Marshaller<int>::destroy, testvm, &Marshaller<sample_bank_account::User>::destroy, "queryCache", false);
     testCache.clear();
-    sample_bank_account::User_Address a;
     sample_bank_account::User user1;
     user1.set_id(3);
     user1.set_name("Tom");
     user1.set_surname("Cat");
     user1.set_gender(sample_bank_account::User_Gender_MALE);
+    user1.add_accountids(3);
     sample_bank_account::User_Address * addr= user1.add_addresses();
-    addr->set_street("Via Roma");
+    addr->set_street("Rome St.");
     addr->set_number(3);
     addr->set_postcode("202020");
     testCache.put(3, user1);
@@ -101,6 +101,8 @@ int main(int argc, char** argv) {
     user1.set_name("Jerry");
     user1.set_surname("Mouse");
     user1.set_gender(sample_bank_account::User_Gender_MALE);
+    user1.clear_accountids();
+    user1.add_accountids(2);
     testCache.put(4, user1);
     std::string s;
     // Check if standard get still work with protobuf marshaller
@@ -114,10 +116,37 @@ int main(int argc, char** argv) {
     }
     delete(userResult1);
 
+    user1.set_id(5);
+    user1.set_name("Atom");
+    user1.set_surname("Ant");
+    user1.set_gender(sample_bank_account::User_Gender_MALE);
+    user1.clear_accountids();
+    user1.add_accountids(2);
+    user1.add_accountids(1);
+    addr= user1.add_addresses();
+    addr->set_street("Rome St.");
+    addr->set_number(3);
+    addr->set_postcode("212121");
+    testCache.put(5, user1);
+
+    user1.set_id(6);
+    user1.set_name("Secret");
+    user1.set_surname("Squirrel");
+    user1.set_gender(sample_bank_account::User_Gender_MALE);
+    user1.clear_accountids();
+    user1.add_accountids(1);
+    addr= user1.add_addresses();
+    addr->set_street("Turin St.");
+    addr->set_number(5);
+    addr->set_postcode("212121");
+    testCache.put(6, user1);
+
+
     {
         QueryRequest qr;
         // set_jpqlstring will be soon deprecated use set_querystring
         // qr.set_jpqlstring("from sample_bank_account.User");
+        std::cout << "querystring=from sample_bank_account.User" << std::endl;
         qr.set_querystring("from sample_bank_account.User");
         QueryResponse resp = testCache.query(qr);
 
@@ -129,8 +158,8 @@ int main(int argc, char** argv) {
             return result;
         }
 
-        if (res.size() != 2) {
-            std::cerr << "fail: expected 2 got " << res.size() << std::endl;
+        if (res.size() != 4) {
+            std::cerr << "fail: expected 4 got " << res.size() << std::endl;
             result = -1;
             return result;
         }
@@ -139,12 +168,70 @@ int main(int argc, char** argv) {
             std::cout << "User(id=" << res[i].id() << ",name=" << res[i].name()
                     << ",surname=" << res[i].surname() << ")" << std::endl;
         }
+
+        std::cout << "querystring=from sample_bank_account.User u where u.accountIds = 2 or u.accountIds = 3 order by u.id desc" << std::endl;
+        qr.set_querystring("from sample_bank_account.User u where u.accountIds = 2 or u.accountIds = 3 order by u.id desc");
+        resp = testCache.query(qr);
+        res.clear();
+        if (!unwrapResults(resp, res)) {
+            std::cerr << "fail: found unexpected projection in resultset"
+                    << std::endl;
+            result = -1;
+            return result;
+        }
+
+        if (res.size() != 3) {
+            std::cerr << "fail: expected 3 got " << res.size() << std::endl;
+            result = -1;
+            return result;
+        }
+
+        for (unsigned int i = 0; i < res.size(); i++) {
+            std::cout << "User(id=" << res[i].id() << ",name=" << res[i].name()
+                    << ",surname=" << res[i].surname() << ")" << std::endl;
+            if (i>0 && res[i].id() > res[i-1].id())
+            {
+                std::cerr << "fail: desc sorting not respected" << std::endl;
+                result = -1;
+                return result;
+            }
+        }
+
+        std::cout << "querystring=from sample_bank_account.User u where u.accountIds = 2 or u.accountIds = 3 order by u.id asc" << std::endl;
+        qr.set_querystring("from sample_bank_account.User u where u.accountIds = 2 or u.accountIds = 3 order by u.id asc");
+        resp = testCache.query(qr);
+        res.clear();
+        if (!unwrapResults(resp, res)) {
+            std::cerr << "fail: found unexpected projection in resultset"
+                    << std::endl;
+            result = -1;
+            return result;
+        }
+
+        if (res.size() != 3) {
+            std::cerr << "fail: expected 3 got " << res.size() << std::endl;
+            result = -1;
+            return result;
+        }
+
+        for (unsigned int i = 0; i < res.size(); i++) {
+            std::cout << "User(id=" << res[i].id() << ",name=" << res[i].name()
+                    << ",surname=" << res[i].surname() << ")" << std::endl;
+            if (i>0 && res[i].id() < res[i-1].id())
+            {
+                std::cerr << "fail: asc sorting not respected" << std::endl;
+                result = -1;
+                return result;
+            }
+        }
+
     }
 #if !defined (_MSC_VER) || (_MSC_VER>=1800)
     {
         QueryRequest qr;
         // set_jpqlstring will be soon deprecated use set_querystring
         // qr.set_jpqlstring("select u.name, u.surname from sample_bank_account.User u");
+        std::cout << "querystring=select u.name, u.surname from sample_bank_account.User u" << std::endl;
         qr.set_querystring("select u.name, u.surname from sample_bank_account.User u");
         QueryResponse resp = testCache.query(qr);
 
@@ -157,8 +244,8 @@ int main(int argc, char** argv) {
         }
 
         for (unsigned int i = 0; i < prjRes.size(); i++) {
-            std::cout << std::get < 0 > (prjRes[i]) << "  " << std::get < 1
-                    > (prjRes[i]) << "  " << std::endl;
+            std::cout << "(User.name, User.surname)=(" << std::get < 0 > (prjRes[i]) << "," << std::get < 1
+                    > (prjRes[i]) << ")" << std::endl;
         }
     }
 
@@ -166,6 +253,7 @@ int main(int argc, char** argv) {
         QueryRequest qr;
         // set_jpqlstring will be soon deprecated use set_querystring
         // qr.set_jpqlstring("select u.surname, u.id from sample_bank_account.User u");
+        std::cout << "querystring=select u.surname, u.id from sample_bank_account.User u" << std::endl;
         qr.set_querystring("select u.surname, u.id from sample_bank_account.User u");
         QueryResponse resp = testCache.query(qr);
 
@@ -178,8 +266,8 @@ int main(int argc, char** argv) {
         }
 
         for (unsigned int i = 0; i < prjRes.size(); i++) {
-            std::cout << std::get < 0 > (prjRes[i]) << "  "
-                << std::get<1>(prjRes[i]) << "  " << std::endl;
+            std::cout << "(User.name, User.id)=(" << std::get < 0 > (prjRes[i]) << "," << std::get < 1
+                    > (prjRes[i]) << ")" << std::endl;
         }
     }
 #endif
@@ -187,12 +275,35 @@ int main(int argc, char** argv) {
         QueryRequest qr;
         // set_jpqlstring will be soon deprecated use set_querystring
         // qr.set_jpqlstring("select count(u.surname) from sample_bank_account.User u");
+        std::cout << "querystring=select count(u.surname) from sample_bank_account.User u" << std::endl;
         qr.set_querystring("select count(u.surname) from sample_bank_account.User u");
         QueryResponse resp = testCache.query(qr);
 
         int i = unwrapSingleResult<int>(resp);
+        std::cout << "count(u.surname)=" << i << std::endl;
+        if (i!=4) {
+            std::cerr << "fail: expected 4 got "<< i << std::endl;
+            result = -1;
+            return result;
+        }
+    }
 
-        std::cout << "result is: " << i << std::endl;
+    {
+        QueryRequest qr;
+        // set_jpqlstring will be soon deprecated use set_querystring
+        // qr.set_jpqlstring("select count(u.surname) from sample_bank_account.User u");
+        std::cout << "querystring=select count(u.surname) from sample_bank_account.User u where id=-1" << std::endl;
+        qr.set_querystring("select count(u.surname) from sample_bank_account.User u where id=-1");
+        QueryResponse resp = testCache.query(qr);
+
+        int i = unwrapSingleResult<int>(resp);
+
+        std::cout << "count(u.surname where id=-1)=" << i << std::endl;
+        if (i!=0) {
+            std::cerr << "fail: expected 0 got "<< i << std::endl;
+            result = -1;
+            return result;
+        }
     }
 
     return result;
