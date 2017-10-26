@@ -39,11 +39,9 @@ public class JniTest implements IMethodSelector {
             CrossLanguageHotRodTest.class,
             /* package org.infinispan.client.hotrod */
             // ApacheCommonsPoolTest.class,          // omitting
-            BulkGetKeysDistTest.class, 
-            BulkGetKeysReplTest.class, 
-            BulkGetKeysSimpleTest.class, 
-            BulkGetReplTest.class,
-            BulkGetSimpleTest.class,
+            GetAllLocalTest.class,
+            GetAllReplTest.class,
+            GetAllDistTest.class,
             // CacheContainerTest.class,             // not relevant
             CacheManagerNotStartedTest.class, 
             CacheManagerStoppedTest.class, 
@@ -80,21 +78,18 @@ public class JniTest implements IMethodSelector {
             // SslTest.class,                        // SSL not implemented
             // TransportObjectFactoryTest.class,     // omitting
       });
-
       testng.addListener(tr);
       testng.setGroups("unit,functional");
       testng.run();
 
       Set<String> expectedTestFailures = new TreeSet<String>(Arrays.asList( 
-            "BulkGetKeysDistTest.testBulkGetAfterLifespanExpire",                // unstable, ISPN-4017
             "HotRodIntegrationTest.testReplaceWithVersionWithLifespanAsync",     // async not implemented
             "ClientSocketReadTimeoutTest.testPutTimeout",                        // TODO: TransportException not marshalled correctly
-            "BulkGetKeysReplTest.testBulkGetAfterLifespanExpire",
-            "BulkGetKeysSimpleTest.testBulkGetAfterLifespanExpire",
-            "BulkGetReplTest.testBulkGetAfterLifespanExpire",
-            "BulkGetSimpleTest.testBulkGetAfterLifespanExpire",
-            "ForceReturnValuesTest.testSameInstanceForSameForceReturnValues",
-            "HotRodIntegrationTest.testGetWithMetadata"
+            "HotRodIntegrationTest.testGetWithMetadata",
+            "RemoteCacheManagerTest.testStartStopAsync",
+            "GetAllDistTest.testBulkGetAfterLifespanExpire",
+            "GetAllLocalTest.testBulkGetAfterLifespanExpire",
+            "GetAllReplTest.testBulkGetAfterLifespanExpire"
       ));
       Set<String> expectedSkips = Collections.emptySet();
 

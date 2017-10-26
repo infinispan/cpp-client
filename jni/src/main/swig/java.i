@@ -178,6 +178,8 @@ class RelayBytes {
     size_t getLength () const {return length; }
     jbyteArray getJarray() const { return jarray; }
     bool isNull() const { return !bytes; }
+    bool operator< (const RelayBytes &b) const { return std::memcmp(bytes, b.bytes, std::min(length, b.length))<0; }
+
   private:
     char *bytes;
     size_t length;
@@ -186,11 +188,12 @@ class RelayBytes {
 
 %}
 
-//%template(RelayShrPointer) std::shared_ptr<RelayBytes>;
+%template(RelayShrPointer) std::shared_ptr<RelayBytes>;
 %template(MetadataPairReturn) std::pair<std::shared_ptr<RelayBytes>, infinispan::hotrod::MetadataValue>;
 %template(VersionPairReturn) std::pair<std::shared_ptr<RelayBytes>, infinispan::hotrod::VersionedValue>;
 %template(MapReturn) std::map<std::shared_ptr<RelayBytes>, std::shared_ptr<RelayBytes> >;
 %template(SetReturn) std::set<std::shared_ptr<RelayBytes> >;
+%template(SetArgs) std::set<RelayBytes>;
 %template(VectorReturn) std::vector<std::shared_ptr<RelayBytes> >;
 %template(StringVectorReturn) std::vector<std::string>;
 %template(IntegerVectorReturn) std::vector<int>;
