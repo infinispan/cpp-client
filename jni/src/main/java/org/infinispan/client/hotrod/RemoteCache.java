@@ -65,6 +65,8 @@ public interface RemoteCache<K, V> {
     Map<K, V> getBulk();
 
     Map<K, V> getBulk(int size);
+    
+    Map<K, V> getAll(Set<K> keySet);
 
     boolean isEmpty();
 

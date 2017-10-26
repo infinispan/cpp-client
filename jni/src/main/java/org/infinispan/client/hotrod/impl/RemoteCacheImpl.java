@@ -10,6 +10,7 @@ import static org.infinispan.client.hotrod.jni.JniHelper.timeunitToSwig;
 
 import java.math.BigInteger;
 import java.net.SocketAddress;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -34,6 +35,7 @@ import org.infinispan.client.hotrod.jni.MapType;
 import org.infinispan.client.hotrod.jni.MetadataPairReturn;
 import org.infinispan.client.hotrod.jni.RelayBytes;
 import org.infinispan.client.hotrod.jni.RemoteCache_jb_jb;
+import org.infinispan.client.hotrod.jni.SetArgs;
 import org.infinispan.client.hotrod.jni.SetReturn;
 import org.infinispan.client.hotrod.jni.StringVectorReturn;
 import org.infinispan.client.hotrod.jni.VectorReturn;
@@ -484,6 +486,41 @@ public class RemoteCacheImpl<K, V> extends RemoteCacheUnsupported<K, V> {
     }
 
     @Override
+    public Map<K, V> getAll(Set<K> keySet) {
+        return relayedInvoker(new RelayedMethod() {
+            @Override
+            public Object invoke(RelayBytes... rbs) {
+                SetArgs s = new SetArgs();
+                for (RelayBytes r : rbs) {
+                    s.insert(r);
+                }
+                MapReturn mr = jniRemoteCache.getAll(s);
+                final VectorReturn vectorReturn = Hotrod.keySet(mr);
+                Map<K, V> ret = new HashMap<K, V>();
+                for (int i = 0; i < vectorReturn.size(); i++) {
+                    final RelayBytes k = Hotrod.dereference(vectorReturn.get(i));
+                    final RelayBytes v = Hotrod.dereference(mr.get(vectorReturn.get(i)));
+                    K key = relayedInvoker(new RelayedMethod() {
+                        @Override
+                        public Object invoke(RelayBytes... rbs) {
+                            return k;
+                        }
+                    });
+                    V value = relayedInvoker(new RelayedMethod() {
+                        @Override
+                        public Object invoke(RelayBytes... rbs) {
+                            return v;
+                        }
+                    });
+
+                    ret.put(key, value);
+                }
+                return ret;
+            }
+        }, (Collection<Object>) keySet);
+    }
+    
+    @Override
     public RemoteCache<K, V> withFlags(Flag... flags) {
         int result = 0;
         if (flags != null) {
@@ -493,6 +530,43 @@ public class RemoteCacheImpl<K, V> extends RemoteCacheUnsupported<K, V> {
         }
         jniRemoteCache.withFlags(org.infinispan.client.hotrod.jni.Flag.swigToEnum(result));
         return this;
+    }
+
+    private <R> R relayedInvoker(RelayedMethod m, Collection<Object> oc) {
+        RelayBytes rb[] = new RelayBytes[oc.size()];
+        byte bytes[][] = new byte[oc.size()][];
+        try {
+            int i = 0;
+            for (Object o : oc) {
+                rb[i] = new RelayBytes();
+                bytes[i] = marshaller.objectToByteBuffer(o);
+                setJvmBytes(rb[i], bytes[i]);
+                ++i;
+            }
+            Object ret = m.invoke(rb);
+            if (ret == null) {
+                return null;
+            } else if (ret instanceof RelayBytes) {
+                RelayBytes retrb = (RelayBytes) ret;
+                byte[] jcopy = new byte[(int) retrb.getLength()];
+                readNative(retrb, jcopy);
+                try {
+                    return (R) marshaller.objectFromByteBuffer(jcopy);
+                } finally {
+                    dispose(retrb);
+                }
+            } else {
+                return (R) ret;
+            }
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        } finally {
+            for (int i = 0; i < oc.size(); i++) {
+                releaseJvmBytes(rb[i], bytes[i]);
+            }
+        }
     }
 
     private <R> R relayedInvoker(RelayedMethod m, Object... o) {
