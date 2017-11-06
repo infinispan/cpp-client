@@ -109,7 +109,7 @@ int basicTest(RemoteCacheManager &cacheManager, RemoteCache<K,V> &cache) {
         std::cerr << "get/put fail for " << k2 << " got " << *rv2 << " expected " << v2 << std::endl;
         return 1;
     }
- 
+
     std::unique_ptr<std::string> badValue(cache.get(std::string("no such key in the cache")));
     if (badValue.get()) {
         std::cout << "non-existent key failure, got " << *badValue << std::endl;
@@ -502,18 +502,24 @@ int main(int argc, char** argv) {
         try {
             result = basicTest<std::string, std::string>(cacheManager, cache);
             std::map<std::string, std::string> s;
-            std::string argName = std::string("a");
-            std::string argValue = std::string("abc");
+            std::string argName1 = std::string("keyValue");
+            std::string argValue1 = std::string("abc");
+            std::string argName2 = std::string("keyName");
+            std::string argValue2 = std::string("a");
             // execute() operation needs explicit JBossMarshalling<string> format for argument values
             s.insert(
-                    std::pair<std::string, std::string>(argName,
+                    std::pair<std::string, std::string>(argName1,
                             JBasicMarshaller<std::string>::addPreamble(
-                                    argValue)));
-            std::string script("// mode=local,language=javascript, parameters=[a]\n"
+                                    argValue1)));
+            s.insert(
+                    std::pair<std::string, std::string>(argName2,
+                            JBasicMarshaller<std::string>::addPreamble(
+                                    argValue2)));
+            std::string script("// mode=local, language=javascript, parameters=[keyValue, keyName]\n"
                     "var cache = cacheManager.getCache(\"namedCache\");\n"
-                    "cache.put(\"a\", a);\n"
+                    "cache.put(\"a\", keyValue);\n"
                     "cache.put(\"b\", \"b\");\n"
-                    "cache.get(\"a\");\n");
+                    "cache.get(keyName);\n");
             std::string script_name("script.js");
             std::string p_script_name =
                     JBasicMarshaller<std::string>::addPreamble(script_name);
@@ -567,23 +573,41 @@ int main(int argc, char** argv) {
         try
         {
             result = basicTest<std::string, std::string>(cacheManager, cache);
-            std::map<std::string,std::string> s;
-            std::string argName = std::string("a");
-            std::string argValue = std::string("abc");
+            std::map<std::string, std::string> s;
+            std::string argName1 = std::string("keyValue");
+            std::string argValue1 = std::string("abc");
+            std::string argName2 = std::string("keyName");
+            std::string argValue2 = std::string("a");
             // execute() operation needs explicit JBossMarshalling<string> format for argument values
+            s.insert(
+                    std::pair<std::string, std::string>(argName1,
+                            JBasicMarshaller<std::string>::addPreamble(
+                                    argValue1)));
+            s.insert(
+                    std::pair<std::string, std::string>(argName2,
+                            JBasicMarshaller<std::string>::addPreamble(
+                                    argValue2)));
+
+                        // execute() operation needs explicit JBossMarshalling<string> format for argument values
             JBasicMarshaller<std::string> *km1 = new JBasicMarshaller<std::string>();
             JBasicMarshaller<std::string> *vm1 = new JBasicMarshaller<std::string>();
-            s.insert(std::pair<std::string, std::string>(argName,JBasicMarshaller<std::string>::addPreamble(argValue)));
-            std::string script ("// mode=local,language=javascript, parameters=[a]\n "
-            "var cache = cacheManager.getCache(\"namedCache\");\n"
-            "cache.put(\"a\", a);\n"
-            "cache.put(\"b\", \"b\");\n"
-            "cache.get(\"a\");\n");
-            std::string script_name("script.js");
-            cacheManager.getCache<std::string,std::string>(km1,
-                    &Marshaller<std::string>::destroy,
-                    vm1,
-                    &Marshaller<std::string>::destroy,"___script_cache").put(script_name, script);
+            std::string script("// mode=local, language=javascript, parameters=[keyValue, keyName]\n"
+                    "var cache = cacheManager.getCache(\"namedCache\");\n"
+                    "cache.put(\"a\", keyValue);\n"
+                    "cache.put(\"b\", \"b\");\n"
+                    "cache.get(keyName);\n");
+            std::string script_name("script1.js");
+            std::string p_script_name =
+            JBasicMarshaller<std::string>::addPreamble(script_name);
+            std::string p_script = JBasicMarshaller<std::string>::addPreamble(
+                    script);
+
+            auto scriptCache = cacheManager.getCache<std::string,std::string>(km1,
+                     &Marshaller<std::string>::destroy,
+                     vm1,
+                     &Marshaller<std::string>::destroy,"___script_cache",false);
+            scriptCache.remove(script_name);
+            scriptCache.put(script_name, script);
             std::vector<unsigned char> execResult = cache.execute(script_name,s);
 
             // We know the remote script returns a string and
