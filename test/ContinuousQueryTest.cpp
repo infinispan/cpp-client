@@ -203,7 +203,7 @@ int main(int argc, char** argv) {
 
         std::vector<char> param;
 
-        std::string qString("select id, name from sample_bank_account.User");
+        std::string qString("select max(u.age) from sample_bank_account.User u where u.age >= 20");
 
         BasicTypesProtoStreamMarshaller<std::string> paramMarshaller;
 

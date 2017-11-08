@@ -112,9 +112,9 @@ void TcpTransport::release() {
     try {
         socket.close();
     } catch (const Exception& e) {
-        socket.setValid(false);
         TRACE("Caught exception when closing socket: %s", e.what());
     }
+    socket.setValid(false);
 }
 
 void TcpTransport::destroy() {
