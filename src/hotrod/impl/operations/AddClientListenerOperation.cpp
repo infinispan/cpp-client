@@ -35,14 +35,13 @@ std::vector<char> AddClientListenerOperation::generateV4UUID()
 	return tmp;
 }
 
-void AddClientListenerOperation::releaseTransport(transport::Transport* t)
-{
-    if (failed)
-    {
+void AddClientListenerOperation::releaseTransport(transport::Transport* t) {
+    if (failed) {
         RetryOnFailureOperation::releaseTransport(t);
         failed = false;
     }
 }
+
 void AddClientListenerOperation::invalidateTransport(const infinispan::hotrod::transport::InetSocketAddress&, transport::Transport*){
 }
 
@@ -97,60 +96,48 @@ char AddClientListenerOperation::executeOperation(transport::Transport& transpor
     this->shared = true;
     const_cast<ClientListener&>(clientListener).setListenerId(listenerId);
     uint64_t respMessageId = 0;
-    try
-    {
+    try {
         uint8_t status = NO_ERROR_STATUS;
         uint8_t respOpCode = codec20.readAddEventListenerResponseType(transport, respMessageId);
-        if (!isEvent(respOpCode))
-        {
+        if (!isEvent(respOpCode)) {
             //status = transport.readByte();
         }
-        else
-        {
-            while (isEvent(respOpCode))
-            {    	// The response contains immediate event to process
+        else {
+            while (isEvent(respOpCode)) {  // The response contains immediate event to process
                 EventHeaderParams params;
                 params.messageId = respMessageId;
                 params.opCode = respOpCode;
-                try
-                {
+                try {
                     status = codec20.readPartialEventHeader(transport, params);
-                    if (HotRodConstants::isSuccess(status))
-                    {
+                    if (HotRodConstants::isSuccess(status)) {
                         processImmediateEvent(clientListener, codec20, respOpCode, transport);
                     }
-                } catch (HotRodClientException e)
-                {
+                } catch (HotRodClientException e) {
+                    // ignore the error and try to go on with the rest of the events
                 }
                 respOpCode = codec20.readAddEventListenerResponseType(transport, respMessageId);
             }
         }
-        if (respMessageId != params->getMessageId() && respMessageId != 0)
-        {
+        if (respMessageId != params->getMessageId() && respMessageId != 0) {
             std::ostringstream message;
             message << "Invalid message id. Expected " << params->getMessageId() << " and received " << respMessageId;
             throw InvalidResponseException(message.str());
         }
-        if (HotRodConstants::isSuccess(status)
-                && HotRodConstants::isSuccess(codec20.readPartialHeader(transport, *params, respOpCode)))
-        {
+        if (HotRodConstants::isSuccess(status) && HotRodConstants::isSuccess(codec20.readPartialHeader(transport, *params, respOpCode))) {
             listenerNotifier.startClientListener(listenerId);
         }
-        else
-        {
+        else {
             listenerNotifier.removeClientListener(listenerId);
             failed=true;
         }
-    } catch (const TransportException& ex)
-    {
+    } catch (const TransportException& ex) {
         transport::TcpTransport& tcpT = dynamic_cast<transport::TcpTransport&>(transport);
         TransportException tex(tcpT.getServerAddress().getHostname(), tcpT.getServerAddress().getPort(), ex.what(),
                 ex.getErrnum());
         listenerNotifier.removeClientListener(listenerId);
         failed=true;
         throw tex;
-    } catch (...)
-    {
+    } catch (...) {
         listenerNotifier.removeClientListener(listenerId);
         failed=true;
         throw;
