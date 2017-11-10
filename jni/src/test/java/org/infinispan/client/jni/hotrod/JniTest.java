@@ -74,9 +74,10 @@ public class JniTest implements IMethodSelector {
             SegmentOwnershipDistTest.class,
             ServerShutdownTest.class,
             SiteDownFailoverTest.class,
-            SiteManualSwitchTest.class
+            SiteManualSwitchTest.class,
             // SslTest.class,                        // SSL not implemented
             // TransportObjectFactoryTest.class,     // omitting
+            ExecTest.class
       });
       testng.addListener(tr);
       testng.setGroups("unit,functional");
@@ -84,6 +85,7 @@ public class JniTest implements IMethodSelector {
 
       Set<String> expectedTestFailures = new TreeSet<String>(Arrays.asList( 
             "HotRodIntegrationTest.testReplaceWithVersionWithLifespanAsync",     // async not implemented
+            "ExecTest.testLocalExecPutGetWithListener",
             "ClientSocketReadTimeoutTest.testPutTimeout",                        // TODO: TransportException not marshalled correctly
             "HotRodIntegrationTest.testGetWithMetadata",
             "RemoteCacheManagerTest.testStartStopAsync",

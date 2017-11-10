@@ -197,6 +197,7 @@ class RelayBytes {
 %template(VectorReturn) std::vector<std::shared_ptr<RelayBytes> >;
 %template(StringVectorReturn) std::vector<std::string>;
 %template(IntegerVectorReturn) std::vector<int>;
+%template(UCharVector) std::vector<unsigned char>;
 %template(InetSocketAddressvectorReturn) std::vector<infinispan::hotrod::transport::InetSocketAddress>;
 %ignore std::vector<infinispan::hotrod::ServerConfigurationBuilder>::vector(size_type);
 %ignore std::vector<infinispan::hotrod::ServerConfigurationBuilder>::resize; 

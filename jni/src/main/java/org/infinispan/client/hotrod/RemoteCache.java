@@ -148,5 +148,8 @@ public interface RemoteCache<K, V> {
          int maxIdleSeconds);
 
    CompletableFuture<Boolean> removeWithVersionAsync(K key, long version);
-    CacheTopologyInfo getCacheTopologyInfo();
+   
+   CacheTopologyInfo getCacheTopologyInfo();
+
+   <T> T execute(String scriptName, Map<String, ?> params);
 }
