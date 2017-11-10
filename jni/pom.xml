@@ -64,20 +64,25 @@
       </dependency>
       <dependency>
          <groupId>org.infinispan</groupId>
-         <artifactId>infinispan-server-core</artifactId>
+         <artifactId>infinispan-core</artifactId>
+         <version>${version.org.infinispan}</version>
+      </dependency>
+      <dependency>
+         <groupId>org.infinispan</groupId>
+         <artifactId>infinispan-server-hotrod</artifactId>
+         <version>${version.org.infinispan}</version>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>org.infinispan</groupId>
+         <artifactId>infinispan-server-hotrod</artifactId>
          <version>${version.org.infinispan}</version>
          <classifier>tests</classifier>
          <scope>test</scope>
       </dependency>
       <dependency>
          <groupId>org.infinispan</groupId>
-         <artifactId>infinispan-server-hotrod</artifactId>
-         <version>${version.org.infinispan}</version>
-         <scope>test</scope>
-      </dependency>
-      <dependency>
-         <groupId>org.infinispan</groupId>
-         <artifactId>infinispan-server-hotrod</artifactId>
+         <artifactId>infinispan-server-core</artifactId>
          <version>${version.org.infinispan}</version>
          <classifier>tests</classifier>
          <scope>test</scope>
@@ -101,6 +106,12 @@
          <scope>test</scope>
       </dependency>
       <dependency>
+         <groupId>org.infinispan</groupId>
+         <artifactId>infinispan-scripting</artifactId>
+         <version>${version.org.infinispan}</version>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
          <groupId>org.jboss.jbossts.jta</groupId>
          <artifactId>narayana-jta</artifactId>
          <version>${version.org.jboss.jbossts}</version>
@@ -110,6 +121,12 @@
          <groupId>org.testng</groupId>
          <artifactId>testng</artifactId>
          <version>${version.org.testng}</version>
+         <scope>test</scope>
+      </dependency>
+            <dependency>
+         <groupId>org.mockito</groupId>
+         <artifactId>mockito-core</artifactId>
+         <version>1.10.19</version>
          <scope>test</scope>
       </dependency>
    </dependencies>

@@ -11,6 +11,11 @@ import org.infinispan.client.hotrod.RemoteCache;
 public abstract class RemoteCacheUnsupported<K, V> implements RemoteCache<K, V> {
 
     @Override
+    public <T> T execute(String scriptName, Map<String, ?> params) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public boolean remove(K key, V value) {
         throw new UnsupportedOperationException();
     }

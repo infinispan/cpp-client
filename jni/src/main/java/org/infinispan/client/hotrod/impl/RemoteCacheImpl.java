@@ -8,6 +8,7 @@ import static org.infinispan.client.hotrod.jni.JniHelper.releaseJvmBytes;
 import static org.infinispan.client.hotrod.jni.JniHelper.setJvmBytes;
 import static org.infinispan.client.hotrod.jni.JniHelper.timeunitToSwig;
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.net.SocketAddress;
 import java.util.Collection;
@@ -17,6 +18,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
+
+import javax.management.RuntimeErrorException;
 
 import org.infinispan.client.hotrod.exceptions.RemoteCacheManagerNotStartedException;
 import org.infinispan.client.hotrod.Flag;
@@ -38,9 +41,12 @@ import org.infinispan.client.hotrod.jni.RemoteCache_jb_jb;
 import org.infinispan.client.hotrod.jni.SetArgs;
 import org.infinispan.client.hotrod.jni.SetReturn;
 import org.infinispan.client.hotrod.jni.StringVectorReturn;
+import org.infinispan.client.hotrod.jni.UCharVector;
 import org.infinispan.client.hotrod.jni.VectorReturn;
 import org.infinispan.client.hotrod.jni.VersionPairReturn;
+import org.infinispan.commons.io.ByteBuffer;
 import org.infinispan.commons.marshall.Marshaller;
+import org.infinispan.marshall.core.JBossMarshaller;
 
 public class RemoteCacheImpl<K, V> extends RemoteCacheUnsupported<K, V> {
 
@@ -625,6 +631,35 @@ public class RemoteCacheImpl<K, V> extends RemoteCacheUnsupported<K, V> {
 
         return stats;
     }
+
+    @Override
+    public <T> T execute(String scriptName, Map<String, ?> params) {
+        MapType argsMap = new MapType();
+        JBossMarshaller jb = new JBossMarshaller();
+        for (String parName : params.keySet()) {
+            ByteBuffer b;
+            try {
+                b= jb.objectToBuffer(params.get(parName));
+                argsMap.set(parName, new String(b.getBuf()));
+            } catch (IOException | InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+        UCharVector executeResult = jniRemoteCache.execute(scriptName, argsMap);
+        byte[] buf = new byte[(int)executeResult.size()];
+        for (int i=0; i< buf.length; i++)
+        {
+            buf[i]= (byte)executeResult.get(i);
+        }
+        try {
+            return (T) jb.objectFromByteBuffer(buf);
+        } catch (ClassNotFoundException | IOException e) {
+            // TODO Auto-generated catch block
+            throw new RuntimeException(e);
+        }
+    }
+
 
 
 }
