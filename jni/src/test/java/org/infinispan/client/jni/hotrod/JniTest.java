@@ -26,9 +26,9 @@ public class JniTest implements IMethodSelector {
         "CacheManagerStoppedTest.testReplaceAsync",
         "CacheManagerStoppedTest.testVersionedRemoveAsync",
         "HotRodAsyncReplicationTest.testPutKeyValue"};
-        
+
    private final static HashSet<String> passOverTestSet = new HashSet<String>(Arrays.asList(passOverTestList));
-        
+
    public static void main(String[] args) {
       TestNG testng = new TestNG();
       testng.addMethodSelector("org.infinispan.client.jni.hotrod.JniTest", 1);
@@ -78,14 +78,14 @@ public class JniTest implements IMethodSelector {
             // SslTest.class,                        // SSL not implemented
             // TransportObjectFactoryTest.class,     // omitting
             ExecTest.class
+            RemoteAsyncAPITest.class
       });
       testng.addListener(tr);
       testng.setGroups("unit,functional");
       testng.run();
 
       Set<String> expectedTestFailures = new TreeSet<String>(Arrays.asList( 
-            "HotRodIntegrationTest.testReplaceWithVersionWithLifespanAsync",     // async not implemented
-            "ExecTest.testLocalExecPutGetWithListener",
+            //"ExecTest.testLocalExecPutGetWithListener",
             "ClientSocketReadTimeoutTest.testPutTimeout",                        // TODO: TransportException not marshalled correctly
             "HotRodIntegrationTest.testGetWithMetadata",
             "RemoteCacheManagerTest.testStartStopAsync",

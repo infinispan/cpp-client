@@ -6,6 +6,7 @@
 %include "std_string.i"
 %include "std_map.i"
 %include "std_set.i"
+%include "std_future.i"
 %include "std_vector.i"
 %include "stdint.i"
 
@@ -50,6 +51,8 @@
 using namespace infinispan::hotrod;
 %}
 
+
+
 %template(MapType) std::map<std::string, std::string>;
 %template(SegPerServer) std::map<infinispan::hotrod::transport::InetSocketAddress, std::vector<int> >;
 
@@ -85,6 +88,7 @@ using namespace infinispan::hotrod;
 %ignore infinispan::hotrod::transport::operator<<;
 %ignore infinispan::hotrod::transport::InetSocketAddress::operator<;
 %ignore infinispan::hotrod::RemoteCache::operator=;
+
 
 %include "infinispan/hotrod/InetSocketAddress.h"
 %include "infinispan/hotrod/FailOverRequestBalancingStrategy.h"
@@ -153,17 +157,7 @@ using namespace infinispan::hotrod;
 %ignore RelayBytes::setJvm;
 %ignore RelayBytes::getBytes;
 %ignore RelayBytes::getJarray;
-
-%ignore getAsync;
-%ignore putAsync;
 %ignore goAsync;
-%ignore putAllAsync;
-%ignore replaceWithVersionAsync;
-%ignore removeWithVersionAsync;
-%ignore putIfAbsentAsync;
-%ignore clearAsync;
-%ignore removeAsync;
-%ignore replaceAsync;
 %ignore addContinuousQueryListener;
 
 //%shared_ptr(RelayShrPointer)
@@ -178,7 +172,6 @@ class RelayBytes {
     size_t getLength () const {return length; }
     jbyteArray getJarray() const { return jarray; }
     bool isNull() const { return !bytes; }
-    bool operator< (const RelayBytes &b) const { return std::memcmp(bytes, b.bytes, std::min(length, b.length))<0; }
 
   private:
     char *bytes;
@@ -186,12 +179,18 @@ class RelayBytes {
     jbyteArray jarray;
 };
 
+inline bool operator< (const RelayBytes& lhs, const RelayBytes& rhs)
+{
+  auto res = memcmp(lhs.getBytes(), rhs.getBytes(), std::min(lhs.getLength(),rhs.getLength()));
+  return (res != 0) ? res<0 : lhs.getLength()<rhs.getLength();
+}
 %}
 
 %template(RelayShrPointer) std::shared_ptr<RelayBytes>;
 %template(MetadataPairReturn) std::pair<std::shared_ptr<RelayBytes>, infinispan::hotrod::MetadataValue>;
 %template(VersionPairReturn) std::pair<std::shared_ptr<RelayBytes>, infinispan::hotrod::VersionedValue>;
 %template(MapReturn) std::map<std::shared_ptr<RelayBytes>, std::shared_ptr<RelayBytes> >;
+%template(MapArg) std::map<RelayBytes, RelayBytes >;
 %template(SetReturn) std::set<std::shared_ptr<RelayBytes> >;
 %template(SetArgs) std::set<RelayBytes>;
 %template(VectorReturn) std::vector<std::shared_ptr<RelayBytes> >;
@@ -200,10 +199,23 @@ class RelayBytes {
 %template(UCharVector) std::vector<unsigned char>;
 %template(InetSocketAddressvectorReturn) std::vector<infinispan::hotrod::transport::InetSocketAddress>;
 %ignore std::vector<infinispan::hotrod::ServerConfigurationBuilder>::vector(size_type);
-%ignore std::vector<infinispan::hotrod::ServerConfigurationBuilder>::resize; 
+%ignore std::vector<infinispan::hotrod::ServerConfigurationBuilder>::resize;
 %template(ServerConfigurationBuilderVector) std::vector<infinispan::hotrod::ServerConfigurationBuilder>;
 %template(ServerConfigurationVector) std::vector<infinispan::hotrod::ServerConfiguration>;
 %template(ServerConfigurationMap) std::map<std::string,std::vector<infinispan::hotrod::ServerConfiguration> >;
+%template(FutureRelayBytes) std::future<RelayBytes*>;
+%template(FutureBool) std::future<bool>;
+%template(FutureVoid) std::future<void>;
+
+%feature("novaluewrapper") std::future<RelayBytes>;
+%feature("novaluewrapper") std::future<RelayBytes*>;
+%feature("novaluewrapper") std::future<bool>;
+%feature("novaluewrapper") std::future<void>;
+
+%typemap(out) std::future<RelayBytes*> "$result= (jlong) new std::future< RelayBytes * >((std::future< RelayBytes * > &&)$1);";
+%typemap(out) std::future<bool> "$result= (jlong) new std::future< bool >((std::future< bool > &&)$1);";
+%typemap(out) std::future<void> "$result= (jlong) new std::future< void >((std::future< void > &&)$1);";
+
 
 %inline %{
  bool isNull(std::shared_ptr<RelayBytes> ptr) {
@@ -321,7 +333,6 @@ RemoteCache<RelayBytes, RelayBytes>* getJniRelayNamedCache(RemoteCacheManager& m
 %}
 
 
-
 %{
 
 extern "C" {
@@ -374,3 +385,9 @@ SWIGEXPORT void JNICALL Java_org_infinispan_client_hotrod_jni_HotrodJNI2_readNat
 }
 
 %}
+
+%extend infinispan::hotrod::RemoteCache<RelayBytes, RelayBytes> {
+   void dispose(std::future<bool>* p) { delete p; }
+   void dispose(std::future<RelayBytes*>* p) {  delete p->get(); delete p; }
+   void dispose(std::future<void>* p) { delete p; }
+}

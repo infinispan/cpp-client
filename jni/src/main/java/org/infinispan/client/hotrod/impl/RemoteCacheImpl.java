@@ -12,27 +12,31 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.net.SocketAddress;
 import java.util.Collection;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Map.Entry;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import javax.management.RuntimeErrorException;
-
-import org.infinispan.client.hotrod.exceptions.RemoteCacheManagerNotStartedException;
 import org.infinispan.client.hotrod.Flag;
 import org.infinispan.client.hotrod.MetadataValue;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.ServerStatistics;
 import org.infinispan.client.hotrod.VersionedValue;
-import org.infinispan.client.hotrod.jni.CacheTopologyInfo;
+import org.infinispan.client.hotrod.exceptions.RemoteCacheManagerNotStartedException;
+import org.infinispan.client.hotrod.jni.FutureBool;
+import org.infinispan.client.hotrod.jni.FutureRelayBytes;
+import org.infinispan.client.hotrod.jni.FutureVoid;
 import org.infinispan.client.hotrod.jni.Hotrod;
 import org.infinispan.client.hotrod.jni.InetSocketAddress;
 import org.infinispan.client.hotrod.jni.InetSocketAddressvectorReturn;
 import org.infinispan.client.hotrod.jni.IntegerVectorReturn;
+import org.infinispan.client.hotrod.jni.MapArg;
 import org.infinispan.client.hotrod.jni.MapReturn;
 import org.infinispan.client.hotrod.jni.MapType;
 import org.infinispan.client.hotrod.jni.MetadataPairReturn;
@@ -51,6 +55,254 @@ import org.infinispan.marshall.core.JBossMarshaller;
 public class RemoteCacheImpl<K, V> extends RemoteCacheUnsupported<K, V> {
 
     private Marshaller marshaller;
+
+
+    @Override
+    public CompletableFuture<Void> putAllAsync(Map<? extends K, ? extends V> map) {
+        CompletableFuture<Void> completableFuture = new CompletableFuture<>();
+        MapArg mapArg = new MapArg();
+        List<RelayBytes> l = new ArrayList<RelayBytes>();
+        for (K it : map.keySet()) {
+            try {
+              RelayBytes kRelay = new RelayBytes();
+                setJvmBytes(kRelay, marshaller.objectToByteBuffer(it));
+                RelayBytes vRelay = new RelayBytes();
+                setJvmBytes(vRelay, marshaller.objectToByteBuffer(map.get(it)));
+                l.add(kRelay);
+                l.add(vRelay);
+                mapArg.set(kRelay, vRelay);
+          } catch (IOException | InterruptedException e) {
+              // TODO Auto-generated catch block
+              e.printStackTrace();
+          }
+        }
+        FutureVoid putAllFuture = jniRemoteCache.putAllAsync(mapArg);
+        Executors.newCachedThreadPool().submit(() -> { putAllFuture.get();
+        completableFuture.complete(null);
+        for (RelayBytes relayBytes : l) {
+            dispose(relayBytes);
+        }
+        putAllFuture.delete();
+    });
+        return completableFuture;
+    }
+
+    @Override
+    public CompletableFuture<V> removeAsync(K k) {
+        return relayedInvokerAsync(new RelayedMethodAsync() {
+            @Override
+            public Object invoke(byte[][] bytes, RelayBytes... rbs) {
+                CompletableFuture<V> completableFuture = new CompletableFuture<>();
+                FutureRelayBytes removeFuture = jniRemoteCache.removeAsync(rbs[0]);
+                Executors.newCachedThreadPool().submit(() -> { RelayBytes rb = removeFuture.get();
+                try {
+                    byte[] jcopy = new byte[(int) rb.getLength()];
+                    readNative(rb, jcopy);
+                    V v= (V)marshaller.objectFromByteBuffer(jcopy);
+                    return completableFuture.complete(v);
+                } finally {
+                       removeFuture.delete();
+                       for (int i = 0; i < rbs.length; i++) {
+                           releaseJvmBytes(rbs[i], bytes[i]);
+                       }
+                }
+                });
+                return completableFuture;
+            }
+        }, k);
+    }
+
+    @Override
+    public CompletableFuture<Boolean> removeWithVersionAsync(K key, long version) {
+        final long v = version;
+        return relayedInvokerAsync(new RelayedMethodAsync() {
+            @Override
+            public Object invoke(byte[][] bytes, RelayBytes... rbs) {
+                CompletableFuture<Boolean> completableFuture = new CompletableFuture<>();
+                FutureBool removeFuture = jniRemoteCache.removeWithVersionAsync(rbs[0],BigInteger.valueOf(v));
+                Executors.newCachedThreadPool().submit(() -> { boolean rb = removeFuture.get();
+                try {
+                    return completableFuture.complete(rb);
+                } finally {
+                    removeFuture.delete();
+                    for (int i = 0; i < rbs.length; i++) {
+                        releaseJvmBytes(rbs[i], bytes[i]);
+                    }
+                }
+                });
+                return completableFuture;
+            }
+        }, key);
+
+    }
+
+    @Override
+    public CompletableFuture<V> replaceAsync(K k, V v) {
+        return relayedInvokerAsync(new RelayedMethodAsync() {
+            @Override
+            public Object invoke(byte[][] bytes, RelayBytes... rbs) {
+                CompletableFuture<V> completableFuture = new CompletableFuture<>();
+                FutureRelayBytes replaceFuture = jniRemoteCache.replaceAsync(rbs[0], rbs[1]);
+                Executors.newCachedThreadPool().submit(() -> { RelayBytes rb = replaceFuture.get();
+                try {
+                    if (rb!=null)
+                    {
+                        byte[] jcopy = new byte[(int) rb.getLength()];
+                        readNative(rb, jcopy);
+                        V r= (V)marshaller.objectFromByteBuffer(jcopy);
+                        dispose(rb);
+                        completableFuture.complete(r);
+                    }
+                    else
+                    {
+                        completableFuture.complete(null);
+                    }
+                } catch (ClassNotFoundException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                } finally {
+                    replaceFuture.delete();
+                    for (int i = 0; i < rbs.length; i++) {
+                        releaseJvmBytes(rbs[i], bytes[i]);
+                    }
+                }
+                });
+                return completableFuture;
+            }
+        }, k, v);
+    }
+
+    @Override
+    public CompletableFuture<Boolean> replaceWithVersionAsync(K key, V newValue, long version) {
+        // TODO Auto-generated method stub
+        return replaceWithVersionAsync(key, newValue, version, 0);
+    }
+
+    @Override
+    public CompletableFuture<Boolean> replaceWithVersionAsync(K key, V newValue, long version, int lifespanSeconds) {
+        final long l = lifespanSeconds;
+        final long v = version;
+        return relayedInvokerAsync(new RelayedMethodAsync() {
+            @Override
+            public Object invoke(byte[][] bytes, RelayBytes... rbs) {
+                CompletableFuture<Boolean> completableFuture = new CompletableFuture<>();
+                FutureBool replaceFuture = jniRemoteCache.replaceWithVersionAsync(rbs[0], rbs[1], BigInteger.valueOf(v), BigInteger.valueOf(l), BigInteger.valueOf(0));
+                Executors.newCachedThreadPool().submit(() -> { boolean rb = replaceFuture.get();
+                try {
+                    completableFuture.complete(rb);
+                } finally {
+                    replaceFuture.delete();
+                    for (int i = 0; i < rbs.length; i++) {
+                        releaseJvmBytes(rbs[i], bytes[i]);
+                    }
+                }
+                });
+                return completableFuture;
+            }
+        }, key, newValue);
+    }
+
+    @Override
+    public CompletableFuture<V> putIfAbsentAsync(K k, V v) {
+        return relayedInvokerAsync(new RelayedMethodAsync() {
+            @Override
+            public Object invoke(byte[][] bytes, RelayBytes... rbs) {
+                CompletableFuture<V> completableFuture = new CompletableFuture<>();
+                FutureRelayBytes putIfAbsentFuture = jniRemoteCache.putIfAbsentAsync(rbs[0], rbs[1]);
+                Executors.newCachedThreadPool().submit(() -> { RelayBytes rb = putIfAbsentFuture.get();
+                try {
+                    if (rb!=null)
+                    {
+                        byte[] jcopy = new byte[(int) rb.getLength()];
+                        readNative(rb, jcopy);
+                        V r= (V)marshaller.objectFromByteBuffer(jcopy);
+                        dispose(rb);
+                        completableFuture.complete(r);
+                    }
+                    else
+                    {
+                        completableFuture.complete(null);
+                    }
+                } catch (ClassNotFoundException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                } finally {
+                    putIfAbsentFuture.delete();
+                    for (int i = 0; i < rbs.length; i++) {
+                        releaseJvmBytes(rbs[i], bytes[i]);
+                    }
+                }
+                });
+                return completableFuture;
+            }
+        }, k, v);
+    }
+
+    @Override
+    public CompletableFuture<V> getAsync(K k) {
+        return relayedInvokerAsync(new RelayedMethodAsync() {
+            @Override
+            public Object invoke(byte[][] bytes, RelayBytes... rbs) {
+                CompletableFuture<V> completableFuture = new CompletableFuture<>();
+                FutureRelayBytes getFuture = jniRemoteCache.getAsync(rbs[0]);
+                Executors.newCachedThreadPool().submit(() -> { RelayBytes rb = getFuture.get();
+                try {
+                    byte[] jcopy = new byte[(int) rb.getLength()];
+                    readNative(rb, jcopy);
+                    V v= (V)marshaller.objectFromByteBuffer(jcopy);
+                    return completableFuture.complete(v);
+                } finally {
+                    dispose(rb);
+                    getFuture.delete();
+                    for (int i = 0; i < rbs.length; i++) {
+                        releaseJvmBytes(rbs[i], bytes[i]);
+                    }
+                }
+                });
+                return completableFuture;
+            }
+        }, k);
+    }
+
+    @Override
+    public CompletableFuture<V> putAsync(K k, V v) {
+        return relayedInvokerAsync(new RelayedMethodAsync() {
+            @Override
+            public Object invoke(byte[][] bytes, RelayBytes... rbs) {
+                CompletableFuture<V> completableFuture = new CompletableFuture<>();
+                FutureRelayBytes putFuture = jniRemoteCache.putAsync(rbs[0], rbs[1]);
+                Executors.newCachedThreadPool().submit(() -> { RelayBytes rb = putFuture.get();
+                try {
+                    if (rb!=null)
+                    {
+                        byte[] jcopy = new byte[(int) rb.getLength()];
+                        readNative(rb, jcopy);
+                        V r= (V)marshaller.objectFromByteBuffer(jcopy);
+                        dispose(rb);
+                        return completableFuture.complete(r);
+                    }
+                    else
+                    {
+                        return completableFuture.complete(null);
+                    }
+                } finally {
+                    putFuture.delete();
+                    for (int i = 0; i < rbs.length; i++) {
+                        releaseJvmBytes(rbs[i], bytes[i]);
+                    }
+                }
+                });
+                return completableFuture;
+            }
+        }, k, v);
+    }
+
     private RemoteCache_jb_jb jniRemoteCache;
     private RemoteCacheManager remoteCacheManager;
 
@@ -258,28 +510,26 @@ public class RemoteCacheImpl<K, V> extends RemoteCacheUnsupported<K, V> {
     }
 
     @Override
-	public org.infinispan.client.hotrod.CacheTopologyInfo getCacheTopologyInfo() {
-    	org.infinispan.client.hotrod.jni.CacheTopologyInfo jCti= jniRemoteCache.getCacheTopologyInfo();
-     	InetSocketAddressvectorReturn jIsAvR = Hotrod.keySet(jCti.getSegmentPerServer());
-     	long s = jIsAvR.size();
-     	Map<SocketAddress,Set<Integer> > m = new HashMap<SocketAddress, Set<Integer> >();
-     	for(int i=0; i<s; i++)
-     	{
-     		InetSocketAddress isa = jIsAvR.get(i);
-     		IntegerVectorReturn t= jCti.getSegmentPerServer().get(isa);
-     		Set<Integer> segmentSet = new HashSet<Integer>();
-     		for (int j=0; j<t.size(); j++) {
+    public org.infinispan.client.hotrod.CacheTopologyInfo getCacheTopologyInfo() {
+        org.infinispan.client.hotrod.jni.CacheTopologyInfo jCti= jniRemoteCache.getCacheTopologyInfo();
+         InetSocketAddressvectorReturn jIsAvR = Hotrod.keySet(jCti.getSegmentPerServer());
+         long s = jIsAvR.size();
+         Map<SocketAddress,Set<Integer> > m = new HashMap<SocketAddress, Set<Integer> >();
+         for(int i=0; i<s; i++)
+         {
+             InetSocketAddress isa = jIsAvR.get(i);
+             IntegerVectorReturn t= jCti.getSegmentPerServer().get(isa);
+             Set<Integer> segmentSet = new HashSet<Integer>();
+             for (int j=0; j<t.size(); j++) {
                   segmentSet.add(t.get(j));
-     		}
-     		SocketAddress sock = new java.net.InetSocketAddress(isa.getHostname(), isa.getPort());
-     		m.put(sock, segmentSet);
-     	}
-     	    
-     		return new org.infinispan.client.hotrod.impl.CacheTopologyInfoImpl(m, jCti.getNumSegment(), jCti.getTopologyId());
+             }
+             SocketAddress sock = new java.net.InetSocketAddress(isa.getHostname(), isa.getPort());
+             m.put(sock, segmentSet);
+         }
+         return new org.infinispan.client.hotrod.impl.CacheTopologyInfoImpl(m, jCti.getNumSegment(), jCti.getTopologyId());
     }
-    
-    
-	@Override
+
+    @Override
     public V putIfAbsent(K k, V v) {
         return relayedInvoker(new RelayedMethod() {
             @Override
@@ -333,9 +583,21 @@ public class RemoteCacheImpl<K, V> extends RemoteCacheUnsupported<K, V> {
                "Cannot perform operations on a cache associated with an unstarted RemoteCacheManager. "
                      + "Use RemoteCacheManager.start before using the remote cache.");
       }
-      for (Entry<? extends K, ? extends V> entry : map.entrySet()) {
-         put(entry.getKey(), entry.getValue(), lifespan, lifespanTimeUnit, maxIdle, maxIdleUnit);
-      }
+      MapArg mapArg = new MapArg();
+      for (K it : map.keySet()) {
+          try {
+            RelayBytes kRelay = new RelayBytes();
+              setJvmBytes(kRelay, marshaller.objectToByteBuffer(it));
+
+              RelayBytes vRelay = new RelayBytes();
+              setJvmBytes(vRelay, marshaller.objectToByteBuffer(map.get(it)));
+              mapArg.set(kRelay, vRelay);
+        } catch (IOException | InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+      jniRemoteCache.putAll(mapArg);
     }
 
     @Override
@@ -610,8 +872,43 @@ public class RemoteCacheImpl<K, V> extends RemoteCacheUnsupported<K, V> {
         }
     }
 
+    private <R> R relayedInvokerAsync(RelayedMethodAsync m, Object... o) {
+        RelayBytes rb[] = new RelayBytes[o.length];
+        byte bytes[][] = new byte[o.length][];
+        try {
+            for (int i = 0; i < o.length; i++) {
+                rb[i] = new RelayBytes();
+                bytes[i] = marshaller.objectToByteBuffer(o[i]);
+                setJvmBytes(rb[i], bytes[i]);
+            }
+            Object ret = m.invoke(bytes, rb);
+            if (ret == null) {
+                return null;
+            } else if (ret instanceof RelayBytes) {
+                RelayBytes retrb = (RelayBytes) ret;
+                byte[] jcopy = new byte[(int) retrb.getLength()];
+                readNative(retrb, jcopy);
+                try {
+                    return (R) marshaller.objectFromByteBuffer(jcopy);
+                } finally {
+                    dispose(retrb);
+                }
+            } else {
+                return (R) ret;
+            }
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
+    }
+
     public interface RelayedMethod {
         Object invoke(RelayBytes... rbs);
+    }
+
+    public interface RelayedMethodAsync {
+        Object invoke(byte[][] bytes, RelayBytes... rbs);
     }
 
     @Override
