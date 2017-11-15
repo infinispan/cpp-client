@@ -24,8 +24,10 @@
 #include <future>
 #include <iterator>
 
-namespace infinispan {
-namespace hotrod {
+namespace infinispan
+{
+namespace hotrod
+{
 /**
  * Provides remote reference to a cache residing on a Hot Rod server/cluster.
  *
@@ -56,30 +58,54 @@ namespace hotrod {
  * This is in order to avoid fetching a possibly large object from the remote server, which might not be needed.</p>
  *
  */
-template <class K, class V> class RemoteCache : private RemoteCacheBase
+template<class K, class V> class RemoteCache: private RemoteCacheBase
 {
-  private:
+private:
 #ifndef SWIG      // Let SWIG ignore this method
-    	template<typename Function>
-    		inline std::future<typename std::result_of<Function()>::type> goAsync(Function&& f,
-		        std::function<typename std::result_of<Function()>::type (typename std::result_of<Function()>::type)> success, std::function<typename std::result_of<Function()>::type (std::exception&)> fail)
-				{
-    				auto fq= [=]{ try{ return success==0 ? f() : success(f());}
-      	                catch (std::exception& ex)
-      	                              {if (fail!=0){return fail(ex);}
-      	                              else {throw ex;}}
-    	              	  };
-    				return std::async(fq);
-				}
+    template<typename Function>
+    inline std::future<typename std::result_of<Function()>::type> goAsync(Function&& f,
+            std::function<typename std::result_of<Function()>::type(typename std::result_of<Function()>::type)> success,
+            std::function<typename std::result_of<Function()>::type(std::exception&)> fail)
+    {
+        auto fq = [=]
+        {   try
+            {   return success==0 ? f() : success(f());}
+            catch (std::exception& ex)
+            {   if (fail!=0)
+                {   return fail(ex);}
+                else
+                {   throw ex;}}
+        };
+        return std::async(fq);
+    }
+
+    template<typename Function>
+    inline std::future<void> goAsync(Function&& f, std::function<void()> success,
+            std::function<void(std::exception&)> fail)
+    {
+        auto fq = [=]
+        {   try
+            {   if (success==0) f();
+                else success();}
+            catch (std::exception& ex)
+            {   if (fail!=0)
+                {   fail(ex);}
+                else
+                {   throw ex;}}
+        };
+        return std::async(fq);
+    }
+
 #endif
 
-  public:
+public:
     /**
      * Retrieves the name of the cache
      *
      * \return the name of the cache
      */
-    std::string getName() {
+    std::string getName()
+    {
         return std::string(base_getName());
     }
 
@@ -88,7 +114,8 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      *
      * \return a version string
      */
-    std::string getVersion() {
+    std::string getVersion()
+    {
         return Version::getVersionCString();
     }
 
@@ -97,7 +124,8 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      *
      * \return protocol version as string
      */
-    std::string getProtocolVersion() {
+    std::string getProtocolVersion()
+    {
         return Version::getProtocolVersionCString();
     }
 
@@ -108,7 +136,8 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      * \return the value to which the specified key is mapped, or NULL if this map contains no mapping for the key
      *
      */
-    V* get(const K& key) {
+    V* get(const K& key)
+    {
         return (V *) base_get(&key);
     }
 
@@ -119,16 +148,17 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      * \return a map containing the key, value pairs
      *
      */
-    std::map<std::shared_ptr<K>,std::shared_ptr<V> > getAll(const std::set<K>& keySet) {
+    std::map<std::shared_ptr<K>, std::shared_ptr<V> > getAll(const std::set<K>& keySet)
+    {
         std::set<std::vector<char> > keySetMarshalled;
-        for(auto item = keySet.begin(); item != keySet.end(); item++)
+        for (auto item = keySet.begin(); item != keySet.end(); item++)
         {
             std::vector<char> v;
             this->keyMarshaller->marshall(*item, v);
             keySetMarshalled.insert(v);
         }
-        auto marshalledResult =base_getAll(keySetMarshalled);
-        std::map<std::shared_ptr<K>,std::shared_ptr<V> > result;
+        auto marshalledResult = base_getAll(keySetMarshalled);
+        std::map<std::shared_ptr<K>, std::shared_ptr<V> > result;
         for (auto item : marshalledResult)
         {
             std::shared_ptr<K> rk(this->keyMarshaller->unmarshall(item.first));
@@ -138,21 +168,23 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
         return result;
     }
 
-
     /**
      * Asynchronous version of get. Executes function f when get() returns
      *
-     *	See the synchronous doc for parameters not explained here
+     *    See the synchronous doc for parameters not explained here
      * \param success function to be executed on success
      * \param fail function to be executed if exceptions occur
      * \return a future that will contain a pointer to the requested value or null
      *
      */
-     std::future<V*> getAsync(const K& key, std::function<V* (V*)> success=nullptr, std::function<V* (std::exception&)> fail=nullptr) {
-    	 auto pKey=&key;
-    	 auto f= [=] { return this->get(*pKey); };
-    	 return goAsync(f,success,fail);
-     }
+    std::future<V*> getAsync(const K& key, std::function<V* (V*)> success = nullptr,
+            std::function<V* (std::exception&)> fail = nullptr)
+    {
+        auto pKey = &key;
+        auto f = [=]
+        {   return this->get(*pKey);};
+        return goAsync(f, success, fail);
+    }
 
     /**
      * <p>Associates the specified value with the specified key in this cache.</p>
@@ -174,7 +206,8 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      * \return the previous value associated with key, or NULL if there was no mapping for key.
      *
      */
-    V* put(const K& key, const V& val, uint64_t lifespan = 0, uint64_t maxIdle = 0) {
+    V* put(const K& key, const V& val, uint64_t lifespan = 0, uint64_t maxIdle = 0)
+    {
         return put(key, val, lifespan, SECONDS, maxIdle, SECONDS);
     }
     /**
@@ -196,7 +229,8 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      * \return the previous value associated with key, or NULL if there was no mapping for key.
      *
      */
-    V* put(const K& key, const V& val, uint64_t lifespan, TimeUnit lifespanUnit) {
+    V* put(const K& key, const V& val, uint64_t lifespan, TimeUnit lifespanUnit)
+    {
         return put(key, val, lifespan, lifespanUnit, 0, SECONDS);
     }
 
@@ -222,50 +256,61 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      * \return the previous value associated with key, or NULL if there was no mapping for key.
      *
      */
-    V* put(const K& key, const V& val, uint64_t lifespan, TimeUnit lifespanUnit, uint64_t maxIdle, TimeUnit maxIdleUnit) {
+    V* put(const K& key, const V& val, uint64_t lifespan, TimeUnit lifespanUnit, uint64_t maxIdle, TimeUnit maxIdleUnit)
+    {
         return (V *) base_put(&key, &val, toSeconds(lifespan, lifespanUnit), toSeconds(maxIdle, maxIdleUnit));
     }
 
-     /**
-     * Asynchronous version of put()
-     *	See the synchronous doc for parameters not explained here
-     * \param success function to be executed on success
-     * \param fail function to be executed if exceptions occur
-     * \return a future containing a pointer to the previous value stored in the cache for the given key or null
-     *
-     */
-     std::future<V*> putAsync(const K& key, const V& val, uint64_t lifespan = 0, uint64_t maxIdle = 0, std::function<V* (V*)> success=nullptr, std::function<V* (std::exception&)> fail=nullptr) {
-    		auto pKey=&key, pVal=&val;
-        	auto f=[=] { return this->put(*pKey,*pVal,lifespan,maxIdle); };
-        	return goAsync(f,success,fail);
-     }
-
     /**
      * Asynchronous version of put()
-     *	See the synchronous doc for parameters not explained here
+     *    See the synchronous doc for parameters not explained here
      * \param success function to be executed on success
      * \param fail function to be executed if exceptions occur
      * \return a future containing a pointer to the previous value stored in the cache for the given key or null
      *
      */
-    std::future<V*> putAsync(const K& key, const V& val, uint64_t lifespan, TimeUnit lifespanUnit, std::function<V* (V*)> success=nullptr, std::function<V* (std::exception&)> fail=nullptr) {
-    	auto pKey=&key, pVal=&val;
-    	auto f= [=] { return this->put(*pKey,*pVal,lifespan,lifespanUnit); };
-   	    return goAsync(f,success,fail);
+    std::future<V*> putAsync(const K& key, const V& val, uint64_t lifespan = 0, uint64_t maxIdle = 0,
+            std::function<V* (V*)> success = nullptr, std::function<V* (std::exception&)> fail = nullptr)
+    {
+        auto pKey = &key, pVal = &val;
+        auto f = [=]
+        {   return this->put(*pKey,*pVal,lifespan,maxIdle);};
+        return goAsync(f, success, fail);
     }
 
     /**
      * Asynchronous version of put()
-     *	See the synchronous doc for parameters not explained here
+     *    See the synchronous doc for parameters not explained here
      * \param success function to be executed on success
      * \param fail function to be executed if exceptions occur
      * \return a future containing a pointer to the previous value stored in the cache for the given key or null
      *
      */
-    std::future<V*> putAsync(const K& key, const V& val, uint64_t lifespan, TimeUnit lifespanUnit, uint64_t maxIdle, TimeUnit maxIdleUnit, std::function<V* (V*)> success=nullptr, std::function<V* (std::exception&)> fail=nullptr) {
-		auto pKey=&key, pVal=&val;
-    	auto f= [=] { this->put(*pKey,*pVal,lifespan, lifespanUnit,maxIdle,maxIdleUnit); };
-    	return goAsync(f,success,fail);
+    std::future<V*> putAsync(const K& key, const V& val, uint64_t lifespan, TimeUnit lifespanUnit,
+            std::function<V* (V*)> success = nullptr, std::function<V* (std::exception&)> fail = nullptr)
+    {
+        auto pKey = &key, pVal = &val;
+        auto f = [=]
+        {   return this->put(*pKey,*pVal,lifespan,lifespanUnit);};
+        return goAsync(f, success, fail);
+    }
+
+    /**
+     * Asynchronous version of put()
+     *    See the synchronous doc for parameters not explained here
+     * \param success function to be executed on success
+     * \param fail function to be executed if exceptions occur
+     * \return a future containing a pointer to the previous value stored in the cache for the given key or null
+     *
+     */
+    std::future<V*> putAsync(const K& key, const V& val, uint64_t lifespan, TimeUnit lifespanUnit, uint64_t maxIdle,
+            TimeUnit maxIdleUnit, std::function<V* (V*)> success = nullptr, std::function<V* (std::exception&)> fail =
+                    nullptr)
+    {
+        auto pKey = &key, pVal = &val;
+        auto f = [=]
+        {   return this->put(*pKey,*pVal,lifespan, lifespanUnit,maxIdle,maxIdleUnit);};
+        return goAsync(f, success, fail);
     }
 
     /**
@@ -279,7 +324,8 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      *                        expired
      * \return the previous value associated with the specified key, or NULL if there was no mapping for the key.
      */
-    V* putIfAbsent(const K& key, const V& val, uint64_t lifespan = 0, uint64_t maxIdle = 0) {
+    V* putIfAbsent(const K& key, const V& val, uint64_t lifespan = 0, uint64_t maxIdle = 0)
+    {
         return putIfAbsent(key, val, lifespan, SECONDS, maxIdle, SECONDS);
     }
     /**
@@ -292,7 +338,8 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      * \param lifespanUnit  unit of measurement for the lifespan
      * \return the previous value associated with the specified key, or NULL if there was no mapping for the key.
      */
-    V* putIfAbsent(const K& key, const V& val, uint64_t lifespan, TimeUnit lifespanUnit) {
+    V* putIfAbsent(const K& key, const V& val, uint64_t lifespan, TimeUnit lifespanUnit)
+    {
         return putIfAbsent(key, val, lifespan, lifespanUnit, 0, SECONDS);
     }
     /**
@@ -308,49 +355,60 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      * \param maxIdleUnit  time unit for max idle time
      * \return the previous value associated with the specified key, or NULL if there was no mapping for the key.
      */
-    V* putIfAbsent(const K& key, const V& val, uint64_t lifespan, TimeUnit lifespanUnit, uint64_t maxIdle, TimeUnit maxIdleUnit) {
-        return (V *)base_putIfAbsent(&key, &val, toSeconds(lifespan, lifespanUnit), toSeconds(maxIdle, maxIdleUnit));
+    V* putIfAbsent(const K& key, const V& val, uint64_t lifespan, TimeUnit lifespanUnit, uint64_t maxIdle,
+            TimeUnit maxIdleUnit)
+    {
+        return (V *) base_putIfAbsent(&key, &val, toSeconds(lifespan, lifespanUnit), toSeconds(maxIdle, maxIdleUnit));
     }
     /**
      * Asynchronous version of putIfAbsentAsync()
-     *	See the synchronous doc for parameters not explained here
+     *    See the synchronous doc for parameters not explained here
      * \param success function to be executed on success
      * \param fail function to be executed if exceptions occur
      * \return a future containing a pointer to the previous value stored in the cache for the given key or null
      *
      */
-    std::future<V*>  putIfAbsentAsync(const K& key, const V& val, uint64_t lifespan = 0, uint64_t maxIdle = 0, std::function<V* (V*)> success=nullptr, std::function<V* (std::exception&)> fail=nullptr) {
-		auto pKey=&key, pVal=&val;
-    	auto f= [=] { this->putIfAbsent(*pKey,*pVal, lifespan, maxIdle); };
-    	return goAsync(f,success,fail);
+    std::future<V*> putIfAbsentAsync(const K& key, const V& val, uint64_t lifespan = 0, uint64_t maxIdle = 0,
+            std::function<V* (V*)> success = nullptr, std::function<V* (std::exception&)> fail = nullptr)
+    {
+        auto pKey = &key, pVal = &val;
+        auto f = [=]
+        {   return this->putIfAbsent(*pKey,*pVal, lifespan, maxIdle);};
+        return goAsync(f, success, fail);
     }
     /**
      * Asynchronous version of putIfAbsentAsync()
-     *	See the synchronous doc for parameters not explained here
+     *    See the synchronous doc for parameters not explained here
      * \param success function to be executed on success
      * \param fail function to be executed if exceptions occur
      * \return a future containing a pointer to the previous value stored in the cache for the given key or null
      *
      */
-    std::future<V*>  putIfAbsentAsync(const K& key, const V& val, uint64_t lifespan, TimeUnit lifespanUnit, std::function<V* (V*)> success=nullptr, std::function<V* (std::exception&)> fail=nullptr) {
-		auto pKey=&key, pVal=&val;
-    	auto f= [=] { this->putIfAbsent(*pKey,*pVal, lifespan, lifespanUnit, 0, SECONDS); };
-    	return goAsync(f,success,fail);
+    std::future<V*> putIfAbsentAsync(const K& key, const V& val, uint64_t lifespan, TimeUnit lifespanUnit,
+            std::function<V* (V*)> success = nullptr, std::function<V* (std::exception&)> fail = nullptr)
+    {
+        auto pKey = &key, pVal = &val;
+        auto f = [=]
+        {   return this->putIfAbsent(*pKey,*pVal, lifespan, lifespanUnit, 0, SECONDS);};
+        return goAsync(f, success, fail);
     }
     /**
      * Asynchronous version of putIfAbsentAsync()
-     *	See the synchronous doc for parameters not explained here
+     *    See the synchronous doc for parameters not explained here
      * \param success function to be executed on success
      * \param fail function to be executed if exceptions occur
      * \return a future containing a pointer to the previous value stored in the cache for the given key or null
      *
      */
-    std::future<V*>  putIfAbsentAsync(const K& key, const V& val, uint64_t lifespan, TimeUnit lifespanUnit, uint64_t maxIdle, TimeUnit maxIdleUnit, std::function<V* (V*)> success=nullptr, std::function<V* (std::exception&)> fail=nullptr) {
-		auto pKey=&key, pVal=&val;
-    	auto f= [=] { this->putIfAbsent(*pKey,*pVal, lifespan, lifespanUnit, maxIdle, maxIdleUnit); };
-    	return goAsync(f,success,fail);
+    std::future<V*> putIfAbsentAsync(const K& key, const V& val, uint64_t lifespan, TimeUnit lifespanUnit,
+            uint64_t maxIdle, TimeUnit maxIdleUnit, std::function<V* (V*)> success = nullptr,
+            std::function<V* (std::exception&)> fail = nullptr)
+    {
+        auto pKey = &key, pVal = &val;
+        auto f = [=]
+        {   return this->putIfAbsent(*pKey,*pVal, lifespan, lifespanUnit, maxIdle, maxIdleUnit);};
+        return goAsync(f, success, fail);
     }
-
 
     /**
      * Copies all of the mappings from the specified map to this cache. The effect of this call is equivalent to that of
@@ -362,7 +420,8 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      * \param maxIdle  the maximum amount of time this key is allowed to be idle for before it is considered as
      *                        expired
      */
-    void putAll(const std::map<K, V>& map, uint64_t lifespan = 0, uint64_t maxIdle = 0) {
+    void putAll(const std::map<K, V>& map, uint64_t lifespan = 0, uint64_t maxIdle = 0)
+    {
         putAll(map, lifespan, SECONDS, maxIdle, SECONDS);
     }
 
@@ -376,7 +435,8 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      * \param lifespanUnit  unit of measurement for the lifespan
      *
      */
-    void putAll(const std::map<K, V>& map, uint64_t lifespan, TimeUnit lifespanUnit) {
+    void putAll(const std::map<K, V>& map, uint64_t lifespan, TimeUnit lifespanUnit)
+    {
         putAll(map, lifespan, lifespanUnit, 0, SECONDS);
     }
 
@@ -393,55 +453,68 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      * \param maxIdleUnit  time unit for max idle time
      *
      */
-    void putAll(const std::map<K, V>& map, uint64_t lifespan, TimeUnit lifespanUnit, uint64_t maxIdle, TimeUnit maxIdleUnit) {
+    void putAll(const std::map<K, V>& map, uint64_t lifespan, TimeUnit lifespanUnit, uint64_t maxIdle,
+            TimeUnit maxIdleUnit)
+    {
         uint64_t lifespanMillis = toSeconds(lifespan, lifespanUnit);
         uint64_t maxIdleMillis = toSeconds(maxIdle, maxIdleUnit);
 
-        for (typename std::map<K, V>::const_iterator it = map.begin(); it != map.end(); ++it) {
+        for (typename std::map<K, V>::const_iterator it = map.begin(); it != map.end(); ++it)
+        {
             put(it->first, it->second, lifespanMillis, maxIdleMillis);
         }
     }
 
     /**
      * Asynchronous version of putAll()
-     *	See the synchronous doc for parameters not explained here
+     *    See the synchronous doc for parameters not explained here
      * \param success function to be executed on success
      * \param fail function to be executed if exceptions occur
      * \return a future containing a pointer to the previous value stored in the cache for the given key or null
      *
      */
-    std::future<void> putAllAsync(const std::map<K, V>& map, uint64_t lifespan = 0, uint64_t maxIdle = 0, std::function<V* (V*)> success=nullptr, std::function<void (std::exception&)> fail=nullptr) {
-    	auto pMap = &pMap;
-    	auto f = [=] { this->putAll(*pMap,lifespan, maxIdle); };
-    	return goAsync(f,success,fail);
+    std::future<void> putAllAsync(const std::map<K, V>& map, uint64_t lifespan = 0, uint64_t maxIdle = 0,
+            std::function<void()> success = nullptr, std::function<void(std::exception&)> fail = nullptr)
+    {
+        auto pMap = map;
+        auto f = [=]
+        {   return this->putAll(pMap, lifespan, maxIdle);};
+        return goAsync(f, success, fail);
     }
 
     /**
      * Asynchronous version of putAll()
-     *	See the synchronous doc for parameters not explained here
+     *    See the synchronous doc for parameters not explained here
      * \param success function to be executed on success
      * \param fail function to be executed if exceptions occur
      * \return a future containing a pointer to the previous value stored in the cache for the given key or null
      *
      */
-    std::future<void> putAllAsync(const std::map<K, V>& map, uint64_t lifespan, TimeUnit lifespanUnit, std::function<V* (V*)> success=nullptr, std::function<void (std::exception&)> fail=nullptr) {
-    	auto pMap = &pMap;
-    	auto f = [=] { this->putAll(*pMap,lifespan, lifespanUnit); };
-    	return goAsync(f,success,fail);
+    std::future<void> putAllAsync(const std::map<K, V>& map, uint64_t lifespan, TimeUnit lifespanUnit,
+            std::function<void(void)> success = nullptr, std::function<void(std::exception&)> fail = nullptr)
+    {
+        auto pMap = map;
+        auto f = [=]
+        {   this->putAll(pMap, lifespan, lifespanUnit);};
+        return goAsync(f, success, fail);
     }
 
     /**
      * Asynchronous version of putAll()
-     *	See the synchronous doc for parameters not explained here
+     *    See the synchronous doc for parameters not explained here
      * \param success function to be executed on success
      * \param fail function to be executed if exceptions occur
      * \return a future containing a pointer to the previous value stored in the cache for the given key or null
      *
      */
-    std::future<void> putAllAsync(const std::map<K, V>& map, uint64_t lifespan, TimeUnit lifespanUnit, uint64_t maxIdle, TimeUnit maxIdleUnit, std::function<V* (V*)> success=nullptr, std::function<void (std::exception&)> fail=nullptr) {
-    	auto pMap = &pMap;
-    	auto f = [=] { this->putAll(*pMap,lifespan, lifespanUnit, maxIdle, maxIdleUnit); };
-    	return goAsync(f,success,fail);
+    std::future<void> putAllAsync(const std::map<K, V>& map, uint64_t lifespan, TimeUnit lifespanUnit, uint64_t maxIdle,
+            TimeUnit maxIdleUnit, std::function<void(void)> success = nullptr,
+            std::function<void(std::exception&)> fail = nullptr)
+    {
+        auto pMap = &map;
+        auto f = [=]
+        {   this->putAll(*pMap,lifespan, lifespanUnit, maxIdle, maxIdleUnit);};
+        return goAsync(f, success, fail);
     }
 
     /**
@@ -455,7 +528,8 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      *
      * \return the previous value associated with the specified key, or NULL if there was no mapping for the key.
      */
-    V* replace(const K& key, const V& val, uint64_t lifespan = 0, uint64_t maxIdle = 0) {
+    V* replace(const K& key, const V& val, uint64_t lifespan = 0, uint64_t maxIdle = 0)
+    {
         return replace(key, val, lifespan, SECONDS, maxIdle, SECONDS);
     }
     /**
@@ -469,7 +543,8 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      *
      * \return the previous value associated with the specified key, or NULL if there was no mapping for the key.
      */
-    V* replace(const K& key, const V& val, uint64_t lifespan, TimeUnit lifespanUnit) {
+    V* replace(const K& key, const V& val, uint64_t lifespan, TimeUnit lifespanUnit)
+    {
         return replace(key, val, lifespan, lifespanUnit, 0, SECONDS);
     }
     /**
@@ -485,7 +560,9 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      *
      * \return the previous value associated with the specified key, or NULL if there was no mapping for the key.
      */
-    V* replace(const K& key, const V& val, uint64_t lifespan, TimeUnit lifespanUnit, uint64_t maxIdle, TimeUnit maxIdleUnit) {
+    V* replace(const K& key, const V& val, uint64_t lifespan, TimeUnit lifespanUnit, uint64_t maxIdle,
+            TimeUnit maxIdleUnit)
+    {
         return (V *) base_replace(&key, &val, toSeconds(lifespan, lifespanUnit), toSeconds(maxIdle, maxIdleUnit));
     }
     /**
@@ -500,7 +577,8 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      *
      * \return the previous value associated with the specified key, or NULL if there was no mapping for the key.
      */
-    V* replace(const K& key, const V& oldVal, const V& val, uint64_t lifespan = 0, uint64_t maxIdle = 0) {
+    V* replace(const K& key, const V& oldVal, const V& val, uint64_t lifespan = 0, uint64_t maxIdle = 0)
+    {
         return replace(key, oldVal, val, lifespan, SECONDS, maxIdle, SECONDS);
     }
     /**
@@ -514,7 +592,8 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      *
      * \return the previous value associated with the specified key, or NULL if there was no mapping for the key.
      */
-    V* replace(const K& key, const V& oldVal, const V& val, uint64_t lifespan, TimeUnit lifespanUnit) {
+    V* replace(const K& key, const V& oldVal, const V& val, uint64_t lifespan, TimeUnit lifespanUnit)
+    {
         return replace(key, oldVal, val, lifespan, lifespanUnit, 0, SECONDS);
     }
     /**
@@ -530,111 +609,130 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      * \param maxIdleUnit  time unit for max idle time
      * \return the previous value associated with the specified key, or NULL if there was no mapping for the key.
      */
-    V* replace(const K& key, const V& oldVal, const V& val, uint64_t lifespan, TimeUnit lifespanUnit, uint64_t maxIdle, TimeUnit maxIdleUnit) {
+    V* replace(const K& key, const V& oldVal, const V& val, uint64_t lifespan, TimeUnit lifespanUnit, uint64_t maxIdle,
+            TimeUnit maxIdleUnit)
+    {
         throw UnsupportedOperationException();
     }
 
     /**
      * Asynchronous version of replace()
-     *	See the synchronous doc for parameters not explained here
+     *    See the synchronous doc for parameters not explained here
      * \param success function to be executed on success
      * \param fail function to be executed if exceptions occur
      * \return a future containing a pointer to the previous value stored in the cache for the given key or null
      *
      */
-    std::future<V*> replaceAsync(const K& key, const V& val, uint64_t lifespan = 0, uint64_t maxIdle = 0, std::function<V* (V*)> success=nullptr, std::function<void (std::exception&)> fail=nullptr) {
-		auto pKey=&key, pVal=&val;
-    	auto f= [=] { this->replace(*pKey, *pVal, lifespan, SECONDS, maxIdle, SECONDS); };
-    	return goAsync(f,success,fail);
+    std::future<V*> replaceAsync(const K& key, const V& val, uint64_t lifespan = 0, uint64_t maxIdle = 0,
+            std::function<V* (V*)> success = nullptr, std::function<V* (std::exception&)> fail = nullptr)
+    {
+        auto pKey = &key, pVal = &val;
+        auto f = [=]
+        {   return this->replace(*pKey, *pVal, lifespan, SECONDS, maxIdle, SECONDS);};
+        return goAsync(f, success, fail);
     }
 
     /**
      * Asynchronous version of replace()
-     *	See the synchronous doc for parameters not explained here
+     *    See the synchronous doc for parameters not explained here
      * \param success function to be executed on success
      * \param fail function to be executed if exceptions occur
      * \return a future containing a pointer to the previous value stored in the cache for the given key or null
      *
      */
-    std::future<V*> replaceAsync(const K& key, const V& val, uint64_t lifespan, TimeUnit lifespanUnit, std::function<V* (V*)> success=nullptr, std::function<void (std::exception&)> fail=nullptr) {
-		auto pKey=&key, pVal=&val;
-    	auto f= [=] { this->replace(*pKey, *pVal, lifespan, lifespanUnit, 0, SECONDS); };
-    	return goAsync(f,success,fail);
+    std::future<V*> replaceAsync(const K& key, const V& val, uint64_t lifespan, TimeUnit lifespanUnit,
+            std::function<V* (V*)> success = nullptr, std::function<V* (std::exception&)> fail = nullptr)
+    {
+        auto pKey = &key, pVal = &val;
+        auto f = [=]
+        {   return this->replace(*pKey, *pVal, lifespan, lifespanUnit, 0, SECONDS);};
+        return goAsync(f, success, fail);
     }
 
     /**
      * Asynchronous version of replace()
-     *	See the synchronous doc for parameters not explained here
+     *    See the synchronous doc for parameters not explained here
      * \param success function to be executed on success
      * \param fail function to be executed if exceptions occur
      * \return a future containing a pointer to the previous value stored in the cache for the given key or null
      *
      */
-    std::future<V*> replaceAsync(const K& key, const V& val, uint64_t lifespan, TimeUnit lifespanUnit, uint64_t maxIdle, TimeUnit maxIdleUnit, std::function<V* (V*)> success=nullptr, std::function<void (std::exception&)> fail=nullptr) {
-		auto pKey=&key, pVal=&val;
-    	auto f= [=] { this->replace(*pKey, *pVal, lifespan, lifespanUnit, maxIdle, maxIdleUnit); };
-    	return goAsync(f,success,fail);
+    std::future<V*> replaceAsync(const K& key, const V& val, uint64_t lifespan, TimeUnit lifespanUnit, uint64_t maxIdle,
+            TimeUnit maxIdleUnit, std::function<V* (V*)> success = nullptr, std::function<V* (std::exception&)> fail =
+                    nullptr)
+    {
+        auto pKey = &key, pVal = &val;
+        auto f = [=]
+        {   return this->replace(*pKey, *pVal, lifespan, lifespanUnit, maxIdle, maxIdleUnit);};
+        return goAsync(f, success, fail);
     }
 
     /**
      * Asynchronous version of replace()
-     *	See the synchronous doc for parameters not explained here
+     *    See the synchronous doc for parameters not explained here
      * \param success function to be executed on success
      * \param fail function to be executed if exceptions occur
      * \return a future containing a pointer to the previous value stored in the cache for the given key or null
      *
      */
-    std::future<V*> replaceAsync(const K& key, const V& oldVal, const V& val, uint64_t lifespan = 0, uint64_t maxIdle = 0, std::function<V* (V*)> success=nullptr, std::function<void (std::exception&)> fail=nullptr) {
-		auto pKey=&key, pVal=&val, pOldVal=&oldVal;
-    	auto f= [=] { this->replace(*pKey, *oldVal, *pVal, lifespan, SECONDS, maxIdle, SECONDS); };
-    	return goAsync(f,success,fail);
+    std::future<V*> replaceAsync(const K& key, const V& oldVal, const V& val, uint64_t lifespan = 0, uint64_t maxIdle =
+            0, std::function<V* (V*)> success = nullptr, std::function<V* (std::exception&)> fail = nullptr)
+    {
+        auto f = [=]
+        {   return this->replace(key, oldVal, val, lifespan, SECONDS, maxIdle, SECONDS);};
+        return goAsync(f, success, fail);
     }
 
     /**
      * Asynchronous version of replace()
-     *	See the synchronous doc for parameters not explained here
+     *    See the synchronous doc for parameters not explained here
      * \param success function to be executed on success
      * \param fail function to be executed if exceptions occur
      * \return a future containing a pointer to the previous value stored in the cache for the given key or null
      *
      */
-    std::future<V*> replaceAsync(const K& key, const V& oldVal, const V& val, uint64_t lifespan, TimeUnit lifespanUnit, std::function<V* (V*)> success=nullptr, std::function<void (std::exception&)> fail=nullptr) {
-		auto pKey=&key, pVal=&val, pOldVal=&oldVal;
-    	auto f= [=] { this->replace(*pKey, *oldVal, *pVal, lifespan, lifespanUnit, 0, SECONDS); };
-    	return goAsync(f,success,fail);
+    std::future<V*> replaceAsync(const K& key, const V& oldVal, const V& val, uint64_t lifespan, TimeUnit lifespanUnit,
+            std::function<V* (V*)> success = nullptr, std::function<V* (std::exception&)> fail = nullptr)
+    {
+        auto f = [=]
+        {   return this->replace(key, oldVal, val, lifespan, lifespanUnit, 0, SECONDS);};
+        return goAsync(f, success, fail);
     }
 
-
     /**
-      * Removes key/value pair from the cache given a key. Optionally return a value stored
-      * under the given key
-      *
-      *\return NULL or value stored under this key
-      */
-    V* remove(const K& key) {
+     * Removes key/value pair from the cache given a key. Optionally return a value stored
+     * under the given key
+     *
+     *\return NULL or value stored under this key
+     */
+    V* remove(const K& key)
+    {
         return (V *) base_remove(&key);
     }
 
     /**
      * Asynchronous version of removeWithVersion()
-     *	See the synchronous doc for parameters not explained here
+     *    See the synchronous doc for parameters not explained here
      * \param success function to be executed on success
      * \param fail function to be executed if exceptions occur
      * \return a future containing a bool. True if the entry has been removed
      *
      */
-    std::future<bool> removeAsync(const K& key, std::function<V* (V*)> success=nullptr, std::function<void (std::exception&)> fail=nullptr) {
-    	auto f = [=] { this->remove(&key); };
-    	return goAsync(f,success,fail);
+    std::future<V*> removeAsync(const K& key, std::function<V* (V*)> success = nullptr,
+            std::function<V* (std::exception&)> fail = nullptr)
+    {
+        auto f = [=]
+        {   return this->remove(key);};
+        return goAsync(f, success, fail);
     }
-
 
     /**
      * Returns true if this cache contains a key/value pair where the key is equal to a specified key.
      *
      *\return true if such key is present in this cache
      */
-    bool containsKey(const K& key) {
+    bool containsKey(const K& key)
+    {
         return base_containsKey(&key);
     }
 
@@ -642,7 +740,8 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      * Unsupported operation in this release of Hot Rod client. UnsupportedOperationException is
      * thrown if his method is invoked.
      */
-    bool containsValue(const V& val) {
+    bool containsValue(const V& val)
+    {
         throw UnsupportedOperationException();
     }
     /**
@@ -659,24 +758,26 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      *
      * \sa VersionedValue
      */
-    bool replaceWithVersion(
-        const K& key, const V& val,
-        uint64_t version, uint64_t lifespan = 0, uint64_t maxIdle = 0) {
+    bool replaceWithVersion(const K& key, const V& val, uint64_t version, uint64_t lifespan = 0, uint64_t maxIdle = 0)
+    {
         return base_replaceWithVersion(&key, &val, version, lifespan, maxIdle);
     }
 
     /**
      * Asynchronous version of replaceWithVersion()
-     *	See the synchronous doc for parameters not explained here
+     *    See the synchronous doc for parameters not explained here
      * \param success function to be executed on success
      * \param fail function to be executed if exceptions occur
      * \return a future containing a pointer to the previous value stored in the cache for the given key or null
      *
      */
-    std::future<void> replaceWithVersionAsync(const K& key, const V& val,
-            uint64_t version, uint64_t lifespan, uint64_t maxIdle, std::function<V* (V*)> success=nullptr, std::function<void (std::exception&)> fail=nullptr) {
-    	auto f = [=] { this->replaceWithVersion(&key, &val, version, lifespan, maxIdle); };
-    	return goAsync(f,success,fail);
+    std::future<bool> replaceWithVersionAsync(const K& key, const V& val, uint64_t version, uint64_t lifespan,
+            uint64_t maxIdle, std::function<bool(bool)> success = nullptr, std::function<bool(std::exception&)> fail =
+                    nullptr)
+    {
+        auto f = [=]
+        {   return this->replaceWithVersion(key, val, version, lifespan, maxIdle);};
+        return goAsync(f, success, fail);
     }
 
     /**
@@ -697,21 +798,25 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      * \sa VersionedValue
      *
      */
-    bool removeWithVersion(const K& key, uint64_t version) {
+    bool removeWithVersion(const K& key, uint64_t version)
+    {
         return base_removeWithVersion(&key, version);
     }
 
     /**
      * Asynchronous version of removeWithVersion()
-     *	See the synchronous doc for parameters not explained here
+     *    See the synchronous doc for parameters not explained here
      * \param success function to be executed on success
      * \param fail function to be executed if exceptions occur
      * \return a future containing a bool. True if the entry has been removed
      *
      */
-    std::future<bool> removeWithVersionAsync(const K& key, uint64_t version, std::function<V* (V*)> success=nullptr, std::function<void (std::exception&)> fail=nullptr) {
-    	auto f = [=] { this->removeWithVersion(&key, version); };
-    	return goAsync(f,success,fail);
+    std::future<bool> removeWithVersionAsync(const K& key, uint64_t version,
+            std::function<bool(bool)> success = nullptr, std::function<bool(std::exception&)> fail = nullptr)
+    {
+        auto f = [=]
+        {   return this->removeWithVersion(key, version);};
+        return goAsync(f, success, fail);
     }
 
     /**
@@ -724,7 +829,8 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      *  second pair entry is an accompanying VersionedValue
      *
      */
-    std::pair<std::shared_ptr<V>, VersionedValue> getWithVersion(const K& key) {
+    std::pair<std::shared_ptr<V>, VersionedValue> getWithVersion(const K& key)
+    {
         VersionedValue version;
         void *value = base_getWithVersion(&key, &version);
         return std::make_pair(std::shared_ptr<V>((V *) value), version);
@@ -739,7 +845,8 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      *  second pair entry is an accompanying MetadataValue
      *
      */
-    std::pair<std::shared_ptr<V>, MetadataValue> getWithMetadata(const K& key) {
+    std::pair<std::shared_ptr<V>, MetadataValue> getWithMetadata(const K& key)
+    {
         MetadataValue metadata;
         void *value = base_getWithMetadata(&key, &metadata);
         return std::make_pair(std::shared_ptr<V>((V *) value), metadata);
@@ -748,20 +855,22 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      * Unsupported operation in this release of Hot Rod client. UnsupportedOperationException is
      * thrown if his method is invoked.
      */
-    std::map<std::shared_ptr<K>, std::shared_ptr<V> > getBulk() {
+    std::map<std::shared_ptr<K>, std::shared_ptr<V> > getBulk()
+    {
         return getBulk(0);
     }
     /**
      * Returns nrOfEntries from a remote cache in map.
      *TODO
      */
-    std::map<std::shared_ptr<K>, std::shared_ptr<V> > getBulk(int nrOfEntries) {
-        std::map<void* , void*> mbuf;
+    std::map<std::shared_ptr<K>, std::shared_ptr<V> > getBulk(int nrOfEntries)
+    {
+        std::map<void*, void*> mbuf;
         std::map<std::shared_ptr<K>, std::shared_ptr<V> > result;
         base_getBulk(nrOfEntries, mbuf);
         for (auto it = mbuf.begin(); it != mbuf.end(); ++it)
         {
-            result[std::shared_ptr<K>((K*)it->first)]=std::shared_ptr<V>((V*)it->second);
+            result[std::shared_ptr<K>((K*) it->first)] = std::shared_ptr<V>((V*) it->second);
         }
         return result;
     }
@@ -771,9 +880,9 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      * \param args maps of (name,value) arguments
      * \return byte[] result in dark matter shape
      */
-    std::vector<unsigned char> execute(const std::string& name, const std::map<std::string,std::string>& args)
+    std::vector<unsigned char> execute(const std::string& name, const std::map<std::string, std::string>& args)
     {
-    	return base_execute(name,args);
+        return base_execute(name, args);
     }
 
     /**
@@ -784,7 +893,7 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      */
     QueryResponse query(const QueryRequest &qr)
     {
-    	return base_query(qr);
+        return base_query(qr);
     }
 
     /**
@@ -795,14 +904,15 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      */
     std::vector<unsigned char> query(std::vector<unsigned char> qr, size_t size)
     {
-    	return base_query_char(qr,size);
+        return base_query_char(qr, size);
     }
 
     /**
      * Unsupported operation in this release of Hot Rod client. UnsupportedOperationException is
      * thrown if his method is invoked.
      */
-    std::set<std::pair<K, V> > entrySet() {
+    std::set<std::pair<K, V> > entrySet()
+    {
         throw UnsupportedOperationException();
     }
     /**
@@ -812,13 +922,15 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      *
      * \return a std::set of pointers to all keys in this given cache
      */
-    std::set<std::shared_ptr<K> > keySet() {
+    std::set<std::shared_ptr<K> > keySet()
+    {
         std::vector<void*> p;
         base_keySet(0, p);
 
         std::set<std::shared_ptr<K> > result;
-        for (size_t i = 0; i < p.size(); ++i) {
-            result.insert(std::shared_ptr<K>((K*)p.data()[i]));
+        for (size_t i = 0; i < p.size(); ++i)
+        {
+            result.insert(std::shared_ptr<K>((K*) p.data()[i]));
         }
         return result;
     }
@@ -827,22 +939,25 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      *
      *\return number of entries in cache
      */
-    uint64_t size() {
-    	return base_size();
+    uint64_t size()
+    {
+        return base_size();
     }
     /**
      *Returns true if and only if this cache has no entries.
      *
      *\return true if cache is empty
      */
-    bool isEmpty() {
+    bool isEmpty()
+    {
         return 0 == size();
     }
     /**
      * Unsupported operation in this release of Hot Rod client. UnsupportedOperationException is
      * thrown if his method is invoked.
      */
-    std::vector<V> values() {
+    std::vector<V> values()
+    {
         throw UnsupportedOperationException();
     }
     /**
@@ -851,7 +966,8 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      * \return a std::map of string key/value pairs where each key is a certain statistic property
      * while the matching value represents the value for that property
      */
-    std::map<std::string, std::string> stats() {
+    std::map<std::string, std::string> stats()
+    {
         std::map<std::string, std::string> statistics;
         base_stats(statistics);
         return statistics;
@@ -861,22 +977,25 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      *
      *
      */
-    void clear() {
+    void clear()
+    {
         base_clear();
     }
 
-
     /**
      * Asynchronous version of clear()
-     *	See the synchronous doc for parameters not explained here
+     *    See the synchronous doc for parameters not explained here
      * \param success function to be executed on success
      * \param fail function to be executed if exceptions occur
      * \return a future containing a bool. True if the entry has been removed
      *
      */
-    std::future<void> clearAsync(std::function<V* (V*)> success=nullptr, std::function<void (std::exception&)> fail=nullptr) {
-    	auto f = [=] { this->clear(); };
-    	return goAsync(f,success,fail);
+    std::future<void> clearAsync(std::function<void(void)> success = nullptr,
+            std::function<void(std::exception&)> fail = nullptr)
+    {
+        auto f = [=]
+        {   this->clear();};
+        return goAsync(f, success, fail);
     }
 
     /**
@@ -884,7 +1003,8 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      *
      *
      */
-    void ping() {
+    void ping()
+    {
         base_ping();
     }
 
@@ -898,9 +1018,11 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      * \return
      *
      */
-    void addClientListener(ClientListener& clientListener, std::vector<std::vector<char> > filterFactoryParams, std::vector<std::vector<char> > converterFactoryParams, const std::function<void()> &recoveryCallback = nullptr)
+    void addClientListener(ClientListener& clientListener, std::vector<std::vector<char> > filterFactoryParams,
+            std::vector<std::vector<char> > converterFactoryParams, const std::function<void()> &recoveryCallback =
+                    nullptr)
     {
-    	base_addClientListener(clientListener, filterFactoryParams, converterFactoryParams, recoveryCallback);
+        base_addClientListener(clientListener, filterFactoryParams, converterFactoryParams, recoveryCallback);
     }
 
     /**
@@ -912,7 +1034,7 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      */
     void removeClientListener(ClientListener& clientListener)
     {
-    	base_removeClientListener(clientListener);
+        base_removeClientListener(clientListener);
     }
 
 #if !defined(SWIG) && !defined(SWIGCSHARP)
@@ -921,35 +1043,36 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
      *
      * \param cql object defining the query to be observed
      **/
-    void addContinuousQueryListener(ContinuousQueryListener<K,V>& cql)
+    void addContinuousQueryListener(ContinuousQueryListener<K, V>& cql)
     {
-		base_addContinuousQueryListener(cql);
+        base_addContinuousQueryListener(cql);
     }
-template <typename... Params>
-   /**
-    * Start a client listener on a query that returns projection or aggregate and register it on the server
-    *
-    * \param cql object defining the query to be observed
-    **/
-    void addContinuousQueryListener(ContinuousQueryListener<K,V, Params...>& cql)
+    template<typename ... Params>
+    /**
+     * Start a client listener on a query that returns projection or aggregate and register it on the server
+     *
+     * \param cql object defining the query to be observed
+     **/
+    void addContinuousQueryListener(ContinuousQueryListener<K, V, Params...>& cql)
     {
-		base_addContinuousQueryListener(cql);
+        base_addContinuousQueryListener(cql);
     }
 
-   /**
-    * Start a client listener on the specified query and register it on the server
-    *
-    * \param cql object defining the query to be observed
-    **/
-template<typename... Params>
-   void removeContinuousQueryListener(ContinuousQueryListener<Params...>& cql)
-   {
-	   base_removeClientListener(cql.cl);
-   }
+    /**
+     * Start a client listener on the specified query and register it on the server
+     *
+     * \param cql object defining the query to be observed
+     **/
+    template<typename ... Params>
+    void removeContinuousQueryListener(ContinuousQueryListener<Params...>& cql)
+    {
+        base_removeClientListener(cql.cl);
+    }
 #endif
 
-    CacheTopologyInfo getCacheTopologyInfo(){
-    	return base_getCacheTopologyInfo();
+    CacheTopologyInfo getCacheTopologyInfo()
+    {
+        return base_getCacheTopologyInfo();
     }
     /**
      * Applies one or more Flag enums to the scope of a single invocation.
@@ -957,18 +1080,20 @@ template<typename... Params>
      * \param flags the flags to apply to an invocation
      * \return the current RemoteCache instance
      */
-    RemoteCache<K,V>& withFlags(Flag flags) {
+    RemoteCache<K, V>& withFlags(Flag flags)
+    {
         base_withFlags(flags);
         return *this;
     }
 
     RemoteCache(const RemoteCache &other) :
-      RemoteCacheBase(other), keyMarshaller(other.keyMarshaller), valueMarshaller(other.valueMarshaller)
+            RemoteCacheBase(other), keyMarshaller(other.keyMarshaller), valueMarshaller(other.valueMarshaller)
     {
         setMarshallers(this, &keyMarshall, &valueMarshall, &keyUnmarshall, &valueUnmarshall);
     }
 
-    RemoteCache<K,V>& operator=(const RemoteCache& other) {
+    RemoteCache<K, V>& operator=(const RemoteCache& other)
+    {
         RemoteCacheBase::operator=(other);
         keyMarshaller = other.keyMarshaller;
         valueMarshaller = other.valueMarshaller;
@@ -976,15 +1101,19 @@ template<typename... Params>
         return *this;
     }
 
-  protected:
-    RemoteCache() : RemoteCacheBase() {
+protected:
+    RemoteCache() :
+            RemoteCacheBase()
+    {
         setMarshallers(this, &keyMarshall, &valueMarshall, &keyUnmarshall, &valueUnmarshall);
     }
 
-  private:
-    uint64_t toSeconds(uint64_t time, TimeUnit unit) {
+private:
+    uint64_t toSeconds(uint64_t time, TimeUnit unit)
+    {
         uint64_t result;
-        switch (unit) {
+        switch (unit)
+        {
         case NANOSECONDS:
             result = (uint64_t) ceil(time / 1000000000.0);
             break;
@@ -1015,25 +1144,30 @@ template<typename... Params>
     }
 
     // type-hiding and resurrecting support
-    static void keyMarshall(void *thisp, const void* key, std::vector<char> &buf) {
+    static void keyMarshall(void *thisp, const void* key, std::vector<char> &buf)
+    {
         ((RemoteCache<K, V> *) thisp)->keyMarshaller->marshall(*(const K *) key, buf);
     }
-    static void valueMarshall(void* thisp, const void* val, std::vector<char> &buf) {
-        ((RemoteCache<K, V> *)thisp)->valueMarshaller->marshall(*(const V *) val, buf);
+    static void valueMarshall(void* thisp, const void* val, std::vector<char> &buf)
+    {
+        ((RemoteCache<K, V> *) thisp)->valueMarshaller->marshall(*(const V *) val, buf);
     }
-    static void* keyUnmarshall(void *thisp, const std::vector<char> &buf) {
+    static void* keyUnmarshall(void *thisp, const std::vector<char> &buf)
+    {
         return ((RemoteCache<K, V> *) thisp)->keyMarshaller->unmarshall(buf);
     }
-    static void* valueUnmarshall(void* thisp, const std::vector<char> &buf) {
-        return ((RemoteCache<K, V> *)thisp)->valueMarshaller->unmarshall(buf);
+    static void* valueUnmarshall(void* thisp, const std::vector<char> &buf)
+    {
+        return ((RemoteCache<K, V> *) thisp)->valueMarshaller->unmarshall(buf);
     }
 
     std::shared_ptr<Marshaller<K> > keyMarshaller;
     std::shared_ptr<Marshaller<V> > valueMarshaller;
 
-  friend class RemoteCacheManager;
+    friend class RemoteCacheManager;
 };
 
-}} // namespace
+}
+} // namespace
 
 #endif  /* ISPN_HOTROD_REMOTECACHE_H */
