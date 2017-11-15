@@ -19,15 +19,21 @@ public class RemoteCacheManager /* implements BasicCacheContainer */{
 
     private org.infinispan.client.hotrod.jni.RemoteCacheManager jniRemoteCacheManager;
     private Marshaller marshaller;
+    private Configuration configuration;
+    private boolean forceReturnValue;
 
     public RemoteCacheManager() {
         jniRemoteCacheManager = new org.infinispan.client.hotrod.jni.RemoteCacheManager();
         marshaller = new org.infinispan.commons.marshall.jboss.GenericJBossMarshaller();
+        configuration = null;
+        forceReturnValue = false;
     }
 
     public RemoteCacheManager(boolean start) {
         jniRemoteCacheManager = new org.infinispan.client.hotrod.jni.RemoteCacheManager(start);
         marshaller = new org.infinispan.commons.marshall.jboss.GenericJBossMarshaller();
+        configuration = null;
+        forceReturnValue = false;
     }
 
     public RemoteCacheManager(String servers) {
@@ -47,24 +53,33 @@ public class RemoteCacheManager /* implements BasicCacheContainer */{
         converter.set(ISPN_CLIENT_HOTROD_SERVER_LIST, servers);
         jniRemoteCacheManager = new org.infinispan.client.hotrod.jni.RemoteCacheManager(converter, start);
         marshaller = new org.infinispan.commons.marshall.jboss.GenericJBossMarshaller();
+        configuration = null;
+        forceReturnValue = false;
     }
 
     public RemoteCacheManager(Configuration config) {
        this(config, true);
+       configuration = config;
+       forceReturnValue = config.forceReturnValues();
     }
 
     public RemoteCacheManager(Configuration config, boolean start) {
        jniRemoteCacheManager = new org.infinispan.client.hotrod.jni.RemoteCacheManager(config.getJniConfiguration(), start);
        marshaller = (config.marshaller()!=null) ? config.marshaller() :
            new org.infinispan.commons.marshall.jboss.GenericJBossMarshaller();
+       configuration = config;
+       forceReturnValue = config.forceReturnValues();
     }
 
    public RemoteCacheManager(URL config, boolean start) throws IOException {
       Properties props = new Properties();
       props.load(config.openStream());
-      jniRemoteCacheManager = new org.infinispan.client.hotrod.jni.RemoteCacheManager(new ConfigurationBuilder()
-            .withProperties(props).build().getJniConfiguration(), start);
+      org.infinispan.client.hotrod.jni.Configuration jniConfiguration = new ConfigurationBuilder()
+            .withProperties(props).build().getJniConfiguration();
+      jniRemoteCacheManager = new org.infinispan.client.hotrod.jni.RemoteCacheManager(jniConfiguration, start);
       marshaller = new org.infinispan.commons.marshall.jboss.GenericJBossMarshaller();
+      configuration = null;
+      forceReturnValue = jniConfiguration.isForceReturnValue();
    }
     
     public RemoteCacheManager(Properties props) {
@@ -75,11 +90,13 @@ public class RemoteCacheManager /* implements BasicCacheContainer */{
       Configuration config = new ConfigurationBuilder().withProperties(props).build();
       jniRemoteCacheManager = new org.infinispan.client.hotrod.jni.RemoteCacheManager(config.getJniConfiguration(), start);
       marshaller = new org.infinispan.commons.marshall.jboss.GenericJBossMarshaller();
+      configuration = null;
+      forceReturnValue = config.getJniConfiguration().isForceReturnValue();
     }
     
     public <K, V> org.infinispan.client.hotrod.RemoteCache<K, V> getCache() {
        try {
-          return new org.infinispan.client.hotrod.impl.RemoteCacheImpl<K, V>(this, "", false);
+          return new org.infinispan.client.hotrod.impl.RemoteCacheImpl<K, V>(this, "", this.forceReturnValue);
        } catch (Exception e) {
           return null;
        }
@@ -95,7 +112,7 @@ public class RemoteCacheManager /* implements BasicCacheContainer */{
 
     public <K, V> org.infinispan.client.hotrod.RemoteCache<K, V> getCache(String cacheName) {
        try {
-          return new org.infinispan.client.hotrod.impl.RemoteCacheImpl<K, V>(this, cacheName, false);
+          return new org.infinispan.client.hotrod.impl.RemoteCacheImpl<K, V>(this, cacheName, this.forceReturnValue);
        } catch (Exception e) {
           return null;
        }
