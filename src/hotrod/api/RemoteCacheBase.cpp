@@ -137,6 +137,14 @@ std::vector<unsigned char> RemoteCacheBase::base_execute(const std::string &cmdN
 	return ures;
 }
 
+std::vector<unsigned char> RemoteCacheBase::base_execute(const std::string &cmdName, const std::map<std::vector<char> ,std::vector<char> >& args){
+        const std::vector<char> cmdNameBytes((cmdName.data()),(cmdName.data())+cmdName.size());
+	std::vector<char> resBytes= IMPL->execute(cmdNameBytes, args);
+
+	std::vector<unsigned char> ures(reinterpret_cast<unsigned char*>(resBytes.data()),reinterpret_cast<unsigned char*>(resBytes.data()+resBytes.size()));
+	return ures;
+}
+
 QueryResponse RemoteCacheBase::base_query(const QueryRequest &qr)
 {
 	return IMPL->query(qr);
