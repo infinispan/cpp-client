@@ -639,23 +639,21 @@ public class RemoteCacheImpl<K, V> extends RemoteCacheUnsupported<K, V> {
         for (String parName : params.keySet()) {
             ByteBuffer b;
             try {
-                b= jb.objectToBuffer(params.get(parName));
+                b = jb.objectToBuffer(params.get(parName));
                 argsMap.set(parName, new String(b.getBuf()));
             } catch (IOException | InterruptedException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                throw new RuntimeException(e);
             }
         }
         UCharVector executeResult = jniRemoteCache.execute(scriptName, argsMap);
         byte[] buf = new byte[(int)executeResult.size()];
-        for (int i=0; i< buf.length; i++)
+        for (int i = 0; i < buf.length; i++)
         {
-            buf[i]= (byte)executeResult.get(i);
+            buf[i] = (byte) executeResult.get(i);
         }
         try {
             return (T) jb.objectFromByteBuffer(buf);
         } catch (ClassNotFoundException | IOException e) {
-            // TODO Auto-generated catch block
             throw new RuntimeException(e);
         }
     }
