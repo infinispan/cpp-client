@@ -72,8 +72,7 @@ public class RemoteCacheImpl<K, V> extends RemoteCacheUnsupported<K, V> {
                 l.add(vRelay);
                 mapArg.set(kRelay, vRelay);
           } catch (IOException | InterruptedException e) {
-              // TODO Auto-generated catch block
-              e.printStackTrace();
+              throw new RuntimeException(e);
           }
         }
         FutureVoid putAllFuture = jniRemoteCache.putAllAsync(mapArg);
@@ -98,7 +97,7 @@ public class RemoteCacheImpl<K, V> extends RemoteCacheUnsupported<K, V> {
                 try {
                     byte[] jcopy = new byte[(int) rb.getLength()];
                     readNative(rb, jcopy);
-                    V v= (V)marshaller.objectFromByteBuffer(jcopy);
+                    V v = (V) marshaller.objectFromByteBuffer(jcopy);
                     return completableFuture.complete(v);
                 } finally {
                        removeFuture.delete();
@@ -149,7 +148,7 @@ public class RemoteCacheImpl<K, V> extends RemoteCacheUnsupported<K, V> {
                     {
                         byte[] jcopy = new byte[(int) rb.getLength()];
                         readNative(rb, jcopy);
-                        V r= (V)marshaller.objectFromByteBuffer(jcopy);
+                        V r = (V)marshaller.objectFromByteBuffer(jcopy);
                         dispose(rb);
                         completableFuture.complete(r);
                     }
@@ -157,13 +156,10 @@ public class RemoteCacheImpl<K, V> extends RemoteCacheUnsupported<K, V> {
                     {
                         completableFuture.complete(null);
                     }
-                } catch (ClassNotFoundException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                } finally {
+                } 
+                catch (IOException | ClassNotFoundException e) {
+                   throw new RuntimeException(e);
+               }  finally {
                     replaceFuture.delete();
                     for (int i = 0; i < rbs.length; i++) {
                         releaseJvmBytes(rbs[i], bytes[i]);
@@ -177,7 +173,6 @@ public class RemoteCacheImpl<K, V> extends RemoteCacheUnsupported<K, V> {
 
     @Override
     public CompletableFuture<Boolean> replaceWithVersionAsync(K key, V newValue, long version) {
-        // TODO Auto-generated method stub
         return replaceWithVersionAsync(key, newValue, version, 0);
     }
 
@@ -213,31 +208,24 @@ public class RemoteCacheImpl<K, V> extends RemoteCacheUnsupported<K, V> {
                 CompletableFuture<V> completableFuture = new CompletableFuture<>();
                 FutureRelayBytes putIfAbsentFuture = jniRemoteCache.putIfAbsentAsync(rbs[0], rbs[1]);
                 Executors.newCachedThreadPool().submit(() -> { RelayBytes rb = putIfAbsentFuture.get();
-                try {
-                    if (rb!=null)
-                    {
-                        byte[] jcopy = new byte[(int) rb.getLength()];
-                        readNative(rb, jcopy);
-                        V r= (V)marshaller.objectFromByteBuffer(jcopy);
-                        dispose(rb);
-                        completableFuture.complete(r);
-                    }
-                    else
-                    {
-                        completableFuture.complete(null);
-                    }
-                } catch (ClassNotFoundException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                } finally {
-                    putIfAbsentFuture.delete();
-                    for (int i = 0; i < rbs.length; i++) {
-                        releaseJvmBytes(rbs[i], bytes[i]);
-                    }
-                }
+               try {
+                  if (rb != null) {
+                     byte[] jcopy = new byte[(int) rb.getLength()];
+                     readNative(rb, jcopy);
+                     V r = (V) marshaller.objectFromByteBuffer(jcopy);
+                     dispose(rb);
+                     completableFuture.complete(r);
+                  } else {
+                     completableFuture.complete(null);
+                  }
+               } catch (IOException | ClassNotFoundException e) {
+                  throw new RuntimeException(e);
+               } finally {
+                  putIfAbsentFuture.delete();
+                  for (int i = 0; i < rbs.length; i++) {
+                     releaseJvmBytes(rbs[i], bytes[i]);
+                  }
+               }
                 });
                 return completableFuture;
             }
@@ -246,61 +234,60 @@ public class RemoteCacheImpl<K, V> extends RemoteCacheUnsupported<K, V> {
 
     @Override
     public CompletableFuture<V> getAsync(K k) {
-        return relayedInvokerAsync(new RelayedMethodAsync() {
-            @Override
-            public Object invoke(byte[][] bytes, RelayBytes... rbs) {
-                CompletableFuture<V> completableFuture = new CompletableFuture<>();
-                FutureRelayBytes getFuture = jniRemoteCache.getAsync(rbs[0]);
-                Executors.newCachedThreadPool().submit(() -> { RelayBytes rb = getFuture.get();
-                try {
-                    byte[] jcopy = new byte[(int) rb.getLength()];
-                    readNative(rb, jcopy);
-                    V v= (V)marshaller.objectFromByteBuffer(jcopy);
-                    return completableFuture.complete(v);
-                } finally {
-                    dispose(rb);
-                    getFuture.delete();
-                    for (int i = 0; i < rbs.length; i++) {
-                        releaseJvmBytes(rbs[i], bytes[i]);
-                    }
-                }
-                });
-                return completableFuture;
-            }
-        }, k);
+      return relayedInvokerAsync(new RelayedMethodAsync() {
+         @Override
+         public Object invoke(byte[][] bytes, RelayBytes... rbs) {
+            CompletableFuture<V> completableFuture = new CompletableFuture<>();
+            FutureRelayBytes getFuture = jniRemoteCache.getAsync(rbs[0]);
+            Executors.newCachedThreadPool().submit(() -> {
+               RelayBytes rb = getFuture.get();
+               try {
+                  byte[] jcopy = new byte[(int) rb.getLength()];
+                  readNative(rb, jcopy);
+                  V v = (V) marshaller.objectFromByteBuffer(jcopy);
+                  return completableFuture.complete(v);
+               } finally {
+                  dispose(rb);
+                  getFuture.delete();
+                  for (int i = 0; i < rbs.length; i++) {
+                     releaseJvmBytes(rbs[i], bytes[i]);
+                  }
+               }
+            });
+            return completableFuture;
+         }
+      }, k);
     }
 
     @Override
     public CompletableFuture<V> putAsync(K k, V v) {
-        return relayedInvokerAsync(new RelayedMethodAsync() {
-            @Override
-            public Object invoke(byte[][] bytes, RelayBytes... rbs) {
-                CompletableFuture<V> completableFuture = new CompletableFuture<>();
-                FutureRelayBytes putFuture = jniRemoteCache.putAsync(rbs[0], rbs[1]);
-                Executors.newCachedThreadPool().submit(() -> { RelayBytes rb = putFuture.get();
-                try {
-                    if (rb!=null)
-                    {
-                        byte[] jcopy = new byte[(int) rb.getLength()];
-                        readNative(rb, jcopy);
-                        V r= (V)marshaller.objectFromByteBuffer(jcopy);
-                        dispose(rb);
-                        return completableFuture.complete(r);
-                    }
-                    else
-                    {
-                        return completableFuture.complete(null);
-                    }
-                } finally {
-                    putFuture.delete();
-                    for (int i = 0; i < rbs.length; i++) {
-                        releaseJvmBytes(rbs[i], bytes[i]);
-                    }
-                }
-                });
-                return completableFuture;
-            }
-        }, k, v);
+      return relayedInvokerAsync(new RelayedMethodAsync() {
+         @Override
+         public Object invoke(byte[][] bytes, RelayBytes... rbs) {
+            CompletableFuture<V> completableFuture = new CompletableFuture<>();
+            FutureRelayBytes putFuture = jniRemoteCache.putAsync(rbs[0], rbs[1]);
+            Executors.newCachedThreadPool().submit(() -> {
+               RelayBytes rb = putFuture.get();
+               try {
+                  if (rb != null) {
+                     byte[] jcopy = new byte[(int) rb.getLength()];
+                     readNative(rb, jcopy);
+                     V r = (V) marshaller.objectFromByteBuffer(jcopy);
+                     dispose(rb);
+                     return completableFuture.complete(r);
+                  } else {
+                     return completableFuture.complete(null);
+                  }
+               } finally {
+                  putFuture.delete();
+                  for (int i = 0; i < rbs.length; i++) {
+                     releaseJvmBytes(rbs[i], bytes[i]);
+                  }
+               }
+            });
+            return completableFuture;
+         }
+      }, k, v);
     }
 
     private RemoteCache_jb_jb jniRemoteCache;
@@ -509,25 +496,24 @@ public class RemoteCacheImpl<K, V> extends RemoteCacheUnsupported<K, V> {
         return b;
     }
 
-    @Override
-    public org.infinispan.client.hotrod.CacheTopologyInfo getCacheTopologyInfo() {
-        org.infinispan.client.hotrod.jni.CacheTopologyInfo jCti= jniRemoteCache.getCacheTopologyInfo();
-         InetSocketAddressvectorReturn jIsAvR = Hotrod.keySet(jCti.getSegmentPerServer());
-         long s = jIsAvR.size();
-         Map<SocketAddress,Set<Integer> > m = new HashMap<SocketAddress, Set<Integer> >();
-         for(int i=0; i<s; i++)
-         {
-             InetSocketAddress isa = jIsAvR.get(i);
-             IntegerVectorReturn t= jCti.getSegmentPerServer().get(isa);
-             Set<Integer> segmentSet = new HashSet<Integer>();
-             for (int j=0; j<t.size(); j++) {
-                  segmentSet.add(t.get(j));
-             }
-             SocketAddress sock = new java.net.InetSocketAddress(isa.getHostname(), isa.getPort());
-             m.put(sock, segmentSet);
+   @Override
+   public org.infinispan.client.hotrod.CacheTopologyInfo getCacheTopologyInfo() {
+      org.infinispan.client.hotrod.jni.CacheTopologyInfo jCti = jniRemoteCache.getCacheTopologyInfo();
+      InetSocketAddressvectorReturn jIsAvR = Hotrod.keySet(jCti.getSegmentPerServer());
+      long s = jIsAvR.size();
+      Map<SocketAddress, Set<Integer>> m = new HashMap<SocketAddress, Set<Integer>>();
+      for (int i = 0; i < s; i++) {
+         InetSocketAddress isa = jIsAvR.get(i);
+         IntegerVectorReturn t = jCti.getSegmentPerServer().get(isa);
+         Set<Integer> segmentSet = new HashSet<Integer>();
+         for (int j = 0; j < t.size(); j++) {
+            segmentSet.add(t.get(j));
          }
-         return new org.infinispan.client.hotrod.impl.CacheTopologyInfoImpl(m, jCti.getNumSegment(), jCti.getTopologyId());
-    }
+         SocketAddress sock = new java.net.InetSocketAddress(isa.getHostname(), isa.getPort());
+         m.put(sock, segmentSet);
+      }
+      return new org.infinispan.client.hotrod.impl.CacheTopologyInfoImpl(m, jCti.getNumSegment(), jCti.getTopologyId());
+   }
 
     @Override
     public V putIfAbsent(K k, V v) {
@@ -576,8 +562,9 @@ public class RemoteCacheImpl<K, V> extends RemoteCacheUnsupported<K, V> {
         putAll(map, lifespan, lifespanTimeUnit, 0, TimeUnit.MILLISECONDS);
     }
 
-    @Override
-    public void putAll(Map<? extends K, ? extends V> map, long lifespan, TimeUnit lifespanTimeUnit, long maxIdle, TimeUnit maxIdleUnit) {
+   @Override
+   public void putAll(Map<? extends K, ? extends V> map, long lifespan, TimeUnit lifespanTimeUnit, long maxIdle,
+                      TimeUnit maxIdleUnit) {
       if (!remoteCacheManager.isStarted()) {
          throw new RemoteCacheManagerNotStartedException(
                "Cannot perform operations on a cache associated with an unstarted RemoteCacheManager. "
@@ -585,20 +572,19 @@ public class RemoteCacheImpl<K, V> extends RemoteCacheUnsupported<K, V> {
       }
       MapArg mapArg = new MapArg();
       for (K it : map.keySet()) {
-          try {
+         try {
             RelayBytes kRelay = new RelayBytes();
-              setJvmBytes(kRelay, marshaller.objectToByteBuffer(it));
+            setJvmBytes(kRelay, marshaller.objectToByteBuffer(it));
 
-              RelayBytes vRelay = new RelayBytes();
-              setJvmBytes(vRelay, marshaller.objectToByteBuffer(map.get(it)));
-              mapArg.set(kRelay, vRelay);
-        } catch (IOException | InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-    }
+            RelayBytes vRelay = new RelayBytes();
+            setJvmBytes(vRelay, marshaller.objectToByteBuffer(map.get(it)));
+            mapArg.set(kRelay, vRelay);
+         } catch (IOException | InterruptedException e) {
+            throw new RuntimeException(e);
+         }
+      }
       jniRemoteCache.putAll(mapArg);
-    }
+   }
 
     @Override
     public void clear() {
