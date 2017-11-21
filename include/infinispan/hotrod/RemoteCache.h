@@ -886,6 +886,17 @@ public:
     }
 
     /**
+     * Execute script on server
+     * \param cmdName name of the script
+     * \param args maps of (name,value) arguments
+     * \return byte[] result in dark matter shape
+     */
+    std::vector<unsigned char> execute(const std::string& name, const std::map<std::vector<char>, std::vector<char> >& args)
+    {
+    	return base_execute(name,args);
+    }
+
+    /**
      * Execute a query on server
      * \param cmdName name of the script
      * \param args maps of (name,value) arguments
