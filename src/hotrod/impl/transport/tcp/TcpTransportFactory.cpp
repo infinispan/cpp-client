@@ -251,19 +251,22 @@ void TcpTransportFactory::pingExternalServer(InetSocketAddress s) {
 void TcpTransportFactory::pingServers() {
     std::vector<InetSocketAddress> s = topologyInfo->getServers();
     for (std::vector<InetSocketAddress>::const_iterator iter = s.begin(); iter != s.end(); iter++) {
-        TcpTransport* transport;
+        TcpTransport* transport = nullptr;
         try {
             // Go through all statically configured nodes and force a
             // connection to be established and a ping message to be sent.
             transport = &connectionPool->borrowObject(*iter);
             transportFactory->ping(*transport);
-            connectionPool->returnObject(*iter, *transport);
         } catch (const Exception &e) {
             ERROR("Initial ping has thrown an exception when pinging %s:%d : %s",
                 iter->getHostname().c_str(), iter->getPort(), e.what());
             // Ping's objective is to retrieve a potentially newer
             // version of the Hot Rod cluster topology, so ignore
             // exceptions from nodes that might not be up any more.
+        }
+        if (transport != nullptr)
+        {
+            connectionPool->returnObject(*iter, *transport);
         }
     }
 }

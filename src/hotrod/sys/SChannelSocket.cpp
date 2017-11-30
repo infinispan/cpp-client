@@ -23,16 +23,25 @@ using namespace infinispan::hotrod::sys;
 HCERTSTORE SChannelSocket::hMemStore = NULL;
 SChannelSocket::SChannelInitializer SChannelSocket::initializer;
 
+static void raiseHotrodClientException(const std::string& s)
+{
+    std::stringstream ss;
+    DWORD error = GetLastError();
+    ss << s<< std::hex << " WinError code: " << error;
+    DEBUG(ss.str().c_str());
+    throw infinispan::hotrod::HotRodClientException(ss.str());
+}
+
 SChannelSocket::SChannelInitializer::SChannelInitializer() {
 	WSADATA wsaData;
 	g_pSSPI=InitSecurityInterface();
 	if (g_pSSPI == NULL)
 	{
-        throw HotRodClientException("InitSecurityInferface: initialization failure");
+        raiseHotrodClientException("InitSecurityInferface: initialization failure");
 	}
 	if (WSAStartup(0x0101, &wsaData))
 	{
-        throw HotRodClientException("Could not initialize winsock");
+        raiseHotrodClientException("Could not initialize winsock");
 	}
 }
 
@@ -536,12 +545,12 @@ void SChannelSocket::setupCertStoreServer()
     hFile = CreateFile(m_serverCAFile.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
     if (hFile == INVALID_HANDLE_VALUE)
     {
-        fprintf(stderr, "**** Error %d. Failed to open server certificate file %s.\n", GetLastError(), m_serverCAFile.c_str());
+        raiseHotrodClientException("Failed to open server certificate file.");
     }
 
     if (!ReadFile(hFile, servCert, 8192, &readLen, NULL))
     {
-        fprintf(stderr, "**** Error %d. Failed to open read certificate file %s.\n", GetLastError(), m_serverCAFile.c_str());
+        raiseHotrodClientException("Failed to read server certificate file.");
     }
     CloseHandle(hFile);
     
@@ -551,16 +560,14 @@ void SChannelSocket::setupCertStoreServer()
     {
         if (!CryptStringToBinary(servCert, readLen, CRYPT_STRING_BASE64_ANY, derServCert, &derCertLen, NULL, NULL))
         {
-            printf("**** Error 0x%x returned by CryptStringToBinary server cert\n", GetLastError());
-            logAndThrow("ERROR");
+            raiseHotrodClientException("CryptStringToBinary failed.");
         }
         pServerContext = CertCreateCertificateContext(X509_ASN_ENCODING | PKCS_7_ASN_ENCODING,
             (BYTE*)derServCert,
             derCertLen);
         if (pServerContext == NULL)
         {
-            printf("**** Error 0x%x returned by CertCreateCertificateContext. Cannot create certificate. File corrupted?\n", GetLastError());
-            logAndThrow("ERROR");
+            raiseHotrodClientException("CertCreateCertificateContext failed.");
         }
         if (!(SChannelSocket::hMemStore = CertOpenStore(
             CERT_STORE_PROV_MEMORY,   // The memory provider type
@@ -570,16 +577,14 @@ void SChannelSocket::setupCertStoreServer()
             NULL                      // pvPara is not used
         )))
         {
-            printf("**** Error 0x%x returned by CertOpenStore\n", GetLastError());
-            logAndThrow("ERROR");
+            raiseHotrodClientException("CertOpenStor failed.");
         }
         if (!CertAddCertificateContextToStore(SChannelSocket::hMemStore, pServerContext,
             CERT_STORE_ADD_REPLACE_EXISTING,
             NULL
         ))
         {
-            printf("**** Error 0x%x returned by CertAddCertificateContextToStore\n", GetLastError());
-            logAndThrow("ERROR");
+            raiseHotrodClientException("CertAddCertificateContextToStore failed.");
         }
     }
     else
@@ -592,8 +597,7 @@ void SChannelSocket::setupCertStoreServer()
         // Importing the cert. The file cannot be password protected
         HCERTSTORE servCertStore = PFXImportCertStore(&sblob, L"", CRYPT_MACHINE_KEYSET);
         if (servCertStore == NULL) {
-            printf("PFXImportCertStore failed. hr=0x%x\n", GetLastError());
-            logAndThrow("ERROR");
+            raiseHotrodClientException("PFXImportCertStore failed.");
         }
     }
 }
@@ -613,12 +617,12 @@ void SChannelSocket::setupCertClient(SCHANNEL_CRED& schannelCred)
     hFile = CreateFile(m_clientCertificateFile.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
     if (hFile == INVALID_HANDLE_VALUE)
     {
-        fprintf(stderr, "**** Error %d. Failed to open server certificate file %s.\n", GetLastError(), m_clientCertificateFile.c_str());
+        raiseHotrodClientException("Failed to open client certificate file.");
     }
 
     if (!ReadFile(hFile, clientCertStore, 8192, &clientCertStoreLen, NULL))
     {
-        fprintf(stderr, "**** Error %d. Failed to open read certificate file %s.\n", GetLastError(), m_clientCertificateFile.c_str());
+        raiseHotrodClientException("Failed to read client certificate file.");
     }
     CloseHandle(hFile);
     blob.cbData = (DWORD)clientCertStoreLen;
@@ -626,8 +630,7 @@ void SChannelSocket::setupCertClient(SCHANNEL_CRED& schannelCred)
 
     HCERTSTORE certStore = PFXImportCertStore(&blob, L"", CRYPT_EXPORTABLE);
     if (certStore == NULL) {
-        printf("PFXImportCertStore failed. hr=0x%x\n", GetLastError());
-        logAndThrow("ERROR");
+        raiseHotrodClientException("PFXImportCertStore failed.");
     }
 
     pClientContext = CertFindCertificateInStore(certStore, X509_ASN_ENCODING | PKCS_7_ASN_ENCODING
@@ -635,8 +638,7 @@ void SChannelSocket::setupCertClient(SCHANNEL_CRED& schannelCred)
 
     if (pClientContext == NULL)
     {
-        printf("**** Error 0x%x returned by CertCreateCertificateContext. Cannot create certificate. File corrupted?\n", GetLastError());
-        logAndThrow("ERROR");
+        raiseHotrodClientException("CertFindCertificateInStore failed.");
     }
     schannelCred.cCreds = 1;
     schannelCred.paCred = &pClientContext;
@@ -985,7 +987,10 @@ LONG SChannelSocket::DisconnectFromServer()
     SecBufferDesc OutBuffer;
     SecBuffer     OutBuffers[1];
     TimeStamp     tsExpiry;
-
+    if (!isContextInitialized)
+    {
+        return SEC_E_OK;
+    }
 
     dwType = SCHANNEL_SHUTDOWN; // Notify schannel that we are about to close the connection.
 
