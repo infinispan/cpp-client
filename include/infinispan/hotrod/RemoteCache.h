@@ -13,7 +13,9 @@
 #include "infinispan/hotrod/Query.h"
 #include "infinispan/hotrod/QueryUtils.h"
 #include "infinispan/hotrod/ContinuousQueryListener.h"
-#include <infinispan/hotrod/BasicTypesProtoStreamMarshaller.h>
+#include "infinispan/hotrod/BasicTypesProtoStreamMarshaller.h"
+#include "infinispan/hotrod/JBossMarshaller.h"
+#include "infinispan/hotrod/RemoteExecution.h"
 #include <cmath>
 #include <set>
 #include <map>
@@ -28,6 +30,7 @@ namespace infinispan
 {
 namespace hotrod
 {
+
 /**
  * Provides remote reference to a cache residing on a Hot Rod server/cluster.
  *
@@ -99,6 +102,7 @@ private:
 #endif
 
 public:
+
     /**
      * Retrieves the name of the cache
      *
@@ -1097,6 +1101,18 @@ public:
         return *this;
     }
 
+    /**
+     * Get a remote execution context
+     *
+     * \return a RemoteExecution object that simplify the call of a remote execution task
+     *
+     */
+    template <class M = JBossMarshaller>
+    RemoteExecution<M> getRemoteExecution()
+    {
+        return RemoteExecution<M>(*this);
+    }
+
     RemoteCache(const RemoteCache &other) :
             RemoteCacheBase(other), keyMarshaller(other.keyMarshaller), valueMarshaller(other.valueMarshaller)
     {
@@ -1111,7 +1127,6 @@ public:
         setMarshallers(this, &keyMarshall, &valueMarshall, &keyUnmarshall, &valueUnmarshall);
         return *this;
     }
-
 protected:
     RemoteCache() :
             RemoteCacheBase()
@@ -1177,7 +1192,6 @@ private:
 
     friend class RemoteCacheManager;
 };
-
 }
 } // namespace
 

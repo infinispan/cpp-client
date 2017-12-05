@@ -4,6 +4,7 @@
 #include "infinispan/hotrod/Version.h"
 
 #include "infinispan/hotrod/JBasicMarshaller.h"
+#include "infinispan/hotrod/JBossMarshaller.h"
 #include <stdlib.h>
 #include <iostream>
 #include <memory>
@@ -415,6 +416,9 @@ int basicTest(RemoteCacheManager &cacheManager, RemoteCache<K, V> &cache) {
     return 0;
 }
 
+
+
+
 int main(int argc, char** argv) {
 
     int result = 0;
@@ -439,23 +443,19 @@ int main(int argc, char** argv) {
                 false);
         RemoteCache<std::string, std::string> &cachent2 = cacheManager.getCache<std::string, std::string>("namedCache",
                 true);
-        if (&cachef1 != &cachef2)
-                {
+        if (&cachef1 != &cachef2) {
             std::cerr << "Got two different cache instances(false): " << &cachef1 << "   " << &cachef2 << std::endl;
             result = 1;
         }
-        if (&cachet1 != &cachet2)
-                {
+        if (&cachet1 != &cachet2) {
             std::cerr << "Got two different cache instances(false): " << &cachet1 << "   " << &cachet2 << std::endl;
             result = 1;
         }
-        if (&cachef1 != &cachef2)
-                {
+        if (&cachef1 != &cachef2) {
             std::cerr << "Got two different cache instances(false): " << &cachenf1 << "   " << &cachenf2 << std::endl;
             result = 1;
         }
-        if (&cachef1 != &cachef2)
-                {
+        if (&cachef1 != &cachef2) {
             std::cerr << "Got two different cache instances(false): " << &cachent1 << "   " << &cachent2 << std::endl;
             result = 1;
         }
@@ -476,9 +476,7 @@ int main(int argc, char** argv) {
         BasicMarshaller<std::string> *km = new BasicMarshaller<std::string>();
         BasicMarshaller<std::string> *vm = new BasicMarshaller<std::string>();
         RemoteCache<std::string, std::string> cache = cacheManager.getCache<std::string, std::string>(km,
-                &Marshaller<std::string>::destroy,
-                vm,
-                &Marshaller<std::string>::destroy);
+                &Marshaller<std::string>::destroy, vm, &Marshaller<std::string>::destroy);
 
         cacheManager.start();
 
@@ -486,10 +484,8 @@ int main(int argc, char** argv) {
             std::cout << "Test different cache types" << std::endl;
             BasicMarshaller<float> *kmf = new BasicMarshaller<float>();
             BasicMarshaller<double> *vmd = new BasicMarshaller<double>();
-            RemoteCache<float, double> cache1 = cacheManager.getCache<float, double>(kmf,
-                    &Marshaller<float>::destroy,
-                    vmd,
-                    &Marshaller<double>::destroy);
+            RemoteCache<float, double> cache1 = cacheManager.getCache<float, double>(kmf, &Marshaller<float>::destroy,
+                    vmd, &Marshaller<double>::destroy);
             float k1 = 1.0;
             double v1 = 1e-3;
 
@@ -507,48 +503,25 @@ int main(int argc, char** argv) {
         }
 
         try {
-            result = basicTest<std::string, std::string>(cacheManager, cache);
-            std::map<std::string, std::string> s;
             std::string argName1 = std::string("keyValue");
             std::string argValue1 = std::string("abc");
             std::string argName2 = std::string("keyName");
             std::string argValue2 = std::string("a");
-            // execute() operation needs explicit JBossMarshalling<string> format for argument values
-            s.insert(
-                    std::pair<std::string, std::string>(argName1,
-                            JBasicMarshaller<std::string>::addPreamble(
-                                    argValue1)));
-            s.insert(
-                    std::pair<std::string, std::string>(argName2,
-                            JBasicMarshaller<std::string>::addPreamble(
-                                    argValue2)));
             std::string script("// mode=local, language=javascript, parameters=[keyValue, keyName]\n"
                     "var cache = cacheManager.getCache(\"namedCache\");\n"
                     "cache.put(\"a\", keyValue);\n"
                     "cache.put(\"b\", \"b\");\n"
                     "cache.get(keyName);\n");
             std::string script_name("script.js");
-            std::string p_script_name =
-                    JBasicMarshaller<std::string>::addPreamble(script_name);
-            std::string p_script = JBasicMarshaller<std::string>::addPreamble(
-                    script);
-            RemoteCache<std::string, std::string> scriptCache =
-                    cacheManager.getCache<std::string, std::string>(
-                            "___script_cache", false);
-            scriptCache.put(p_script_name, p_script);
-            std::vector<unsigned char> execResult = cache.execute(script_name,
-                    s);
 
-            // We know the remote script returns a string and
-            // we use the helper to unmarshall
-            std::string res(
-                    JBasicMarshallerHelper::unmarshall<std::string>(
-                            (char*) execResult.data()));
-            if (res.compare("abc") != 0) {
-                std::cerr << "fail: cache.exec() returned unexpected result"
-                        << std::endl;
-                return 1;
-            }
+            RemoteExecution<> execution = cache.getRemoteExecution();
+            execution.putScript(script_name, script);
+            execution.addArg(argName1, argValue1);
+            execution.addArg(argName2, argValue2);
+
+            std::string* ret = execution.template execute<std::string*>(script_name);
+            std::cout << "result is " << *ret << std::endl;
+            result = 0;
         } catch (const Exception& e) {
             cacheManager.stop();
             std::cout << "is: " << typeid(e).name() << '\n';
@@ -573,58 +546,31 @@ int main(int argc, char** argv) {
         JBasicMarshaller<std::string> *km = new JBasicMarshaller<std::string>();
         JBasicMarshaller<std::string> *vm = new JBasicMarshaller<std::string>();
         RemoteCache<std::string, std::string> cache = cacheManager.getCache<std::string, std::string>(km,
-                &Marshaller<std::string>::destroy,
-                vm,
-                &Marshaller<std::string>::destroy);
+                &Marshaller<std::string>::destroy, vm, &Marshaller<std::string>::destroy);
         cacheManager.start();
-        try
-        {
-            result = basicTest<std::string, std::string>(cacheManager, cache);
-            std::map<std::string, std::string> s;
+        try {
             std::string argName1 = std::string("keyValue");
             std::string argValue1 = std::string("abc");
             std::string argName2 = std::string("keyName");
             std::string argValue2 = std::string("a");
             // execute() operation needs explicit JBossMarshalling<string> format for argument values
-            s.insert(
-                    std::pair<std::string, std::string>(argName1,
-                            JBasicMarshaller<std::string>::addPreamble(
-                                    argValue1)));
-            s.insert(
-                    std::pair<std::string, std::string>(argName2,
-                            JBasicMarshaller<std::string>::addPreamble(
-                                    argValue2)));
-
-            // execute() operation needs explicit JBossMarshalling<string> format for argument values
-            JBasicMarshaller<std::string> *km1 = new JBasicMarshaller<std::string>();
-            JBasicMarshaller<std::string> *vm1 = new JBasicMarshaller<std::string>();
-            std::string script("// mode=local, language=javascript, parameters=[keyValue, keyName]\n"
+            std::string script("// mode=local, language=javascript, parameters=[keyValue, keyName, num]\n"
                     "var cache = cacheManager.getCache(\"namedCache\");\n"
                     "cache.put(\"a\", keyValue);\n"
                     "cache.put(\"b\", \"b\");\n"
-                    "cache.get(keyName);\n");
+                    "cache.get(keyName);\n"
+                    "num;\n");
             std::string script_name("script1.js");
-            std::string p_script_name =
-                    JBasicMarshaller<std::string>::addPreamble(script_name);
-            std::string p_script = JBasicMarshaller<std::string>::addPreamble(
-                    script);
 
-            auto scriptCache = cacheManager.getCache<std::string, std::string>(km1,
-                    &Marshaller<std::string>::destroy,
-                    vm1,
-                    &Marshaller<std::string>::destroy, "___script_cache", false);
-            scriptCache.remove(script_name);
-            scriptCache.put(script_name, script);
-            std::vector<unsigned char> execResult = cache.execute(script_name, s);
+            RemoteExecution<> execution = cache.getRemoteExecution();
+            execution.putScript(script_name, script);
+            execution.addArg(argName1, argValue1);
+            execution.addArg(argName2, argValue2);
+            execution.addArg("num", 2);
 
-            // We know the remote script returns a string and
-            // we use the helper to unmarshall
-            std::string res(JBasicMarshallerHelper::unmarshall<std::string>((char *) execResult.data()));
-            if (res.compare("abc") != 0)
-                    {
-                std::cerr << "fail: cache.exec() returned unexpected result" << std::endl;
-                return 1;
-            }
+            int* ret = execution.template execute<int*>(script_name);
+            std::cout << "result is " << *ret << std::endl;
+            return 0;
         } catch (const Exception& e) {
             cacheManager.stop();
             std::cout << "is: " << typeid(e).name() << '\n';

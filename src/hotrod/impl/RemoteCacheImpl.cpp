@@ -73,6 +73,13 @@ std::map<std::vector<char>,std::vector<char>> RemoteCacheImpl::getAll(const std:
     return result;
 }
 
+std::vector<char> RemoteCacheImpl::putraw(const std::vector<char> &k, const std::vector<char> &v, uint64_t life, uint64_t idle) {
+    assertRemoteCacheManagerIsStarted();
+    applyDefaultExpirationFlags(life, idle);
+    std::unique_ptr<PutOperation> op(operationsFactory->newPutKeyValueOperation(k, v,life,idle));
+    return op->execute();
+}
+
 void *RemoteCacheImpl::put(RemoteCacheBase& remoteCacheBase, const void *k, const void* v, uint64_t life, uint64_t idle) {
 	assertRemoteCacheManagerIsStarted();
 	std::vector<char> kbuf, vbuf;

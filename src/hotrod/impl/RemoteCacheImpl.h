@@ -25,6 +25,7 @@ public:
     virtual void *get(RemoteCacheBase& rcb, const void* key);
     std::map<std::vector<char>,std::vector<char>> getAll(const std::set<std::vector<char>>& keySet);
     virtual void *put(RemoteCacheBase& rcb, const void *key, const void* val, uint64_t life, uint64_t idle);
+    std::vector<char> putraw(const std::vector<char> &k, const std::vector<char> &v, uint64_t life, uint64_t idle);
     void *putIfAbsent(RemoteCacheBase& rcb, const void *key, const void* val, uint64_t life, uint64_t idle);
     virtual void *replace(RemoteCacheBase& rcb, const void *key, const void* val, uint64_t life, uint64_t idle);
     virtual void *remove(RemoteCacheBase& rcb, const void* key);
@@ -59,6 +60,8 @@ private:
 
     void applyDefaultExpirationFlags(uint64_t lifespan, uint64_t maxIdle);
     void assertRemoteCacheManagerIsStarted();
+    friend void RemoteCacheBase::putScript(const std::vector<char>& name, const std::vector<char>& script);
+
 };
 
 class KeyUnmarshallerFtor {

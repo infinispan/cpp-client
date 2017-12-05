@@ -4,7 +4,9 @@
 #include "infinispan/hotrod/RemoteCacheManager.h"
 #include "hotrod/impl/RemoteCacheImpl.h"
 #include "infinispan/hotrod/Query.h"
+#include "../impl/RemoteCacheManagerImpl.h"
 #include <iostream>
+#include <memory>
 
 namespace infinispan {
 namespace hotrod {
@@ -145,6 +147,10 @@ std::vector<unsigned char> RemoteCacheBase::base_execute(const std::string &cmdN
 	return ures;
 }
 
+std::vector<char> RemoteCacheBase::base_execute(const std::vector<char> &cmdName, const std::map<std::vector<char> ,std::vector<char> >& args){
+    return IMPL->execute(cmdName, args);
+}
+
 QueryResponse RemoteCacheBase::base_query(const QueryRequest &qr)
 {
 	return IMPL->query(qr);
@@ -181,6 +187,13 @@ void RemoteCacheBase::base_removeClientListener(ClientListener& clientListener)
 {
 	IMPL->removeClientListener(clientListener);
 }
+
+void RemoteCacheBase::putScript(const std::vector<char>& name, const std::vector<char>& script) {
+    shared_ptr<RemoteCacheImpl> rcImpl = this->impl->remoteCacheManager.createRemoteCache("___script_cache", false,
+            NearCacheConfiguration());
+    rcImpl->putraw(name, script, 0, 0);
+}
+
 }
 } /* namespace */
 
