@@ -3,7 +3,7 @@ file(GLOB SRCS *.cpp)
 
 file(COPY ${CMAKE_ROOT_SOURCE_DIR}/test/query_proto/bank-xunit.proto DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
 
-hr_protobuf_generate_cpp(TEST_PROTO_SRCS TEST_PROTO_HDRS 
+hr_protobuf_generate_cpp(TEST_PROTO_SRCS TEST_PROTO_HDRS .
   ${CMAKE_ROOT_SOURCE_DIR}/test/query_proto/bank-xunit.proto
 )
 

@@ -7,7 +7,7 @@
 
 #ifndef INCLUDE_INFINISPAN_HOTROD_QUERY_H_
 #define INCLUDE_INFINISPAN_HOTROD_QUERY_H_
-#include "query.pb.h"
+#include "infinispan/hotrod/query.pb.h"
 #include <tuple>
 
 using namespace org::infinispan::protostream;

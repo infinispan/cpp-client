@@ -3,7 +3,7 @@
 #include <infinispan/hotrod/BasicTypesProtoStreamMarshaller.h>
 #include <infinispan/hotrod/ProtoStreamMarshaller.h>
 #include "QueryTest.h"
-#include "query.pb.h"
+#include "infinispan/hotrod/query.pb.h"
 #include "infinispan/hotrod/QueryUtils.h"
 
 #include <cstdio>
