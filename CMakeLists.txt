@@ -102,9 +102,11 @@ set_target_properties(libgmock PROPERTIES
 include_directories("${source_dir}/googletest/include"
                     "${source_dir}/googlemock/include")
 
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/infinispan/hotrod)
+
 find_package(Protobuf REQUIRED)
 
-function(HR_PROTOBUF_GENERATE_CPP SRCS HDRS)
+function(hr_protobuf_generate_cpp SRCS HDRS DEST_PATH)
   if(NOT ARGN)
     message(SEND_ERROR "Error: PROTOBUF_GENERATE_CPP() called without any proto files")
     return()
@@ -140,14 +142,14 @@ function(HR_PROTOBUF_GENERATE_CPP SRCS HDRS)
     get_filename_component(ABS_FIL ${FIL} ABSOLUTE)
     get_filename_component(FIL_WE ${FIL} NAME_WE)
 
-    list(APPEND ${SRCS} "${CMAKE_CURRENT_BINARY_DIR}/${FIL_WE}.pb.cc")
-    list(APPEND ${HDRS} "${CMAKE_CURRENT_BINARY_DIR}/${FIL_WE}.pb.h")
+    list(APPEND ${SRCS} "${CMAKE_CURRENT_BINARY_DIR}/${DEST_PATH}/${FIL_WE}.pb.cc")
+    list(APPEND ${HDRS} "${CMAKE_CURRENT_BINARY_DIR}/${DEST_PATH}/${FIL_WE}.pb.h")
 
     add_custom_command(
-      OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${FIL_WE}.pb.cc"
-             "${CMAKE_CURRENT_BINARY_DIR}/${FIL_WE}.pb.h"
+      OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${DEST_PATH}/${FIL_WE}.pb.cc"
+             "${CMAKE_CURRENT_BINARY_DIR}/${DEST_PATH}/${FIL_WE}.pb.h"
       COMMAND  ${PROTOBUF_PROTOC_EXECUTABLE}
-      ARGS --cpp_out dllexport_decl=HR_PROTO_EXPORT:${CMAKE_CURRENT_BINARY_DIR} ${_protobuf_include_path} ${ABS_FIL}
+      ARGS --cpp_out dllexport_decl=HR_PROTO_EXPORT:${CMAKE_CURRENT_BINARY_DIR}/${DEST_PATH} ${_protobuf_include_path} ${ABS_FIL}
       DEPENDS ${ABS_FIL}
       COMMENT "Running C++ protocol buffer compiler on ${FIL}"
       VERBATIM )
@@ -468,7 +470,7 @@ endif(ENABLE_INTERNAL_TESTING)
       ${internal_test_sources}  
       ${CMAKE_BINARY_DIR}/Version.cpp
     )
-hr_protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS 
+hr_protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS infinispan/hotrod
   proto/infinispan/hotrod/protobuf/base_types.proto
   proto/org/infinispan/protostream/message-wrapping.proto
   proto/org/infinispan/query/remote/client/query.proto
@@ -535,7 +537,7 @@ endif (ENABLE_VALGRIND)
 
 file(COPY ${CMAKE_SOURCE_DIR}/test/query_proto DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
 
-hr_protobuf_generate_cpp(TEST_PROTO_SRCS TEST_PROTO_HDRS 
+hr_protobuf_generate_cpp(TEST_PROTO_SRCS TEST_PROTO_HDRS .
   test/query_proto/addressbook.proto
   test/query_proto/bank.proto
 )
