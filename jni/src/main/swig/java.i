@@ -158,9 +158,10 @@ using namespace infinispan::hotrod;
 %ignore RelayBytes::getBytes;
 %ignore RelayBytes::getJarray;
 %ignore goAsync;
+%ignore JBossMarshaller;
+%ignore addExecuteArg;
+%ignore putExecuteScript;
 %ignore addContinuousQueryListener;
-
-//%shared_ptr(RelayShrPointer)
 
 %inline %{
 

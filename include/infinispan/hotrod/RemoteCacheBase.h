@@ -65,12 +65,14 @@ protected:
     HR_EXTERN void  base_withFlags(Flag flag);
     HR_EXTERN std::vector<unsigned char> base_execute(const std::string &cmdName,  const std::map<std::string,std::string>& args);
     HR_EXTERN std::vector<unsigned char> base_execute(const std::string &cmdName, const std::map<std::vector<char> ,std::vector<char> >& args);
+    HR_EXTERN std::vector<char> base_execute(const std::vector<char> &cmdName, const std::map<std::vector<char> ,std::vector<char> >& args);
     HR_EXTERN CacheTopologyInfo base_getCacheTopologyInfo();
     HR_EXTERN QueryResponse base_query(const QueryRequest &qr);
     HR_EXTERN std::vector<unsigned char> base_query_char(std::vector<unsigned char> qr, size_t size);
 
 	HR_EXTERN void base_addClientListener(ClientListener &clientListener, const std::vector<std::vector<char> > filterFactoryParam, const std::vector<std::vector<char> > converterFactoryParams, const std::function<void()> &recoveryCallback);
 	HR_EXTERN void base_removeClientListener(ClientListener &clientListener);
+	HR_EXTERN void putScript(const std::vector<char>& name, const std::vector<char>& script);
 
     RemoteCacheBase() {}
     HR_EXTERN void setMarshallers(void* rc, MarshallHelperFn kf, MarshallHelperFn vf, UnmarshallHelperFn ukf, UnmarshallHelperFn uvf);
@@ -197,6 +199,8 @@ friend class ::infinispan::hotrod::event::CacheClientListener;
 #ifndef SWIGCSHARP
 template <typename... Params>
 friend class ::infinispan::hotrod::event::ContinuousQueryListener;
+template <class M> friend class RemoteExecution;
+
 #endif
 };
 

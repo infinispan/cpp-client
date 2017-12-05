@@ -3,6 +3,7 @@
 
 
 #include <string>
+#include <cstring>
 #include <iostream>
 #include "infinispan/hotrod/Marshaller.h"
 #include "infinispan/hotrod/exceptions.h"
@@ -28,7 +29,7 @@ public:
     template <class T> static T unmarshall(char *);
 };
 
-    template <> std::string JBasicMarshallerHelper::unmarshall(char *b) {
+    template <> inline std::string JBasicMarshallerHelper::unmarshall(char *b) {
         if (b[0]!=JBasicMarshallerHelper::MARSHALL_VERSION)
             throw Exception("JBasicMarshallerHelper: bad version");
         if ( (b[1]!=JBasicMarshallerHelper::SMALL_STRING) && (b[1]!=JBasicMarshallerHelper::MEDIUM_STRING) )
@@ -36,7 +37,7 @@ public:
         return std::string(b+3,b[2]);
     }
 
-    template <> int JBasicMarshallerHelper::unmarshall(char *b) {
+    template <> inline int JBasicMarshallerHelper::unmarshall(char *b) {
         if (b[0]!=JBasicMarshallerHelper::MARSHALL_VERSION)
             throw Exception("JBasicMarshallerHelper: bad version");
         if (b[1]!=JBasicMarshallerHelper::INTEGER)
