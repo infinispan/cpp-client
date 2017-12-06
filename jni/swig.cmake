@@ -86,6 +86,9 @@ set(JAVA_LIBRARY_PATH ".")
 foreach(loop_var ${CMAKE_CONFIGURATION_TYPES})
 	set(JAVA_LIBRARY_PATH "${JAVA_LIBRARY_PATH}${CLASSPATH_SEPARATOR}${loop_var}")
 endforeach(loop_var)
+if(DEFINED HOTROD_PREBUILT_LIB_DIR)
+	set(JAVA_LIBRARY_PATH "${JAVA_LIBRARY_PATH}${CLASSPATH_SEPARATOR}${HOTROD_PREBUILT_LIB_DIR}")
+endif(DEFINED HOTROD_PREBUILT_LIB_DIR)
 
 add_test(swig ${JAVA_RUNTIME} 
     -ea 
@@ -96,7 +99,5 @@ add_test(swig ${JAVA_RUNTIME}
     org.infinispan.client.jni.hotrod.JniTest
 )
 
-install (FILES "${CMAKE_CURRENT_BINARY_DIR}/jni/target/hotrod-jni.jar" DESTINATION jni)
 set_property(TARGET hotrod-swig PROPERTY CXX_STANDARD 11)
 set_property(TARGET hotrod-swig PROPERTY CXX_STANDARD_REQUIRED ON)
-install (TARGETS hotrod-swig LIBRARY DESTINATION jni)

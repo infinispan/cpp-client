@@ -61,6 +61,7 @@ ExternalProject_Add(
     INSTALL_COMMAND ""
 )
 
+set(CMAKE_SKIP_INSTALL_ALL_DEPENDENCY true)
 
 # Get GTest source and binary directories from CMake project
 ExternalProject_Get_Property(gtest source_dir binary_dir)
@@ -187,10 +188,10 @@ if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   set (COMPILER_FLAGS "-fvisibility=hidden -fvisibility-inlines-hidden -std=c++11")
   if (CMAKE_COMPILER_IS_GNUCXX)
   set (WARNING_FLAGS
-        "${WERROR} -pedantic -Wall -Wextra -Wno-shadow -Wpointer-arith -Wcast-qual -Wcast-align -Wno-long-long -Wvolatile-register-var -Winvalid-pch -Wno-system-headers -Woverloaded-virtual -Wno-variadic-macros -Wno-error=shadow")
+        "${WERROR} -pedantic -Wall -Wextra -Wno-shadow -Wpointer-arith -Wcast-qual -Wcast-align -Wno-long-long -Wvolatile-register-var -Winvalid-pch -Wno-system-headers -Woverloaded-virtual -Wno-variadic-macros -Wno-error=shadow -Wimplicit-fallthrough=0")
   set (WARNING_FLAGS_NO_PEDANTIC
         "${WERROR} -Wall -Wextra -Wno-shadow -Wpointer-arith -Wcast-qual -Wcast-align -Wno-long-long -Wvolatile-register-var -Winvalid-pch -Wno-system-headers -Woverloaded-virtual -Wno-variadic-macros -Wno-error=shadow")
-set (NO_UNUSED_FLAGS "-Wno-error=unused-parameter -Wno-unused-parameter")
+set (NO_UNUSED_FLAGS "-Wno-error=unused-parameter -Wno-unused-parameter -Wimplicit-fallthrough=0")
   endif (CMAKE_COMPILER_IS_GNUCXX)
   if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   set (WARNING_FLAGS_NO_PEDANTIC
@@ -497,6 +498,7 @@ endif (MSVC)
     add_library (hotrod SHARED ${library_sources})
     
     set_target_properties(hotrod PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}")
+    set_target_properties(hotrod PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS} ${STATIC_FLAGS}")
     target_link_libraries (hotrod ${platform_libs}  ${OPENSSL_LIBRARIES} hotrod_protobuf ${PROTOBUF_LIBRARY})
     
     if (WIN32 AND NOT CMAKE_SIZEOF_VOID_P MATCHES "8")
@@ -541,6 +543,14 @@ hr_protobuf_generate_cpp(TEST_PROTO_SRCS TEST_PROTO_HDRS .
   test/query_proto/addressbook.proto
   test/query_proto/bank.proto
 )
+
+add_custom_target(build_dist COMMAND "echo" "build_dist completed")
+add_dependencies(build_dist hotrod hotrod-static docs)
+
+add_custom_target(build_test COMMAND "echo" "build_test completed")
+add_dependencies(build_test JniTest krbserver unittest unittest-static simple simple-static queryTest queryTest-static events
+                            nearCacheTest continuousQueryTest continuousQueryTest-static
+                            simpleSasl simple-tls simple-tls-sni simpleSaslTls PutGetTest QueryTest ClearTest xunit_nearCacheTest)
 
 # TESTS
 
@@ -755,7 +765,7 @@ endif (ENABLE_INTERNAL_TESTING)
 
 find_program(MVN_PROGRAM "mvn")
 if (MVN_PROGRAM STREQUAL "MVN_PROGRAM-NOTFOUND")
-    message(FATAL_ERROR "Apache Maven (mvn) not found in path")
+    message(WARNING "Apache Maven (mvn) not found in path")
 endif (MVN_PROGRAM STREQUAL "MVN_PROGRAM-NOTFOUND")
 
 set(KRBSERVER_DIR "${CMAKE_CURRENT_BINARY_DIR}/krbserver")
@@ -873,7 +883,7 @@ set (CPACK_SYSTEM_NAME "${PLATFORM}-${PACKAGE_ARCH}")
 if(WIN32)
 set (DOCDIR .)
 else(WIN32)
-    set (DOCDIR ${SHARE_INSTALL_PREFIX}/doc/${CMAKE_PROJECT_NAME})
+    set (DOCDIR ${SHARE_INSTALL_PREFIX}doc/${CMAKE_PROJECT_NAME})
 endif(WIN32)
 message (STATUS "OpenSSL support ${OPENSSL_FOUND}")
 
@@ -887,7 +897,9 @@ install (DIRECTORY ${PROTOBUF_INCLUDE_DIRS}/google/protobuf DESTINATION include/
 get_filename_component(real_protobuf_library "${PROTOBUF_LIBRARY}" REALPATH)
 get_filename_component(real_protoc_library "${PROTOBUF_PROTOC_LIBRARY}" REALPATH)
 install (FILES ${real_protobuf_library} ${real_protoc_library} ${PROTOBUF_LIBRARY} ${PROTOBUF_PROTOC_LIBRARY} DESTINATION lib${LIB_SUFFIX})
-install (FILES ${PROTOBUF_PROTOC_EXECUTABLE} DESTINATION bin)
+install (FILES ${PROTOBUF_PROTOC_EXECUTABLE}
+         DESTINATION bin
+         PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ WORLD_READ)
 if (NOT WIN32)
     get_filename_component(protobuf_dir "${PROTOBUF_LIBRARY}" PATH)
     file(GLOB libproto_glob "${protobuf_dir}/libproto*")
