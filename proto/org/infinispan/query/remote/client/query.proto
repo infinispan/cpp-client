@@ -1,3 +1,4 @@
+syntax = "proto2";
 import "message-wrapping.proto";
 
 package org.infinispan.query.remote.client;

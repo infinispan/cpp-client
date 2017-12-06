@@ -275,7 +275,7 @@ void Codec20::writeClientListenerParams(transport::Transport& t, const ClientLis
     this->writeNamedFactory(t, clientListener.converterFactoryName, converterFactoryParams);
 }
 
-void Codec20::writeClientListenerInterests(transport::Transport& t, unsigned char) const
+void Codec20::writeClientListenerInterests(transport::Transport& , unsigned char) const
 {
 	// Called by the Add Listener operation, but no op until 2.6
 }

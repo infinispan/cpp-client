@@ -1,3 +1,4 @@
+syntax = "proto2";
 package infinispan.hotrod.protobuf;
 message base_types {
     optional int64 i64  = 3;
