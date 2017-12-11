@@ -288,10 +288,10 @@ if(DEFINED HOTROD_PREBUILT_LIB_DIR)
     # Find protobuf libraries looking only into the distro pack
     if(DEFINED HR_USE_SYSTEM_PROTOBUF)
         # look into the system defaults
-        find_library(HR_PROTOBUF_LIBRARY NAMES libprotobuf.a libprotobuf.lib protobuf)
+        find_library(HR_PROTOBUF_LIBRARY NAMES libprotobuf.a libprotobuf.lib libprotobuf-static.lib protobuf)
     else(DEFINED HR_USE_SYSTEM_PROTOBUF)
         # look only into the distro pack
-        find_library(HR_PROTOBUF_LIBRARY NAMES libprotobuf.a libprotobuf.lib protobuf  PATHS ${HOTROD_PREBUILT_LIB_DIR}
+        find_library(HR_PROTOBUF_LIBRARY NAMES libprotobuf.a libprotobuf.lib libprotobuf-static.lib protobuf  PATHS ${HOTROD_PREBUILT_LIB_DIR}
             NO_SYSTEM_ENVIRONMENT_PATH NO_DEFAULT_PATH
             NO_CMAKE_SYSTEM_ENVIRONMENT_PATH NO_CMAKE_DEFAULT_PATH)
     endif(DEFINED HR_USE_SYSTEM_PROTOBUF)
@@ -320,46 +320,45 @@ if(DEFINED HOTROD_PREBUILT_LIB_DIR)
     endif(UNIX)
     set (PROTOBUF_INCLUDE_DIR ${HOTROD_PREBUILT_LIB_DIR}/../include)
 else(DEFINED HOTROD_PREBUILT_LIB_DIR)
+    find_package(Protobuf REQUIRED)
 
-find_package(Protobuf REQUIRED)
-
-# OpenSSL support
-if(NOT DEFINED WIN32)
-    find_package(OpenSSL)
-    include_directories(${OPENSSL_INCLUDE_DIR})
-endif(NOT DEFINED WIN32)
-include_directories ("${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_SOURCE_DIR}/src" "${CMAKE_CURRENT_BINARY_DIR}")
-set (INCLUDE_FILES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../include)
+    # OpenSSL support
+    if(NOT DEFINED WIN32)
+        find_package(OpenSSL)
+        include_directories(${OPENSSL_INCLUDE_DIR})
+    endif(NOT DEFINED WIN32)
+    include_directories ("${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_SOURCE_DIR}/src" "${CMAKE_CURRENT_BINARY_DIR}")
+    set (INCLUDE_FILES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 
 
-# Select driver
-if(HOTROD_WINAPI)
-  set (platform_sources src/hotrod/sys/windows/Socket.cpp src/hotrod/sys/windows/Thread.cpp
-           src/hotrod/sys/windows/platform.cpp src/hotrod/sys/windows/Inet.cpp src/hotrod/sys/windows/Time.cpp)
-else(HOTROD_WINAPI)
-  set (platform_sources src/hotrod/sys/posix/Socket.cpp src/hotrod/sys/posix/Thread.cpp
-           src/hotrod/sys/posix/platform.cpp src/hotrod/sys/posix/Mutex.cpp src/hotrod/sys/posix/Inet.cpp src/hotrod/sys/posix/Time.cpp)
-endif(HOTROD_WINAPI)
+    # Select driver
+    if(HOTROD_WINAPI)
+      set (platform_sources src/hotrod/sys/windows/Socket.cpp src/hotrod/sys/windows/Thread.cpp
+               src/hotrod/sys/windows/platform.cpp src/hotrod/sys/windows/Inet.cpp src/hotrod/sys/windows/Time.cpp)
+    else(HOTROD_WINAPI)
+      set (platform_sources src/hotrod/sys/posix/Socket.cpp src/hotrod/sys/posix/Thread.cpp
+               src/hotrod/sys/posix/platform.cpp src/hotrod/sys/posix/Mutex.cpp src/hotrod/sys/posix/Inet.cpp src/hotrod/sys/posix/Time.cpp)
+    endif(HOTROD_WINAPI)
 
-if(ENABLE_INTERNAL_TESTING)
-set (internal_test_sources
-  src/hotrod/test/Unit.cpp
-  src/hotrod/test/L3Test.cpp
-  src/hotrod/test/HashTest.cpp
-  src/hotrod/test/ConnectionPoolTest.cpp
-)
-if(WIN32)
-set (socket_impl
-      src/hotrod/impl/transport/tcp/SChannelTcpTransport.cpp
-      src/hotrod/sys/SChannelSocket.cpp
-      )
-else(WIN32)
-set (socket_impl
-      src/hotrod/impl/transport/tcp/SSLTcpTransport.cpp
-      src/hotrod/sys/SSLSocket.cpp
-      )
-endif(WIN32)
-endif(ENABLE_INTERNAL_TESTING)
+    if(ENABLE_INTERNAL_TESTING)
+    set (internal_test_sources
+      src/hotrod/test/Unit.cpp
+      src/hotrod/test/L3Test.cpp
+      src/hotrod/test/HashTest.cpp
+      src/hotrod/test/ConnectionPoolTest.cpp
+    )
+    if(WIN32)
+    set (socket_impl
+          src/hotrod/impl/transport/tcp/SChannelTcpTransport.cpp
+          src/hotrod/sys/SChannelSocket.cpp
+          )
+    else(WIN32)
+    set (socket_impl
+          src/hotrod/impl/transport/tcp/SSLTcpTransport.cpp
+          src/hotrod/sys/SSLSocket.cpp
+          )
+    endif(WIN32)
+    endif(ENABLE_INTERNAL_TESTING)
 
     set (library_sources
       src/hotrod/api/RemoteCacheManager.cpp
@@ -427,28 +426,28 @@ endif(ENABLE_INTERNAL_TESTING)
       ${internal_test_sources}  
       ${CMAKE_BINARY_DIR}/Version.cpp
     )
-hr_protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS infinispan/hotrod
-  proto/infinispan/hotrod/protobuf/base_types.proto
-  proto/org/infinispan/protostream/message-wrapping.proto
-  proto/org/infinispan/query/remote/client/query.proto
-)
+    hr_protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS infinispan/hotrod
+      proto/infinispan/hotrod/protobuf/base_types.proto
+      proto/org/infinispan/protostream/message-wrapping.proto
+      proto/org/infinispan/query/remote/client/query.proto
+    )
 
-include_directories(${PROTOBUF_INCLUDE_DIR})
+    include_directories(${PROTOBUF_INCLUDE_DIR})
     
     add_library (hotrod_protobuf STATIC ${PROTO_SRCS})
     set_target_properties(hotrod_protobuf PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}" )
-if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    set_target_properties(hotrod_protobuf PROPERTIES COMPILE_FLAGS "-fPIC ${WARNING_FLAGS}" )
-endif (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-target_include_directories(hotrod_protobuf PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
+    if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        set_target_properties(hotrod_protobuf PROPERTIES COMPILE_FLAGS "-fPIC ${WARNING_FLAGS}" )
+    endif (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    target_include_directories(hotrod_protobuf PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
                                      "${INCLUDE_FILES_DIR}"
                                      "${CMAKE_CURRENT_BINARY_DIR}"
                                      "${PROTOBUF_INCLUDE_DIR}")
 
-configure_file(src/hotrod/impl/Version.cpp.in ${CMAKE_BINARY_DIR}/Version.cpp @ONLY)
-if (MSVC)
-    set_target_properties(hotrod_protobuf PROPERTIES COMPILE_FLAGS "/wd4244 /wd4267" )
-endif (MSVC)
+    configure_file(src/hotrod/impl/Version.cpp.in ${CMAKE_BINARY_DIR}/Version.cpp @ONLY)
+    if (MSVC)
+        set_target_properties(hotrod_protobuf PROPERTIES COMPILE_FLAGS "/wd4244 /wd4267" )
+    endif (MSVC)
     
     # Build a shared library
     add_library (hotrod SHARED ${library_sources})
@@ -474,8 +473,8 @@ endif (MSVC)
     set_target_properties(hotrod-static PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS} ${STATIC_FLAGS}")
     target_link_libraries (hotrod-static ${platform_libs}  ${PROTOBUF_LIBRARY} ${OPENSSL_LIBRARIES} hotrod_protobuf)
 
-add_custom_target(build_dist COMMAND "echo" "build_dist completed")
-add_dependencies(build_dist hotrod hotrod-static docs)
+    add_custom_target(build_dist COMMAND "echo" "build_dist completed")
+    add_dependencies(build_dist hotrod hotrod-static docs)
 endif(DEFINED HOTROD_PREBUILT_LIB_DIR)
 if (NOT DEFINED COMPILER_FLAGS)
     message(FATAL_ERROR "Compiler flags not set for this build type")
@@ -851,7 +850,7 @@ install (FILES "${CMAKE_CURRENT_SOURCE_DIR}/License.txt" "${CMAKE_CURRENT_SOURCE
 install (DIRECTORY ${PROTOBUF_INCLUDE_DIRS}/google/protobuf DESTINATION include/google)
 get_filename_component(real_protobuf_library "${PROTOBUF_LIBRARY}" REALPATH)
 get_filename_component(real_protoc_library "${PROTOBUF_PROTOC_LIBRARY}" REALPATH)
-install (FILES ${real_protobuf_library} ${real_protoc_library} ${PROTOBUF_LIBRARY} ${PROTOBUF_PROTOC_LIBRARY} DESTINATION lib${LIB_SUFFIX})
+install (FILES ${real_protobuf_library} ${real_protoc_library} ${PROTOBUF_LIBRARY} ${PROTOBUF_PROTOC_LIBRARY} DESTINATION lib)
 install (FILES ${PROTOBUF_PROTOC_EXECUTABLE}
          DESTINATION bin
          PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ WORLD_READ)
