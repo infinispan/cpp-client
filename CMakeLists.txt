@@ -287,14 +287,21 @@ if(DEFINED HOTROD_PREBUILT_LIB_DIR)
 
     # Find protobuf libraries looking only into the distro pack
     if(DEFINED HR_USE_SYSTEM_PROTOBUF)
-        # look into the system defaults
-        find_library(HR_PROTOBUF_LIBRARY NAMES libprotobuf.a libprotobuf.lib libprotobuf-static.lib protobuf)
+        find_package(Protobuf REQUIRED)
+        set(HR_PROTOBUF_LIBRARY ${PROTOBUF_LIBRARY})
     else(DEFINED HR_USE_SYSTEM_PROTOBUF)
+        #FIND protoc executable
+        if(UNIX)
+            set (PROTOBUF_PROTOC_EXECUTABLE ${HOTROD_PREBUILT_LIB_DIR}/../bin/protoc)
+        else(UNIX)
+            set (PROTOBUF_PROTOC_EXECUTABLE ${HOTROD_PREBUILT_LIB_DIR}/../bin/protoc.exe)
+        endif(UNIX)
         # look only into the distro pack
         find_library(HR_PROTOBUF_LIBRARY NAMES libprotobuf.a libprotobuf.lib libprotobuf-static.lib protobuf  PATHS ${HOTROD_PREBUILT_LIB_DIR}
             NO_SYSTEM_ENVIRONMENT_PATH NO_DEFAULT_PATH
             NO_CMAKE_SYSTEM_ENVIRONMENT_PATH NO_CMAKE_DEFAULT_PATH)
     endif(DEFINED HR_USE_SYSTEM_PROTOBUF)
+    message("-- Found protoc executable: ${PROTOBUF_PROTOC_EXECUTABLE}")
     if("${HR_PROTOBUF_LIBRARY}" STREQUAL "HR_PROTOBUF_LIBRARY-NOTFOUND")
         message(FATAL_ERROR "Cannot find protobuf static library in directory '${HOTROD_PREBUILT_LIB_DIR}'.")
     else("${HR_PROTOBUF_LIBRARY}" STREQUAL "HR_PROTOBUF_LIBRARY-NOTFOUND")
@@ -312,12 +319,6 @@ if(DEFINED HOTROD_PREBUILT_LIB_DIR)
     endif(NOT DEFINED WIN32)
 
 
-    #FIND protoc executable
-    if(UNIX)
-        set (PROTOBUF_PROTOC_EXECUTABLE ${HOTROD_PREBUILT_LIB_DIR}/../bin/protoc)
-    else(UNIX)
-        set (PROTOBUF_PROTOC_EXECUTABLE ${HOTROD_PREBUILT_LIB_DIR}/../bin/protoc.exe)
-    endif(UNIX)
     set (PROTOBUF_INCLUDE_DIR ${HOTROD_PREBUILT_LIB_DIR}/../include)
 else(DEFINED HOTROD_PREBUILT_LIB_DIR)
     find_package(Protobuf REQUIRED)
