@@ -10,22 +10,22 @@ option java_outer_classname = "BankProtos";
 message User {
 
    /**
-    * @IndexedField(index=true, store=true)
+    * @Field(index = Index.YES, store = Store.YES)
     */
    required int32 id = 1;
 
    /**
-    * @IndexedField()
+    * @Field
     */
    repeated int32 accountIds = 2;
 
    /**
-    * @IndexedField
+    * @Field
     */
    required string name = 3;
 
    /**
-    * @IndexedField
+    * @Field
     */
    required string surname = 4;
 
@@ -36,12 +36,12 @@ message User {
    }
 
    /**
-    * @IndexedField
+    * @Field
     */
    repeated Address addresses = 5;     //a repeated field cannot be marked required
 
    /**
-    * @IndexedField
+    * @Field
     */
    optional int32 age = 6;   // persisting age instead of birth date is not ideal but is ok for our sample code
 
@@ -52,7 +52,7 @@ message User {
    }
 
    /**
-    * @IndexedField
+    * @Field
     */
    optional Gender gender = 7;
 
@@ -65,17 +65,17 @@ message User {
 message Account {
 
    /**
-    * @IndexedField
+    * @Field
     */
    required int32 id = 1;
 
    /**
-    * @IndexedField
+    * @Field
     */
    optional string description = 2 [default = "Checking account"];
 
    /**
-    * @IndexedField
+    * @Field
     */
    required fixed64 creationDate = 3;
 
@@ -85,12 +85,12 @@ message Account {
    }
 
    /**
-    * @IndexedField
+    * @Field
     */
    optional Limits limits = 4;
 
    /**
-    * @IndexedField
+    * @Field
     */
    repeated bytes blurb = 5;
 }
@@ -101,32 +101,32 @@ message Account {
 message Transaction {
 
    /**
-    * @IndexedField
+    * @Field
     */
    required int32 id = 1;
 
    /**
-    * @IndexedField(store = false)
+    * @Field(store = Store.YES)
     */
    optional string description = 2;
 
    /**
-    * @IndexedField
+    * @Field
     */
    required int32 accountId = 3;
 
    /**
-    * @IndexedField
+    * @Field
     */
    required fixed64 date = 4;  // there is no native Date type in protobuf so we have to store it as a long
 
    /**
-    * @IndexedField
+    * @Field
     */
    required double amount = 5; // how do I store a BigDecimal? maybe as a byte array ..
 
    /**
-    * @IndexedField
+    * @Field
     */
    required bool isDebit = 6;
 
