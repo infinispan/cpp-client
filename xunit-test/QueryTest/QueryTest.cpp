@@ -533,6 +533,32 @@ TEST_F(QueryTest, RejectProjectionOfRepeatedPropertyTest)
     EXPECT_THROW(userCache.query(qr), HotRodClientException);
 }
 
+// Response unwrapper for int*. Can't use int because result contains null values
+template <> inline int* unwrapSingleValue<int*>(const WrappedMessage& wm)
+{
+    if (wm.has_wrappedint32())
+    {
+    return new int((int)wm.wrappedint32());
+    }
+    else if (wm.has_wrappedint64())
+    {
+        return new int((int)wm.wrappedint64());
+    }
+    else
+    {
+        return nullptr;
+    }
+}
+
+template<>
+inline std::tuple<int*> popTuple<int*>(QueryResponse& resp, int &k)
+        {
+      int* s(unwrapSingleValue<int*>(resp.results(k++)));
+      return std::make_tuple<int*>(std::move(s));
+}
+
+
+
 TEST_F(QueryTest, ProjectionTest)
 {
     auto *testkm = new BasicTypesProtoStreamMarshaller<int>();
@@ -547,7 +573,7 @@ TEST_F(QueryTest, ProjectionTest)
 
     QueryResponse result = userCache.query(qr);
 
-    std::vector<std::tuple<std::string, std::string, google::protobuf::int32> > projections;
+    std::vector<std::tuple<std::string, std::string, int* > > projections;
     if (!unwrapProjection(result, projections)) {
         FAIL()<< "fail: error in unwrapping projection"
         << std::endl;
@@ -555,10 +581,17 @@ TEST_F(QueryTest, ProjectionTest)
 
     ASSERT_EQ(2, projections.size());
 
-    ASSERT_EQ("Spider", (std::get<0>(projections[0])));
-    ASSERT_EQ("Man", (std::get<1>(projections[0])));
-    ASSERT_EQ("Spider", (std::get<0>(projections[1])));
-    ASSERT_EQ("Woman", (std::get<1>(projections[1])));
+	ASSERT_EQ("Spider", (std::get<0>(projections[0])));
+	ASSERT_EQ("Man", (std::get<1>(projections[0])));
+	ASSERT_EQ("Spider", (std::get<0>(projections[1])));
+	ASSERT_EQ("Woman", (std::get<1>(projections[1])));
+	for (auto &i: projections)
+	{
+			if(std::get<2>(i)!=nullptr)
+		{
+				delete std::get<2>(i);
+		}
+	}
 }
 
 TEST_F(QueryTest, ContainsTest)
