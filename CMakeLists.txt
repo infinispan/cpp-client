@@ -188,10 +188,10 @@ if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   set (COMPILER_FLAGS "-fvisibility=hidden -fvisibility-inlines-hidden -std=c++11")
   if (CMAKE_COMPILER_IS_GNUCXX)
   set (WARNING_FLAGS
-        "${WERROR} -pedantic -Wall -Wextra -Wno-shadow -Wpointer-arith -Wcast-qual -Wcast-align -Wno-long-long -Wvolatile-register-var -Winvalid-pch -Wno-system-headers -Woverloaded-virtual -Wno-variadic-macros -Wno-error=shadow -Wimplicit-fallthrough=0")
+        "${WERROR} -pedantic -Wall -Wextra -Wno-shadow -Wpointer-arith -Wcast-qual -Wcast-align -Wno-long-long -Wvolatile-register-var -Winvalid-pch -Wno-system-headers -Woverloaded-virtual -Wno-variadic-macros -Wno-error=shadow")
   set (WARNING_FLAGS_NO_PEDANTIC
         "${WERROR} -Wall -Wextra -Wno-shadow -Wpointer-arith -Wcast-qual -Wcast-align -Wno-long-long -Wvolatile-register-var -Winvalid-pch -Wno-system-headers -Woverloaded-virtual -Wno-variadic-macros -Wno-error=shadow")
-set (NO_UNUSED_FLAGS "-Wno-error=unused-parameter -Wno-unused-parameter -Wimplicit-fallthrough=0")
+set (NO_UNUSED_FLAGS "-Wno-error=unused-parameter -Wno-unused-parameter)
   endif (CMAKE_COMPILER_IS_GNUCXX)
   if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   set (WARNING_FLAGS_NO_PEDANTIC
