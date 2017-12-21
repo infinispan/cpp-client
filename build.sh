@@ -51,6 +51,6 @@ else
   cmake ${CMAKE_EXTRAS} .. &&
   cmake --build . &&
   ctest -V &&
-  cpack -G RPM
+  cpack -G RPM &&
   cpack -C RelWithDebInfo --config CPackSourceConfig.cmake -G ZIP
 fi
