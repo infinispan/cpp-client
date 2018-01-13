@@ -503,6 +503,7 @@ int main(int argc, char** argv) {
         }
 
         try {
+            result = basicTest<std::string, std::string>(cacheManager, cache);
             std::string argName1 = std::string("keyValue");
             std::string argValue1 = std::string("abc");
             std::string argName2 = std::string("keyName");
@@ -549,6 +550,7 @@ int main(int argc, char** argv) {
                 &Marshaller<std::string>::destroy, vm, &Marshaller<std::string>::destroy);
         cacheManager.start();
         try {
+            result = basicTest<std::string, std::string>(cacheManager, cache);
             std::string argName1 = std::string("keyValue");
             std::string argValue1 = std::string("abc");
             std::string argName2 = std::string("keyName");
