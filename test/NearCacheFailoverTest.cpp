@@ -161,12 +161,18 @@ int main(int argc, char** argv) {
 
         pre_hits = std::stoi(nearCache.stats()["nearHits"]);
         // After failover, this get goes remote
-        rest = nearCache.get("key1");
-        post_hits = std::stoi(nearCache.stats()["nearHits"]);
+		// Sometime the get is executed before the fail is detected
+		// that's why the retry stuff
+		for (auto i = 0; i < 10; ++i) {
+			rest = nearCache.get("key1");
+			post_hits = std::stoi(nearCache.stats()["nearHits"]);
+			if (post_hits == pre_hits)
+				break;
+			std::this_thread::sleep_for(std::chrono::seconds(3));
+		}
         if (areWrong(post_hits, pre_hits, rest, __LINE__)) {
             return -1;
         }
-
         pre_hits = post_hits;
         // this get goes near
         rest = nearCache.get("key1");

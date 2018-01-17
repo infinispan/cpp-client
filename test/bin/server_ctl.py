@@ -18,7 +18,7 @@ def is_compressed_oops_supported(java):
         return (re.search("Unrecognized VM option 'UseCompressedOops'", error.output) is None)
     return true
 
-def static_java_args(java, jboss_home, config):
+def static_java_args(java, jboss_home, config, opts):
     # No luck calling standalone.bat without hanging.
     # This is what the batch file does in the default case for 6.0.0.
     cmd = [java, '-XX:+TieredCompilation', '-XX:+UseCompressedOops',
@@ -28,7 +28,7 @@ def static_java_args(java, jboss_home, config):
             '-Dlogging.configuration=file:' + jboss_home + '/standalone/configuration/logging.properties',
             '-jar', jboss_home + '/jboss-modules.jar', '-mp', jboss_home + '/modules',
             '-jaxpmodule', 'javax.xml.jaxp-provider', 'org.jboss.as.standalone', 
-            '-Djboss.home.dir=' + jboss_home, '-c', config]
+            '-Djboss.home.dir=' + jboss_home, '-c', config, opts]
     # This option doesn't work on a 32-bit JVM
 
     if not is_compressed_oops_supported(java):
@@ -54,7 +54,7 @@ def start(args):
 
     if os.name == 'nt' :
         # Hangs on standalone.bat script.  Call Java directly.
-        jproc = subprocess.Popen(static_java_args(java_exe, ispn_server_home, ispn_server_config), close_fds=True, creationflags=subprocess.CREATE_NEW_CONSOLE);
+        jproc = subprocess.Popen(static_java_args(java_exe, ispn_server_home, ispn_server_config, ispn_server_opts), close_fds=True, creationflags=subprocess.CREATE_NEW_CONSOLE);
     else:
         startup_script = ispn_server_home + '/bin/' + 'standalone.sh';
         new_env = os.environ.copy()
