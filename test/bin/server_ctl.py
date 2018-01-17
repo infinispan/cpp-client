@@ -37,10 +37,16 @@ def static_java_args(java, jboss_home, config):
     return cmd
 
 def start(args):
-    stop(verbose=False)
     java_exe = args[2]
     ispn_server_home = args[3]
     ispn_server_config = args[4]
+    ispn_server_opts = "-DNOOP";
+    if (len(args)>5) :
+        ispn_server_opts = args[5];
+    ispn_server_pid_file = "servers.pkl";
+    if (len(args)>6) :
+        ispn_server_pid_file = args[6];
+    stop(["server_ctl.py","stop",ispn_server_pid_file])
 
     # ctest likes to hang waiting for the subprocesses.  Different
     # tricks on Windows or Linux disassociate the daemon server from
@@ -55,18 +61,21 @@ def start(args):
         # Tell standalone.sh that you want termination signals to get through to the java process
         new_env['LAUNCH_JBOSS_IN_BACKGROUND'] = 'yes'
         server_out = open('server.out', 'w')
-        jproc = subprocess.Popen([startup_script, '-c', ispn_server_config], stdout=server_out, stderr=server_out, close_fds=True, env=new_env);
+        jproc = subprocess.Popen([startup_script, '-c', ispn_server_config, ispn_server_opts], stdout=server_out, stderr=server_out, close_fds=True, env=new_env);
         server_out.close()
 
-    output = open('servers.pkl', 'wb')
+    output = open(ispn_server_pid_file, 'wb')
     pickle.dump(jproc.pid, output)
     output.close()
 
     return 0
 
-def stop(verbose=False):
-    if (os.path.exists('servers.pkl')):
-        pkl_file = open('servers.pkl', 'rb')
+def stop(args, verbose=False):
+    ispn_server_pid_file = "servers.pkl";
+    if (len(args)>2) :
+        ispn_server_pid_file = args[2];
+    if (os.path.exists(ispn_server_pid_file)):
+        pkl_file = open(ispn_server_pid_file, 'rb')
 
         jproc_pid = None
         try:
@@ -86,7 +95,7 @@ def stop(verbose=False):
                     pass
 
         pkl_file.close()
-        os.unlink('servers.pkl')
+        os.unlink(ispn_server_pid_file)
     else:
         if verbose:
             print('no test servers in use')
@@ -97,7 +106,7 @@ def main():
     if cmd == 'start':
         return start(sys.argv)
     if cmd == 'stop':
-        return stop(verbose=True)
+        return stop(sys.argv, verbose=True)
     return 1
 
 if __name__ == "__main__":
