@@ -21,7 +21,7 @@ pipeline{
             SWIG_EXECUTABLE = 'C:\\\\PROGRA~1\\\\SWIGWI~1.12\\\\SWIG.EXE'
             test32 = 'empty'
             test64 = 'empty'
-            HOTROD_LOG_LEVEL = 'TRACE'
+            HOTROD_LOG_LEVEL = 'INFO'
         }
         steps {
             checkout scm
@@ -35,7 +35,7 @@ pipeline{
         agent { label 'slave-group-normal'
         }
         environment {
-          HOTROD_LOG_LEVEL = 'TRACE'
+          HOTROD_LOG_LEVEL = 'INFO'
           INFINISPAN_VERSION = '9.1.3.Final'
           JAVA_HOME = '/opt/oracle-jdk8'
           JBOSS_HOME = '/home/ec2-user/ispn/infinispan-server'
