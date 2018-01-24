@@ -148,10 +148,7 @@ int main(int argc, char** argv) {
 
         testCache.remove(2);
 
-        if (std::future_status::timeout == promise.get_future().wait_for(std::chrono::seconds(30))) {
-            std::cout << "FAIL: Continuous query events (Timeout)" << std::endl;
-            return -1;
-        }
+        promise.get_future().wait();
 
         if (createdCount != 2 || changedCount != 1 || removedCount != 1) {
             std::cout << "FAIL: (createdCount,changedCount,removedCount) is  (" << createdCount << ", " << changedCount
@@ -232,10 +229,7 @@ int main(int argc, char** argv) {
 
         testCache.remove(3);
 
-        if (std::future_status::timeout == promise.get_future().wait_for(std::chrono::seconds(30))) {
-            std::cout << "FAIL: Continuous query events (Timeout)" << std::endl;
-            return -1;
-        }
+        promise.get_future().wait();
 
         if (createdCount != 2 || changedCount != 1 || removedCount != 1) {
             std::cout << "FAIL: (createdCount, changedCount, removedCount) is  (" << createdCount << ", "
@@ -350,15 +344,9 @@ int main(int argc, char** argv) {
 
         testCache.remove(1);  // threads sync. Removing 1 completes the promise
 
-        if (std::future_status::timeout == promise.get_future().wait_for(std::chrono::seconds(30))) {
-            std::cout << "FAIL: Continuous query events (Timeout)" << std::endl;
-            return -1;
-        }
+        promise.get_future().wait();
 
-        if (std::future_status::timeout == promise_where.get_future().wait_for(std::chrono::seconds(30))) {
-            std::cout << "FAIL: Continuous query events (Timeout-query-with-where)" << std::endl;
-            return -1;
-        }
+        promise_where.get_future().wait();
 
         if (createdCount != 2 || changedCount != 2 || removedCount != 2) {
             std::cout << "FAIL: (createdCount,changedCount,removedCount) is  (" << createdCount << ", " << changedCount
