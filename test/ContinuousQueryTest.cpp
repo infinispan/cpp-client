@@ -155,6 +155,7 @@ int main(int argc, char** argv) {
                     << ", " << removedCount << ")" << "  should be (2,1,1)" << std::endl;
             return -1;
         }
+        std::cout << "End Testing query: from sample_bank_account.User" << std::endl;
     }
 
     ContinuousQueryListener<int, sample_bank_account::User, int, std::string> cql1(testCache,
@@ -236,6 +237,7 @@ int main(int argc, char** argv) {
                     << changedCount << ", " << removedCount << ")" << "  should be (2,1,1)" << std::endl;
             return -1;
         }
+        std::cout << "End Testing query: select id, name from sample_bank_account.User" << std::endl;
     }
 
     ContinuousQueryListener<int, sample_bank_account::User> cql2(testCache, "from sample_bank_account.User");
@@ -360,6 +362,8 @@ int main(int argc, char** argv) {
                     << std::endl;
             return -1;
         }
+        std::cout << "End Testing multiple queries: from sample_bank_account.User" << std::endl;
+        std::cout << "                          from sample_bank_account.User where name='Mickey'" << std::endl;
     }
 
     std::cout << "PASS: continuous query" << std::endl;
