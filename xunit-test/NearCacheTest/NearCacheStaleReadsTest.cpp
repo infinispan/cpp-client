@@ -63,9 +63,9 @@ TEST_F(NearCacheStaleReadsTest, AvoidStaleReadAfterPutRemoveTest) {
     std::function<void(int, RemoteCache<std::string, std::string>&)> f = [](int i, RemoteCache<std::string, std::string> &cache) {
     std::string value = std::string("v") + std::to_string(i);
     cache.put("k", value);
-    ASSERT_EQ(value, *cache.get("k"));
+    ASSERT_EQ(value, *cache.get("k")) << "Return value different from: " << value;
     cache.remove("k");
-    ASSERT_EQ(nullptr, cache.get("k"));
+    ASSERT_EQ(nullptr, cache.get("k")) << "Return value is not null";
 };
     Repeat(f);
 }

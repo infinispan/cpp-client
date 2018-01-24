@@ -32,6 +32,7 @@ char RemoveClientListenerOperation::executeOperation(transport::Transport& trans
     uint8_t status = readHeaderAndValidate(transport, *params);
     if (HotRodConstants::isSuccess(status))
     {
+      listenerNotifier.releaseTransport(clientListener.getListenerId());
       listenerNotifier.removeClientListener(clientListener.getListenerId());
     }
     return status;

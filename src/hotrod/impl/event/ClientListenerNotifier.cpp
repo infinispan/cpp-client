@@ -65,10 +65,14 @@ void ClientListenerNotifier::stop()
 	}
 }
 
-void ClientListenerNotifier::removeClientListener(const std::vector<char> listenerId)
-{
+void ClientListenerNotifier::releaseTransport(const std::vector<char> listenerId) {
     eventDispatchers.find(listenerId)->second->getTransport().release();
     transportFactory->releaseTransport(eventDispatchers.find(listenerId)->second->getTransport());
+}
+
+
+void ClientListenerNotifier::removeClientListener(const std::vector<char> listenerId)
+{
 	eventDispatchers.erase(listenerId);
 }
 
