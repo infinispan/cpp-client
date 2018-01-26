@@ -8,16 +8,14 @@ using ::infinispan::hotrod::ConfigurationBuilder;
 using ::infinispan::hotrod::Configuration;
 
 std::unique_ptr<infinispan::hotrod::RemoteCacheManager> NearCacheEvictionTest::remoteCacheManager;
-
+using namespace std::chrono;
 template<typename Lambda>
 void waitFor(Lambda &lambda, long waitTime = 1000, int pollInterval = 100){
     {
-    using namespace std::chrono;
     milliseconds end = duration_cast< milliseconds >(system_clock::now().time_since_epoch())+ milliseconds(waitTime);
         while(duration_cast< milliseconds >(system_clock::now().time_since_epoch())<end)
         {
             if (lambda()) return;
-            std::cout << ".";
             std::this_thread::sleep_for(milliseconds(pollInterval));
         }
         ASSERT_TRUE(lambda()) << "Error timeout";
@@ -59,6 +57,8 @@ TEST_F(NearCacheEvictionTest, EvictionOnFullNearCacheTest) {
     auto stats0 = cache.stats();
     cache.get("key1");
     cache.put("key1", "value1");
+    // Sleep some time. This avoids that the events related to the prev put arrives after the next get
+    std::this_thread::sleep_for(milliseconds(50));
     cache.get("key1");
     // key1 is near now
     cache.get("key1");
@@ -71,12 +71,14 @@ TEST_F(NearCacheEvictionTest, EvictionOnFullNearCacheTest) {
     for (int i = 0; i < 10; i++)
     {
         cache.put(std::string("key") + std::to_string(i + 2), std::string("value") + std::to_string(i + 2));
+        // Sleep some time. This avoids that the events related to the prev put arrives after the next get
+        std::this_thread::sleep_for(milliseconds(50));
         //call Get to populate the near cache
         auto currStats = cache.stats();
         auto oneMoreHit = [&cache, &currStats,i]()->bool{
             cache.get(std::string("key") + std::to_string(i + 2));
             auto tmpStat = cache.stats();
-            return (std::stoi(currStats["hits"]) + 1 == std::stoi(tmpStat["hits"]));
+            return (std::stoi(currStats["hits"]) + 1 <= std::stoi(tmpStat["hits"]));
         };
         waitFor(oneMoreHit);
     }
@@ -85,7 +87,7 @@ TEST_F(NearCacheEvictionTest, EvictionOnFullNearCacheTest) {
     auto oneMoreHit = [&cache, &stats2]()->bool{
         cache.get("key1");
         auto tmpStat = cache.stats();
-        return (std::stoi(stats2["hits"]) + 1 == std::stoi(tmpStat["hits"]));
+        return (std::stoi(stats2["hits"]) + 1 <= std::stoi(tmpStat["hits"]));
     };
     waitFor(oneMoreHit);
     // key1 push key2 out from near cache
@@ -94,7 +96,7 @@ TEST_F(NearCacheEvictionTest, EvictionOnFullNearCacheTest) {
         cache.get("key2");
         cache.get("key3");
         auto tmpStat = cache.stats();
-        return (std::stoi(stats2["hits"]) + 3 == std::stoi(tmpStat["hits"]));
+        return (std::stoi(stats2["hits"]) + 3 <= std::stoi(tmpStat["hits"]));
     };
     waitFor(threeMoreHit);
     auto stats3 = cache.stats();
