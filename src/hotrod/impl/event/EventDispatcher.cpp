@@ -28,10 +28,21 @@ void EventDispatcher::start()
 
 void EventDispatcher::stop()
 {
-   // This terminates the thread
-   transport.release();
+    // This terminates the thread
+    transport.release();
+    waitThreadExit();
 }
 
+void EventDispatcher::waitThreadExit()
+{
+    if (p_thread)
+    {
+        if (p_thread->joinable())
+        {
+            p_thread->join();
+        }
+    }
+}
 void EventDispatcher::run() {
     while (true) {
         try {
@@ -76,7 +87,7 @@ void EventDispatcher::run() {
                     break;
                 }
             }
-        } catch (TransportException& ) {
+        } catch (const TransportException& ) {
             if (recoveryCallback) {
                 recoveryCallback();
             }
