@@ -28,7 +28,7 @@ def static_java_args(java, jboss_home, config, opts):
             '-Dlogging.configuration=file:' + jboss_home + '/standalone/configuration/logging.properties',
             '-jar', jboss_home + '/jboss-modules.jar', '-mp', jboss_home + '/modules',
             '-jaxpmodule', 'javax.xml.jaxp-provider', 'org.jboss.as.standalone', 
-            '-Djboss.home.dir=' + jboss_home, '-c', config, opts]
+            '-Djboss.home.dir=' + jboss_home, '-c', config]+ opts.split()
     # This option doesn't work on a 32-bit JVM
 
     if not is_compressed_oops_supported(java):
@@ -61,7 +61,7 @@ def start(args):
         # Tell standalone.sh that you want termination signals to get through to the java process
         new_env['LAUNCH_JBOSS_IN_BACKGROUND'] = 'yes'
         server_out = open('server.out', 'w')
-        jproc = subprocess.Popen([startup_script, '-c', ispn_server_config, ispn_server_opts], stdout=server_out, stderr=server_out, close_fds=True, env=new_env);
+        jproc = subprocess.Popen([startup_script, '-c', ispn_server_config]+ispn_server_opts.split(), stdout=server_out, stderr=server_out, close_fds=True, env=new_env);
         server_out.close()
 
     output = open(ispn_server_pid_file, 'wb')

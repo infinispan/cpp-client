@@ -764,7 +764,7 @@ else (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.sh") AND (EXISTS "${HOTR
     add_test (probe_port_stop ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/probe_port.py localhost 11222 60 down)
     add_test (start_cluster_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py start ${JAVA_RUNTIME} ${HOTROD_JBOSS_HOME} clustered.xml)
     add_test (probe_cluster_port ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/probe_port.py localhost 11222 60)
-    add_test (start_fail_over_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py start ${JAVA_RUNTIME} ${HOTROD_JBOSS_HOME} "clustered.xml" "-Djboss.socket.binding.port-offset=100" server2.pkl)
+    add_test (start_fail_over_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py start ${JAVA_RUNTIME} ${HOTROD_JBOSS_HOME} "clustered.xml" "-Djboss.socket.binding.port-offset=100 -Djboss.server.data.dir=${HOTROD_JBOSS_HOME}/standalone/data100" server2.pkl)
     add_test (probe_fail_over_port ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/probe_port.py localhost 11322 60)
     add_test (nearCacheFailover nearCacheFailoverTest ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/probe_port.py server2.pkl)
     add_test (probe_fail_over_port_stop ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/probe_port.py localhost 11322 60 down)
