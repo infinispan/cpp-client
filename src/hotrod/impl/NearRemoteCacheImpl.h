@@ -24,7 +24,7 @@ public:
 
     NearRemoteCacheImpl(RemoteCacheManagerImpl& rcm, std::string cacheName,
             const NearCacheConfiguration& conf) :
-            RemoteCacheImpl(rcm, cacheName), maxEntries(conf.getMaxEntries()), cl(), hits(0) {
+            RemoteCacheImpl(rcm, cacheName), maxEntries(conf.getMaxEntries()), cl(), hits(0), removed(0) {
     }
 
     virtual ~NearRemoteCacheImpl() {}
@@ -85,6 +85,7 @@ public:
         std::unique_lock<std::mutex> uLock(_nearMutex);
         if (_nearMap.find(kbuf) != _nearMap.end()) {
             version->version = _nearMap[kbuf].getVersion();
+            ++hits;
             return rcb.baseValueUnmarshall(_nearMap[kbuf].getValue());
         }
         else
@@ -101,13 +102,13 @@ public:
             }
             return value;
         }
-        ++hits;
         version->version = _nearMap[kbuf].getVersion();
         return rcb.baseValueUnmarshall(_nearMap[kbuf].getValue());
     }
     virtual void stats(std::map<std::string,std::string> &stats) {
         RemoteCacheImpl::stats(stats);
         stats["nearHits"]=std::to_string(this->hits);
+        stats["nearRemoved"]=std::to_string(this->removed);
     }
 
     virtual void clear() {
@@ -128,6 +129,7 @@ private:
     event::CustomClientListener cl;
     bool shutdown = false;
     long hits;
+    long removed;
     void addElementToMap(std::vector<char>& key,
             VersionedValueImpl<std::vector<char>>& value) {
         std::lock_guard<std::mutex> guard(_nearMutex);
@@ -158,6 +160,7 @@ private:
             }
         }
         _nearMap.erase(key);
+        ++removed;
     }
 
     void clearMap() {
