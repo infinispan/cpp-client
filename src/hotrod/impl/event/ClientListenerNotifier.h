@@ -31,6 +31,7 @@ public:
 	const Transport& findClientListenerTransport(const std::vector<char> listenerId);
 	static ClientListenerNotifier* create(std::shared_ptr<TransportFactory> factory);
 	void failoverClientListeners(const std::vector<transport::InetSocketAddress>& failedServers);
+	void releaseTransport(const std::vector<char> listenerId);
 	void stop();
 protected:
 	ClientListenerNotifier(std::shared_ptr<TransportFactory> factory);

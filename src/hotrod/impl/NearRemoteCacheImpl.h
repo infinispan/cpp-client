@@ -82,7 +82,14 @@ public:
             VersionedValue* version) {
         std::vector<char> kbuf, vbuf;
         rcb.baseKeyMarshall(key, kbuf);
-        if (_nearMap.find(kbuf) == _nearMap.end()) {
+        std::unique_lock<std::mutex> uLock(_nearMutex);
+        if (_nearMap.find(kbuf) != _nearMap.end()) {
+            version->version = _nearMap[kbuf].getVersion();
+            return rcb.baseValueUnmarshall(_nearMap[kbuf].getValue());
+        }
+        else
+        {
+            uLock.unlock();
             void* value = RemoteCacheImpl::getWithVersion(rcb, key, version);
             if (value)
             {
@@ -148,13 +155,9 @@ private:
             auto it = std::find(_nearFifo.begin(), _nearFifo.end(), key);
             if (it != _nearFifo.end()) {
                 _nearFifo.erase(it);
-                _nearMap.erase(key);
             }
         }
-        else
-        {
-            _nearMap.erase(key);
-        }
+        _nearMap.erase(key);
     }
 
     void clearMap() {

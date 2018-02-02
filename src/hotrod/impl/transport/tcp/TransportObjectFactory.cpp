@@ -44,9 +44,7 @@ TransportObjectFactory::TransportObjectFactory(Codec& c, TcpTransportFactory& fa
     /* initialize the sasl library */
     /* Some tests don't create a tcpTransportFactory */
 #if !defined _WIN32 && !defined _WIN64
-    const sasl_callback_t *callbacks =
-            tcpTransportFactory.getConfiguration().getSecurityConfiguration().getAuthenticationConfiguration().getCallbackHandler().data();
-    r = sasl_client_init(callbacks);
+    r = sasl_client_init(nullptr);
     if (r != SASL_OK)
         saslfail(r, "initializing libsasl");
 #endif
@@ -69,16 +67,18 @@ const sasl_callback_t* get_auth_callback(unsigned long id, const AuthenticationC
 
 void do_sasl_authentication(Codec& codec, Transport& t, const AuthenticationConfiguration& conf) {
 #if !defined _WIN32 && !defined _WIN64
-    sasl_conn_t *conn;
+    sasl_conn_t *conn=nullptr;
     int r;
-    const char *data;
+    const char *data=nullptr;
     const char *chosenmech;
-    int len;
+    int len=0;
 
     AuthMechListOperation am(codec, t);
     std::vector<std::string> respOpAm(am.execute());
+    const sasl_callback_t *callbacks =
+            conf.getCallbackHandler().data();
 
-    r = sasl_client_new("hotrod", conf.getServerFqdn().c_str(), nullptr, nullptr, nullptr, 0, &conn);
+    r = sasl_client_new("hotrod", conf.getServerFqdn().c_str(), nullptr, nullptr, callbacks, 0, &conn);
     if (r != SASL_OK)
         saslfail(r, "allocating connection state");
     /* SASL_AUTH_EXTERNAL must not be null if mechanisms are loaded via plugin
@@ -86,16 +86,25 @@ void do_sasl_authentication(Codec& codec, Transport& t, const AuthenticationConf
      * the server will use the CN provided in the certificate.
      */
     sasl_setprop( conn, SASL_AUTH_EXTERNAL, "load_plugin" );
-    r = sasl_client_start(conn, conf.getSaslMechanism().c_str(), NULL, &data, (unsigned int *) &len, &chosenmech);
+    std::vector<char> resp;
+    if (conf.getSaslMechanism().compare("DIGEST-MD5"))
+    {
+        r = sasl_client_start(conn, conf.getSaslMechanism().c_str(), NULL, &data, (unsigned int *) &len, &chosenmech);
+        resp = std::vector<char>(data, data + len);
+    }
+    else
+    {
+        r = sasl_client_start(conn, conf.getSaslMechanism().c_str(), NULL, NULL, 0, &chosenmech);
+    }
     if (r != SASL_OK && r != SASL_CONTINUE) {
         saslfail(r, "starting SASL negotiation");
     }
+    std::vector<char> mech(chosenmech, chosenmech + strlen(chosenmech));
     /* we send up to 3 strings;
      the mechanism chosen, the presence of initial response,
      and optionally the initial response */
-    std::vector<char> mech(chosenmech, chosenmech + strlen(chosenmech)), resp(data, data + len);
     AuthOperation a(codec, t, mech, resp);
-    std::vector<char> respOp(a.execute());
+    std::vector<char> respOp = a.execute();
     while (r == SASL_CONTINUE) {
         r = sasl_client_step(conn, respOp.data(), respOp.size(), NULL, &data, (unsigned int *) &len);
         std::vector<char> mech(chosenmech, chosenmech + strlen(chosenmech)), resp(data, data + len);

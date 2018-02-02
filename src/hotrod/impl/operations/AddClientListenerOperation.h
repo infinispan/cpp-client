@@ -38,7 +38,6 @@ public:
     virtual void releaseTransport(transport::Transport* transport);
     virtual void invalidateTransport(const infinispan::hotrod::transport::InetSocketAddress &, transport::Transport*);
 
-    virtual transport::Transport& getTransport(int retryCount, const std::set<transport::InetSocketAddress>& failedServers);
 	char executeOperation(transport::Transport& transport);
     ClientListenerNotifier& listenerNotifier;
 	const std::vector<char> listenerId;
@@ -53,6 +52,7 @@ private:
     std::vector<char> generateV4UUID();
 	void processEvent(const protocol::Codec20& codec20, uint8_t respOpCode,
 			transport::Transport& transport);
+	bool failed = false;
 
     /**
      * Dedicated transport instance for adding client listener. This transport
