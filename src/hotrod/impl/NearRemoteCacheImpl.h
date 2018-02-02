@@ -24,8 +24,10 @@ public:
 
     NearRemoteCacheImpl(RemoteCacheManagerImpl& rcm, std::string cacheName,
             const NearCacheConfiguration& conf) :
-            RemoteCacheImpl(rcm, cacheName), maxEntries(conf.getMaxEntries()), cl() {
+            RemoteCacheImpl(rcm, cacheName), maxEntries(conf.getMaxEntries()), cl(), hits(0), removed(0) {
     }
+
+    virtual ~NearRemoteCacheImpl() {}
 
     virtual void *get(RemoteCacheBase& rcb, const void* key) {
         VersionedValue version;
@@ -83,6 +85,7 @@ public:
         std::unique_lock<std::mutex> uLock(_nearMutex);
         if (_nearMap.find(kbuf) != _nearMap.end()) {
             version->version = _nearMap[kbuf].getVersion();
+            ++hits;
             return rcb.baseValueUnmarshall(_nearMap[kbuf].getValue());
         }
         else
@@ -99,7 +102,15 @@ public:
             }
             return value;
         }
+        version->version = _nearMap[kbuf].getVersion();
+        return rcb.baseValueUnmarshall(_nearMap[kbuf].getValue());
     }
+    virtual void stats(std::map<std::string,std::string> &stats) {
+        RemoteCacheImpl::stats(stats);
+        stats["nearHits"]=std::to_string(this->hits);
+        stats["nearRemoved"]=std::to_string(this->removed);
+    }
+
     virtual void clear() {
         RemoteCacheImpl::clear();
         clearMap();
@@ -116,6 +127,9 @@ private:
     std::vector<std::vector<char> > filterFactoryParams;
     std::vector<std::vector<char> > converterFactoryParams;
     event::CustomClientListener cl;
+    bool shutdown = false;
+    long hits;
+    long removed;
     void addElementToMap(std::vector<char>& key,
             VersionedValueImpl<std::vector<char>>& value) {
         std::lock_guard<std::mutex> guard(_nearMutex);
@@ -146,6 +160,7 @@ private:
             }
         }
         _nearMap.erase(key);
+        ++removed;
     }
 
     void clearMap() {
@@ -160,26 +175,32 @@ private:
     }
     void startListener() {
         std::function<void(ClientCacheEntryCreatedEvent<std::vector<char>> ev)> created =
-                [this] (ClientCacheEntryCreatedEvent<std::vector<char>> ev) {removeElementFromMap(ev.getKey());};
+                [this] (ClientCacheEntryCreatedEvent<std::vector<char>> ev) {
+            removeElementFromMap(ev.getKey());
+        };
         std::function<void(ClientCacheEntryRemovedEvent<std::vector<char>> ev)> removed =
                 [this] (ClientCacheEntryRemovedEvent<std::vector<char>> ev) {removeElementFromMap(ev.getKey());};
         std::function<void(ClientCacheEntryExpiredEvent<std::vector<char>> ev)> expired =
                 [this] (ClientCacheEntryExpiredEvent<std::vector<char>> ev) {removeElementFromMap(ev.getKey());};
         std::function<void(ClientCacheEntryModifiedEvent<std::vector<char>> ev)> modified =
-                [this] (ClientCacheEntryModifiedEvent<std::vector<char>> ev) {removeElementFromMap(ev.getKey());};
-        std::function < void() > failOverHandler =
-                [this] () {
-                    this->invalidateCache();
+                [this] (ClientCacheEntryModifiedEvent<std::vector<char>> ev) {
+            removeElementFromMap(ev.getKey());
+        };
+        std::function < void() > failOverHandler = [this] () {
+                    if (!shutdown) {              // failover only if not shutting down
+                        this->invalidateCache();
+                        this->startListener();
+                    }
                 };
         cl.add_listener(created);
         cl.add_listener(removed);
         cl.add_listener(modified);
         cl.add_listener(expired);
-        this->addClientListener(cl, filterFactoryParams, converterFactoryParams,
-                failOverHandler);
+        this->addClientListener(cl, filterFactoryParams, converterFactoryParams, failOverHandler);
     }
     virtual void stop()
     {
+        this->shutdown = true;
         this->removeClientListener(cl);
         this->invalidateCache();
     }
