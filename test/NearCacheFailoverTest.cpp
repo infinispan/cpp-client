@@ -80,20 +80,16 @@ RemoteCache<std::string, std::string> &getNewCache(RemoteCacheManager& m) {
             vm, &Marshaller<std::string>::destroy);
 }
 
-bool areWrong(int value, int expect, std::string* rest, int line) {
+bool verifyAssert(int value, int expect, std::unique_ptr<std::string>& rest, int line) {
     if (value != expect) {
         std::cerr << "Line " << line << " Awaiting " << expect << " got " << value << std::endl;
-        if (rest)
-            delete rest;
-        return true;
+        return false;
     }
-    if (rest->compare("value1")) {
-        std::cerr << "Line " << line << " Awaiting value1 got " << (rest != nullptr ? rest->c_str() : "null") << std::endl;
-        if (rest)
-            delete rest;
-        return true;
+    if (rest && rest->compare("value1")) {
+        std::cerr << "Line " << line << " Awaiting value1 got " << (rest ? *rest : "null") << std::endl;
+        return false;
     }
-    return false;
+    return true;
 }
 
 void releaseRemoteCacheManager(RemoteCacheManager * rcm)
@@ -120,37 +116,46 @@ int main(int argc, char** argv) {
         nearCache.clear();
 
         int pre_hits, post_hits;
-        std::string *rest;
+        std::unique_ptr<std::string> result;
         // nearHits is added by the near cache framework
         pre_hits = std::stoi(nearCache.stats()["nearHits"]);
         nearCache.put("key1", "value1");
         // After put, this get goes remote
-        rest = nearCache.get("key1");
+        result.reset(nearCache.get("key1"));
         post_hits = std::stoi(nearCache.stats()["nearHits"]);
-        if (areWrong(post_hits, pre_hits, rest, __LINE__)) {
+        if (!verifyAssert(post_hits, pre_hits, result, __LINE__)) {
             return -1;
         }
-        delete rest;
 
-        // This call goes remote
+        // Invalidate the near cache with a put operation
         pre_hits = post_hits;
-        nearCache2.put("key1", "value1");
-        // After put via different cache manager, this get goes remote
-        rest = nearCache.get("key1");
-        post_hits = std::stoi(nearCache.stats()["nearHits"]);
-        if (areWrong(post_hits, pre_hits, rest, __LINE__)) {
+        int removed;
+        int pre_removed=std::stoi(nearCache.stats()["nearRemoved"]);
+        result.reset(nearCache2.put("key1", "value1"));
+        // wait the landing of all the events
+        for (auto i=0; i < 20; i++)
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            removed=std::stoi(nearCache.stats()["nearRemoved"]);
+            if (removed==pre_removed+1) break;
+        }
+        if (!verifyAssert(removed, pre_removed+1, result, __LINE__)) {
             return -1;
         }
-        delete rest;
+        // After put via different cache manager, this get goes remote
+        result.reset(nearCache.get("key1"));
+        post_hits = std::stoi(nearCache.stats()["nearHits"]);
+        if (!verifyAssert(post_hits, pre_hits, result, __LINE__)) {
+            return -1;
+        }
 
         pre_hits = post_hits;
         // this get goes near
-        rest = nearCache.get("key1");
+        result.reset(nearCache.get("key1"));
         post_hits = std::stoi(nearCache.stats()["nearHits"]);
-        if (areWrong(post_hits, pre_hits+1, rest, __LINE__)) {
+        if (!verifyAssert(post_hits, pre_hits+1, result, __LINE__)) {
             return -1;
         }
-        delete rest;
 
         std::string stop_server = python_exec + " " + server_ctl + " stop " + server_pid_filename;
         std::cout << "Stopping with command: " << stop_server << std::endl;
@@ -164,20 +169,20 @@ int main(int argc, char** argv) {
 		// Sometime the get is executed before the fail is detected
 		// that's why the retry stuff
 		for (auto i = 0; i < 10; ++i) {
-			rest = nearCache.get("key1");
+			result.reset(nearCache.get("key1"));
 			post_hits = std::stoi(nearCache.stats()["nearHits"]);
 			if (post_hits == pre_hits)
 				break;
 			std::this_thread::sleep_for(std::chrono::seconds(3));
 		}
-        if (areWrong(post_hits, pre_hits, rest, __LINE__)) {
+        if (!verifyAssert(post_hits, pre_hits, result, __LINE__)) {
             return -1;
         }
         pre_hits = post_hits;
         // this get goes near
-        rest = nearCache.get("key1");
+        result.reset(nearCache.get("key1"));
         post_hits = std::stoi(nearCache.stats()["nearHits"]);
-        if (areWrong(post_hits, pre_hits+1, rest, __LINE__)) {
+        if (!verifyAssert(post_hits, pre_hits+1, result, __LINE__)) {
             return -1;
         }
     }
