@@ -504,7 +504,7 @@ hr_protobuf_generate_cpp(TEST_PROTO_SRCS TEST_PROTO_HDRS .
 
 add_custom_target(build_test COMMAND "echo" "build_test completed")
 add_dependencies(build_test JniTest krbserver unittest unittest-static simple simple-static queryTest queryTest-static events
-                            nearCacheTest continuousQueryTest continuousQueryTest-static
+                            nearCacheTest nearCacheFailoverTest continuousQueryTest continuousQueryTest-static
                             simpleSasl simple-tls simple-tls-sni simpleSaslTls PutGetTest QueryTest ClearTest xunit_nearCacheTest)
 
 # TESTS
@@ -618,6 +618,17 @@ set_property(TARGET nearCacheTest PROPERTY CXX_STANDARD_REQUIRED ON)
 set_target_properties(nearCacheTest PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}")
 set_target_properties (nearCacheTest PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${NO_UNUSED_FLAGS}")
 target_link_libraries (nearCacheTest hotrod hotrod_protobuf ${PROTOBUF_LIBRARY} ${platform_libs})
+
+add_executable (nearCacheFailoverTest test/NearCacheFailoverTest.cpp)
+target_include_directories(nearCacheFailoverTest PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
+                                     "${INCLUDE_FILES_DIR}"
+                                     "${CMAKE_CURRENT_BINARY_DIR}"
+                                     "${PROTOBUF_INCLUDE_DIR}")
+set_property(TARGET nearCacheFailoverTest PROPERTY CXX_STANDARD 11)
+set_property(TARGET nearCacheFailoverTest PROPERTY CXX_STANDARD_REQUIRED ON)
+set_target_properties(nearCacheFailoverTest PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}")
+set_target_properties (nearCacheFailoverTest PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${NO_UNUSED_FLAGS}")
+target_link_libraries (nearCacheFailoverTest hotrod hotrod_protobuf ${PROTOBUF_LIBRARY} ${platform_libs})
 
     add_executable (simpleSasl test/SimpleSasl.cpp)
     target_include_directories(simpleSasl PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
@@ -751,6 +762,14 @@ else (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.sh") AND (EXISTS "${HOTR
     add_test (continuousQueryTest-static continuousQueryTest-static)
     add_test (stop_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py stop)
     add_test (probe_port_stop ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/probe_port.py localhost 11222 60 down)
+    add_test (start_cluster_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py start ${JAVA_RUNTIME} ${HOTROD_JBOSS_HOME} clustered.xml)
+    add_test (probe_cluster_port ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/probe_port.py localhost 11222 60)
+    add_test (start_fail_over_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py start ${JAVA_RUNTIME} ${HOTROD_JBOSS_HOME} "clustered.xml" "-Djboss.socket.binding.port-offset=100 -Djboss.server.data.dir=${HOTROD_JBOSS_HOME}/standalone/data100" server2.pkl)
+    add_test (probe_fail_over_port ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/probe_port.py localhost 11322 60)
+    add_test (nearCacheFailover nearCacheFailoverTest ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/probe_port.py server2.pkl)
+    add_test (probe_fail_over_port_stop ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/probe_port.py localhost 11322 60 down)
+    add_test (stop_cluster_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py stop)
+    add_test (probe_cluster_port_stop ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/probe_port.py localhost 11222 60 down)
     if (WIN32)
         add_test (start_sals_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py start ${JAVA_RUNTIME} ${HOTROD_JBOSS_HOME} standalone-sasl-nokrb.xml)
         add_test (probe_sasl_port ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/probe_port.py localhost 11222 60)
