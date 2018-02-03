@@ -42,7 +42,10 @@ void AddClientListenerOperation::releaseTransport(transport::Transport* t) {
     }
 }
 
-void AddClientListenerOperation::invalidateTransport(const infinispan::hotrod::transport::InetSocketAddress&, transport::Transport*){
+void AddClientListenerOperation::invalidateTransport(const infinispan::hotrod::transport::InetSocketAddress& addr, transport::Transport* transport){
+    if (transport) {
+        transportFactory->invalidateTransport(addr, transport);
+    }
 }
 
 //
@@ -85,6 +88,7 @@ static void processImmediateEvent(const ClientListener &clientListener, const Co
 
 char AddClientListenerOperation::executeOperation(transport::Transport& transport)
 {
+    this->failed=false;
     std::unique_ptr<protocol::HeaderParams> params(this->writeHeader(transport, ADD_CLIENT_LISTENER_REQUEST));
     const Codec20& codec20 = dynamic_cast<const Codec20&>(codec);
     transport.writeArray(listenerId);
