@@ -37,7 +37,7 @@ public:
     void  getBulk(RemoteCacheBase& rcb, std::map<void*, void*> &mbuf);
     void  getBulk(RemoteCacheBase& rcb, int size,  std::map<void*, void*> &mbuf);
     void  keySet(RemoteCacheBase& rcb, int scope, std::vector<void*> &result);
-    void  stats(std::map<std::string,std::string> &stats);
+    virtual void  stats(std::map<std::string,std::string> &stats);
     virtual void clear();
     uint64_t size();
     std::vector<char> execute(std::vector<char> cmdName, const std::map<std::vector<char>,std::vector<char>>& args);
