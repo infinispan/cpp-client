@@ -48,7 +48,6 @@ void AddClientListenerOperation::invalidateTransport(const infinispan::hotrod::t
     }
 }
 
-//
 static void processImmediateEvent(const ClientListener &clientListener, const Codec20& codec20,
 		uint8_t respOpCode, transport::Transport& transport) {
 	std::vector<char> listId = codec20.readEventListenerId(transport);
@@ -88,7 +87,7 @@ static void processImmediateEvent(const ClientListener &clientListener, const Co
 
 char AddClientListenerOperation::executeOperation(transport::Transport& transport)
 {
-    this->failed=false;
+    this->failed = false;
     std::unique_ptr<protocol::HeaderParams> params(this->writeHeader(transport, ADD_CLIENT_LISTENER_REQUEST));
     const Codec20& codec20 = dynamic_cast<const Codec20&>(codec);
     transport.writeArray(listenerId);
