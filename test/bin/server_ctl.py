@@ -41,10 +41,10 @@ def start(args):
     ispn_server_home = args[3]
     ispn_server_config = args[4]
     ispn_server_opts = "-DNOOP";
-    if (len(args)>5) :
+    if (len(args)>5):
         ispn_server_opts = args[5];
     ispn_server_pid_file = "servers.pkl";
-    if (len(args)>6) :
+    if (len(args)>6):
         ispn_server_pid_file = args[6];
     stop(["server_ctl.py","stop",ispn_server_pid_file])
 
@@ -72,7 +72,7 @@ def start(args):
 
 def stop(args, verbose=False):
     ispn_server_pid_file = "servers.pkl";
-    if (len(args)>2) :
+    if (len(args)>2):
         ispn_server_pid_file = args[2];
     if (os.path.exists(ispn_server_pid_file)):
         pkl_file = open(ispn_server_pid_file, 'rb')

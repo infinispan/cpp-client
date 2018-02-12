@@ -105,10 +105,10 @@ public:
         version->version = _nearMap[kbuf].getVersion();
         return rcb.baseValueUnmarshall(_nearMap[kbuf].getValue());
     }
-    virtual void stats(std::map<std::string,std::string> &stats) {
+    virtual void stats(std::map<std::string, std::string> &stats) {
         RemoteCacheImpl::stats(stats);
-        stats["nearHits"]=std::to_string(this->hits);
-        stats["nearRemoved"]=std::to_string(this->removed);
+        stats["nearHits"] = std::to_string(this->hits);
+        stats["nearRemoved"] = std::to_string(this->removed);
     }
 
     virtual void clear() {
