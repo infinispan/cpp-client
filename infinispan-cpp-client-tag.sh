@@ -15,6 +15,8 @@ if [ "$#" == "1" ]; then
     -e 's/set (CPACK_PACKAGE_VERSION_MINOR *".*")/set (CPACK_PACKAGE_VERSION_MINOR "'"$MIN"'")/' \
     -e 's/set (CPACK_PACKAGE_VERSION_PATCH *".*")/set (CPACK_PACKAGE_VERSION_PATCH "'"$PAT"'")/' CMakeLists.txt
     git add CMakeLists.txt
+    sed -i "s/cppTag.*/cppTag = '$1'/" Jenkinsfile
+    git add Jenkinsfile
     git commit -m  "$MAJ.$MIN.$PAT"
     git tag -a "$MAJ.$MIN.$PAT" -m "$MAJ.$MIN.$PAT"
     git push origin "$MAJ.$MIN.$PAT"
