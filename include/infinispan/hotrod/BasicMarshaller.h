@@ -11,11 +11,10 @@
 namespace infinispan {
 namespace hotrod {
 
-/*
- * A Marshaller for a few simple types.
+/**
+ * A marshaller that works with very simple object types: all the trivially copiable object,
+ * plus a specialization for std::string.
  */
-
-
 template <class T> class BasicMarshaller : public infinispan::hotrod::Marshaller<T>
 {
       public:
@@ -39,15 +38,6 @@ template <class T> class BasicMarshaller : public infinispan::hotrod::Marshaller
             return s;
         }
 };
-
-class BasicMarshallerHelper {
-public:
-    static void noRelease(std::vector<char>*) { /* nothing allocated, nothing to release */ }
-    static void release(std::vector<char> *buf) {
-        delete buf->data();
-    }
-};
-
 
 // Specialization for std::string:
 

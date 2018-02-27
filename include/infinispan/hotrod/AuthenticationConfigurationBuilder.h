@@ -30,6 +30,7 @@ public:
 
     /**
      * Configures whether authentication should be enabled or not
+     * \param enabled boolean
      */
     AuthenticationConfigurationBuilder& enabled(bool enabled) {
        m_enabled = enabled;
@@ -54,6 +55,7 @@ public:
 
     /**
      * Selects the SASL mechanism to use for the connection to the server
+     * \param saslMechanism the select mechanism: PLAIN, DIGEST-MD5, GSSAPI are available
      */
     AuthenticationConfigurationBuilder& saslMechanism(std::string saslMechanism) {
        m_saslMechanism = saslMechanism;

@@ -13,6 +13,9 @@
 namespace infinispan {
 namespace hotrod {
 
+/**
+ * SecurityConfigurationBuilder contains all the authentication and TLS related settings.
+ */
 class SecurityConfigurationBuilder : public ConfigurationChildBuilder
 {
 public:
@@ -20,7 +23,13 @@ public:
     SecurityConfiguration create() {
        return SecurityConfiguration(sslConfigurationBuilder.create(), authenticationConfigurationBuilder.create());
     }
+    /**
+     * \return the SSL (TLS) configuration builder related to this
+     */
     SslConfigurationBuilder& getSslConfigurationBuilder() { return sslConfigurationBuilder; }
+    /**
+     * \return the authentication configuration builder related to this
+     */
     AuthenticationConfigurationBuilder& authentication() { return authenticationConfigurationBuilder; }
 private:
     AuthenticationConfigurationBuilder authenticationConfigurationBuilder;

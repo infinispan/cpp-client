@@ -8,14 +8,25 @@
 namespace infinispan {
 namespace hotrod {
 
-//using infinispan::hotrod::transport::InetSocketAddress;
-
+/**
+ * Abstract class for a balancing strategy on failover. An implementation of this class must
+ * define a policy for the selection of the target server for a specific request.
+ */
 class FailOverRequestBalancingStrategy
 {
   public:
+    /** Signature spec for function that produce object of this class */
     typedef FailOverRequestBalancingStrategy* (*ProducerFn)();
+    /**
+     * Set the the list of the available servers
+     * \param servers the servers list
+     */
     virtual void setServers(const std::vector<transport::InetSocketAddress>& servers) = 0;
-    virtual const transport::InetSocketAddress& nextServer(const std::set<transport::InetSocketAddress>& failedServer) = 0;
+    /**
+     * \param failedServers the list of the server with failure
+     * \return the next target server
+     */
+    virtual const transport::InetSocketAddress& nextServer(const std::set<transport::InetSocketAddress>& failedServers) = 0;
 
     virtual ~FailOverRequestBalancingStrategy() {};
   private:

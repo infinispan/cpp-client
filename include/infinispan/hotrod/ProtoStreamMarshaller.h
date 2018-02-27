@@ -20,9 +20,8 @@ using namespace org::infinispan::protostream;
 namespace infinispan {
 namespace hotrod {
 
-/*
- * A Marshaller for a few simple types that pretends to be compatible with JBoss Marshaller.
- * See below the Helper class for a list of the managed types.
+/**
+ * A Marshaller based on Google Protobuf and on the WrappedMessage .proto specification
  */
 template <class T, unsigned int TypeId = 42> class ProtoStreamMarshaller : public infinispan::hotrod::Marshaller<T> {
     void marshall(const T& obj, std::vector<char>& b) {

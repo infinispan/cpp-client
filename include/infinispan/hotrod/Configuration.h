@@ -19,8 +19,9 @@ namespace infinispan {
 namespace hotrod {
 
 /**
- * Configuration object along with its factory ConfigurationBuilder represent
- * the preferred approach of configuring RemoteCacheManager.
+ * Configuration object along with its builder represent
+ * the preferred approach of configuring RemoteCacheManager. Usually applications configure
+ * an ConfigurationBuilder object and build a Configuration from it invoking ConfigurationBuilder.create().
  *
  */
 // TODO: should we really return references?
@@ -103,9 +104,7 @@ class Configuration
     }
 
     /**
-     * Gets the protocol version for this Configuration. Protocol version is either:
-     * Configuration::PROTOCOL_VERSION_10 or Configuration::PROTOCOL_VERSION_11 or
-     * Configuration::PROTOCOL_VERSION_12
+     * Gets the protocol version for this Configuration.
      *
      *\return String representation of the protocol version
      */

@@ -21,10 +21,22 @@ using namespace infinispan::hotrod::event;
 namespace infinispan {
 namespace hotrod {
 
+/**
+ * ClusterConfigurationBuilder is used to configure the clusters that are part of the system and
+ * is a builder of ClusterConfiguration objects.
+ */
 class ClusterConfigurationBuilder
 {
 public:
 	ClusterConfigurationBuilder(std::vector<ServerConfigurationBuilder>& servers, ConfigurationBuilder &parent) : servers(servers), m_parent(parent) {}
+	/**
+	 * Add a server node to this cluster
+	 *
+	 * \param host hostname
+	 * \param port tcp port number
+	 *
+	 * \return this object for fluent configuration
+	 */
 	ClusterConfigurationBuilder& addClusterNode(const std::string host, const int port)
 	{
         servers.push_back(ServerConfigurationBuilder(m_parent).host(host).port(port));
@@ -36,26 +48,46 @@ private:
 };
 
 /**
- * Configuration classes for near cache
+ * Configuration classes for near cache subsystem
  */
 class NearCacheConfigurationBuilder : public ConfigurationChildBuilder
 {
 public:
     NearCacheConfigurationBuilder(ConfigurationBuilder& _builder) : ConfigurationChildBuilder(_builder) {}
 
+    /**
+     * \return the max number of entries that the near cache can contain
+     */
     int getMaxEntries() const {
         return m_maxEntries;
     }
 
+    /**
+     * Set the max number of entries that the near cache can contain
+     *
+     * \param maxEntries maximum number of entries
+     *
+     * \return this object for fluent configuration
+     */
     NearCacheConfigurationBuilder& maxEntries(unsigned int maxEntries = 0) {
         this->m_maxEntries = maxEntries;
         return *this;
     }
 
+    /**
+     * \return the current working mode
+     */
     NearCacheMode getMode() const {
         return m_mode;
     }
 
+    /**
+     * Set the working mode for the near cache
+     *
+     * \param mode the working mode (NearCacheMode)
+     *
+     * \return this object for fluent configuration
+     */
     NearCacheConfigurationBuilder& mode(NearCacheMode mode = DISABLED) {
         this->m_mode = mode;
         return *this;
@@ -72,11 +104,10 @@ public:
 };
 
 /**
- * ConfigurationBuilder used to generate immutable Configuration objects that are in turn
+ * ConfigurationBuilder is used to generate immutable Configuration objects that are in turn
  * used to configure RemoteCacheManager instances.
  *
  */
-// Methods on this class cannot be invoked across library boundary, therefore, it can use STL.
 class ConfigurationBuilder
 {
   public:
@@ -99,6 +130,13 @@ class ConfigurationBuilder
 
      void validate() {}
 
+    /**
+     *  Add a new cluster to the configuration builder
+     *
+     * \param clusterName the name of the new cluster
+     *
+     * \return a ClusterConfigurationBuilder object usable to configure the new cluster
+     */
     ClusterConfigurationBuilder addCluster(const std::string& clusterName) {
     		return ClusterConfigurationBuilder(m_serversMap[clusterName],*this);
     }
@@ -333,6 +371,11 @@ class ConfigurationBuilder
         m_eventMarshaller = configuration.getEventMarshaller();
         return *this;
     }
+    /**
+     * Return the builder related to autentication and TLS
+     *
+     * \return a SecurityConfigurationBuilder object
+     */
     SecurityConfigurationBuilder& security()
     {
         return securityConfigurationBuilder;

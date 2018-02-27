@@ -176,6 +176,7 @@ public:
      * Asynchronous version of get. Executes function f when get() returns
      *
      *    See the synchronous doc for parameters not explained here
+     * \param key the key whose associated value is to be returned
      * \param success function to be executed on success
      * \param fail function to be executed if exceptions occur
      * \return a future that will contain a pointer to the requested value or null
@@ -203,9 +204,8 @@ public:
      *
      * \param key  key with which the specified value is to be associated
      * \param val  value value to be associated with the specified key
-     * \param lifespan  lifespan of the entry.  Negative values are interpreted as unlimited lifespan.
-     * \param maxIdle  the maximum amount of time this key is allowed to be idle for before it is considered as
-     *                        expired
+     * \param lifespan the lifespan of this entry. A negative value is interpreted as unlimited lifespan
+     * \param maxIdle  the maximum amount of time this entry is allowed to be idle before it is considered as expired
      *
      * \return the previous value associated with key, or NULL if there was no mapping for key.
      *
@@ -227,8 +227,8 @@ public:
      *
      * \param key  key with which the specified value is to be associated
      * \param val  value value to be associated with the specified key
-     * \param lifespan  lifespan of the entry.  Negative values are interpreted as unlimited lifespan.
-     * \param lifespanUnit  unit of measurement for the lifespan
+     * \param lifespan the lifespan of this entry. A negative value is interpreted as unlimited lifespan
+     * \param lifespanUnit TimeUnit for the lifespan param
      *
      * \return the previous value associated with key, or NULL if there was no mapping for key.
      *
@@ -251,11 +251,10 @@ public:
      *
      * \param key  key with which the specified value is to be associated
      * \param val  value value to be associated with the specified key
-     * \param lifespan  lifespan of the entry.  Negative values are interpreted as unlimited lifespan.
-     *  \param lifespanUnit  unit of measurement for the lifespan
-     *  \param maxIdle  the maximum amount of time this key is allowed to be idle for before it is considered as
-     *                        expired
-     * \param maxIdleUnit  time unit for max idle time
+     * \param lifespan the lifespan of this entry. A negative value is interpreted as unlimited lifespan
+     * \param lifespanUnit TimeUnit for the lifespan param
+     * \param maxIdle the maximum amount of time this entry is allowed to be idle before it is considered as expired
+     * \param maxIdleUnit TimeUnit for the maxIdle param
      *
      * \return the previous value associated with key, or NULL if there was no mapping for key.
      *
@@ -267,7 +266,10 @@ public:
 
     /**
      * Asynchronous version of put()
-     *    See the synchronous doc for parameters not explained here
+     * \param key  key with which the specified value is to be associated
+     * \param val  value value to be associated with the specified key
+     * \param lifespan the lifespan of this entry. A negative value is interpreted as unlimited lifespan
+     * \param maxIdle the maximum amount of time this entry is allowed to be idle before it is considered as expired
      * \param success function to be executed on success
      * \param fail function to be executed if exceptions occur
      * \return a future containing a pointer to the previous value stored in the cache for the given key or null
@@ -284,7 +286,10 @@ public:
 
     /**
      * Asynchronous version of put()
-     *    See the synchronous doc for parameters not explained here
+     * \param key  key with which the specified value is to be associated
+     * \param val  value value to be associated with the specified key
+     * \param lifespan the lifespan of this entry. A negative value is interpreted as unlimited lifespan
+     * \param lifespanUnit TimeUnit for the lifespan param
      * \param success function to be executed on success
      * \param fail function to be executed if exceptions occur
      * \return a future containing a pointer to the previous value stored in the cache for the given key or null
@@ -301,7 +306,12 @@ public:
 
     /**
      * Asynchronous version of put()
-     *    See the synchronous doc for parameters not explained here
+     * \param key  key with which the specified value is to be associated
+     * \param val  value value to be associated with the specified key
+     * \param lifespan the lifespan of this entry. A negative value is interpreted as unlimited lifespan
+     * \param lifespanUnit TimeUnit for the lifespan param
+     * \param maxIdle the maximum amount of time this entry is allowed to be idle before it is considered as expired
+     * \param maxIdleUnit TimeUnit for the maxIdle param
      * \param success function to be executed on success
      * \param fail function to be executed if exceptions occur
      * \return a future containing a pointer to the previous value stored in the cache for the given key or null
@@ -323,9 +333,8 @@ public:
      *
      * \param key  key with which the specified value is to be associated
      * \param val  value value to be associated with the specified key
-     * \param lifespan  lifespan of the entry.  Negative values are interpreted as unlimited lifespan.
-     *  \param maxIdle  the maximum amount of time this key is allowed to be idle for before it is considered as
-     *                        expired
+     * \param lifespan the lifespan of this entry. A negative value is interpreted as unlimited lifespan
+     *  \param maxIdle the maximum amount of time this entry is allowed to be idle before it is considered as expired
      * \return the previous value associated with the specified key, or NULL if there was no mapping for the key.
      */
     V* putIfAbsent(const K& key, const V& val, uint64_t lifespan = 0, uint64_t maxIdle = 0)
@@ -338,8 +347,8 @@ public:
      *
      * \param key  key with which the specified value is to be associated
      * \param val  value value to be associated with the specified key
-     * \param lifespan  lifespan of the entry.  Negative values are interpreted as unlimited lifespan.
-     * \param lifespanUnit  unit of measurement for the lifespan
+     * \param lifespan the lifespan of this entry. A negative value is interpreted as unlimited lifespan
+     * \param lifespanUnit TimeUnit for the lifespan param
      * \return the previous value associated with the specified key, or NULL if there was no mapping for the key.
      */
     V* putIfAbsent(const K& key, const V& val, uint64_t lifespan, TimeUnit lifespanUnit)
@@ -352,11 +361,10 @@ public:
      *
      * \param key  key with which the specified value is to be associated
      * \param val  value value to be associated with the specified key
-     * \param lifespan  lifespan of the entry.  Negative values are interpreted as unlimited lifespan.
-     * \param lifespanUnit  unit of measurement for the lifespan
-     * \param maxIdle  the maximum amount of time this key is allowed to be idle for before it is considered as
-     *                        expired
-     * \param maxIdleUnit  time unit for max idle time
+     * \param lifespan the lifespan of this entry. A negative value is interpreted as unlimited lifespan
+     * \param lifespanUnit TimeUnit for the lifespan param
+     * \param maxIdle  the maximum amount of time this entry is allowed to be idle before it is considered as expired
+     * \param maxIdleUnit TimeUnit for the maxIdle param
      * \return the previous value associated with the specified key, or NULL if there was no mapping for the key.
      */
     V* putIfAbsent(const K& key, const V& val, uint64_t lifespan, TimeUnit lifespanUnit, uint64_t maxIdle,
@@ -366,7 +374,10 @@ public:
     }
     /**
      * Asynchronous version of putIfAbsentAsync()
-     *    See the synchronous doc for parameters not explained here
+     * \param key  key with which the specified value is to be associated
+     * \param val  value value to be associated with the specified key
+     * \param lifespan the lifespan of this entry. A negative value is interpreted as unlimited lifespan
+     * \param maxIdle the maximum amount of time this entry is allowed to be idle before it is considered as expired
      * \param success function to be executed on success
      * \param fail function to be executed if exceptions occur
      * \return a future containing a pointer to the previous value stored in the cache for the given key or null
@@ -382,7 +393,10 @@ public:
     }
     /**
      * Asynchronous version of putIfAbsentAsync()
-     *    See the synchronous doc for parameters not explained here
+     * \param key  key with which the specified value is to be associated
+     * \param val  value value to be associated with the specified key
+     * \param lifespan the lifespan of this entry. A negative value is interpreted as unlimited lifespan
+     * \param lifespanUnit TimeUnit for the lifespan param
      * \param success function to be executed on success
      * \param fail function to be executed if exceptions occur
      * \return a future containing a pointer to the previous value stored in the cache for the given key or null
@@ -398,7 +412,12 @@ public:
     }
     /**
      * Asynchronous version of putIfAbsentAsync()
-     *    See the synchronous doc for parameters not explained here
+     * \param key  key with which the specified value is to be associated
+     * \param val  value value to be associated with the specified key
+     * \param lifespan the lifespan of this entry. A negative value is interpreted as unlimited lifespan
+     * \param lifespanUnit TimeUnit for the lifespan param
+     * \param maxIdle the maximum amount of time this entry is allowed to be idle before it is considered as expired
+     * \param maxIdleUnit TimeUnit for the maxIdle param
      * \param success function to be executed on success
      * \param fail function to be executed if exceptions occur
      * \return a future containing a pointer to the previous value stored in the cache for the given key or null
@@ -420,9 +439,8 @@ public:
      * The behavior of this operation is undefined if the specified map is modified while the operation is in progress.
      *
      * \param map to be stored in this cache
-     * \param lifespan  lifespan of the entry.  Negative values are interpreted as unlimited lifespan.
-     * \param maxIdle  the maximum amount of time this key is allowed to be idle for before it is considered as
-     *                        expired
+     * \param lifespan the lifespan of this entry. A negative value is interpreted as unlimited lifespan
+     * \param maxIdle the maximum amount of time these object are allowed to be idle before they are considered as expired
      */
     void putAll(const std::map<K, V>& map, uint64_t lifespan = 0, uint64_t maxIdle = 0)
     {
@@ -435,8 +453,8 @@ public:
      * The behavior of this operation is undefined if the specified map is modified while the operation is in progress.
      *
      * \param  map to be stored in this cache
-     * \param lifespan  lifespan of the entry.  Negative values are interpreted as unlimited lifespan.
-     * \param lifespanUnit  unit of measurement for the lifespan
+     * \param lifespan the lifespan of this entry. A negative value is interpreted as unlimited lifespan
+     * \param lifespanUnit TimeUnit for the lifespan param
      *
      */
     void putAll(const std::map<K, V>& map, uint64_t lifespan, TimeUnit lifespanUnit)
@@ -450,11 +468,10 @@ public:
      * The behavior of this operation is undefined if the specified map is modified while the operation is in progress.
      *
      * \param  map to be stored in this cache
-     * \param lifespan  lifespan of the entry.  Negative values are interpreted as unlimited lifespan.
-     * \param lifespanUnit  unit of measurement for the lifespan
-     * \param maxIdle  the maximum amount of time this key is allowed to be idle for before it is considered as
-     *                        expired
-     * \param maxIdleUnit  time unit for max idle time
+     * \param lifespan the lifespan of this entry. A negative value is interpreted as unlimited lifespan
+     * \param lifespanUnit TimeUnit for the lifespan param
+     * \param maxIdle the maximum amount of time these object are allowed to be idle before they are considered as expired
+     * \param maxIdleUnit TimeUnit for the maxIdle param
      *
      */
     void putAll(const std::map<K, V>& map, uint64_t lifespan, TimeUnit lifespanUnit, uint64_t maxIdle,
@@ -472,6 +489,9 @@ public:
     /**
      * Asynchronous version of putAll()
      *    See the synchronous doc for parameters not explained here
+     * \param  map to be stored in this cache
+     * \param lifespan the lifespan of these entries. A negative value is interpreted as unlimited lifespan
+     * \param maxIdle the maximum amount of time these objects are allowed to be idle before they are considered as expired
      * \param success function to be executed on success
      * \param fail function to be executed if exceptions occur
      * \return a future containing a pointer to the previous value stored in the cache for the given key or null
@@ -489,6 +509,9 @@ public:
     /**
      * Asynchronous version of putAll()
      *    See the synchronous doc for parameters not explained here
+     * \param  map to be stored in this cache
+     * \param lifespan the lifespan of these entries. A negative value is interpreted as unlimited lifespan
+     * \param lifespanUnit TimeUnit for the lifespan param
      * \param success function to be executed on success
      * \param fail function to be executed if exceptions occur
      * \return a future containing a pointer to the previous value stored in the cache for the given key or null
@@ -506,6 +529,11 @@ public:
     /**
      * Asynchronous version of putAll()
      *    See the synchronous doc for parameters not explained here
+     * \param  map to be stored in this cache
+     * \param lifespan the lifespan of these entries. A negative value is interpreted as unlimited lifespan
+     * \param lifespanUnit TimeUnit for the lifespan param
+     * \param maxIdle the maximum amount of time these are allowed to be idle before they are considered as expired
+     * \param maxIdleUnit TimeUnit for the maxIdle param
      * \param success function to be executed on success
      * \param fail function to be executed if exceptions occur
      * \return a future containing a pointer to the previous value stored in the cache for the given key or null
@@ -526,9 +554,8 @@ public:
      *
      * \param key  key with which the specified value is to be associated
      * \param val  value to be associated with the specified key
-     * \param lifespan  lifespan of the entry.  Negative values are interpreted as unlimited lifespan.
-     * \param maxIdle  the maximum amount of time this key is allowed to be idle for before it is considered as
-     *                        expired
+     * \param lifespan  lifespan of the entry.  Negative values are interpreted as unlimited lifespan
+     * \param maxIdle the maximum amount of time this entry is allowed to be idle before it is considered as expired
      *
      * \return the previous value associated with the specified key, or NULL if there was no mapping for the key.
      */
@@ -541,8 +568,8 @@ public:
      *
      * \param key  key with which the specified value is to be associated
      * \param val  value to be associated with the specified key
-     * \param lifespan  lifespan of the entry.  Negative values are interpreted as unlimited lifespan.
-     * \param lifespanUnit  unit of measurement for the lifespan
+     * \param lifespan  lifespan of the entry.  Negative values are interpreted as unlimited lifespan
+     * \param lifespanUnit TimeUnit for the lifespan param
      *
      *
      * \return the previous value associated with the specified key, or NULL if there was no mapping for the key.
@@ -556,11 +583,10 @@ public:
      *
      * \param key  key with which the specified value is to be associated
      * \param val  value to be associated with the specified key
-     * \param lifespan  lifespan of the entry.  Negative values are interpreted as unlimited lifespan.
-     * \param lifespanUnit  unit of measurement for the lifespan
-     * \param maxIdle  the maximum amount of time this key is allowed to be idle for before it is considered as
-     *                        expired
-     * \param maxIdleUnit  time unit for max idle time
+     * \param lifespan  lifespan of the entry.  Negative values are interpreted as unlimited lifespan
+     * \param lifespanUnit TimeUnit for the lifespan param
+     * \param maxIdle  the maximum amount of time this entry is allowed to be idle before it is considered as expired
+     * \param maxIdleUnit TimeUnit for the maxIdle param
      *
      * \return the previous value associated with the specified key, or NULL if there was no mapping for the key.
      */
@@ -575,9 +601,8 @@ public:
      * \param key  key with which the specified value is to be associated
      * \param oldVal  value expected to be associated with the specified key
      * \param val  value to be associated with the specified key
-     * \param lifespan  lifespan of the entry.  Negative values are interpreted as unlimited lifespan.
-     * \param maxIdle  the maximum amount of time this key is allowed to be idle for before it is considered as
-     *                        expired
+     * \param lifespan  lifespan of the entry.  Negative values are interpreted as unlimited lifespan
+     * \param maxIdle the maximum amount of time this entry is allowed to be idle before it is considered as expired
      *
      * \return the previous value associated with the specified key, or NULL if there was no mapping for the key.
      */
@@ -591,8 +616,8 @@ public:
      * \param key  key with which the specified value is to be associated
      * \param oldVal  value expected to be associated with the specified key
      * \param val  value to be associated with the specified key
-     * \param lifespan  lifespan of the entry.  Negative values are interpreted as unlimited lifespan.
-     * \param lifespanUnit  unit of measurement for the lifespan
+     * \param lifespan  lifespan of the entry.  Negative values are interpreted as unlimited lifespan
+     * \param lifespanUnit TimeUnit for the lifespan param
      *
      * \return the previous value associated with the specified key, or NULL if there was no mapping for the key.
      */
@@ -606,11 +631,10 @@ public:
      * \param key  key with which the specified value is to be associated
      * \param oldVal  value expected to be associated with the specified key
      * \param val  value to be associated with the specified key
-     * \param lifespan  lifespan of the entry.  Negative values are interpreted as unlimited lifespan.
-     *  \param lifespanUnit  unit of measurement for the lifespan
-     *  \param maxIdle  the maximum amount of time this key is allowed to be idle for before it is considered as
-     *                        expired
-     * \param maxIdleUnit  time unit for max idle time
+     * \param lifespan  lifespan of the entry.  Negative values are interpreted as unlimited lifespan
+     * \param lifespanUnit TimeUnit for the lifespan param
+     * \param maxIdle the maximum amount of time this entry is allowed to be idle before it is considered as expired
+     * \param maxIdleUnit TimeUnit for the maxIdle param
      * \return the previous value associated with the specified key, or NULL if there was no mapping for the key.
      */
     V* replace(const K& key, const V& oldVal, const V& val, uint64_t lifespan, TimeUnit lifespanUnit, uint64_t maxIdle,
@@ -621,7 +645,10 @@ public:
 
     /**
      * Asynchronous version of replace()
-     *    See the synchronous doc for parameters not explained here
+     * \param key  key with which the specified value is to be associated
+     * \param val  value to be associated with the specified key
+     * \param lifespan  lifespan of the entry.  Negative values are interpreted as unlimited lifespan
+     *  \param maxIdle the maximum amount of time this entry is allowed to be idle before it is considered as expired
      * \param success function to be executed on success
      * \param fail function to be executed if exceptions occur
      * \return a future containing a pointer to the previous value stored in the cache for the given key or null
@@ -638,7 +665,10 @@ public:
 
     /**
      * Asynchronous version of replace()
-     *    See the synchronous doc for parameters not explained here
+     * \param key  key with which the specified value is to be associated
+     * \param val  value to be associated with the specified key
+     * \param lifespan  lifespan of the entry.  Negative values are interpreted as unlimited lifespan
+     *  \param lifespanUnit TimeUnit for the lifespan param
      * \param success function to be executed on success
      * \param fail function to be executed if exceptions occur
      * \return a future containing a pointer to the previous value stored in the cache for the given key or null
@@ -655,7 +685,12 @@ public:
 
     /**
      * Asynchronous version of replace()
-     *    See the synchronous doc for parameters not explained here
+     * \param key  key with which the specified value is to be associated
+     * \param val  value to be associated with the specified key
+     * \param lifespan  lifespan of the entry.  Negative values are interpreted as unlimited lifespan
+     *  \param lifespanUnit TimeUnit for the lifespan param
+     *  \param maxIdle the maximum amount of time this entry is allowed to be idle before it is considered as expired
+     * \param maxIdleUnit TimeUnit for the maxIdle param
      * \param success function to be executed on success
      * \param fail function to be executed if exceptions occur
      * \return a future containing a pointer to the previous value stored in the cache for the given key or null
@@ -674,6 +709,11 @@ public:
     /**
      * Asynchronous version of replace()
      *    See the synchronous doc for parameters not explained here
+     * \param key  key with which the specified value is to be associated
+     * \param oldVal  value expected to be associated with the specified key
+     * \param val  value to be associated with the specified key
+     * \param lifespan  lifespan of the entry.  Negative values are interpreted as unlimited lifespan
+     * \param maxIdle the maximum amount of time this entry is allowed to be idle before it is considered as expired
      * \param success function to be executed on success
      * \param fail function to be executed if exceptions occur
      * \return a future containing a pointer to the previous value stored in the cache for the given key or null
@@ -690,6 +730,11 @@ public:
     /**
      * Asynchronous version of replace()
      *    See the synchronous doc for parameters not explained here
+     * \param key  key with which the specified value is to be associated
+     * \param oldVal  value expected to be associated with the specified key
+     * \param val  value to be associated with the specified key
+     * \param lifespan  lifespan of the entry.  Negative values are interpreted as unlimited lifespan
+     * \param lifespanUnit TimeUnit for the lifespan param
      * \param success function to be executed on success
      * \param fail function to be executed if exceptions occur
      * \return a future containing a pointer to the previous value stored in the cache for the given key or null
@@ -707,7 +752,8 @@ public:
      * Removes key/value pair from the cache given a key. Optionally return a value stored
      * under the given key
      *
-     *\return NULL or value stored under this key
+     * \param key the of the entry to be removed
+     * \return NULL or value stored under this key
      */
     V* remove(const K& key)
     {
@@ -717,6 +763,7 @@ public:
     /**
      * Asynchronous version of removeWithVersion()
      *    See the synchronous doc for parameters not explained here
+     * \param key the of the entry to be removed
      * \param success function to be executed on success
      * \param fail function to be executed if exceptions occur
      * \return a future containing a bool. True if the entry has been removed
@@ -733,7 +780,8 @@ public:
     /**
      * Returns true if this cache contains a key/value pair where the key is equal to a specified key.
      *
-     *\return true if such key is present in this cache
+     * \param key the key
+     * \return true if such key is present in this cache
      */
     bool containsKey(const K& key)
     {
@@ -757,7 +805,7 @@ public:
      * \param version numeric version that should match the one in the server
      *                for the operation to succeed
      * \param lifespan the new lifespan for this key/value entry pair
-     * \param maxIdle the maxIdle for this key/value entry pair
+     * \param maxIdle the maximum amount of time this entry is allowed to be idle before it is considered as expired
      * \return true if the value has been replaced
      *
      * \sa VersionedValue
@@ -769,7 +817,12 @@ public:
 
     /**
      * Asynchronous version of replaceWithVersion()
-     *    See the synchronous doc for parameters not explained here
+     * \param key the key
+     * \param val the new value for the given key
+     * \param version numeric version that should match the one in the server
+     *                for the operation to succeed
+     * \param lifespan the new lifespan for this key/value entry pair
+     * \param maxIdle the maximum amount of time this entry is allowed to be idle before it is considered as expired
      * \param success function to be executed on success
      * \param fail function to be executed if exceptions occur
      * \return a future containing a pointer to the previous value stored in the cache for the given key or null
@@ -809,7 +862,8 @@ public:
 
     /**
      * Asynchronous version of removeWithVersion()
-     *    See the synchronous doc for parameters not explained here
+     * \param key key
+     * \param version version of entry to remove
      * \param success function to be executed on success
      * \param fail function to be executed if exceptions occur
      * \return a future containing a bool. True if the entry has been removed
@@ -880,7 +934,7 @@ public:
     }
     /**
      * Execute script on server
-     * \param cmdName name of the script
+     * \param name name of the script
      * \param args maps of (name,value) arguments
      * \return byte[] result in dark matter shape
      */
@@ -891,7 +945,7 @@ public:
 
     /**
      * Execute script on server
-     * \param cmdName name of the script
+     * \param name name of the script
      * \param args maps of (name,value) arguments
      * \return byte[] result in dark matter shape
      */
@@ -902,9 +956,8 @@ public:
 
     /**
      * Execute a query on server
-     * \param cmdName name of the script
-     * \param args maps of (name,value) arguments
-     * \return byte[] result in dark matter shape
+     * \param qr the QueryRequest oject
+     * \return a QueryResponse object with the query result
      */
     QueryResponse query(const QueryRequest &qr)
     {
@@ -913,8 +966,8 @@ public:
 
     /**
      * Execute a query on server
-     * \param cmdName name of the script
-     * \param args maps of (name,value) arguments
+     * \param qr the query string
+     * \param size the length of the query string
      * \return byte[] result in dark matter shape
      */
     std::vector<unsigned char> query(std::vector<unsigned char> qr, size_t size)

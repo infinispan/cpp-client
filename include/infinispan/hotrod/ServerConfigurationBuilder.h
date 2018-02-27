@@ -30,7 +30,8 @@ class ServerConfigurationBuilder
         ConfigurationChildBuilder(builder_), m_host("localhost"), m_port(11222) {}
 
     virtual void validate() {};
-	/***
+
+    /**
 	 * Specifies host of remote HotRod server
 	 *
 	 * \return ServerConfigurationBuilder for further configuration
@@ -41,7 +42,7 @@ class ServerConfigurationBuilder
         return *this;
     }
 
-    /***
+    /**
     	 * Specifies port of remote HotRod server
     	 *
     	 * \return ServerConfigurationBuilder for further configuration
@@ -52,7 +53,7 @@ class ServerConfigurationBuilder
         return *this;
     }
 
-	/***
+	/**
 	 * Create ServerConfiguration instance from a given state of
 	 * this ServerConfigurationBuilder
 	 *
@@ -63,7 +64,7 @@ class ServerConfigurationBuilder
         return ServerConfiguration(m_host, m_port);
     }
 
-	/***
+	/**
 	 * Create ServerConfigurationBuilder from a given state of
 	 * another ServerConfiguration instance
 	 *

@@ -14,7 +14,20 @@
 namespace infinispan {
 namespace hotrod {
 
-enum NearCacheMode { DISABLED=0, INVALIDATED=1 };
+/**
+ * Enumeration of all the near cache mode of operation
+ */
+enum NearCacheMode {
+    DISABLED=0,     /*!< No near cache. */
+    INVALIDATED=1   /*!< Near cache in invalidated mode. In invalidated mode an entry in the near cache is create
+                     *  only after a get and is removed from the near cache if it's value changes on the server. */
+};
+
+/**
+ * NearCacheConfiguration the internal representation of the near cache configuration. Applications do not use it directly,
+ * instead they build it via a NearCacheConfigurationBuilder
+ *
+ */
 
 class HR_EXTERN NearCacheConfiguration
 {

@@ -28,7 +28,7 @@ class SslConfigurationBuilder
     }
     virtual void validate() {};
     
-    /***
+    /**
      * Enables SSL support
      *
      * \return ServerConfigurationBuilder for further configuration
@@ -39,7 +39,7 @@ class SslConfigurationBuilder
         return *this;
     }
     
-    /***
+    /**
      * Disables SSL support
      *
      * \return ServerConfigurationBuilder for further configuration
@@ -50,7 +50,7 @@ class SslConfigurationBuilder
         return *this;
     }
     
-    /***
+    /**
      * Enables SSL support
      *
      * \return ServerConfigurationBuilder for further configuration
@@ -95,8 +95,9 @@ class SslConfigurationBuilder
     }
 
     /**
-     * Specifies the hostname for SNI.
+     * Specifies the hostname that identifies the server (SNI).
      *
+     * \param _sniHostName the hostname
      * \return ServerConfigurationBuilder for further configuration
      */
     SslConfigurationBuilder& sniHostName(const std::string& _sniHostName)
@@ -106,9 +107,9 @@ class SslConfigurationBuilder
     }
 
     /**
-     * Returns the certificate file used for the client
+     * Returns the hostname that identifies the server (SNI)
      *
-     * \return the file which contains the client certificate
+     * \return the server name
      */
     const std::string& getSniHostName() const
     {
