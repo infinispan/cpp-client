@@ -1,0 +1,57 @@
+/*! \mainpage 
+
+Hotrod is Infinispan's custom binary protocol that enables fast client/server interaction. The Hotrod C++ Client library provides API features that allow the developement of Infinispan based C++ applications.
+
+A common hotrod session is as follows:
+
+1. Build a configuration
+2. Start the connection
+3. Use the cache
+4. Close the connection
+
+
+## Build a configuration
+
+The application must configure an infinispan::hotrod::ConfigurationBuilder object with all the specific settings. A simple configuration could looks like this:
+
+        infinispan::hotrod::ConfigurationBuilder builder;
+        builder.addServer().host("127.0.0.1").port(11222);
+        builder.protocolVersion(infinispan::hotrod::Configuration::PROTOCOL_VERSION_24);
+
+## Start the connection
+
+Then an infinispan::hotrod::RemoteCacheManager can be created and started:
+
+        RemoteCacheManager cacheManager(builder.build(), false);
+        cacheManager.start();
+
+and, if needed, a specific data marshalling policy could be setup:
+
+## Use the cache
+
+All the cache operations are accessible via the infinispan::hotrod::RemoteCache class. This class also takes care of the (un)marshalling of the cache data, an infinispan::hotrod::JBasicMarshaller is instantiated by default, otherwise additional setup is required:
+
+        JBasicMarshaller<int> *km = new JBasicMarshaller<int>();
+        JBasicMarshaller<std::string> *vm = new JBasicMarshaller<std::string>();
+        RemoteCache<int, std::string> cache = cacheManager.getCache<int, std::string>(km,
+                &Marshaller<int>::destroy,
+                vm,
+                &Marshaller<std::string>::destroy);
+        
+        ... you can now do cache operations ...
+
+Main categories of operation on the cache are:
++ Common operation (infinispan::hotrod::RemoteCache.get(),infinispan::hotrod::RemoteCache.put())
++ Server side execution of script (infinispan::hotrod::RemoteExecution) 
++ Event listener setup (infinispan::hotrod::RemoteCache.addClientListener())
++ Queries and continuous query (infinispan::hotrod::RemoteCache.query(), infinispan::hotrod::RemoteCache.addContinuousQueryListener())
+
+
+## Close the connection
+
+Just clean up after yourself: this also stops all the registered listeners on the server.
+
+        cacheManager.stop();
+
+
+*/
