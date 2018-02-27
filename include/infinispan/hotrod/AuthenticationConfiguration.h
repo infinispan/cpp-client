@@ -46,11 +46,11 @@ typedef struct sasl_secret {
 typedef int (*sasl_callback_ft)(void);
 
 /**
- * AuthenticationConfiguration object along with its factory AuthenticationConfigurationBuilder represent
- * used by ConfigurationBuilder for configuring RemoteCacheManager.
- *
+ * AuthenticationConfiguration object along with its builder represent
+ * the preferred approach for configuring authentication. Usually applications configure
+ * an AuthenticationConfigurationBuilder object and build an AuthenticationConfiguration
+ * from it invoking AuthenticationConfigurationBuilder.create().
  */
-
 class AuthenticationConfiguration
 {
 public:
@@ -59,14 +59,23 @@ public:
     AuthenticationConfiguration() : enabled(false) {}
     bool isEnabled() const { return enabled; }
 
+    /**
+     * \return the SASL mechanism in use
+     */
     const std::string& getSaslMechanism() const {
         return saslMechanism;
     }
 
+    /**
+     * \return the set of callbacks used by the SASL layer
+     */
     const std::vector<sasl_callback_t>& getCallbackHandler() const {
         return callbackHandler;
     }
 
+    /**
+     * \return the server name used by the SASL layer
+     */
     const std::string& getServerFqdn() const {
         return serverFQDN;
     }

@@ -21,7 +21,7 @@ class RemoteCacheManagerImpl;
  * <p> <b>Lifecycle:</b> </p> In order to be able to use an instance of RemoteCache,
  * the %RemoteCacheManager must be started first.  Beside other things, this instantiates
  * connections to Hot Rod server(s). Starting the %RemoteCacheManager can be done either at
- * creation by passing start==true to constructor or after construction by calling ::start
+ * creation by passing start==true to constructor or after construction by calling start()
  * method.</p>
  *
  * <p>%RemoteCacheManager is an "expensive" object, as it manages a set of persistent TCP
@@ -44,7 +44,7 @@ public:
      * object an an optional boolean parameter indicating whether to also start this
      * RemoteCacheManager as well.
      *
-     *\param start optional boolean parameter indicating whether to start this RemoteCacheManager
+     *\param start_ optional boolean parameter indicating whether to start this RemoteCacheManager
      */
     explicit RemoteCacheManager(bool start_ = true);
 
@@ -175,7 +175,7 @@ public:
      * Returns a RemoteCache instance connected to the default cache
      *
      * \param km the key marshaller
-     * \param km function used as key marshaller destructor after this is no longer needed
+     * \param kd function used as key marshaller destructor after this is no longer needed
      * \param vm the value marshaller
      * \param vd function used as value marshaller destructor after this is no longer needed
      * \param forceReturnValue if true, force all the HotRod operation that have optional return to always return a value
@@ -203,7 +203,7 @@ public:
      * The Configuration.forceReturnValue policy will be used
      *
      * \param km the key marshaller
-     * \param km function used as key marshaller destructor after this is no longer needed
+     * \param kd function used as key marshaller destructor after this is no longer needed
      * \param vm the value marshaller
      * \param vd function used as value marshaller destructor after this is no longer needed
      * will indeed return a value.
@@ -219,7 +219,7 @@ public:
      * Returns a RemoteCache instance connected to the cache with the given name
      *
      * \param km the key marshaller
-     * \param km function used as key marshaller destructor after this is no longer needed
+     * \param kd function used as key marshaller destructor after this is no longer needed
      * \param vm the value marshaller
      * \param vd function used as value marshaller destructor after this is no longer needed
      * \param name the cache name to connect to on a remote Infinispan server
@@ -247,11 +247,10 @@ public:
      * Returns a RemoteCache instance connected to the cache with the given name
      *
      * \param km the key marshaller
-     * \param km function used as key marshaller destructor after this is no longer needed
+     * \param kd function used as key marshaller destructor after this is no longer needed
      * \param vm the value marshaller
      * \param vd function used as value marshaller destructor after this is no longer needed
      * \param name the cache name to connect to on a remote Infinispan server
-     * \param forceReturnValue if true, force all the HotRod operation that have optional return to always return a value
      * \return a RemoteCache instance connected to the cache with the given name
      */
     template <class K, class V> RemoteCache<K, V> &getCache(

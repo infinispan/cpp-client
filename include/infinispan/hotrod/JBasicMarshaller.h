@@ -11,7 +11,7 @@
 namespace infinispan {
 namespace hotrod {
 
-/*
+/**
  * A Marshaller for a few simple types that pretends to be compatible with JBoss Marshaller.
  * See below the Helper class for a list of the managed types.
  */
