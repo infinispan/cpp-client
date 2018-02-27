@@ -25,7 +25,7 @@ DOXYFILE_ENCODING      = UTF-8
 # The PROJECT_NAME tag is a single word (or a sequence of words surrounded
 # by quotes) that should identify the project.
 
-PROJECT_NAME           = Infinispan HotRod C++ Client
+PROJECT_NAME           = "Infinispan HotRod C++ Client"
 
 # The PROJECT_NUMBER tag can be used to enter a project or revision number.
 # This could be handy for archiving the generated documentation or
@@ -546,7 +546,7 @@ WARN_LOGFILE           =
 # directories like "/usr/src/myproject". Separate the files or directories
 # with spaces.
 
-INPUT                 = @PROJECT_SOURCE_DIR@/include 
+INPUT                 = @PROJECT_SOURCE_DIR@/include
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding, which is
@@ -597,7 +597,7 @@ EXCLUDE_PATTERNS       =
 # wildcard * is used, a substring. Examples: ANamespace, AClass,
 # AClass::ANamespace, ANamespace::*Test
 
-EXCLUDE_SYMBOLS        =
+EXCLUDE_SYMBOLS        = infinispan::hotrod::RemoteCacheBase infinispan::hotrod::CacheTopologyInfo infinispan::hotrod::transport::InetSocketAddress infinispan::hotrod::BasicTypesProtoStreamMarshaller infinispan::hotrod::BasicTypesProtoStreamMarshallerHelper infinispan::hotrod::BasicMarshaller< std::string > infinispan::hotrod::*MarshallerHelper infinispan::hotrod::event::*EventMarshaller* infinispan::hotrod::event::EventHeaderParams infinispan::hotrod::Exception
 
 # The EXAMPLE_PATH tag can be used to specify one or more files or
 # directories that contain example code fragments that are included (see
@@ -1113,18 +1113,6 @@ GENERATE_XML           = NO
 # put in front of it. If left blank `xml' will be used as the default path.
 
 XML_OUTPUT             = xml
-
-# The XML_SCHEMA tag can be used to specify an XML schema,
-# which can be used by a validating XML parser to check the
-# syntax of the XML files.
-
-XML_SCHEMA             =
-
-# The XML_DTD tag can be used to specify an XML DTD,
-# which can be used by a validating XML parser to check the
-# syntax of the XML files.
-
-XML_DTD                =
 
 # If the XML_PROGRAMLISTING tag is set to YES Doxygen will
 # dump the program listings (including syntax highlighting
