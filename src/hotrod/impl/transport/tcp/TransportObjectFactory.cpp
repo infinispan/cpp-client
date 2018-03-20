@@ -50,9 +50,16 @@ TransportObjectFactory::TransportObjectFactory(Codec& c, TcpTransportFactory& fa
 #endif
 }
 
-void logAndThrow(const std::string& host, const int port, const std::string& msg) {
+void logAndThrow(const TcpTransport& t, const std::string& msg) {
     DEBUG(msg.c_str());
-    throw TransportException(host, port, msg, -1);
+#if !defined _WIN32 && !defined _WIN64
+    throw TransportException(t.getServerAddress().getHostname(), t.getServerAddress().getPort(), msg, -1);
+#else
+    std::ostringstream os;
+    DWORD errCode = GetLastError();
+    os << msg << " Win error code: 0x" << std::hex << errCode << std::endl;
+    throw TransportException(t.getServerAddress().getHostname(), t.getServerAddress().getPort(), os.str(), errCode);
+#endif
 }
 
 const sasl_callback_t* get_auth_callback(unsigned long id, const AuthenticationConfiguration& conf)
@@ -65,7 +72,7 @@ const sasl_callback_t* get_auth_callback(unsigned long id, const AuthenticationC
     return nullptr;
 }
 
-void do_sasl_authentication(Codec& codec, Transport& t, const AuthenticationConfiguration& conf) {
+void do_sasl_authentication(Codec& codec, TcpTransport& t, const AuthenticationConfiguration& conf) {
 #if !defined _WIN32 && !defined _WIN64
     sasl_conn_t *conn=nullptr;
     int r;
@@ -172,6 +179,11 @@ void do_sasl_authentication(Codec& codec, Transport& t, const AuthenticationConf
         credentials.Domain = (unsigned char*)realm;
         credentials.DomainLength = realmLen;
         ss = AcquireCredentialsHandle(NULL, "WDigest", SECPKG_CRED_OUTBOUND, NULL, &credentials, NULL, NULL, &hCred, &tsExpiry);
+        if (ss!=SEC_E_OK) {
+            std::ostringstream os;
+            os << "AcquireCredentialsHandle() fails (return value is 0x" << std::hex << ss << ")"; 
+            logAndThrow(t, os.str());
+        }
     }
     OutBuffers[0].pvBuffer = NULL;
     OutBuffers[0].BufferType = SECBUFFER_TOKEN;
