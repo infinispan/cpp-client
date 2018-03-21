@@ -75,7 +75,7 @@ endif (MSVC)
 file(GLOB_RECURSE JAVA_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/jni *.java)
 
 add_custom_command(OUTPUT ${JNI_DIR}/target/org/infinispan/client/jni/hotrod/JniTest.class
-    COMMAND ${MVN_PROGRAM} ARGS "package"
+    COMMAND ${MVN_PROGRAM} ARGS "-B" "package"
     DEPENDS ${JAVA_SOURCES} 
     WORKING_DIRECTORY "${JNI_DIR}" 
 )
