@@ -736,7 +736,7 @@ endif (MVN_PROGRAM STREQUAL "MVN_PROGRAM-NOTFOUND")
 
 set(KRBSERVER_DIR "${CMAKE_CURRENT_BINARY_DIR}/krbserver")
 add_custom_command(OUTPUT ${KRBSERVER_DIR}/target/classes/krbserver/Server.class
-    COMMAND ${MVN_PROGRAM} ARGS "package"
+    COMMAND ${MVN_PROGRAM} ARGS "-B" "package"
     WORKING_DIRECTORY "${KRBSERVER_DIR}"
 )
 
