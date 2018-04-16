@@ -70,4 +70,15 @@ bool RemoteCacheManager::switchToCluster(std::string clusterName)
 	return IMPL->clusterSwitch(clusterName);
 }
 
+void removeFromMap(std::map<std::string, std::unique_ptr<RemoteCacheBase> >& map, std::string& name) {
+    map.erase(name+"/false");
+    map.erase(name+"/true");
+}
+
+
+std::shared_ptr<RemoteCacheManagerAdmin> RemoteCacheManager::newRemoteCacheManagerAdmin() {
+    std::function<void(std::string&)> remover = std::bind(removeFromMap, std::ref(remoteCacheMap), std::placeholders::_1);
+    return IMPL->newRemoteCacheManagerAdmin(*this, remover);
+}
+
 }} // namespace infinispan::hotrod

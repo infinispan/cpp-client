@@ -171,4 +171,9 @@ bool RemoteCacheManagerImpl::clusterSwitch()
 	return transportFactory->clusterSwitch();
 }
 
+std::shared_ptr<RemoteCacheManagerAdmin> RemoteCacheManagerImpl::newRemoteCacheManagerAdmin(RemoteCacheManager& cacheManager, std::function<void(std::string&)> remover) {
+    static std::string emptyCacheName;
+    std::shared_ptr<OperationsFactory> of(new OperationsFactory(transportFactory, emptyCacheName, false, *codec));
+    return std::shared_ptr<RemoteCacheManagerAdmin>(new RemoteCacheManagerAdmin(cacheManager, remover, of));
+}
 }} // namespace infinispan::hotrod

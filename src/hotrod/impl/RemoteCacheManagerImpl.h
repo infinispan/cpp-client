@@ -7,6 +7,8 @@
 #include "hotrod/impl/protocol/Codec.h"
 #include "hotrod/impl/transport/TransportFactory.h"
 #include "hotrod/impl/operations/PingOperation.h"
+#include "infinispan/hotrod/RemoteCacheManagerAdmin.h"
+#include "infinispan/hotrod/RemoteCacheManager.h"
 #include "hotrod/sys/Mutex.h"
 #include "hotrod/impl/RemoteCounterManagerImpl.h"
 
@@ -39,6 +41,8 @@ class RemoteCacheManagerImpl
     ClientListenerNotifier& getListenerNotifier() {
 		return *listenerNotifier;
 	}
+    std::shared_ptr<RemoteCacheManagerAdmin> newRemoteCacheManagerAdmin(RemoteCacheManager& cacheManager, std::function<void(std::string&)> remover);
+
   private:
     sys::Mutex lock;
     bool started;
