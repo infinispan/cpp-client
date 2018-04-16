@@ -56,6 +56,7 @@ class ExecuteCmdOperation;
 class QueryOperation;
 class AddClientListenerOperation;
 class RemoveClientListenerOperation;
+class AdminOperation;
 
 
 class OperationsFactory
@@ -116,6 +117,9 @@ class OperationsFactory
     RemoveClientListenerOperation* newRemoveClientListenerOperation(ClientListener& listener, ClientListenerNotifier& listenerNotifier);
     void addFlags(uint32_t flags);
     void setFlags(uint32_t flags);
+
+    AdminOperation* newAdminOperation(
+        const std::vector<char>& cmdName, const std::map<std::vector<char>,std::vector<char>>& values);
 
     CacheTopologyInfo getCacheTopologyInfo();
 

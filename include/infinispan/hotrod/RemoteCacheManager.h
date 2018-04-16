@@ -15,6 +15,7 @@ namespace infinispan {
 namespace hotrod {
 
 class RemoteCacheManagerImpl;
+class RemoteCacheManagerAdmin;
 
 /**
  * Factory for RemoteCache objects.
@@ -277,6 +278,15 @@ public:
     bool switchToCluster(std::string clusterName);
 
     RemoteCounterManager& getCounterManager();
+    /**
+     * Get the administrative interface
+     *
+     * \return a new instance of cache administrator
+     */
+
+    std::shared_ptr<RemoteCacheManagerAdmin> administration() {
+       return newRemoteCacheManagerAdmin();
+    }
 
 private:
     void *impl;
@@ -290,6 +300,8 @@ private:
     // not implemented
     RemoteCacheManager(const RemoteCacheManager&);
     RemoteCacheManager operator=(const RemoteCacheManager&);
+
+    std::shared_ptr<RemoteCacheManagerAdmin> newRemoteCacheManagerAdmin();
 
     template<typename T> static void genericDelete(T *t) { delete t; }
     template<typename T> static void genericNoDelete(T *) { }

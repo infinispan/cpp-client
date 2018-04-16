@@ -24,6 +24,7 @@
 #include "hotrod/impl/operations/QueryOperation.h"
 #include <hotrod/impl/operations/AddClientListenerOperation.h>
 #include <hotrod/impl/operations/RemoveClientListenerOperation.h>
+#include <hotrod/impl/operations/AdminOperation.h>
 #include "infinispan/hotrod/Flag.h"
 
 #include <cstring>
@@ -199,6 +200,14 @@ void OperationsFactory::addFlags(uint32_t f) {
 
 void OperationsFactory::setFlags(uint32_t f) {
     flags = f;
+}
+
+AdminOperation* OperationsFactory::newAdminOperation(
+    const std::vector<char>& cmdName, const std::map<std::vector<char>,std::vector<char>>& values)
+{
+    return new AdminOperation(
+        codec, transportFactory, cacheNameBytes,
+        topologyId, getFlags(), cmdName, values);
 }
 
 CacheTopologyInfo infinispan::hotrod::operations::OperationsFactory::getCacheTopologyInfo() {
