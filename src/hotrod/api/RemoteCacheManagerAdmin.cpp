@@ -17,12 +17,7 @@ namespace hotrod {
 
 using namespace operations;
 
-
-const std::vector<char> RemoteCacheManagerAdmin::CACHE_NAME = {'n', 'a', 'm', 'e'};
-const std::vector<char> RemoteCacheManagerAdmin::CACHE_TEMPLATE = {'t','e','m','p','l','a','t','e'};
-const std::vector<char> RemoteCacheManagerAdmin::CACHE_CONFIGURATION = {'c','o','n','f','i','g','u','r','a','t','i','o','n'};
-const std::vector<char> RemoteCacheManagerAdmin::CACHE_FLAGS = {'f','l','a','g','s'};
-const std::vector<char> RemoteCacheManagerAdmin::FLAG_LABELS[] = {{'P','E','R','M','A','N','E','N','T'}};
+const std::string RemoteCacheManagerAdmin::FLAG_LABELS[] = {"PERMANENT"};
 
 RemoteCacheManagerAdmin::RemoteCacheManagerAdmin(RemoteCacheManager& cacheManager
                                                , std::function<void(std::string&)> remover
@@ -32,10 +27,79 @@ RemoteCacheManagerAdmin::RemoteCacheManagerAdmin(RemoteCacheManager& cacheManage
 }
 
 
-void RemoteCacheManagerAdmin::executeAdminOperation(std::string adminCmd, std::map<std::vector<char>, std::vector<char> >& param){
+void RemoteCacheManagerAdmin::executeAdminOperation(std::string adminCmd, std::map<std::string, std::string>& param){
     std::vector<char> cmdNameVec(adminCmd.begin(), adminCmd.end());
-    std::shared_ptr<AdminOperation> ao(operationsFactory->newAdminOperation(cmdNameVec, param));
+    std::map<std::vector<char>, std::vector<char> > vec_param;
+    for (auto it = param.begin(); it != param.end(); it++)
+    {
+        vec_param[std::vector<char>(it->first.begin(), it->first.end())] = std::vector<char>(it->second.begin(), it->second.end());
+    }
+    std::shared_ptr<AdminOperation> ao(operationsFactory->newAdminOperation(cmdNameVec, vec_param));
     ao->execute();
 }
+
+void RemoteCacheManagerAdmin::createCache(const std::string name, std::string model, std::string command) {
+    std::map<std::string, std::string > params;
+     params["name"] = name;
+     if (!model.empty())
+     {
+         params["template"] = model;
+     }
+     if (!flags.empty()) {
+         params["flags"] = flags2Params(flags);
+     }
+     executeAdminOperation(command , params);
+}
+
+void RemoteCacheManagerAdmin::createCacheWithXml(const std::string name, std::string conf, std::string command) {
+    std::map<std::string, std::string > params;
+     params["name"] = name;
+     if (!conf.empty())
+     {
+         params["configuration"] = conf;
+     }
+     if (!flags.empty()) {
+         params["flags"] = flags2Params(flags);
+     }
+     executeAdminOperation(command , params);
+}
+
+void RemoteCacheManagerAdmin::removeCache(std::string name) {
+    // remove cache from map
+    this->remover(name);
+    std::map<std::string, std::string > params;
+    params["name"] = name;
+    if (!flags.empty()) {
+        params["flags"] = flags2Params(flags);
+    }
+    executeAdminOperation("@@cache@remove" , params);
+}
+
+void RemoteCacheManagerAdmin::reindexCache(std::string name) {
+    // remove cache from map
+    std::map<std::string, std::string > params;
+    params["name"] = name;
+    executeAdminOperation("@@cache@reindex" , params);
+}
+
+RemoteCacheManagerAdmin& RemoteCacheManagerAdmin::withFlags(std::set<AdminFlag> flags)
+{
+    this->flags=flags;
+    return *this;
+}
+
+std::string RemoteCacheManagerAdmin::flags2Params(const std::set<AdminFlag>& flags) const {
+    std::string ret;
+    for(auto it = flags.begin(); it!=flags.end(); it++)
+    {
+        if (it!=flags.begin())
+        {
+            ret.push_back(',');
+        }
+        ret += FLAG_LABELS[*it];
+    }
+    return ret;
+}
+
 
 }}

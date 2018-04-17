@@ -87,7 +87,7 @@ public class RemoteCacheImpl<K, V> extends RemoteCacheUnsupported<K, V> {
     }
 
     @Override
-    public CompletableFuture<V> removeAsync(K k) {
+    public CompletableFuture<V> removeAsync(Object k) {
         return relayedInvokerAsync(new RelayedMethodAsync() {
             @Override
             public Object invoke(byte[][] bytes, RelayBytes... rbs) {
@@ -366,7 +366,7 @@ public class RemoteCacheImpl<K, V> extends RemoteCacheUnsupported<K, V> {
     }
 
     @Override
-    public V get(K k) {
+    public V get(Object k) {
         return relayedInvoker(new RelayedMethod() {
             @Override
             public Object invoke(RelayBytes... rbs) {
@@ -376,7 +376,7 @@ public class RemoteCacheImpl<K, V> extends RemoteCacheUnsupported<K, V> {
     }
 
     @Override
-    public boolean containsKey(K k) {
+    public boolean containsKey(Object k) {
         Boolean b = relayedInvoker(new RelayedMethod() {
             @Override
             public Object invoke(RelayBytes... rbs) {
@@ -387,7 +387,7 @@ public class RemoteCacheImpl<K, V> extends RemoteCacheUnsupported<K, V> {
     }
 
     @Override
-    public boolean containsValue(V v) {
+    public boolean containsValue(Object v) {
         Boolean b = relayedInvoker(new RelayedMethod() {
             @Override
             public Object invoke(RelayBytes... rbs) {
@@ -398,7 +398,7 @@ public class RemoteCacheImpl<K, V> extends RemoteCacheUnsupported<K, V> {
     }
 
     @Override
-    public V remove(K k) {
+    public V remove(Object k) {
         return relayedInvoker(new RelayedMethod() {
             @Override
             public Object invoke(RelayBytes... rbs) {

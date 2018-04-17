@@ -14,6 +14,7 @@ import org.testng.IMethodSelectorContext;
 import org.testng.ITestNGMethod;
 import org.testng.ITestResult;
 import org.testng.TestNG;
+import org.infinispan.client.hotrod.admin.*;
 
 public class JniTest implements IMethodSelector {
         private final static String [] passOverTestList = {
@@ -25,7 +26,9 @@ public class JniTest implements IMethodSelector {
         "CacheManagerStoppedTest.testPutAsync",
         "CacheManagerStoppedTest.testReplaceAsync",
         "CacheManagerStoppedTest.testVersionedRemoveAsync",
-        "HotRodAsyncReplicationTest.testPutKeyValue"};
+        "HotRodAsyncReplicationTest.testPutKeyValue",
+        "RemoteCacheAdminPermanentTest.permanentCacheTest"    // See HRCPP-468. Fails only on windows
+        };
 
    private final static HashSet<String> passOverTestSet = new HashSet<String>(Arrays.asList(passOverTestList));
 
@@ -78,7 +81,9 @@ public class JniTest implements IMethodSelector {
             // SslTest.class,                        // SSL not implemented
             // TransportObjectFactoryTest.class,     // omitting
             ExecTest.class,
-            RemoteAsyncAPITest.class
+            RemoteAsyncAPITest.class,
+            RemoteCacheAdminTest.class,
+            RemoteCacheAdminPermanentTest.class
       });
       testng.addListener(tr);
       testng.setGroups("unit,functional");
@@ -91,7 +96,8 @@ public class JniTest implements IMethodSelector {
             "RemoteCacheManagerTest.testStartStopAsync",
             "GetAllDistTest.testBulkGetAfterLifespanExpire",
             "GetAllLocalTest.testBulkGetAfterLifespanExpire",
-            "GetAllReplTest.testBulkGetAfterLifespanExpire"
+            "GetAllReplTest.testBulkGetAfterLifespanExpire",
+            "RemoteCacheAdminTest.cacheReindexTest"                              // See HRCPP-469
       ));
       Set<String> expectedSkips = Collections.emptySet();
 

@@ -38,6 +38,7 @@ import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.server.hotrod.HotRodServer;
 import org.infinispan.test.SingleCacheManagerTest;
 import org.infinispan.test.fwk.TestCacheManagerFactory;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -229,7 +230,7 @@ public class CrossLanguageHotRodTest extends SingleCacheManagerTest {
       javaGetVersionMethod = javaMVClass.getMethod("getVersion");
    }
 
-   @AfterMethod(alwaysRun=true)
+   @AfterClass(alwaysRun=true)
    public void release() {
       killCacheManagers(cacheManager);
       cppRemoteCacheManager.stop();
@@ -242,12 +243,6 @@ public class CrossLanguageHotRodTest extends SingleCacheManagerTest {
             e.printStackTrace();
          }
       }
-   }
-
-   @BeforeMethod
-   public void setUp() throws Exception {
-      log.info("setUp()");
-      this.setup();
    }
 
    /*

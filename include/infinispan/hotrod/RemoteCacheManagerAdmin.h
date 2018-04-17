@@ -48,16 +48,7 @@ public:
      * @return the cache
      */
     template <class K, class V> RemoteCache<K, V>& createCache(const std::string name, std::string model) {
-        std::map<std::vector<char>, std::vector<char> > params;
-        params[CACHE_NAME] = std::vector<char>(name.begin(),name.end());
-        if (!model.empty())
-        {
-            params[CACHE_TEMPLATE] = std::vector<char>(model.begin(),model.end());
-        }
-        if (!flags.empty()) {
-            params[CACHE_FLAGS] = flags2Params(flags);
-        }
-        executeAdminOperation("@@cache@create" , params);
+        createCache(name, model, "@@cache@create");
         return cacheManager.getCache<K,V>(name);
     }
 
@@ -69,16 +60,7 @@ public:
      * @return the cache
      */
     template <class K, class V> RemoteCache<K, V>& createCacheWithXml(const std::string name, std::string conf) {
-        std::map<std::vector<char>, std::vector<char> > params;
-        params[CACHE_NAME] = std::vector<char>(name.begin(),name.end());
-        if (!conf.empty())
-        {
-            params[CACHE_CONFIGURATION] = std::vector<char>(conf.begin(),conf.end());
-        }
-        if (!flags.empty()) {
-            params[CACHE_FLAGS] = flags2Params(flags);
-        }
-        executeAdminOperation("@@cache@create" , params);
+        createCacheWithXml(name, conf, "@@cache@create");
         return cacheManager.getCache<K,V>(name);
 
     }
@@ -93,16 +75,7 @@ public:
      * @return the cache
      */
     template <class K, class V> RemoteCache<K, V>& getOrCreateCache(const std::string name, std::string model) {
-        std::map<std::vector<char>, std::vector<char> > params;
-        params[CACHE_NAME] = std::vector<char>(name.begin(),name.end());
-        if (!model.empty())
-        {
-            params[CACHE_TEMPLATE] = std::vector<char>(model.begin(),model.end());
-        }
-        if (!flags.empty()) {
-            params[CACHE_FLAGS] = flags2Params(flags);
-        }
-        executeAdminOperation("@@cache@getorcreate" , params);
+        createCache(name, model, "@@cache@getorcreate");
         return cacheManager.getCache<K,V>(name);
     }
 
@@ -118,16 +91,7 @@ public:
      * @throws HotRodClientException
      */
     template <class K, class V> RemoteCache<K, V>& getOrCreateCacheWithXml(const std::string name, std::string conf) {
-        std::map<std::vector<char>, std::vector<char> > params;
-        params[CACHE_NAME] = std::vector<char>(name.begin(),name.end());
-        if (!conf.empty())
-        {
-            params[CACHE_CONFIGURATION] = std::vector<char>(conf.begin(),conf.end());
-        }
-        if (!flags.empty()) {
-            params[CACHE_FLAGS] = flags2Params(flags);
-        }
-        executeAdminOperation("@@cache@getorcreate" , params);
+        createCacheWithXml(name, conf, "@@cache@getorcreate");
         return cacheManager.getCache<K,V>(name);
     }
 
@@ -136,16 +100,7 @@ public:
      *
      * @param name the name of the cache to remove
      */
-    void removeCache(std::string name) {
-        // remove cache from map
-        this->remover(name);
-        std::map<std::vector<char>, std::vector<char> > params;
-        params[CACHE_NAME] = std::vector<char>(name.begin(),name.end());
-        if (!flags.empty()) {
-            params[CACHE_FLAGS] = flags2Params(flags);
-        }
-        executeAdminOperation("@@cache@remove" , params);
-    }
+    void removeCache(std::string name);
 
     /**
      * Performs a mass reindexing of the specified cache. The command will return immediately and the reindexing will
@@ -153,40 +108,22 @@ public:
      * @param name the name of the cache to reindex
      * @throws HotRodClientException
      */
-    void reindexCache(std::string name) {
-        // remove cache from map
-        std::map<std::vector<char>, std::vector<char> > params;
-        params[CACHE_NAME] = std::vector<char>(name.begin(),name.end());
-        executeAdminOperation("@@cache@reindex" , params);
-    }
+    void reindexCache(std::string name);
 
-    RemoteCacheManagerAdmin& withFlags(std::set<AdminFlag> flags)
-    {
-        this->flags=flags;
-        return *this;
-    }
+    RemoteCacheManagerAdmin& withFlags(std::set<AdminFlag> flags);
+    void createCache(const std::string name, std::string model, std::string command);
+    void createCacheWithXml(const std::string name, std::string conf, std::string command);
 
 private:
-    std::vector<char> flags2Params(const std::set<AdminFlag>& flags) const {
-        std::vector<char> ret;
-        for(auto it = flags.begin(); it!=flags.end(); it++)
-        {
-            if (it!=flags.begin())
-            {
-                ret.push_back(',');
-            }
-            ret.insert(ret.end(), FLAG_LABELS[*it].begin(), FLAG_LABELS[*it].end());
-        }
-        return ret;
-    }
+    std::string flags2Params(const std::set<AdminFlag>& flags) const;
 
-    void executeAdminOperation(std::string adminCmd, std::map<std::vector<char>, std::vector<char> >& param);
+    void executeAdminOperation(std::string adminCmd, std::map<std::string, std::string >& param);
 
     static const std::vector<char> CACHE_NAME;
     static const std::vector<char> CACHE_TEMPLATE;
     static const std::vector<char> CACHE_CONFIGURATION;
     static const std::vector<char> CACHE_FLAGS;
-    static const std::vector<char> FLAG_LABELS[];
+    static const std::string FLAG_LABELS[];
     std::shared_ptr<OperationsFactory> operationsFactory;
     std::function<void(std::string&)> remover;
 
