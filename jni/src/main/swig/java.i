@@ -20,6 +20,7 @@
 %include "enums.swg"
 %javaconst(1);
 
+%shared_ptr(infinispan::hotrod::RemoteCacheManagerAdmin)
 //#define std::shared_ptr std::shared_ptr
 
 %{
@@ -43,6 +44,7 @@
 #include <infinispan/hotrod/Flag.h>
 #include <infinispan/hotrod/TimeUnit.h>
 #include <infinispan/hotrod/RemoteCacheManager.h>
+#include <infinispan/hotrod/RemoteCacheManagerAdmin.h>
 #include <infinispan/hotrod/RemoteCache.h>
 #include <infinispan/hotrod/Marshaller.h>
 #include <infinispan/hotrod/CacheTopologyInfo.h>
@@ -104,6 +106,7 @@ using namespace infinispan::hotrod;
 %include "infinispan/hotrod/Flag.h"
 %include "infinispan/hotrod/TimeUnit.h"
 %include "infinispan/hotrod/RemoteCacheManager.h"
+%include "infinispan/hotrod/RemoteCacheManagerAdmin.h"
 %include "infinispan/hotrod/RemoteCache.h"
 %include "infinispan/hotrod/Marshaller.h"
 %include "infinispan/hotrod/CacheTopologyInfo.h"
@@ -207,6 +210,7 @@ inline bool operator< (const RelayBytes& lhs, const RelayBytes& rhs)
 %template(FutureRelayBytes) std::future<RelayBytes*>;
 %template(FutureBool) std::future<bool>;
 %template(FutureVoid) std::future<void>;
+%template(AdminFlagSet) std::set<infinispan::hotrod::AdminFlag>;
 
 %feature("novaluewrapper") std::future<RelayBytes>;
 %feature("novaluewrapper") std::future<RelayBytes*>;
@@ -260,6 +264,10 @@ std::vector<infinispan::hotrod::transport::InetSocketAddress> keySet(std::map<in
 
 // our mechanism for RemoteCache<byte[], byte[]> from the java side
 %template(RemoteCache_jb_jb) infinispan::hotrod::RemoteCache<RelayBytes, RelayBytes>;
+%template(adminCreateCache_jb_jb) infinispan::hotrod::RemoteCacheManagerAdmin::createCache<RelayBytes,RelayBytes>;
+%template(adminGetOrCreateCache_jb_jb) infinispan::hotrod::RemoteCacheManagerAdmin::getOrCreateCache<RelayBytes,RelayBytes>;
+%template(adminCreateCacheWithXml_jb_jb) infinispan::hotrod::RemoteCacheManagerAdmin::createCacheWithXml<RelayBytes,RelayBytes>;
+%template(adminGetOrCreateCacheWithXml_jb_jb) infinispan::hotrod::RemoteCacheManagerAdmin::getOrCreateCacheWithXml<RelayBytes,RelayBytes>;
 
 // create a do-nothing marshaller works with the pre-marshalled data
 
@@ -269,6 +277,29 @@ class RelayMarshallerHelper {
   public:
     static void noRelease(std::vector<char>*) { /* nothing allocated, nothing to release */ }
 };
+
+namespace infinispan {
+namespace hotrod {
+template <>
+class BasicMarshaller<RelayBytes> : public infinispan::hotrod::Marshaller<RelayBytes> {
+    public:
+        void marshall(const RelayBytes& r, std::vector<char>& b) {
+            if (r.getLength() == 0) {
+                b.clear();
+                return;
+            }
+            b.assign(r.getBytes(), r.getBytes()+r.getLength());
+        }
+        RelayBytes* unmarshall(const std::vector<char>& b) {
+            RelayBytes* rbytes = new RelayBytes();
+            size_t size = b.size();
+            char *bytes = new char[size];
+            memcpy(bytes, b.data(), size);
+            rbytes->setNative(bytes, size);
+            return rbytes;
+        }
+};
+}}
 
 class RelayMarshaller: public infinispan::hotrod::Marshaller<RelayBytes> {
   public:
@@ -300,7 +331,6 @@ using infinispan::hotrod::RemoteCacheManager;
 
 // Allow a heap allocated instance of RemoteCache<RelayBytes,RelayBytes> 
 // for JNI purposes
-
 
 class RelayCacheBlob {
   public:
@@ -391,4 +421,23 @@ SWIGEXPORT void JNICALL Java_org_infinispan_client_hotrod_jni_HotrodJNI2_readNat
    void dispose(std::future<bool>* p) { delete p; }
    void dispose(std::future<RelayBytes*>* p) {  delete p->get(); delete p; }
    void dispose(std::future<void>* p) { delete p; }
+}
+
+%extend infinispan::hotrod::RemoteCacheManagerAdmin {
+
+    RemoteCacheManagerAdmin& withFlags(infinispan::hotrod::AdminFlag f0,infinispan::hotrod::AdminFlag f1)
+    {
+        $self->flags.clear();
+        $self->flags.insert(f0);
+        $self->flags.insert(f1);
+        return *$self;
+    }
+    RemoteCacheManagerAdmin& withFlags(infinispan::hotrod::AdminFlag f0, infinispan::hotrod::AdminFlag f1, infinispan::hotrod::AdminFlag f2)
+    {
+        $self->flags.clear();
+        $self->flags.insert(f0);
+        $self->flags.insert(f1);
+        $self->flags.insert(f2);
+        return *$self;
+    }
 }

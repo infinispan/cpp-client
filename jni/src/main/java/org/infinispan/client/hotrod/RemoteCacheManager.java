@@ -158,6 +158,11 @@ public class RemoteCacheManager /* implements BasicCacheContainer */{
        return jniRemoteCacheManager.switchToCluster(clusterName);
     }
 
+    public RemoteCacheManagerAdmin administration() {
+        org.infinispan.client.hotrod.jni.RemoteCacheManagerAdmin admin = jniRemoteCacheManager.administration();
+        return new RemoteCacheManagerAdminImpl(this, admin);
+    }
+
     static {
         try {
             System.loadLibrary("hotrod");

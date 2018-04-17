@@ -10,8 +10,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.infinispan.client.hotrod.CacheTopologyInfo;
+import org.infinispan.commons.api.BasicCache;
 
-public interface RemoteCache<K, V> {
+public interface RemoteCache<K, V> extends BasicCache<K, V>{
     String getName();
 
     String getVersion();
@@ -34,17 +35,18 @@ public interface RemoteCache<K, V> {
 
     V putIfAbsent(K key, V value, long lifespan, TimeUnit lifespanUnit, long maxIdleTime, TimeUnit maxIdleTimeUnit);
 
-    V get(K k);
+    V get(Object k);
 
-    V remove(K k);
+    @Override
+    V remove(Object k);
 
     boolean removeWithVersion(K key, long version);
 
     void clear();
 
-    boolean containsKey(K k);
+    boolean containsKey(Object k);
 
-    boolean containsValue(V v);
+    boolean containsValue(Object v);
 
     V replace(K k, V v);
 
@@ -90,9 +92,9 @@ public interface RemoteCache<K, V> {
 
    CompletableFuture<V> replaceAsync(K k, V v);
 
-   CompletableFuture<Boolean> removeAsync(K k, V v);
+   CompletableFuture<Boolean> removeAsync(Object k, Object v);
 
-   CompletableFuture<V> removeAsync(K k);
+   CompletableFuture<V> removeAsync(Object k);
 
    CompletableFuture<V> putIfAbsentAsync(K k, V v, long lifespan, TimeUnit lifespanTimeUnit, long maxIdle,
             TimeUnit maxIdleTimeUnit);
@@ -136,7 +138,7 @@ public interface RemoteCache<K, V> {
 
     Set<Entry<K, V>> entrySet();
 
-    boolean remove(K key, V value);
+    boolean remove(Object key, Object value);
 
     ServerStatistics stats();
 

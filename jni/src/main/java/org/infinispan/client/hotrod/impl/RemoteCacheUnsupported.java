@@ -16,7 +16,7 @@ public abstract class RemoteCacheUnsupported<K, V> implements RemoteCache<K, V> 
     }
 
     @Override
-    public boolean remove(K key, V value) {
+    public boolean remove(Object key, Object value) {
         throw new UnsupportedOperationException();
     }
 
@@ -105,12 +105,12 @@ public abstract class RemoteCacheUnsupported<K, V> implements RemoteCache<K, V> 
     }
 
     @Override
-   public CompletableFuture<V> removeAsync(K k) {
+   public CompletableFuture<V> removeAsync(Object k) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-   public CompletableFuture<Boolean> removeAsync(K k, V v) {
+   public CompletableFuture<Boolean> removeAsync(Object k, Object v) {
         throw new UnsupportedOperationException();
     }
 
