@@ -6,10 +6,10 @@ The Infinispan Community
 :numbered:
 
 == Introduction
-Since Hot Rod is a binary, language neutral, protocol an Infinispan client can use any programming 
-language to interact with Java based Infinispan Hot Rod server as long as client APIs exist for that 
+Since Hot Rod is a binary, language neutral, protocol an \Infinispan client can use any programming 
+language to interact with Java based \Infinispan Hot Rod server as long as client APIs exist for that 
 particular client runtime. C{plus}{plus} Hot Rod client allows C{plus}{plus} runtime applications to connect and interact 
-with an Infinispan Hot Rod server. 
+with an \Infinispan Hot Rod server. 
 
 
 == Installation

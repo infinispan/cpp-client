@@ -34,7 +34,7 @@ namespace hotrod
 /**
  * Provides remote reference to a cache residing on a Hot Rod server/cluster.
  *
- * <p>%RemoteCache is intended to be similar to Infinispan Java %RemoteCache interface as much as possible. Just
+ * <p>%RemoteCache is intended to be similar to \Infinispan Java %RemoteCache interface as much as possible. Just
  * like %RemoteCache interface in its Java HotRod counterpart %RemoteCache features:</p>
  *
  * <p>
@@ -114,7 +114,7 @@ public:
     }
 
     /**
-     * Retrieves the version of Infinispan
+     * Retrieves the version of \Infinispan
      *
      * \return a version string
      */

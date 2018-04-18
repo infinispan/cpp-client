@@ -1,6 +1,6 @@
 /*! \mainpage 
 
-Hotrod is Infinispan's custom binary protocol that enables fast client/server interaction. The Hotrod C++ Client library provides API features that allow the developement of Infinispan based C++ applications.
+Hotrod is \Infinispan's custom binary protocol that enables fast client/server interaction. The Hotrod C++ Client library provides API features that allow the developement of \Infinispan based C++ applications.
 
 A common hotrod session is as follows:
 

@@ -222,7 +222,7 @@ public:
      * \param kd function used as key marshaller destructor after this is no longer needed
      * \param vm the value marshaller
      * \param vd function used as value marshaller destructor after this is no longer needed
-     * \param name the cache name to connect to on a remote Infinispan server
+     * \param name the cache name to connect to on a remote \Infinispan server
      * \param forceReturnValue if true, force all the HotRod operation that have optional return to always return a value
      * \return a RemoteCache instance connected to the cache with the given name
      */
@@ -250,7 +250,7 @@ public:
      * \param kd function used as key marshaller destructor after this is no longer needed
      * \param vm the value marshaller
      * \param vd function used as value marshaller destructor after this is no longer needed
-     * \param name the cache name to connect to on a remote Infinispan server
+     * \param name the cache name to connect to on a remote \Infinispan server
      * \return a RemoteCache instance connected to the cache with the given name
      */
     template <class K, class V> RemoteCache<K, V> &getCache(
