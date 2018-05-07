@@ -39,7 +39,8 @@ class Configuration
     HR_EXTERN static const char* PROTOCOL_VERSION_24;
     HR_EXTERN static const char* PROTOCOL_VERSION_25;
     HR_EXTERN static const char* PROTOCOL_VERSION_26;
-	HR_EXTERN static const char* DEFAULT_CLUSTER_NAME;
+    HR_EXTERN static const char* PROTOCOL_VERSION_27;
+    HR_EXTERN static const char* DEFAULT_CLUSTER_NAME;
 
 
     Configuration(const std::string &_protocolVersion,

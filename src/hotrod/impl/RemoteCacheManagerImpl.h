@@ -8,6 +8,7 @@
 #include "hotrod/impl/transport/TransportFactory.h"
 #include "hotrod/impl/operations/PingOperation.h"
 #include "hotrod/sys/Mutex.h"
+#include "hotrod/impl/RemoteCounterManagerImpl.h"
 
 #include <map>
 
@@ -31,6 +32,9 @@ class RemoteCacheManagerImpl
     const Configuration& getConfiguration();
     bool clusterSwitch();
     bool clusterSwitch(std::string clusterName);
+    RemoteCounterManager& getRemoteCounterManager() {
+        return rcm;
+    }
 
     ClientListenerNotifier& getListenerNotifier() {
 		return *listenerNotifier;
@@ -41,6 +45,7 @@ class RemoteCacheManagerImpl
     Configuration configuration;
     protocol::Codec* codec;
     int defaultCacheTopologyId;
+    RemoteCounterManagerImpl rcm;
 
     typedef std::pair<std::shared_ptr<RemoteCacheImpl>, bool> RemoteCacheHolder;
     std::map<std::string, RemoteCacheHolder> cacheName2RemoteCache;

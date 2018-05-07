@@ -5,6 +5,7 @@
 #include "infinispan/hotrod/ImportExport.h"
 #include "infinispan/hotrod/RemoteCache.h"
 #include "infinispan/hotrod/Configuration.h"
+#include "infinispan/hotrod/RemoteCounterManager.h"
 
 #include <string>
 #include <map>
@@ -274,6 +275,8 @@ public:
      * doesn't exists
      */
     bool switchToCluster(std::string clusterName);
+
+    RemoteCounterManager& getCounterManager();
 
 private:
     void *impl;

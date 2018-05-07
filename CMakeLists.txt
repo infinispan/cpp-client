@@ -423,6 +423,9 @@ else(DEFINED HOTROD_PREBUILT_LIB_DIR)
       src/hotrod/impl/operations/AuthOperation.cpp
       src/hotrod/impl/operations/AuthMechListOperation.cpp
       src/hotrod/impl/event/EventDispatcher.cpp
+      src/hotrod/impl/operations/CounterOperations.cpp
+      src/hotrod/api/RemoteCounterManagerImpl.cpp
+      src/hotrod/api/CountersImpl.cpp
       ${platform_sources}
       ${internal_test_sources}  
       ${CMAKE_BINARY_DIR}/Version.cpp

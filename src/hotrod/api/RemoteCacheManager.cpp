@@ -23,6 +23,10 @@ void RemoteCacheManager::init(const std::map<std::string, std::string> &properti
     impl = new RemoteCacheManagerImpl(properties, start_);
 }
 
+RemoteCounterManager& RemoteCacheManager::getCounterManager() {
+    return IMPL->getRemoteCounterManager();
+}
+
 RemoteCacheManager::~RemoteCacheManager() {
 	if (IMPL)
 		delete IMPL;
