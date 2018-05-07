@@ -14,6 +14,7 @@ const char* Configuration::PROTOCOL_VERSION_23 = "2.3";
 const char* Configuration::PROTOCOL_VERSION_24 = "2.4";
 const char* Configuration::PROTOCOL_VERSION_25 = "2.5";
 const char* Configuration::PROTOCOL_VERSION_26 = "2.6";
+const char* Configuration::PROTOCOL_VERSION_27 = "2.7";
 
 const char* Configuration::DEFAULT_CLUSTER_NAME = "DEFAULT_CLUSTER_NAME";
 

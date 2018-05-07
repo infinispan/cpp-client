@@ -26,6 +26,7 @@ class HotRodConstants
     static const uint8_t VERSION_24 = 24;
     static const uint8_t VERSION_25 = 25;
     static const uint8_t VERSION_26 = 26;
+    static const uint8_t VERSION_27 = 27;
 
     //hotrod consistenthash version
     static const uint8_t CONSISTENT_HASH_V2      = 2;
@@ -59,7 +60,19 @@ class HotRodConstants
     static const uint8_t ITERATION_START_REQUEST        = 0x31;
     static const uint8_t ITERATION_NEXT_REQUEST         = 0x33;
     static const uint8_t ITERATION_END_REQUEST          = 0x35;
-
+    static const uint8_t GET_STREAM_REQUEST             = 0x37;
+    static const uint8_t PUT_STREAM_REQUEST             = 0x39;
+    static const uint8_t COUNTER_CREATE_REQUEST         = 0x4B;
+    static const uint8_t COUNTER_GET_CONFIGURATION_REQUEST = 0x4D;
+    static const uint8_t COUNTER_IS_DEFINED_REQUEST     = 0x4F;
+    static const uint8_t COUNTER_ADD_AND_GET_REQUEST    = 0x52;
+    static const uint8_t COUNTER_RESET_REQUEST          = 0x54;
+    static const uint8_t COUNTER_GET_REQUEST            = 0x56;
+    static const uint8_t COUNTER_CAS_REQUEST            = 0x58;
+    static const uint8_t COUNTER_ADD_LISTENER_REQUEST   = 0x5A;
+    static const uint8_t COUNTER_REMOVE_LISTENER_REQUEST = 0x5C;
+    static const uint8_t COUNTER_REMOVE_REQUEST         = 0x5E;
+    static const uint8_t COUNTER_GET_NAMES_REQUEST      = 0x64;
     //responses
     static const uint8_t PUT_RESPONSE                   = 0x02;
     static const uint8_t GET_RESPONSE                   = 0x04;
@@ -85,14 +98,28 @@ class HotRodConstants
     static const uint8_t EXEC_RESPONSE                  = 0x2C;
     static const uint8_t PUT_ALL_RESPONSE               = 0x2E;
     static const uint8_t GET_ALL_RESPONSE               = 0x30;
-    static const uint8_t ITERATION_START_RESPONSE       = 0x32;
     static const uint8_t ITERATION_NEXT_RESPONSE        = 0x34;
     static const uint8_t ITERATION_END_RESPONSE         = 0x36;
+    static const uint8_t ITERATION_START_RESPONSE       = 0x32;
+    static const uint8_t GET_STREAM_RESPONSE            = 0x38;
+    static const uint8_t PUT_STREAM_RESPONSE            = 0x3A;
     static const uint8_t ERROR_RESPONSE                 = 0x50;
     static const uint8_t CACHE_ENTRY_CREATED_EVENT_RESPONSE = 0x60;
     static const uint8_t CACHE_ENTRY_MODIFIED_EVENT_RESPONSE = 0x61;
     static const uint8_t CACHE_ENTRY_REMOVED_EVENT_RESPONSE = 0x62;
     static const uint8_t CACHE_ENTRY_EXPIRED_EVENT_RESPONSE = 0x63;
+    static const uint8_t COUNTER_CREATE_RESPONSE            = 0x4C;
+    static const uint8_t COUNTER_GET_CONFIGURATION_RESPONSE = 0x4E;
+    static const uint8_t COUNTER_IS_DEFINED_RESPONSE        = 0x51;
+    static const uint8_t COUNTER_ADD_AND_GET_RESPONSE       = 0x53;
+    static const uint8_t COUNTER_RESET_RESPONSE             = 0x55;
+    static const uint8_t COUNTER_GET_RESPONSE               = 0x57;
+    static const uint8_t COUNTER_CAS_RESPONSE               = 0x59;
+    static const uint8_t COUNTER_ADD_LISTENER_RESPONSE      = 0x5B;
+    static const uint8_t COUNTER_REMOVE_LISTENER_RESPONSE   = 0x5D;
+    static const uint8_t COUNTER_REMOVE_RESPONSE            = 0x5F;
+    static const uint8_t COUNTER_GET_NAMES_RESPONSE         = 0x65;
+    static const uint8_t COUNTER_EVENT_RESPONSE             = 0x66;
 
     //response status
     static const uint8_t NO_ERROR_STATUS                    = 0x00;

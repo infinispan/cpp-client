@@ -10,14 +10,13 @@
 namespace infinispan {
 namespace hotrod {
 
-class HR_EXTERN Exception : public std::exception
-{
-  public:
-    explicit Exception(const std::string& message=std::string()) throw();
-    virtual ~Exception() throw();
-    virtual const char* what() const throw();
+class HR_EXTERN Exception: public std::exception {
+public:
+    explicit Exception(const std::string& message = std::string()) throw ();
+    virtual ~Exception() throw ();
+    virtual const char* what() const throw ();
 
-  protected:
+protected:
     std::string message;
 };
 
@@ -25,14 +24,13 @@ class HR_EXTERN Exception : public std::exception
  * Main Exception class thrown to indicate exceptions using HotRod client
  *
  */
-class HR_EXTERN HotRodClientException : public Exception
-{
-  public:
+class HR_EXTERN HotRodClientException: public Exception {
+public:
     explicit HotRodClientException(const std::string&);
     HotRodClientException(const std::string& message_, uint64_t message_id_, uint8_t status_);
-    virtual ~HotRodClientException() throw();
-    virtual const char* what() const throw();
-  private:
+    virtual ~HotRodClientException() throw ();
+    virtual const char* what() const throw ();
+    private:
     uint64_t message_id;
     uint8_t status;
 };
@@ -42,11 +40,10 @@ class HR_EXTERN HotRodClientException : public Exception
  * remote Hot Rod servers
  *
  */
-class HR_EXTERN TransportException : public HotRodClientException
-{
-  public:
+class HR_EXTERN TransportException: public HotRodClientException {
+public:
     TransportException(const std::string& host, int port, const std::string&, int);
-    ~TransportException() throw();
+    ~TransportException() throw ();
 
     const std::string &getHost() const {
         if (hostPtr.get() == NULL) {
@@ -56,8 +53,10 @@ class HR_EXTERN TransportException : public HotRodClientException
     }
     const char *getHostCString() const;
     int getPort() const;
-    int getErrnum() const { return errnum; }
-  private:
+    int getErrnum() const {
+        return errnum;
+    }
+private:
     const std::string host;
     __pragma(warning(suppress:4251))
     std::shared_ptr<std::string> hostPtr;
@@ -71,9 +70,8 @@ class HR_EXTERN TransportException : public HotRodClientException
  * invalid response is received from a remote Hot Rod server.
  *
  */
-class HR_EXTERN InvalidResponseException : public HotRodClientException
-{
-  public:
+class HR_EXTERN InvalidResponseException: public HotRodClientException {
+public:
     InvalidResponseException(const std::string&);
 };
 
@@ -82,9 +80,8 @@ class HR_EXTERN InvalidResponseException : public HotRodClientException
  * Hot Rod server is not reachable.
  *
  */
-class HR_EXTERN RemoteNodeSuspectException : public HotRodClientException
-{
-  public:
+class HR_EXTERN RemoteNodeSuspectException: public HotRodClientException {
+public:
     RemoteNodeSuspectException(const std::string&, uint64_t message_id, uint8_t status);
 };
 
@@ -92,9 +89,8 @@ class HR_EXTERN RemoteNodeSuspectException : public HotRodClientException
  * InternalException
  *
  */
-class HR_EXTERN InternalException : public HotRodClientException
-{
-  public:
+class HR_EXTERN InternalException: public HotRodClientException {
+public:
     InternalException(const std::string&);
 };
 
@@ -104,9 +100,8 @@ class HR_EXTERN InternalException : public HotRodClientException
  * those invocations.
  *
  */
-class HR_EXTERN RemoteCacheManagerNotStartedException : public HotRodClientException
-{
-  public:
+class HR_EXTERN RemoteCacheManagerNotStartedException: public HotRodClientException {
+public:
     RemoteCacheManagerNotStartedException(const std::string&);
 };
 
@@ -114,11 +109,35 @@ class HR_EXTERN RemoteCacheManagerNotStartedException : public HotRodClientExcep
  * UnsupportedOperationException is thrown for uncompleted/planned Hot Rod client features.
  *
  */
-struct HR_EXTERN UnsupportedOperationException : public HotRodClientException
-{
-	UnsupportedOperationException();
+struct HR_EXTERN UnsupportedOperationException: public HotRodClientException {
+    UnsupportedOperationException();
 };
 
-}} // namespace
+/**
+ * InternalException
+ *
+ */
+class HR_EXTERN CounterUpperBoundException: public Exception {
+public:
+    CounterUpperBoundException(const std::string& name) :
+            Exception(std::string("Upper bound violated. Counter name ") + name), name(name) {
+    }
+    std::string name;
+};
+
+/**
+ * InternalException
+ *
+ */
+class HR_EXTERN CounterLowerBoundException: public Exception {
+public:
+    CounterLowerBoundException(const std::string& name) :
+            Exception(std::string("Lower bound violated. Counter name ") + name), name(name) {
+    }
+    std::string name;
+};
+
+}
+} // namespace
 
 #endif  /* ISPN_HOTROD_EXCEPTIONS_H */

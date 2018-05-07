@@ -92,6 +92,38 @@ uint8_t HeaderParams::toOpRespCode(uint8_t code) {
         return HotRodConstants::REMOVE_CLIENT_LISTENER_RESPONSE;
     case HotRodConstants::GET_ALL_REQUEST:
         return HotRodConstants::GET_ALL_RESPONSE;
+    case HotRodConstants::ITERATION_START_REQUEST:
+       return HotRodConstants::ITERATION_START_RESPONSE;
+    case HotRodConstants::ITERATION_NEXT_REQUEST:
+       return HotRodConstants::ITERATION_NEXT_RESPONSE;
+    case HotRodConstants::ITERATION_END_REQUEST:
+       return HotRodConstants::ITERATION_END_RESPONSE;
+    case HotRodConstants::GET_STREAM_REQUEST:
+       return HotRodConstants::GET_STREAM_RESPONSE;
+    case HotRodConstants::PUT_STREAM_REQUEST:
+       return HotRodConstants::PUT_STREAM_RESPONSE;
+    case HotRodConstants::COUNTER_CREATE_REQUEST:
+       return HotRodConstants::COUNTER_CREATE_RESPONSE;
+    case HotRodConstants::COUNTER_GET_CONFIGURATION_REQUEST:
+       return HotRodConstants::COUNTER_GET_CONFIGURATION_RESPONSE;
+    case HotRodConstants::COUNTER_IS_DEFINED_REQUEST:
+       return HotRodConstants::COUNTER_IS_DEFINED_RESPONSE;
+    case HotRodConstants::COUNTER_REMOVE_REQUEST:
+       return HotRodConstants::COUNTER_REMOVE_RESPONSE;
+    case HotRodConstants::COUNTER_ADD_AND_GET_REQUEST:
+       return HotRodConstants::COUNTER_ADD_AND_GET_RESPONSE;
+    case HotRodConstants::COUNTER_GET_REQUEST:
+       return HotRodConstants::COUNTER_GET_RESPONSE;
+    case HotRodConstants::COUNTER_RESET_REQUEST:
+       return HotRodConstants::COUNTER_RESET_RESPONSE;
+    case HotRodConstants::COUNTER_CAS_REQUEST:
+       return HotRodConstants::COUNTER_CAS_RESPONSE;
+    case HotRodConstants::COUNTER_GET_NAMES_REQUEST:
+       return HotRodConstants::COUNTER_GET_NAMES_RESPONSE;
+    case HotRodConstants::COUNTER_ADD_LISTENER_REQUEST:
+       return HotRodConstants::COUNTER_ADD_LISTENER_RESPONSE;
+    case HotRodConstants::COUNTER_REMOVE_LISTENER_REQUEST:
+       return HotRodConstants::COUNTER_REMOVE_LISTENER_RESPONSE;
     default:
         std::ostringstream msg;
         msg << "Unknown operation code: " << opCode;

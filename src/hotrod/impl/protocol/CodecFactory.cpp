@@ -9,6 +9,7 @@
 #include "hotrod/impl/protocol/Codec24.h"
 #include "hotrod/impl/protocol/Codec25.h"
 #include "hotrod/impl/protocol/Codec26.h"
+#include "hotrod/impl/protocol/Codec27.h"
 #include "infinispan/hotrod/Configuration.h"
 #include "hotrod/sys/RunOnce.h"
 
@@ -30,6 +31,7 @@ CodecFactory::CodecFactory() {
     codecMap[Configuration::PROTOCOL_VERSION_24] = new Codec24();
     codecMap[Configuration::PROTOCOL_VERSION_25] = new Codec25();
     codecMap[Configuration::PROTOCOL_VERSION_26] = new Codec26();
+    codecMap[Configuration::PROTOCOL_VERSION_27] = new Codec27();
 }
 
 CodecFactory::~CodecFactory() {
