@@ -508,7 +508,7 @@ hr_protobuf_generate_cpp(TEST_PROTO_SRCS TEST_PROTO_HDRS .
 add_custom_target(build_test COMMAND "echo" "build_test completed")
 add_dependencies(build_test JniTest krbserver unittest unittest-static simple simple-static queryTest queryTest-static events
                             nearCacheTest nearCacheFailoverTest continuousQueryTest continuousQueryTest-static
-                            simpleSasl simple-tls simple-tls-sni simpleSaslTls PutGetTest QueryTest ClearTest xunit_nearCacheTest)
+                            simpleSasl simple-tls simple-tls-sni simpleSaslTls PutGetTest QueryTest ClearTest xunit_nearCacheTest CountersTest)
 
 # TESTS
 
