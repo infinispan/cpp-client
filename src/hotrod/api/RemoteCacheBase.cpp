@@ -189,7 +189,7 @@ void RemoteCacheBase::base_removeClientListener(ClientListener& clientListener)
 }
 
 void RemoteCacheBase::putScript(const std::vector<char>& name, const std::vector<char>& script) {
-    shared_ptr<RemoteCacheImpl> rcImpl = this->impl->remoteCacheManager.createRemoteCache("___script_cache", false,
+    std::shared_ptr<RemoteCacheImpl> rcImpl = this->impl->remoteCacheManager.createRemoteCache("___script_cache", false,
             NearCacheConfiguration());
     rcImpl->putraw(name, script, 0, 0);
 }

@@ -29,8 +29,7 @@ public:
         return configuration;
     }
 
-    void setRemoved()
-    {
+    void setRemoved() {
         removed = true;
     }
 
@@ -46,10 +45,6 @@ public:
 
     virtual ~BaseCounterImpl() {
     }
-
-//   public <T extends CounterListener> Handle<T> addListener(T listener) {
-//      return notificationManager.addListener(name, listener);
-//   }
 
 protected:
     RemoteCounterManagerImpl& rcm;
@@ -83,15 +78,6 @@ public:
     bool compareAndSet(long expect, long update) {
         return compareAndSwap(expect, update) == expect;
     }
-
-    //    /**
-    //     * Registers a {@link CounterListener} to this counter.
-    //     *
-    //     * @param listener The listener to register.
-    //     * @param <T>      The concrete type of the listener. It must implement {@link CounterListener}.
-    //     * @return A {@link Handle} that allows to remove the listener via {@link Handle#remove()}.
-    //     */
-    //    <T extends CounterListener> Handle<T> addListener(T listener);
 };
 
 class WeakCounterImpl: public BaseCounterImpl, public virtual WeakCounter {

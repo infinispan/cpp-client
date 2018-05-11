@@ -32,11 +32,11 @@ public:
             CounterType type, Storage storage)
     :
             initialValue(initialValue),
-                    upperBound(upperBound),
-                    lowerBound(lowerBound),
-                    concurrencyLevel(concurrencyLevel),
-                    type(type),
-                    storage(storage) {
+            upperBound(upperBound),
+            lowerBound(lowerBound),
+            concurrencyLevel(concurrencyLevel),
+            type(type),
+            storage(storage) {
     }
 
     long getInitialValue() const {

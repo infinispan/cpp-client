@@ -28,7 +28,6 @@ public:
 	std::shared_ptr<CounterDispatcher> addCounterListener(const std::vector<char> listenerId, const std::vector<char> cacheName,  Transport& t, const Codec20& codec20, const std::function<void()> &recoveryCallback);
 	void removeClientListener(const std::vector<char> listenerId);
 	void startClientListener(const std::vector<char> listenerId);
-//	const ClientListener& findClientListener(const std::vector<char> listenerId);
 	const Transport& findClientListenerTransport(const std::vector<char> listenerId);
 	static ClientListenerNotifier* create(std::shared_ptr<TransportFactory> factory);
 	void failoverClientListeners(const std::vector<transport::InetSocketAddress>& failedServers);

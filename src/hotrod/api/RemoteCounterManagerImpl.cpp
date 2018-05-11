@@ -36,12 +36,10 @@ void RemoteCounterManagerImpl::stop() {
 
 std::shared_ptr<StrongCounter> RemoteCounterManagerImpl::getStrongCounter(std::string name) {
     auto it = counters.find(name);
-    if (it == counters.end())
-            {
+    if (it == counters.end()) {
         GetCounterConfigurationOperation op(*codec, transportFactory, topology, 0, name);
         CounterConfiguration cc = op.execute();
-        if (cc.getType() == CounterType::WEAK)
-                {
+        if (cc.getType() == CounterType::WEAK) {
             throw HotRodClientException(name + " counter is the wrong type (weak instead of strong");
         }
         std::shared_ptr<StrongCounterImpl> sc(new StrongCounterImpl(*this, name, cc));
@@ -53,12 +51,10 @@ std::shared_ptr<StrongCounter> RemoteCounterManagerImpl::getStrongCounter(std::s
 
 std::shared_ptr<WeakCounter> RemoteCounterManagerImpl::getWeakCounter(std::string name) {
     auto it = counters.find(name);
-    if (it == counters.end())
-            {
+    if (it == counters.end()) {
         GetCounterConfigurationOperation op(*codec, transportFactory, topology, 0, name);
         CounterConfiguration cc = op.execute();
-        if (cc.getType() != CounterType::WEAK)
-                {
+        if (cc.getType() != CounterType::WEAK) {
             throw HotRodClientException(name + " counter is the wrong type (strong instead of weak");
         }
         std::shared_ptr<WeakCounterImpl> sc(new WeakCounterImpl(*this, name, cc));
@@ -88,8 +84,7 @@ void RemoteCounterManagerImpl::remove(std::string name) {
     RemoveCounterOperation op(*codec, transportFactory, topology, 0, name);
     op.execute();
     auto it = counters.find(name);
-    if (it != counters.end())
-            {
+    if (it != counters.end()) {
         it->second->setRemoved();
         counters.erase(name);
     }
@@ -106,8 +101,7 @@ static std::vector<char> generateV4UUID()
     static std::default_random_engine e { };
     static std::uniform_int_distribution<int> d { 0, 255 };
     auto i = 0;
-    for (; i < 16; i++)
-            {
+    for (; i < 16; i++) {
         tmp[i] = (unsigned char) d(e);
     }
     tmp[6] = (tmp[6] & 0x0F) | 0x40;
