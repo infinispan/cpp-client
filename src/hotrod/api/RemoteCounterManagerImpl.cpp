@@ -2,6 +2,9 @@
 #include "infinispan/hotrod/Counters.h"
 #include "hotrod/impl/RemoteCounterManagerImpl.h"
 #include "hotrod/impl/operations/CounterOperations.h"
+#include <random>
+#include <list>
+#include <functional>
 
 /*
  * RemoteCounterManagerImpl.cpp
@@ -95,6 +98,67 @@ void RemoteCounterManagerImpl::remove(std::string name) {
 std::set<std::string> RemoteCounterManagerImpl::getCounterNames() {
     GetCounterNamesOperation op(*codec, transportFactory, topology, 0);
     return op.execute();
+}
+
+static std::vector<char> generateV4UUID()
+{
+    std::vector<char> tmp(16);
+    static std::default_random_engine e { };
+    static std::uniform_int_distribution<int> d { 0, 255 };
+    auto i = 0;
+    for (; i < 16; i++)
+            {
+        tmp[i] = (unsigned char) d(e);
+    }
+    tmp[6] = (tmp[6] & 0x0F) | 0x40;
+    tmp[8] = (tmp[8] & 0x3F) | 0x80;
+    return tmp;
+}
+
+std::function<void()> f;
+
+void* RemoteCounterManagerImpl::addListener(const std::string counterName, const event::CounterListener& listener) {
+    if (counterDispatcher == nullptr) {
+        listenerId = generateV4UUID();
+        AddCounterListenerOperation op(*codec, transportFactory, topology, 0, counterName, listenerId, true);
+        Transport* t = op.execute();
+        if (t == nullptr) {
+            return (long) nullptr;
+        }
+        eventTransport = t;
+        counterDispatcher = listenerNotifier->addCounterListener(listenerId, std::vector<char>(),
+                *eventTransport, *(Codec27*) codec, f);
+    }
+    else {
+        if (counterDispatcher->getListeners(counterName).empty()) {
+            AddCounterListenerOperation op(*codec, transportFactory, topology, 0, counterName, listenerId, false);
+            Transport* t = op.execute();
+            if (t == nullptr) {
+                return (long) nullptr;
+            }
+        }
+    }
+    CounterListener* p = new CounterListener(listener);
+    counterDispatcher->getListeners(counterName).push_back(p);
+    return p;
+}
+
+void RemoteCounterManagerImpl::removeListener(const std::string counterName, const void* handler) {
+    if (counterDispatcher == nullptr)
+        return;
+    auto listeners = counterDispatcher->getListeners(counterName);
+    listeners.remove((const CounterListener*) handler);
+    delete ((const CounterListener*) handler);
+    if (listeners.empty()) {
+        RemoveCounterListenerOperation op(*codec, transportFactory, topology, 0, counterName, listenerId);
+        if (op.execute()) {
+            counterDispatcher->remove(counterName);
+        }
+    }
+    if (counterDispatcher->empty()) {
+        counterDispatcher->stop();
+        counterDispatcher.reset();
+    }
 }
 
 }

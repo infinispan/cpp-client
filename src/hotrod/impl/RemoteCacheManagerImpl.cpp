@@ -20,7 +20,7 @@ const std::string DefaultCacheName = "";
 RemoteCacheManagerImpl::RemoteCacheManagerImpl(bool start_)
   : started(false),
     configuration(ConfigurationBuilder().build()), codec(0),
-	defaultCacheTopologyId(protocol::HotRodConstants::DEFAULT_CACHE_TOPOLOGY)
+	defaultCacheTopologyId(protocol::HotRodConstants::DEFAULT_CACHE_TOPOLOGY), rcm(listenerNotifier)
 {
 	; //force topology read on first op
 	if (start_) start();
@@ -40,7 +40,7 @@ Configuration buildConfig(const std::map<std::string,std::string>& properties)
 RemoteCacheManagerImpl::RemoteCacheManagerImpl(const std::map<std::string,std::string>& properties, bool start_)
   : started(false),
     configuration(buildConfig(properties)), codec(0),
-	defaultCacheTopologyId(protocol::HotRodConstants::DEFAULT_CACHE_TOPOLOGY)
+	defaultCacheTopologyId(protocol::HotRodConstants::DEFAULT_CACHE_TOPOLOGY), rcm(listenerNotifier)
 {
   if (start_) start();
 }
@@ -48,7 +48,7 @@ RemoteCacheManagerImpl::RemoteCacheManagerImpl(const std::map<std::string,std::s
 RemoteCacheManagerImpl::RemoteCacheManagerImpl(const Configuration& configuration_, bool start_)
   : started(false),
     configuration(configuration_), codec(0),
-	defaultCacheTopologyId(protocol::HotRodConstants::DEFAULT_CACHE_TOPOLOGY)
+	defaultCacheTopologyId(protocol::HotRodConstants::DEFAULT_CACHE_TOPOLOGY), rcm(listenerNotifier)
 {
   if (start_) start();
 }

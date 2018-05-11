@@ -10,6 +10,7 @@
 
 #include <string>
 #include "infinispan/hotrod/CounterConfiguration.h"
+#include "infinispan/hotrod/CounterEvent.h"
 
 namespace infinispan {
 namespace hotrod {
@@ -34,12 +35,22 @@ public:
     /**
      * It removes this counter from the cluster.
      * <p>
-     * Note that it doesn't remove the counter from the {@link CounterManager}. If you want to remove the counter from
-     * the {@link CounterManager} use {@link CounterManager#remove(String)}.
-     *
-     * @return The {@link CompletableFuture} that is completed when the counter is removed from the cluster.
+     * Note that it doesn't remove the counter from the {@link RemoteCounterManager}. If you want to remove the counter from
+     * the {@link RemoteCounterManager} use {@link RemoteCounterManager#remove(std::string)}.
      */
     virtual void remove() = 0;
+
+    /**
+     * Adds a listener for this counter
+     * @return An handler needed to remove it {@link removeListener(void*)}
+     */
+    virtual void* addListener(const event::CounterListener& listener) = 0;
+    /**
+     * Remove a counter listener
+     *
+     * @param handler the handler to the listener to be removed
+     */
+    virtual void removeListener(void* handler) = 0;
 
 };
 

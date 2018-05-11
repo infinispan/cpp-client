@@ -158,3 +158,68 @@ TEST_F(StrongCounterTest, testBoundaries) {
     counter->remove();
 }
 
+static std::promise<void> valueChangedPromise;
+static int step;
+static void action(const event::CounterEvent e) {
+    switch (step) {
+    case 0:
+        EXPECT_EQ(5, e.oldValue);
+        EXPECT_EQ(15, e.newValue);
+        EXPECT_EQ(VALID, e.newState);
+        EXPECT_EQ(VALID, e.oldState);
+        valueChangedPromise.set_value();
+        break;
+    case 1:
+        EXPECT_EQ(15, e.oldValue);
+        EXPECT_EQ(0, e.newValue);
+        EXPECT_EQ(LOWER_BOUND_REACHED, e.newState);
+        EXPECT_EQ(VALID, e.oldState);
+        valueChangedPromise.set_value();
+        break;
+    case 2:
+        EXPECT_EQ(0, e.oldValue);
+        EXPECT_EQ(20, e.newValue);
+        EXPECT_EQ(UPPER_BOUND_REACHED, e.newState);
+        EXPECT_EQ(LOWER_BOUND_REACHED, e.oldState);
+        valueChangedPromise.set_value();
+        break;
+    default:
+        EXPECT_TRUE(false);
+    }
+}
+
+TEST_F(StrongCounterTest, testBasicListener) {
+    const std::string counterName("strongTestBasicListener");
+    event::CounterListener c(counterName, action);
+    const long initialValue = 5;
+    step = 0;
+    valueChangedPromise = std::promise<void>();
+    auto& counterManager = StrongCounterTest::remoteCacheManager->getCounterManager();
+    auto cc = CounterConfiguration(initialValue, 0, 20, 8, CounterType::BOUNDED_STRONG, Storage::VOLATILE);
+    counterManager.defineCounter(counterName, cc);
+    auto counter = counterManager.getStrongCounter(counterName);
+    counter->reset();
+    counter->addListener(c);
+    counter->addAndGet(10);
+    auto status = valueChangedPromise.get_future().wait_for(std::chrono::seconds(10));
+    EXPECT_EQ(status, std::future_status::ready);
+    valueChangedPromise = std::promise<void>();
+    step = 1;
+    try {
+        counter->addAndGet(-20);
+    }
+    catch (const CounterLowerBoundException& ex) {
+    }
+    status = valueChangedPromise.get_future().wait_for(std::chrono::seconds(10));
+    EXPECT_EQ(status, std::future_status::ready);
+    valueChangedPromise = std::promise<void>();
+    step = 2;
+    try {
+        counter->addAndGet(30);
+    }
+    catch (const CounterUpperBoundException& ex) {
+    }
+    status = valueChangedPromise.get_future().wait_for(std::chrono::seconds(10));
+    EXPECT_EQ(status, std::future_status::ready);
+}
+
