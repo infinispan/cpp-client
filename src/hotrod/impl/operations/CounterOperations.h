@@ -119,28 +119,30 @@ public:
 class AddAndGetCounterValueOperation: public BaseCounterOperation, public RetryOnFailureOperation<long>
 {
 public:
-    AddAndGetCounterValueOperation(protocol::Codec& codec, std::shared_ptr<transport::TransportFactory> transportFactory,
+    AddAndGetCounterValueOperation(protocol::Codec& codec,
+            std::shared_ptr<transport::TransportFactory> transportFactory,
             Topology& topologyId, uint32_t flags, std::string counterName, long delta) :
             BaseCounterOperation(counterName), RetryOnFailureOperation<long>(codec, transportFactory,
                     std::vector<char>(), topologyId, flags), delta(delta) {
     }
     long executeOperation(infinispan::hotrod::transport::Transport& transport);
-private:
+    private:
     long delta;
 
     void assertBoundaries(short status);
 };
 
-class CompareAndSwapCounterValueOperation: public BaseCounterOperation, public RetryOnFailureOperation<long>
-{
+class CompareAndSwapCounterValueOperation: public BaseCounterOperation, public RetryOnFailureOperation<long> {
 public:
-    CompareAndSwapCounterValueOperation(protocol::Codec& codec, std::shared_ptr<transport::TransportFactory> transportFactory,
-            Topology& topologyId, uint32_t flags, std::string counterName, long expect, long update, CounterConfiguration& cc) :
+    CompareAndSwapCounterValueOperation(protocol::Codec& codec,
+            std::shared_ptr<transport::TransportFactory> transportFactory,
+            Topology& topologyId, uint32_t flags, std::string counterName, long expect, long update,
+            CounterConfiguration& cc) :
             BaseCounterOperation(counterName), RetryOnFailureOperation<long>(codec, transportFactory,
                     std::vector<char>(), topologyId, flags), expect(expect), update(update), cc(cc) {
     }
     long executeOperation(infinispan::hotrod::transport::Transport& transport);
-private:
+    private:
     long expect;
     long update;
     CounterConfiguration& cc;
@@ -148,6 +150,40 @@ private:
     void assertBoundaries(short status);
 
 };
+
+class AddCounterListenerOperation: public BaseCounterOperation, public RetryOnFailureOperation<Transport*> {
+public:
+    AddCounterListenerOperation(protocol::Codec& codec, std::shared_ptr<transport::TransportFactory> transportFactory,
+            Topology& topologyId, uint32_t flags, std::string counterName, std::vector<char> listenerId,
+            bool keepTransport) :
+            BaseCounterOperation(counterName), RetryOnFailureOperation<Transport*>(codec, transportFactory,
+                    std::vector<char>(), topologyId, flags), listenerId(listenerId), keepTransport(keepTransport), failed(
+                    false) {
+    }
+    Transport* executeOperation(infinispan::hotrod::transport::Transport& transport);
+    void releaseTransport(transport::Transport* t);
+    void invalidateTransport(const infinispan::hotrod::transport::InetSocketAddress& addr,
+            transport::Transport* transport);
+
+private:
+    std::vector<char> listenerId;
+    bool keepTransport;
+    bool failed;
+};
+
+class RemoveCounterListenerOperation: public BaseCounterOperation, public RetryOnFailureOperation<bool> {
+public:
+    RemoveCounterListenerOperation(protocol::Codec& codec,
+            std::shared_ptr<transport::TransportFactory> transportFactory,
+            Topology& topologyId, uint32_t flags, std::string counterName, std::vector<char> listenerId) :
+            BaseCounterOperation(counterName), RetryOnFailureOperation<bool>(codec, transportFactory,
+                    std::vector<char>(), topologyId, flags), listenerId(listenerId) {
+    }
+    bool executeOperation(infinispan::hotrod::transport::Transport& transport);
+    private:
+    std::vector<char> listenerId;
+};
+
 
 }
 }

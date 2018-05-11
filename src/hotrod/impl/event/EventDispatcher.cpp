@@ -10,6 +10,7 @@
 #include "infinispan/hotrod/exceptions.h"
 #include "hotrod/impl/transport/tcp/TcpTransport.h"
 #include "hotrod/sys/Log.h"
+#include <hotrod/impl/operations/AddClientListenerOperation.h>
 #include <thread>
 #include <iostream>
 #include <exception>
@@ -21,19 +22,14 @@ namespace event {
 
 using namespace infinispan::hotrod::sys;
 
-void EventDispatcher::start()
-{
-  p_thread.reset(new std::thread(&EventDispatcher::run, this));
-}
-
-void EventDispatcher::stop()
+void GenericDispatcher::stop()
 {
     // This terminates the thread
     transport.release();
     waitThreadExit();
 }
 
-void EventDispatcher::waitThreadExit()
+void GenericDispatcher::waitThreadExit()
 {
     if (p_thread)
     {
@@ -43,12 +39,18 @@ void EventDispatcher::waitThreadExit()
         }
     }
 }
+
+void EventDispatcher::start()
+{
+  p_thread.reset(new std::thread(&EventDispatcher::run, this));
+}
+
 void EventDispatcher::run() {
     while (true) {
         try {
             EventHeaderParams params = codec20.readEventHeader(transport);
             if (!(HotRodConstants::isEvent(params.opCode))) {
-                // TODO handle error in some way
+                // Just ignore malformed messages
                 break;
             }
             std::vector<char> listId = codec20.readEventListenerId(transport);
@@ -95,6 +97,84 @@ void EventDispatcher::run() {
         }
     }
 }
+
+void EventDispatcher::failOver() {
+    auto op = (infinispan::hotrod::operations::AddClientListenerOperation*) operationPtr.get();
+    // Add the listener to the failover servers
+    op->execute();
+
+}
+
+void CounterDispatcher::start()
+{
+    p_thread.reset(new std::thread(&CounterDispatcher::run, this));
+}
+
+static CounterState encoded2OldState(uint8_t encoded) {
+    switch (encoded & 0x03) {
+    case 0x01:
+        return LOWER_BOUND_REACHED;
+    case 0x02:
+        return UPPER_BOUND_REACHED;
+    case 0x00:
+        default:
+        return VALID;
+    }
+}
+
+static CounterState encoded2NewState(uint8_t encoded) {
+    switch ((encoded >> 0x02) & 0x03) {
+    case 0x01:
+        return LOWER_BOUND_REACHED;
+    case 0x02:
+        return UPPER_BOUND_REACHED;
+    case 0x00:
+        default:
+        return VALID;
+    }
+}
+
+void CounterDispatcher::run() {
+    while (true) {
+        try {
+            EventHeaderParams params = codec20.readEventHeader(transport);
+            if (!(HotRodConstants::isCounterEvent(params.opCode))) {
+                // Just ignore malformed messages
+                break;
+            }
+            std::string counterName = transport.readString();
+            std::vector<char> listId = codec20.readEventListenerId(transport);
+            uint8_t encodedState = transport.readByte();
+            long oldValue = transport.readLong();
+            long newValue = transport.readLong();
+            switch (params.opCode) {
+            case HotRodConstants::COUNTER_EVENT_RESPONSE:
+                CounterEvent ev(counterName, oldValue, encoded2OldState(encodedState), newValue,
+                        encoded2NewState(encodedState));
+                if (listeners.find(counterName) != listeners.end()) {
+                    for (auto cl : listeners[counterName]) {
+                        cl->onUpdate(ev);
+                    }
+                }
+                break;
+            }
+        } catch (const TransportException& ex) {
+            if (recoveryCallback) {
+                recoveryCallback();
+            }
+            break;
+        }
+    }
+}
+
+void CounterDispatcher::failOver() {
+
+}
+
+std::list<const CounterListener*>& CounterDispatcher::getListeners(const std::string& counterName) {
+    return listeners[counterName];
+}
+
 } /* namespace event */
 } /* namespace hotrod */
 } /* namespace infinispan */

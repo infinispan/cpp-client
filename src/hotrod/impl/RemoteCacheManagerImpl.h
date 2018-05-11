@@ -45,7 +45,6 @@ class RemoteCacheManagerImpl
     Configuration configuration;
     protocol::Codec* codec;
     int defaultCacheTopologyId;
-    RemoteCounterManagerImpl rcm;
 
     typedef std::pair<std::shared_ptr<RemoteCacheImpl>, bool> RemoteCacheHolder;
     std::map<std::string, RemoteCacheHolder> cacheName2RemoteCache;
@@ -53,6 +52,7 @@ class RemoteCacheManagerImpl
     operations::PingResult ping(RemoteCacheImpl& remoteCache);
     std::shared_ptr<transport::TransportFactory> transportFactory;
     std::shared_ptr<ClientListenerNotifier> listenerNotifier;
+    RemoteCounterManagerImpl rcm;
 
     void startRemoteCache(RemoteCacheImpl& remoteCache, bool forceReturnValue);
     void stopRemoteCache(RemoteCacheImpl& remoteCache);

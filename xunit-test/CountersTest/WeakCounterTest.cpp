@@ -7,6 +7,8 @@
 #include "infinispan/hotrod/RemoteCacheManager.h"
 #include "WeakCounterTest.h"
 
+#include <future>
+
 using ::infinispan::hotrod::ConfigurationBuilder;
 using ::infinispan::hotrod::Configuration;
 
@@ -109,6 +111,50 @@ TEST_F(WeakCounterTest, testRemove) {
     EXPECT_EQ(counter->getValue(),5);
     counterManager.remove(counterName);
     counter->remove();
+}
+
+static std::promise<void> valueChangedPromise;
+static void action(const event::CounterEvent e) {
+    EXPECT_EQ(5, e.oldValue);
+    EXPECT_EQ(15, e.newValue);
+    EXPECT_EQ(VALID, e.newState);
+    EXPECT_EQ(VALID, e.oldState);
+    valueChangedPromise.set_value();
+}
+
+static void action1(const event::CounterEvent e) {
+    EXPECT_EQ(6, e.oldValue);
+    EXPECT_EQ(16, e.newValue);
+    EXPECT_EQ(VALID, e.newState);
+    EXPECT_EQ(VALID, e.oldState);
+    valueChangedPromise.set_value();
+}
+
+TEST_F(WeakCounterTest, testAddRemoveListener) {
+    const std::string counterName("testAddRemoveListener");
+    event::CounterListener c(counterName, action);
+    event::CounterListener c1(counterName, action1);
+    const long initialValue = 5;
+    valueChangedPromise = std::promise<void>();
+    auto& counterManager = WeakCounterTest::remoteCacheManager->getCounterManager();
+    auto cc = CounterConfiguration(initialValue, 0, 20, 8, CounterType::WEAK, Storage::VOLATILE);
+    counterManager.defineCounter(counterName, cc);
+    auto counter = counterManager.getWeakCounter(counterName);
+    counter->reset();
+    auto handler = counter->addListener(c);
+    counter->add(10);
+    auto status = valueChangedPromise.get_future().wait_for(std::chrono::seconds(10));
+    EXPECT_EQ(status, std::future_status::ready);
+    valueChangedPromise = std::promise<void>();
+    counter->removeListener(handler);
+    counter->add(-9);
+    status = valueChangedPromise.get_future().wait_for(std::chrono::seconds(10));
+    EXPECT_EQ(status, std::future_status::timeout);
+    handler = counter->addListener(c1);
+    valueChangedPromise = std::promise<void>();
+    counter->add(10);
+    status = valueChangedPromise.get_future().wait_for(std::chrono::seconds(10));
+    EXPECT_EQ(status, std::future_status::ready);
 }
 
 /*

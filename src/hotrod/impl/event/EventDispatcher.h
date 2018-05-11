@@ -10,7 +10,9 @@
 
 #include "infinispan/hotrod/ClientEvent.h"
 #include "infinispan/hotrod/ClientListener.h"
+#include "infinispan/hotrod/CounterEvent.h"
 #include "hotrod/impl/protocol/Codec21.h"
+#include "hotrod/impl/protocol/Codec27.h"
 #include "hotrod/impl/transport/Transport.h"
 #include "hotrod/impl/transport/tcp/TcpTransport.h"
 #include <memory>
@@ -19,6 +21,7 @@
 #include <tuple>
 #include <thread>
 #include <iostream>
+#include <list>
 
 using namespace infinispan::hotrod::protocol;
 using namespace infinispan::hotrod::transport;
@@ -29,32 +32,69 @@ namespace event {
 
 
 template <class T> using X =  std::function<void(T)>;
-
-class EventDispatcher {
+class GenericDispatcher {
 public:
-    EventDispatcher(const std::vector<char> listenerId, const ClientListener& cl, std::vector<char> cacheName, Transport &t, const Codec20& codec20, std::shared_ptr<void> addClientListenerOpPtr, const std::function<void()> &recoveryCallback) : listenerId(listenerId), cl(cl), operationPtr(addClientListenerOpPtr), cacheName(cacheName), transport(t), codec20(codec20), recoveryCallback(recoveryCallback)
+    GenericDispatcher(const std::vector<char> listenerId, std::vector<char> cacheName, Transport &t, const std::function<void()> &recoveryCallback) : listenerId(listenerId), cacheName(cacheName), transport(t), recoveryCallback(recoveryCallback)
     {}
-    virtual ~EventDispatcher() {
+    virtual ~GenericDispatcher() {
         waitThreadExit();
     }
     Transport& getTransport() {
         return transport;
     }
-    void run();
-    void start();
+    virtual void run() = 0;
+    virtual void failOver() = 0;
+    virtual void start() = 0;
     void stop();
     void waitThreadExit();
     const std::vector<char> listenerId;
-    const ClientListener& cl;
-    const std::shared_ptr<void> operationPtr;
 
-private:
+protected:
     std::vector<char> cacheName;
     Transport &transport;
-    const Codec20& codec20;
     std::shared_ptr<std::thread> p_thread;
     const std::function<void()> &recoveryCallback;
 };
+
+
+class EventDispatcher: public GenericDispatcher {
+public:
+    EventDispatcher(const std::vector<char> listenerId, const ClientListener& cl, std::vector<char> cacheName,
+            Transport &t, const Codec20& codec20, std::shared_ptr<void> addClientListenerOpPtr,
+            const std::function<void()> &recoveryCallback) :
+            GenericDispatcher(listenerId, cacheName, t, recoveryCallback), cl(cl), operationPtr(addClientListenerOpPtr), codec20(
+                    codec20)
+    {
+    }
+    virtual void run();
+    virtual void failOver();
+    virtual void start();
+    const ClientListener& cl;
+    const std::shared_ptr<void> operationPtr;
+    const Codec20& codec20;
+};
+
+class CounterDispatcher: public GenericDispatcher {
+public:
+    CounterDispatcher(const std::vector<char> listenerId, std::vector<char> cacheName, Transport &t,
+            const Codec20& codec20, const std::function<void()> &recoveryCallback) :
+            GenericDispatcher(listenerId, cacheName, t, recoveryCallback), codec20(codec20)
+    {
+    }
+    virtual void run();
+    virtual void failOver();
+    virtual void start();
+    std::list<const CounterListener*>& getListeners(const std::string& counterName);
+    bool empty() {
+        return listeners.empty();
+    }
+    void remove(const std::string& counterName) {
+        listeners.erase(counterName);
+    }
+    std::map<const std::string, std::list<const CounterListener*> > listeners;
+    const Codec20& codec20;
+};
+
 
 } /* namespace event */
 } /* namespace hotrod */

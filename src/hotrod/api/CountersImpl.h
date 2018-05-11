@@ -40,6 +40,10 @@ public:
 
     virtual long getValue();
 
+    void* addListener(const event::CounterListener& listener);
+
+    void removeListener(void* handler);
+
     virtual ~BaseCounterImpl() {
     }
 

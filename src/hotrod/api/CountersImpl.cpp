@@ -29,6 +29,14 @@ long BaseCounterImpl::getValue() {
     return op.execute();
 }
 
+void* BaseCounterImpl::addListener(const event::CounterListener& listener) {
+    return rcm.addListener(getName(), listener);
+}
+
+void BaseCounterImpl::removeListener(void* handler) {
+    rcm.removeListener(getName(), handler);
+}
+
 long StrongCounterImpl::addAndGet(long delta) {
     AddAndGetCounterValueOperation op(*rcm.codec, rcm.transportFactory, rcm.topology, 0, name, delta);
     return op.execute();

@@ -25,12 +25,12 @@ class WeakCounterImpl;
 
 class RemoteCounterManagerImpl: public RemoteCounterManager {
 public:
-    RemoteCounterManagerImpl() :
-            transportFactory(), codec(nullptr), started(false) {
+    RemoteCounterManagerImpl(std::shared_ptr<ClientListenerNotifier>& listenerNotifier) :
+            transportFactory(), codec(nullptr), started(false), listenerNotifier(listenerNotifier), eventTransport(
+                    nullptr) {
     }
     ~RemoteCounterManagerImpl() {
     }
-    ;
 
     void start(std::shared_ptr<transport::TransportFactory> t, protocol::Codec* c);
     void stop();
@@ -42,13 +42,19 @@ public:
     CounterConfiguration getConfiguration(std::string name);
     void remove(std::string name);
     std::set<std::string> getCounterNames();
+    void* addListener(const std::string counterName, const event::CounterListener& listener);
+    void removeListener(const std::string counterName, const void* handler);
 
 private:
     std::shared_ptr<transport::TransportFactory> transportFactory;
     protocol::Codec* codec;
     bool started;
+    std::shared_ptr<ClientListenerNotifier>& listenerNotifier;
     Topology topology;
     std::map<std::string, std::shared_ptr<BaseCounterImpl>> counters;
+    std::shared_ptr<CounterDispatcher> counterDispatcher;
+    Transport* eventTransport;
+    std::vector<char> listenerId;
     friend BaseCounterImpl;
     friend StrongCounterImpl;
     friend WeakCounterImpl;

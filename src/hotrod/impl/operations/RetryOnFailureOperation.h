@@ -29,7 +29,6 @@ template<class T> class RetryOnFailureOperation : public HotRodOperation<T>
             } catch (const TransportException& te) {
                 // Invalidate transport since this exception means that this
                 // instance is no longer usable and should be destroyed
-                //std::cout << "Transport: " << ((transport::TcpTransport*)transport)->getServerAddress().getPort() << std::endl;
             	transport::InetSocketAddress isa(te.getHostCString(),te.getPort());
             	failedServers.insert(isa);
                 invalidateTransport(isa, transport);
@@ -121,7 +120,6 @@ template<> class RetryOnFailureOperation<void> : public HotRodOperation<void>
             } catch (const TransportException& te) {
                 // Invalidate transport since this exception means that this
                 // instance is no longer usable and should be destroyed
-                //std::cout << "Transport: " << ((transport::TcpTransport*)transport)->getServerAddress().getPort() << std::endl;
                 transport::InetSocketAddress isa(te.getHostCString(),te.getPort());
                 failedServers.insert(isa);
                 invalidateTransport(isa, transport);

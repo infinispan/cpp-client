@@ -246,6 +246,47 @@ void CompareAndSwapCounterValueOperation::assertBoundaries(short status) {
    }
 }
 
+Transport* AddCounterListenerOperation::executeOperation(infinispan::hotrod::transport::Transport& transport) {
+    TRACE("Executing AddCounterListenerOperation(flags=%u)", flags);
+    failed = false;
+    std::unique_ptr<HeaderParams> params(
+            RetryOnFailureOperation<Transport*>::writeHeader(transport, COUNTER_ADD_LISTENER_REQUEST));
+    writeName(transport, counterName);
+    transport.writeArray(listenerId);
+    transport.flush();
+    uint8_t status = readHeaderAndValidate(transport, *params);
+    if (status != NO_ERROR_STATUS) {
+        failed = true;
+        return nullptr;
+    }
+    return &transport;
+}
+
+void AddCounterListenerOperation::releaseTransport(transport::Transport* t) {
+    if (failed || !keepTransport) {
+        RetryOnFailureOperation::releaseTransport(t);
+        failed = false;
+    }
+}
+
+void AddCounterListenerOperation::invalidateTransport(const infinispan::hotrod::transport::InetSocketAddress& addr,
+        transport::Transport* transport) {
+    if (transport) {
+        transportFactory->invalidateTransport(addr, transport);
+    }
+}
+
+bool RemoveCounterListenerOperation::executeOperation(infinispan::hotrod::transport::Transport& transport) {
+    TRACE("Executing RemoveCounterListenerOperation(flags=%u)", flags);
+    std::unique_ptr<HeaderParams> params(
+            RetryOnFailureOperation<bool>::writeHeader(transport, COUNTER_REMOVE_LISTENER_REQUEST));
+    writeName(transport, counterName);
+    transport.writeArray(listenerId);
+    transport.flush();
+    uint8_t status = readHeaderAndValidate(transport, *params);
+    return status == NO_ERROR_STATUS;
+}
+
 }
 }
 }

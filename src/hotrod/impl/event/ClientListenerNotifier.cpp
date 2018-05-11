@@ -41,6 +41,12 @@ void ClientListenerNotifier::addClientListener(const std::vector<char> listenerI
 	eventDispatchers.insert(std::make_pair(listenerId, ed));
 }
 
+std::shared_ptr<CounterDispatcher> ClientListenerNotifier::addCounterListener(const std::vector<char> listenerId, const std::vector<char> cacheName,  Transport& t, const Codec20& codec20, const std::function<void()> &recoveryCallback) {
+    auto ed = std::shared_ptr<CounterDispatcher>(new CounterDispatcher(listenerId, cacheName, t, codec20, recoveryCallback));
+    eventDispatchers.insert(std::make_pair(listenerId, ed));
+    ed->start();
+    return ed;
+}
 void ClientListenerNotifier::failoverClientListeners(const std::vector<transport::InetSocketAddress>& failedServers)
 {
 	for (auto server: failedServers)
@@ -49,9 +55,7 @@ void ClientListenerNotifier::failoverClientListeners(const std::vector<transport
 		{
 			if (edPair.second->getTransport().targets(server))
 			{
-				auto op = (AddClientListenerOperation*)edPair.second->operationPtr.get();
-				// Add the listener to the failover servers
-				op->execute();
+			    edPair.second->failOver();
 			}
 		}
 	}
@@ -82,14 +86,6 @@ void ClientListenerNotifier::startClientListener(const std::vector<char> listene
       auto it = eventDispatchers.find(listenerId);
       if (it != eventDispatchers.end())
           it->second->start();
-}
-
-const ClientListener& ClientListenerNotifier::findClientListener(const std::vector<char> listenerId)
-{
-    auto it = eventDispatchers.find(listenerId);
-    if (it!=eventDispatchers.end())
-        return it->second->cl;
-    throw HotRodClientException("Internal: client listener not found");
 }
 
 const Transport& ClientListenerNotifier::findClientListenerTransport(const std::vector<char> listenerId)
