@@ -42,7 +42,7 @@ public:
     CounterConfiguration getConfiguration(std::string name);
     void remove(std::string name);
     std::set<std::string> getCounterNames();
-    void* addListener(const std::string counterName, const event::CounterListener& listener);
+    const void* addListener(const std::string counterName, const event::CounterListener* listener);
     void removeListener(const std::string counterName, const void* handler);
 
 private:

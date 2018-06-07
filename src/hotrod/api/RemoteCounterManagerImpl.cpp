@@ -111,7 +111,7 @@ static std::vector<char> generateV4UUID()
 
 std::function<void()> f;
 
-void* RemoteCounterManagerImpl::addListener(const std::string counterName, const event::CounterListener& listener) {
+const void* RemoteCounterManagerImpl::addListener(const std::string counterName, const event::CounterListener* listener) {
     if (counterDispatcher == nullptr) {
         listenerId = generateV4UUID();
         AddCounterListenerOperation op(*codec, transportFactory, topology, 0, counterName, listenerId, true);
@@ -132,9 +132,8 @@ void* RemoteCounterManagerImpl::addListener(const std::string counterName, const
             }
         }
     }
-    CounterListener* p = new CounterListener(listener);
-    counterDispatcher->getListeners(counterName).push_back(p);
-    return p;
+    counterDispatcher->getListeners(counterName).push_back(listener);
+    return listener;
 }
 
 void RemoteCounterManagerImpl::removeListener(const std::string counterName, const void* handler) {
@@ -142,7 +141,6 @@ void RemoteCounterManagerImpl::removeListener(const std::string counterName, con
         return;
     auto listeners = counterDispatcher->getListeners(counterName);
     listeners.remove((const CounterListener*) handler);
-    delete ((const CounterListener*) handler);
     if (listeners.empty()) {
         RemoveCounterListenerOperation op(*codec, transportFactory, topology, 0, counterName, listenerId);
         if (op.execute()) {
