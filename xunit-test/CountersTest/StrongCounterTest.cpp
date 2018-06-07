@@ -199,7 +199,7 @@ TEST_F(StrongCounterTest, testBasicListener) {
     counterManager.defineCounter(counterName, cc);
     auto counter = counterManager.getStrongCounter(counterName);
     counter->reset();
-    counter->addListener(c);
+    counter->addListener(&c);
     counter->addAndGet(10);
     auto status = valueChangedPromise.get_future().wait_for(std::chrono::seconds(10));
     EXPECT_EQ(status, std::future_status::ready);

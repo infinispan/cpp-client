@@ -141,7 +141,7 @@ TEST_F(WeakCounterTest, testAddRemoveListener) {
     counterManager.defineCounter(counterName, cc);
     auto counter = counterManager.getWeakCounter(counterName);
     counter->reset();
-    auto handler = counter->addListener(c);
+    auto handler = counter->addListener(&c);
     counter->add(10);
     auto status = valueChangedPromise.get_future().wait_for(std::chrono::seconds(10));
     EXPECT_EQ(status, std::future_status::ready);
@@ -150,7 +150,7 @@ TEST_F(WeakCounterTest, testAddRemoveListener) {
     counter->add(-9);
     status = valueChangedPromise.get_future().wait_for(std::chrono::seconds(10));
     EXPECT_EQ(status, std::future_status::timeout);
-    handler = counter->addListener(c1);
+    handler = counter->addListener(&c1);
     valueChangedPromise = std::promise<void>();
     counter->add(10);
     status = valueChangedPromise.get_future().wait_for(std::chrono::seconds(10));

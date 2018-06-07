@@ -64,9 +64,13 @@ public:
     CounterListener(const std::string counterName, std::function<void(const CounterEvent)> action) :
             counterName(counterName), action(action) {
     }
-    void onUpdate(const CounterEvent entry) const {
+    CounterListener(const std::string counterName) :
+            counterName(counterName) {
+    }
+    virtual void onUpdate(const CounterEvent entry) const {
         action(entry);
     }
+    virtual ~CounterListener() {}
 private:
     const std::string counterName;
     const std::function<void(const CounterEvent)> action;

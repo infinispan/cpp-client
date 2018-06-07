@@ -29,11 +29,11 @@ long BaseCounterImpl::getValue() {
     return op.execute();
 }
 
-void* BaseCounterImpl::addListener(const event::CounterListener& listener) {
+const void* BaseCounterImpl::addListener(const event::CounterListener* listener) {
     return rcm.addListener(getName(), listener);
 }
 
-void BaseCounterImpl::removeListener(void* handler) {
+void BaseCounterImpl::removeListener(const void* handler) {
     rcm.removeListener(getName(), handler);
 }
 

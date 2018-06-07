@@ -42,15 +42,15 @@ public:
 
     /**
      * Adds a listener for this counter
-     * @return An handler needed to remove it {@link removeListener(void*)}
+     * @return An handler needed to remove it {@link removeListener(const void*)}
      */
-    virtual void* addListener(const event::CounterListener& listener) = 0;
+    virtual const void* addListener(const event::CounterListener* listener) = 0;
     /**
      * Remove a counter listener
      *
      * @param handler the handler to the listener to be removed
      */
-    virtual void removeListener(void* handler) = 0;
+    virtual void removeListener(const void* handler) = 0;
 
 };
 

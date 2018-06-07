@@ -39,9 +39,9 @@ public:
 
     virtual long getValue();
 
-    void* addListener(const event::CounterListener& listener);
+    const void* addListener(const event::CounterListener* listener);
 
-    void removeListener(void* handler);
+    void removeListener(const void* handler);
 
     virtual ~BaseCounterImpl() {
     }
