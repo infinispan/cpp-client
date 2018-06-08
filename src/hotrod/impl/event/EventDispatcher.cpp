@@ -153,7 +153,12 @@ void CounterDispatcher::run() {
                         encoded2NewState(encodedState));
                 if (listeners.find(counterName) != listeners.end()) {
                     for (auto cl : listeners[counterName]) {
-                        cl->onUpdate(ev);
+                        try {
+                            cl->onUpdate(ev);
+                        }
+                        catch (const std::exception &) {
+                            // just ignore failure on callback;
+                        }
                     }
                 }
                 break;
