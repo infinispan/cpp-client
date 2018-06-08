@@ -43,6 +43,12 @@ template<class T> class RetryOnFailureOperation : public HotRodOperation<T>
             } catch (const HotRodClientException& hrex) {
                 releaseTransport(transport);
                 logErrorAndThrowExceptionIfNeeded(retryCount, hrex);
+            } catch (const CounterUpperBoundException& ex) {
+                releaseTransport(transport);
+                throw;
+            } catch (const CounterLowerBoundException& ex) {
+                releaseTransport(transport);
+                throw;
             }
             ++retryCount;
         }
