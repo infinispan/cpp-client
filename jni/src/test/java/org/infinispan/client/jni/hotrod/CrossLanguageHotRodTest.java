@@ -230,21 +230,6 @@ public class CrossLanguageHotRodTest extends SingleCacheManagerTest {
       javaGetVersionMethod = javaMVClass.getMethod("getVersion");
    }
 
-   @AfterClass(alwaysRun=true)
-   public void release() {
-      killCacheManagers(cacheManager);
-      cppRemoteCacheManager.stop();
-      killServers(hotrodServer);
-      //Close the ClassLoader or the JVM process won't exit
-      if (ucl != null) {
-         try {
-            ucl.close();
-         } catch (IOException e) {
-            e.printStackTrace();
-         }
-      }
-   }
-
    /*
     * test methods
     */
