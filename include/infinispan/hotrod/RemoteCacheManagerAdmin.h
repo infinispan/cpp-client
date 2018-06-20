@@ -110,6 +110,11 @@ public:
      */
     void reindexCache(std::string name);
 
+    /**
+     * Returns a set of names of all the existing cache
+     */
+    std::set<std::string> getCacheNames();
+
     RemoteCacheManagerAdmin& withFlags(std::set<AdminFlag> flags);
     void createCache(const std::string name, std::string model, std::string command);
     void createCacheWithXml(const std::string name, std::string conf, std::string command);
@@ -117,7 +122,7 @@ public:
 private:
     std::string flags2Params(const std::set<AdminFlag>& flags) const;
 
-    void executeAdminOperation(std::string adminCmd, std::map<std::string, std::string >& param);
+    std::vector<char> executeAdminOperation(std::string adminCmd, std::map<std::string, std::string >& param);
 
     static const std::vector<char> CACHE_NAME;
     static const std::vector<char> CACHE_TEMPLATE;

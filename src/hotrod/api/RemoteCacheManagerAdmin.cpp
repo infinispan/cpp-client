@@ -9,6 +9,7 @@
 #include "hotrod/impl/Topology.h"
 #include "hotrod/impl/operations/OperationsFactory.h"
 #include "hotrod/impl/operations/AdminOperation.h"
+#include "algorithm"
 
 #define IMPL ((RemoteCacheManagerImpl *) impl)
 
@@ -27,7 +28,7 @@ RemoteCacheManagerAdmin::RemoteCacheManagerAdmin(RemoteCacheManager& cacheManage
 }
 
 
-void RemoteCacheManagerAdmin::executeAdminOperation(std::string adminCmd, std::map<std::string, std::string>& param){
+std::vector<char> RemoteCacheManagerAdmin::executeAdminOperation(std::string adminCmd, std::map<std::string, std::string>& param){
     std::vector<char> cmdNameVec(adminCmd.begin(), adminCmd.end());
     std::map<std::vector<char>, std::vector<char> > vec_param;
     for (auto it = param.begin(); it != param.end(); it++)
@@ -35,7 +36,7 @@ void RemoteCacheManagerAdmin::executeAdminOperation(std::string adminCmd, std::m
         vec_param[std::vector<char>(it->first.begin(), it->first.end())] = std::vector<char>(it->second.begin(), it->second.end());
     }
     std::shared_ptr<AdminOperation> ao(operationsFactory->newAdminOperation(cmdNameVec, vec_param));
-    ao->execute();
+    return ao->execute();
 }
 
 void RemoteCacheManagerAdmin::createCache(const std::string name, std::string model, std::string command) {
@@ -80,6 +81,27 @@ void RemoteCacheManagerAdmin::reindexCache(std::string name) {
     std::map<std::string, std::string > params;
     params["name"] = name;
     executeAdminOperation("@@cache@reindex" , params);
+}
+
+std::set<std::string> RemoteCacheManagerAdmin::getCacheNames() {
+    std::map<std::string, std::string > params;
+    std::vector<char> resultAsJson = executeAdminOperation("@@cache@names" , params);
+    // Hardcoded digesting of json array of strings.
+    // We're supposing cache names doesn't contain " (double quote)
+    std::set<std::string> result;
+    auto found_begin = resultAsJson.begin(), found_end = resultAsJson.begin();
+    // from the first "
+    while ( (found_begin = std::find(found_end, resultAsJson.end(), '"')) != resultAsJson.end() ) {
+        // find the next " and build a string with everything in between
+        found_end = std::find(++found_begin, resultAsJson.end(), '"');
+        std::string s(found_begin, found_end);
+        // ignore empty string
+        if (!s.empty()) {
+            result.insert(s);
+        }
+        found_end++;
+    }
+    return result;
 }
 
 RemoteCacheManagerAdmin& RemoteCacheManagerAdmin::withFlags(std::set<AdminFlag> flags)

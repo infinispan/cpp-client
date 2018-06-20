@@ -42,6 +42,31 @@ namespace std {
                 std::set< V >::iterator i = self->find(key);
                 return i != self->end();
             }
+      // create_iterator_begin(), get_next_key() and destroy_iterator work together to provide a collection of keys to Java
+      %apply void *VOID_INT_PTR { std::set< V >::iterator *create_iterator_begin }
+      %apply void *VOID_INT_PTR { std::set< V >::iterator *swigiterator }
+
+      std::set< V >::iterator *create_iterator_begin() {
+        return new std::set< V >::iterator($self->begin());
+      }
+
+      const V& get_next_key(std::set< V >::iterator *swigiterator) {
+        std::set< V >::iterator& iter = *swigiterator;
+        const V& val = *iter;
+        ++iter;
+        return val;
+      }
+
+      bool has_next(std::set< V >::iterator *swigiterator) {
+        std::set< V >::iterator iter = *swigiterator;
+        return $self->end()!=iter;
+      }
+
+
+      void destroy_iterator(std::set< V >::iterator *swigiterator) {
+        delete swigiterator;
+      }
+
         }
     };
 

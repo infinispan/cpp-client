@@ -7,6 +7,7 @@
 #include "infinispan/hotrod/Configuration.h"
 #include "infinispan/hotrod/RemoteCounterManager.h"
 
+
 #include <string>
 #include <map>
 #include <memory>
@@ -288,9 +289,12 @@ public:
        return newRemoteCacheManagerAdmin();
     }
 
+    std::set<std::string> getCacheNames();
+
 private:
     void *impl;
     std::map<std::string, std::unique_ptr<RemoteCacheBase> > remoteCacheMap;
+    std::function<void(std::string&)> cacheRemover;
 
     void init(const std::map<std::string, std::string>& configuration, bool start);
 
