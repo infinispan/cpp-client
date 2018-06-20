@@ -211,6 +211,7 @@ inline bool operator< (const RelayBytes& lhs, const RelayBytes& rhs)
 %template(FutureBool) std::future<bool>;
 %template(FutureVoid) std::future<void>;
 %template(AdminFlagSet) std::set<infinispan::hotrod::AdminFlag>;
+%template(SetString) std::set<std::string>;
 
 %feature("novaluewrapper") std::future<RelayBytes>;
 %feature("novaluewrapper") std::future<RelayBytes*>;

@@ -5,11 +5,15 @@ package org.infinispan.client.hotrod;
 // originals
 import java.io.IOException;
 import java.net.URL;
+import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
 
 import org.infinispan.client.hotrod.configuration.Configuration;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.client.hotrod.jni.MapType;
+import org.infinispan.client.hotrod.jni.SWIGTYPE_p_std__setT_std__string_t__iterator;
+import org.infinispan.client.hotrod.jni.SetString;
 import org.infinispan.commons.marshall.Marshaller;
 // jni wrappers
 
@@ -161,6 +165,17 @@ public class RemoteCacheManager /* implements BasicCacheContainer */{
     public RemoteCacheManagerAdmin administration() {
         org.infinispan.client.hotrod.jni.RemoteCacheManagerAdmin admin = jniRemoteCacheManager.administration();
         return new RemoteCacheManagerAdminImpl(this, admin);
+    }
+
+    public Set<String> getCacheNames() {
+       Set<String> result = new HashSet<String>();
+       SetString s = jniRemoteCacheManager.getCacheNames();
+       SWIGTYPE_p_std__setT_std__string_t__iterator b = s.create_iterator_begin();
+       while (s.has_next(b)) {
+          result.add(s.get_next_key(b));
+       }
+       s.destroy_iterator(b);
+       return result;
     }
 
     static {
