@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiFunction;
 
 import org.infinispan.client.hotrod.RemoteCache;
 
@@ -43,6 +44,16 @@ public abstract class RemoteCacheUnsupported<K, V> implements RemoteCache<K, V> 
 
     @Override
     public boolean replace(K k, V v1, V v2) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public V merge(K key, V value, BiFunction<? super V, ? super V, ? extends V> remappingFunction, long lifespan, TimeUnit lifespanUnit) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public V merge(K key, V value, BiFunction<? super V, ? super V, ? extends V> remappingFunction, long lifespan, TimeUnit lifespanUnit, long maxIdleTime, TimeUnit maxIdleTimeUnit) {
         throw new UnsupportedOperationException();
     }
 
