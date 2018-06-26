@@ -6,7 +6,7 @@ pipeline{
         agent { label 'windows'
         }
         environment {
-            cppTag = '8.1.0.Final'
+            cppTag = '8.3.0.Alpha1'
             CMAKE_HOME = 'C:\\\\PROGRA~2\\\\CMake\\\\bin'
             generator = '"Visual Studio 14 2015 Win64"'
             INFINISPAN_VERSION = '9.2.3.Final'
