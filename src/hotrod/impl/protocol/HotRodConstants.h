@@ -62,6 +62,9 @@ class HotRodConstants
     static const uint8_t ITERATION_END_REQUEST          = 0x35;
     static const uint8_t GET_STREAM_REQUEST             = 0x37;
     static const uint8_t PUT_STREAM_REQUEST             = 0x39;
+    static const uint8_t PREPARE_REQUEST                = 0x3B;
+    static const uint8_t COMMIT_REQUEST                 = 0x3D;
+    static const uint8_t ROLLBACK_REQUEST               = 0x3F;
     static const uint8_t COUNTER_CREATE_REQUEST         = 0x4B;
     static const uint8_t COUNTER_GET_CONFIGURATION_REQUEST = 0x4D;
     static const uint8_t COUNTER_IS_DEFINED_REQUEST     = 0x4F;
@@ -103,6 +106,9 @@ class HotRodConstants
     static const uint8_t ITERATION_START_RESPONSE       = 0x32;
     static const uint8_t GET_STREAM_RESPONSE            = 0x38;
     static const uint8_t PUT_STREAM_RESPONSE            = 0x3A;
+    static const uint8_t PREPARE_RESPONSE               = 0x3C;
+    static const uint8_t COMMIT_RESPONSE                = 0x3E;
+    static const uint8_t ROLLBACK_RESPONSE              = 0x40;
     static const uint8_t ERROR_RESPONSE                 = 0x50;
     static const uint8_t CACHE_ENTRY_CREATED_EVENT_RESPONSE = 0x60;
     static const uint8_t CACHE_ENTRY_MODIFIED_EVENT_RESPONSE = 0x61;

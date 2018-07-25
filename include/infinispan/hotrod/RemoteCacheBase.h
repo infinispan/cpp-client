@@ -12,9 +12,12 @@
 #include "infinispan/hotrod/Query.h"
 #include "infinispan/hotrod/QueryUtils.h"
 #include "infinispan/hotrod/BasicTypesProtoStreamMarshaller.h"
+#include "infinispan/hotrod/TransactionManager.h"
+#include "hotrod/api/Transactions.h"
 #include <map>
 #include <set>
 #include <vector>
+#include <future>
 
 using namespace org::infinispan::query::remote::client;
 using namespace infinispan::hotrod::event;
@@ -34,6 +37,9 @@ template <typename... Params> class ContinuousQueryListener;
 }
 typedef void (*MarshallHelperFn) (void*, const void*, std::vector<char> &);
 typedef void* (*UnmarshallHelperFn) (void*, const std::vector<char> &);
+typedef std::function<void* (const void *)> ValueCopyConstructHelperFn;
+typedef std::function<void (const void *)> ValueDestructorHelperFn;
+typedef std::function<void (const void *,  std::vector<char> &)> ValueMarshallerHelperFn;
 
 class KeyUnmarshallerFtor;
 class ValueUnmarshallerFtor;
@@ -42,22 +48,29 @@ class RemoteCacheImpl;
 class RemoteCacheBase
 {
 public:
-    virtual ~RemoteCacheBase() {}
+    virtual ~RemoteCacheBase(){}
+    uint32_t base_prepareCommit(XID xid, TransactionContext& tctx);
+    uint32_t base_commit(XID xid, TransactionContext& tctx);
+    uint32_t base_rollback(XID xid, TransactionContext& tctx);
+
+
 protected:
     HR_EXTERN const char *base_getName();
-    HR_EXTERN void *base_get(const void *key);
+    HR_EXTERN const std::string& base_getNameAsString();
+    HR_EXTERN void *base_get(const void *key, std::shared_ptr<Transaction> currentTxPtr = std::shared_ptr<Transaction>());
     HR_EXTERN std::map<std::vector<char>,std::vector<char> > base_getAll(const std::set<std::vector<char> >& keySet);
-    HR_EXTERN void *base_put(const void *key, const void *value, int64_t life, int64_t idle);
-    HR_EXTERN void *base_putIfAbsent(const void *key, const void *value, int64_t life, int64_t idle);
-    HR_EXTERN void *base_replace(const void *key, const void *value, int64_t life, int64_t idle);
-    HR_EXTERN void *base_remove(const void *key);
-    HR_EXTERN bool  base_containsKey(const void *key);
+    HR_EXTERN void *base_put(const void *key, const void *value, int64_t life, int64_t idle, std::shared_ptr<Transaction> currentTxPtr = std::shared_ptr<Transaction>());
+    HR_EXTERN void  base_putAll(const std::map<const void*, const void*>& map,  int64_t life, int64_t idle, std::shared_ptr<Transaction> currentTxPtr = std::shared_ptr<Transaction>());
+    HR_EXTERN void *base_putIfAbsent(const void *key, const void *value, int64_t life, int64_t idle, std::shared_ptr<Transaction> currentTxPtr = std::shared_ptr<Transaction>());
+    HR_EXTERN void *base_replace(const void *key, const void *value, int64_t life, int64_t idle, std::shared_ptr<Transaction> currentTxPtr = std::shared_ptr<Transaction>());
+    HR_EXTERN void *base_remove(const void *key, std::shared_ptr<Transaction> currentTxPtr = std::shared_ptr<Transaction>());
+    HR_EXTERN bool  base_containsKey(const void *key, std::shared_ptr<Transaction> currentTxPtr = std::shared_ptr<Transaction>());
     HR_EXTERN void  base_ping();
-    HR_EXTERN bool  base_replaceWithVersion(const void *key, const void *value, int64_t version, int64_t life, int64_t idle);
-    HR_EXTERN bool  base_removeWithVersion(const void *key, int64_t version);
-    HR_EXTERN void *base_getWithVersion(const void* key, VersionedValue* version);
-    HR_EXTERN void *base_getWithMetadata(const void* key, MetadataValue* metadata);
-    HR_EXTERN void  base_getBulk(int size, std::map<void*, void*> &mbuf);
+    HR_EXTERN bool  base_replaceWithVersion(const void *key, const void *value, int64_t version, int64_t life, int64_t idle, std::shared_ptr<Transaction> currentTxPtr = std::shared_ptr<Transaction>());
+    HR_EXTERN bool  base_removeWithVersion(const void *key, int64_t version, std::shared_ptr<Transaction> currentTxPtr = std::shared_ptr<Transaction>());
+    HR_EXTERN void *base_getWithVersion(const void* key, VersionedValue* version, std::shared_ptr<Transaction> currentTxPtr = std::shared_ptr<Transaction>());
+    HR_EXTERN void *base_getWithMetadata(const void* key, MetadataValue* metadata, std::shared_ptr<Transaction> currentTxPtr = std::shared_ptr<Transaction>());
+    HR_EXTERN void  base_getBulk(int size, std::map<void*, void*> &mbuf, std::shared_ptr<Transaction> = std::shared_ptr<Transaction>());
     HR_EXTERN void  base_keySet(int scope, std::vector<void*> &sbuf);
     HR_EXTERN void  base_stats(std::map<std::string,std::string> &sbuf);
     HR_EXTERN void  base_clear();
@@ -74,9 +87,15 @@ protected:
 	HR_EXTERN void base_removeClientListener(ClientListener &clientListener);
 	HR_EXTERN void putScript(const std::vector<char>& name, const std::vector<char>& script);
 
-    RemoteCacheBase() {}
-    HR_EXTERN void setMarshallers(void* rc, MarshallHelperFn kf, MarshallHelperFn vf, UnmarshallHelperFn ukf, UnmarshallHelperFn uvf);
-
+    RemoteCacheBase(TransactionManager& tm, TransactionTable& tt, bool forceReturnValue, bool transactional) : transactionManager(tm), transactionTable(tt), forceReturnValue(forceReturnValue), transactional(transactional) {}
+    RemoteCacheBase& operator=(const RemoteCacheBase other) {
+        this->transactionManager = other.transactionManager;
+        this->transactionTable = other.transactionTable;
+        this->forceReturnValue = other.forceReturnValue;
+        return *this;
+    }
+    HR_EXTERN void setMarshallers(void* rc, MarshallHelperFn kf, MarshallHelperFn vf, UnmarshallHelperFn ukf,
+            UnmarshallHelperFn uvf);
 #ifndef SWIGCSHARP
     template<class K, class V, typename... Params>
 	void base_addContinuousQueryListener(ContinuousQueryListener<K, V, Params...>& cql) {
@@ -175,6 +194,24 @@ protected:
 	}
 #endif
 
+    void setValueCopyConstructor(ValueCopyConstructHelperFn valueCopyConstrunctor) {
+        this->valueCopyConstructor = valueCopyConstrunctor;
+    }
+
+
+    void setValueDestructor(ValueDestructorHelperFn valueDestructor) {
+        this->valueDestructor = valueDestructor;
+    }
+
+    void setValueMarshaller(const ValueMarshallerHelperFn& valueMarshaller = nullptr)
+            {
+        this->valueMarshallerFn = valueMarshaller;
+    }
+
+    TransactionManager &transactionManager;
+    ValueCopyConstructHelperFn valueCopyConstructor = nullptr;
+    ValueDestructorHelperFn valueDestructor = nullptr;
+    ValueMarshallerHelperFn valueMarshallerFn = nullptr;
 
 private:
     std::shared_ptr<RemoteCacheImpl> impl; // pointer to RemoteCacheImpl;
@@ -188,6 +225,13 @@ private:
     UnmarshallHelperFn baseValueUnmarshallFn;
     HR_EXTERN void* baseKeyUnmarshall(const std::vector<char> &buf);
     HR_EXTERN void* baseValueUnmarshall(const std::vector<char> &buf);
+    void* transactional_base_get(Transaction& currentTransaction, const void* key);
+    void* transactional_base_put(Transaction& currentTransaction, const void* key, const void* val, int64_t life,
+            int64_t idle, bool forceRV);
+
+    TransactionTable &transactionTable;
+    bool forceReturnValue;
+    bool transactional;
 
 friend class RemoteCacheManager;
 friend class RemoteCacheImpl;

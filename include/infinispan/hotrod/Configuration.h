@@ -56,7 +56,7 @@ class Configuration
             int _maxRetries,
             NearCacheConfiguration _nearCacheConfiguration,
             FailOverRequestBalancingStrategy::ProducerFn bsp=0,
-			const event::EventMarshaller &eventMarshaller = event::JBasicEventMarshaller()):
+			const event::EventMarshaller &eventMarshaller = event::JBasicEventMarshaller(), bool transactional=false):
                 protocolVersion(_protocolVersion), protocolVersionPtr(),
                 connectionPoolConfiguration(_connectionPoolConfiguration),
                 connectionTimeout(_connectionTimeout), forceReturnValue(_forceReturnValue),
@@ -64,7 +64,7 @@ class Configuration
                 serversMap(_serversConfiguration),
                 socketTimeout(_socketTimeout), securityConfiguration(_sslConfiguration),tcpNoDelay(_tcpNoDelay),
                 valueSizeEstimate(_valueSizeEstimate), maxRetries(_maxRetries), nearCacheConfiguration(_nearCacheConfiguration), balancingStrategyProducer(bsp),
-				eventMarshaller(eventMarshaller)
+				eventMarshaller(eventMarshaller), transactional(transactional)
     {}
 
     Configuration(const std::string &_protocolVersion,
@@ -80,7 +80,7 @@ class Configuration
             int _maxRetries,
             NearCacheConfiguration _nearCacheConfiguration,
             FailOverRequestBalancingStrategy::ProducerFn bsp=0,
-            const event::EventMarshaller &eventMarshaller = event::JBasicEventMarshaller()):
+            const event::EventMarshaller &eventMarshaller = event::JBasicEventMarshaller(), bool transactional=false):
                 protocolVersion(_protocolVersion), protocolVersionPtr(),
                 connectionPoolConfiguration(_connectionPoolConfiguration),
                 connectionTimeout(_connectionTimeout), forceReturnValue(_forceReturnValue),
@@ -88,7 +88,7 @@ class Configuration
                 serversMap(_serversConfiguration),
                 socketTimeout(_socketTimeout), securityConfiguration(_securityConfiguration),tcpNoDelay(_tcpNoDelay),
                 valueSizeEstimate(_valueSizeEstimate), maxRetries(_maxRetries), nearCacheConfiguration(_nearCacheConfiguration), balancingStrategyProducer(bsp),
-                eventMarshaller(eventMarshaller)
+                eventMarshaller(eventMarshaller), transactional(transactional)
     {}
 
 
@@ -197,6 +197,10 @@ class Configuration
 
     const SecurityConfiguration& getSecurityConfiguration() const { return securityConfiguration; }
 
+    bool isTransactional() const { return transactional; }
+
+    void setTransactional(bool transactional) { this->transactional = transactional; }
+
 private:
     std::string protocolVersion;
     std::shared_ptr<std::string> protocolVersionPtr;
@@ -213,6 +217,7 @@ private:
     const NearCacheConfiguration nearCacheConfiguration;
     FailOverRequestBalancingStrategy::ProducerFn balancingStrategyProducer;
     const event::EventMarshaller &eventMarshaller;
+    bool transactional;
 
     static void deleteString(std::string *str) { delete str; }
 };

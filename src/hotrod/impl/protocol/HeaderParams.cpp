@@ -124,6 +124,12 @@ uint8_t HeaderParams::toOpRespCode(uint8_t code) {
        return HotRodConstants::COUNTER_ADD_LISTENER_RESPONSE;
     case HotRodConstants::COUNTER_REMOVE_LISTENER_REQUEST:
        return HotRodConstants::COUNTER_REMOVE_LISTENER_RESPONSE;
+    case HotRodConstants::PREPARE_REQUEST:
+        return HotRodConstants::PREPARE_RESPONSE;
+    case HotRodConstants::COMMIT_REQUEST:
+        return HotRodConstants::COMMIT_RESPONSE;
+    case HotRodConstants::ROLLBACK_REQUEST:
+        return HotRodConstants::ROLLBACK_RESPONSE;
     default:
         std::ostringstream msg;
         msg << "Unknown operation code: " << opCode;

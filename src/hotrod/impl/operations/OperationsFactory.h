@@ -6,6 +6,8 @@
 
 #include "infinispan/hotrod/Query.h"
 #include "infinispan/hotrod/ClientListener.h"
+#include "infinispan/hotrod/TransactionManager.h"
+#include "hotrod/api/Transactions.h"
 #include <set>
 #include <functional>
 #include <memory>
@@ -57,6 +59,9 @@ class QueryOperation;
 class AddClientListenerOperation;
 class RemoveClientListenerOperation;
 class AdminOperation;
+class PrepareCommitOperation;
+class CommitOperation;
+class RollbackOperation;
 
 
 class OperationsFactory
@@ -115,6 +120,11 @@ class OperationsFactory
 
     AddClientListenerOperation* newAddClientListenerOperation(ClientListener& listener, ClientListenerNotifier& listenerNotifier, const std::vector<std::vector<char> > filterFactoryParam, const std::vector<std::vector<char> > converterFactoryParams,const std::function<void()> &recoveryCallback);
     RemoveClientListenerOperation* newRemoveClientListenerOperation(ClientListener& listener, ClientListenerNotifier& listenerNotifier);
+
+    PrepareCommitOperation* newPrepareCommitOperation(XID xid, TransactionContext& tctx);
+    CommitOperation* newCommitOperation(XID xid, TransactionContext& tctx);
+    RollbackOperation* newRollbackOperation(XID xid, TransactionContext& tctx);
+
     void addFlags(uint32_t flags);
     void setFlags(uint32_t flags);
 

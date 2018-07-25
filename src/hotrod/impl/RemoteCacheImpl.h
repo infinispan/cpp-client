@@ -46,13 +46,16 @@ public:
     CacheTopologyInfo getCacheTopologyInfo();
     void addClientListener(ClientListener&, const std::vector<std::vector<char> >, const std::vector<std::vector<char> >, const std::function<void()> &);
     void removeClientListener(ClientListener&);
+    uint32_t prepareCommit(XID xid, TransactionContext& tctx);
+    uint32_t commit(XID xid, TransactionContext& tctx);
+    uint32_t rollback(XID xid, TransactionContext& tctx);
     virtual void init(operations::OperationsFactory* operationsFactory);
     virtual void stop() {}
 
     void withFlags(Flag flag);
 
     const char *getName() const;
-
+    const std::string& getNameAsString() const;
 private:
     RemoteCacheManagerImpl& remoteCacheManager;
     std::shared_ptr<operations::OperationsFactory> operationsFactory;

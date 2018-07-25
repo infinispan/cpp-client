@@ -45,5 +45,10 @@ InternalException::InternalException(const std::string& msg) : HotRodClientExcep
 
 RemoteCacheManagerNotStartedException::RemoteCacheManagerNotStartedException(const std::string& msg) : HotRodClientException(msg) {}
 
+HotRodClientTxStateException::HotRodClientTxStateException(const std::string& state, const std::string& action) :
+        HotRodClientException("Transaction: illegal state for action. Action: " + action + " called in state: " + state) {}
+
+HotRodClientTxRemoteStateException::HotRodClientTxRemoteStateException(unsigned int status) : HotRodClientException("Remote transaction has status: "+status), status(status) {}
+
 UnsupportedOperationException::UnsupportedOperationException() : HotRodClientException("Unsupported operation.") {}
 }} /* namespace */
