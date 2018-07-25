@@ -19,12 +19,12 @@ void removeFromMap(std::map<std::string, std::unique_ptr<RemoteCacheBase> >& map
 }
 
 RemoteCacheManager::RemoteCacheManager(bool start_)
-  : impl(new RemoteCacheManagerImpl(start_)) {
+  : impl(new RemoteCacheManagerImpl(start_)), transactionManager(TransactionManagerLookup::lookup()) {
     cacheRemover = std::bind(removeFromMap, std::ref(remoteCacheMap), std::placeholders::_1);
 }
 
 RemoteCacheManager::RemoteCacheManager(const Configuration& configuration, bool start_)
-  : impl(new RemoteCacheManagerImpl(configuration, start_)) {
+  : impl(new RemoteCacheManagerImpl(configuration, start_)), transactionManager(TransactionManagerLookup::lookup()) {
     cacheRemover = std::bind(removeFromMap, std::ref(remoteCacheMap), std::placeholders::_1);
 }
 

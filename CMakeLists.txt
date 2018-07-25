@@ -427,6 +427,8 @@ else(DEFINED HOTROD_PREBUILT_LIB_DIR)
       src/hotrod/impl/operations/CounterOperations.cpp
       src/hotrod/api/RemoteCounterManagerImpl.cpp
       src/hotrod/api/CountersImpl.cpp
+      src/hotrod/api/TransactionManager.cpp
+      src/hotrod/impl/operations/TransactionOperations.cpp
       ${platform_sources}
       ${internal_test_sources}  
       ${CMAKE_BINARY_DIR}/Version.cpp

@@ -25,6 +25,7 @@
 #include <hotrod/impl/operations/AddClientListenerOperation.h>
 #include <hotrod/impl/operations/RemoveClientListenerOperation.h>
 #include <hotrod/impl/operations/AdminOperation.h>
+#include <hotrod/impl/operations/TransactionOperations.h>
 #include "infinispan/hotrod/Flag.h"
 
 #include <cstring>
@@ -192,6 +193,18 @@ RemoveClientListenerOperation* OperationsFactory::newRemoveClientListenerOperati
    return new RemoveClientListenerOperation(codec, transportFactory,
 	         cacheNameBytes, topologyId, getFlags(), listenerNotifier,
 	         listener);
+}
+
+PrepareCommitOperation* OperationsFactory::newPrepareCommitOperation(XID xid, TransactionContext& tctx) {
+    return new PrepareCommitOperation(codec, transportFactory, cacheNameBytes, topologyId, getFlags(), xid, tctx);
+}
+
+CommitOperation* OperationsFactory::newCommitOperation(XID xid, TransactionContext& tctx) {
+    return new CommitOperation(codec, transportFactory, cacheNameBytes, topologyId, getFlags(), xid, tctx);
+}
+
+RollbackOperation* OperationsFactory::newRollbackOperation(XID xid, TransactionContext& tctx) {
+    return new RollbackOperation(codec, transportFactory, cacheNameBytes, topologyId, getFlags(), xid, tctx);
 }
 
 void OperationsFactory::addFlags(uint32_t f) {

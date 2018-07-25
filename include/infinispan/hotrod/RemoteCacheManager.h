@@ -6,6 +6,8 @@
 #include "infinispan/hotrod/RemoteCache.h"
 #include "infinispan/hotrod/Configuration.h"
 #include "infinispan/hotrod/RemoteCounterManager.h"
+#include "infinispan/hotrod/TransactionManager.h"
+
 
 
 #include <string>
@@ -53,7 +55,7 @@ public:
 
     explicit RemoteCacheManager(
             const std::map<std::string, std::string>& configuration,
-            bool start_ = true) {
+            bool start_ = true) : transactionManager(TransactionManagerLookup::lookup()) {
         init(configuration, start_);
     }
 
@@ -115,7 +117,7 @@ public:
         if (remoteCacheMap.find(key)==remoteCacheMap.end())
         {
             RemoteCache<K,V> *pRc;
-            pRc= new RemoteCache<K,V>();
+            pRc= new RemoteCache<K,V>(transactionManager, transactionTable, forceReturnValue, getConfiguration().isTransactional());
             remoteCacheMap[key]= std::unique_ptr<RemoteCacheBase>(pRc);
             RemoteCache<K, V> *rcache=(RemoteCache<K, V> *)remoteCacheMap[key].get();
             rcache->keyMarshaller.reset(new BasicMarshaller<K>());
@@ -150,7 +152,7 @@ public:
         const std::string key = forceReturnValue ? name+"/true" : name+"/false";
         if (remoteCacheMap.find(key)==remoteCacheMap.end())
         {
-            RemoteCache<K,V> *pRc= new RemoteCache<K,V>();
+            RemoteCache<K,V> *pRc= new RemoteCache<K,V>(transactionManager, transactionTable, forceReturnValue, getConfiguration().isTransactional());
             remoteCacheMap[key]= std::unique_ptr<RemoteCacheBase>(pRc);
             RemoteCache<K, V> *rcache=(RemoteCache<K, V> *)remoteCacheMap[key].get();
             rcache->keyMarshaller.reset(new BasicMarshaller<K>());
@@ -189,7 +191,7 @@ public:
             Marshaller<V> *vm, void (*vd)(Marshaller<V> *), bool forceReturnValue) {
         const std::string key = forceReturnValue ? "/true" : "/false";
         if (remoteCacheMap.find(key) == remoteCacheMap.end()) {
-            RemoteCache<K, V> *pRc = new RemoteCache<K, V>();
+            RemoteCache<K, V> *pRc = new RemoteCache<K, V>(transactionManager, transactionTable, forceReturnValue, getConfiguration().isTransactional());
             remoteCacheMap[key] = std::unique_ptr < RemoteCacheBase > (pRc);
         }
         RemoteCache<K, V> *rcache =
@@ -235,7 +237,7 @@ public:
             const std::string& name, bool forceReturnValue) {
         const std::string key = forceReturnValue ? name+"/true" : name+"/false";
         if (remoteCacheMap.find(key) == remoteCacheMap.end()) {
-            RemoteCache<K, V> *pRc = new RemoteCache<K, V>();
+            RemoteCache<K, V> *pRc = new RemoteCache<K, V>(transactionManager, transactionTable, forceReturnValue, getConfiguration().isTransactional());
             remoteCacheMap[key] = std::unique_ptr < RemoteCacheBase > (pRc);
         }
         RemoteCache<K, V> *rcache =
@@ -290,11 +292,17 @@ public:
     }
 
     std::set<std::string> getCacheNames();
+    TransactionManager& getTransactionManager() const
+    {
+        return transactionManager;
+    }
 
 private:
     void *impl;
     std::map<std::string, std::unique_ptr<RemoteCacheBase> > remoteCacheMap;
     std::function<void(std::string&)> cacheRemover;
+    TransactionManager& transactionManager;
+    TransactionTable transactionTable;
 
     void init(const std::map<std::string, std::string>& configuration, bool start);
 

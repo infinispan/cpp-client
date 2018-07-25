@@ -28,6 +28,7 @@
 #include "hotrod/impl/operations/QueryOperation.h"
 #include <hotrod/impl/operations/AddClientListenerOperation.h>
 #include <hotrod/impl/operations/RemoveClientListenerOperation.h>
+#include <hotrod/impl/operations/TransactionOperations.h>
 #include <iostream>
 
 namespace infinispan {
@@ -247,6 +248,11 @@ const char *RemoteCacheImpl::getName() const {
     return name.c_str();
 }
 
+const std::string& RemoteCacheImpl::getNameAsString() const {
+    return name;
+}
+
+
 void RemoteCacheImpl::init(OperationsFactory* of) {
 	operationsFactory.reset(of);
 }
@@ -298,13 +304,26 @@ void RemoteCacheImpl::addClientListener(ClientListener& clientListener, const st
     op->execute();
 }
 
-void RemoteCacheImpl::removeClientListener(ClientListener& clientListener)
-{
+void RemoteCacheImpl::removeClientListener(ClientListener& clientListener) {
     RemoveClientListenerOperation *rclo = operationsFactory->newRemoveClientListenerOperation(clientListener, remoteCacheManager.getListenerNotifier());
     std::unique_ptr<RemoveClientListenerOperation> op(rclo);
     op->execute();
 }
 
+uint32_t RemoteCacheImpl::prepareCommit(XID xid, TransactionContext& tctx) {
+    auto pco =  std::unique_ptr<PrepareCommitOperation>(operationsFactory->newPrepareCommitOperation(xid, tctx));
+    return pco->execute();
+}
+
+uint32_t RemoteCacheImpl::commit(XID xid, TransactionContext& tctx) {
+    auto co =  std::unique_ptr<CommitOperation>(operationsFactory->newCommitOperation(xid, tctx));
+    return co->execute();
+}
+
+uint32_t RemoteCacheImpl::rollback(XID xid, TransactionContext& tctx) {
+    auto co =  std::unique_ptr<RollbackOperation>(operationsFactory->newRollbackOperation(xid, tctx));
+    return co->execute();
+}
 
 }
 } /* namespace */

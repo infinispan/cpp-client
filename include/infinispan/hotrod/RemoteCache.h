@@ -145,6 +145,14 @@ public:
         return (V *) base_get(&key);
     }
 
+private:
+    V* get_async(const K& key)
+    {
+        return (V *) base_get(&key);
+    }
+
+public:
+
     /**
      * Returns a map of key,value pairs according to the set of keys passed in input
      *
@@ -185,9 +193,10 @@ public:
     std::future<V*> getAsync(const K& key, std::function<V* (V*)> success = nullptr,
             std::function<V* (std::exception&)> fail = nullptr)
     {
-        auto pKey = &key;
-        auto f = [=]
-        {   return this->get(*pKey);};
+        const K* pKey = &key;
+        auto currTx = transactionManager.getCurrentTransaction();
+        std::function<V* (void)> f = [=]
+        {   return (V*)this->base_get(pKey, currTx);};
         return goAsync(f, success, fail);
     }
 
@@ -278,9 +287,11 @@ public:
     std::future<V*> putAsync(const K& key, const V& val, uint64_t lifespan = 0, uint64_t maxIdle = 0,
             std::function<V* (V*)> success = nullptr, std::function<V* (std::exception&)> fail = nullptr)
     {
-        auto pKey = &key, pVal = &val;
-        auto f = [=]
-        {   return this->put(*pKey,*pVal,lifespan,maxIdle);};
+        const K* pKey = &key;
+        const V* pVal = &val;
+        auto currTx = transactionManager.getCurrentTransaction();
+        std::function<V* (void)> f = [=]
+        {   return (V*)this->base_put(pKey, pVal, lifespan, maxIdle, currTx);};
         return goAsync(f, success, fail);
     }
 
@@ -298,9 +309,11 @@ public:
     std::future<V*> putAsync(const K& key, const V& val, uint64_t lifespan, TimeUnit lifespanUnit,
             std::function<V* (V*)> success = nullptr, std::function<V* (std::exception&)> fail = nullptr)
     {
-        auto pKey = &key, pVal = &val;
-        auto f = [=]
-        {   return this->put(*pKey,*pVal,lifespan,lifespanUnit);};
+        const K* pKey = &key;
+        const V* pVal = &val;
+        auto currTx = transactionManager.getCurrentTransaction();
+        std::function<V* (void)> f = [=]
+        {   return (V*)this->base_put(pKey, pVal, lifespan, lifespanUnit, currTx);};
         return goAsync(f, success, fail);
     }
 
@@ -321,9 +334,11 @@ public:
             TimeUnit maxIdleUnit, std::function<V* (V*)> success = nullptr, std::function<V* (std::exception&)> fail =
                     nullptr)
     {
-        auto pKey = &key, pVal = &val;
-        auto f = [=]
-        {   return this->put(*pKey,*pVal,lifespan, lifespanUnit,maxIdle,maxIdleUnit);};
+        const K* pKey = &key;
+        const V* pVal = &val;
+        auto currTx = transactionManager.getCurrentTransaction();
+        std::function<V* (void)> f = [=]
+        { return (V*)this->base_put(pKey, pVal, toSeconds(lifespan, lifespanUnit), toSeconds(maxIdle, maxIdleUnit), currTx); };
         return goAsync(f, success, fail);
     }
 
@@ -386,9 +401,11 @@ public:
     std::future<V*> putIfAbsentAsync(const K& key, const V& val, uint64_t lifespan = 0, uint64_t maxIdle = 0,
             std::function<V* (V*)> success = nullptr, std::function<V* (std::exception&)> fail = nullptr)
     {
-        auto pKey = &key, pVal = &val;
-        auto f = [=]
-        {   return this->putIfAbsent(*pKey,*pVal, lifespan, maxIdle);};
+        const K* pKey = &key;
+        const V* pVal = &val;
+        auto currTx = transactionManager.getCurrentTransaction();
+        std::function<V* (void)> f = [=]
+        {   return (V*)this->base_putIfAbsent(pKey,pVal, lifespan, maxIdle, currTx);};
         return goAsync(f, success, fail);
     }
     /**
@@ -405,9 +422,11 @@ public:
     std::future<V*> putIfAbsentAsync(const K& key, const V& val, uint64_t lifespan, TimeUnit lifespanUnit,
             std::function<V* (V*)> success = nullptr, std::function<V* (std::exception&)> fail = nullptr)
     {
-        auto pKey = &key, pVal = &val;
-        auto f = [=]
-        {   return this->putIfAbsent(*pKey,*pVal, lifespan, lifespanUnit, 0, SECONDS);};
+        const K* pKey = &key;
+        const V* pVal = &val;
+        auto currTx = transactionManager.getCurrentTransaction();
+        std::function<V* (void)> f = [=]
+        { return (V*)this->base_putIfAbsent(pKey, pVal, toSeconds(lifespan, lifespanUnit), toSeconds(0, SECONDS), currTx); };
         return goAsync(f, success, fail);
     }
     /**
@@ -427,9 +446,11 @@ public:
             uint64_t maxIdle, TimeUnit maxIdleUnit, std::function<V* (V*)> success = nullptr,
             std::function<V* (std::exception&)> fail = nullptr)
     {
-        auto pKey = &key, pVal = &val;
-        auto f = [=]
-        {   return this->putIfAbsent(*pKey,*pVal, lifespan, lifespanUnit, maxIdle, maxIdleUnit);};
+        const K* pKey = &key;
+        const V* pVal = &val;
+        auto currTx = transactionManager.getCurrentTransaction();
+        std::function<V* (void)> f = [=]
+        { return (V*)this->base_putIfAbsent(pKey,pVal, toSeconds(lifespan, lifespanUnit), toSeconds(maxIdle, maxIdleUnit), currTx);};
         return goAsync(f, success, fail);
     }
 
@@ -479,11 +500,12 @@ public:
     {
         uint64_t lifespanMillis = toSeconds(lifespan, lifespanUnit);
         uint64_t maxIdleMillis = toSeconds(maxIdle, maxIdleUnit);
-
-        for (typename std::map<K, V>::const_iterator it = map.begin(); it != map.end(); ++it)
+        std::map<const void*, const void*> tmpMap;
+        for (auto& it : map)
         {
-            put(it->first, it->second, lifespanMillis, maxIdleMillis);
+            tmpMap[(const void *)&it.first] = (const void *)&it.second;
         }
+        base_putAll(tmpMap, lifespanMillis, maxIdleMillis);
     }
 
     /**
@@ -1170,6 +1192,9 @@ public:
             RemoteCacheBase(other), keyMarshaller(other.keyMarshaller), valueMarshaller(other.valueMarshaller)
     {
         setMarshallers(this, &keyMarshall, &valueMarshall, &keyUnmarshall, &valueUnmarshall);
+        valueCopyConstructor = [](const void* src) { V* v = new V(*static_cast<const V*>(src)); return (void*) v; };
+        valueDestructor = [](const void* obj) { delete static_cast<const V*>(obj); };
+        // valueMarshaller = [this] (const void*, std::vector<char>&)
     }
 
     RemoteCache<K, V>& operator=(const RemoteCache& other)
@@ -1178,12 +1203,16 @@ public:
         keyMarshaller = other.keyMarshaller;
         valueMarshaller = other.valueMarshaller;
         setMarshallers(this, &keyMarshall, &valueMarshall, &keyUnmarshall, &valueUnmarshall);
+        valueCopyConstructor = [](const void* src) { return (void*) new V((const V&)src); };
+        valueDestructor = [](const void* obj) { delete (V*)obj; };
         return *this;
     }
 protected:
-    RemoteCache() :
-            RemoteCacheBase()
+    RemoteCache(TransactionManager& tm, TransactionTable& tt, bool forceReturnValue, bool transactional) :
+            RemoteCacheBase(tm, tt, forceReturnValue, transactional)
     {
+        valueCopyConstructor = [](const void* src) { V* v = new V(*static_cast<const V*>(src)); return (void*) v; };
+        valueDestructor = [](const void* obj) { delete static_cast<const V*>(obj); };
         setMarshallers(this, &keyMarshall, &valueMarshall, &keyUnmarshall, &valueUnmarshall);
     }
 

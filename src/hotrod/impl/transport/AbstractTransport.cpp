@@ -70,12 +70,10 @@ int16_t AbstractTransport::readUnsignedShort()
 
 int32_t AbstractTransport::read4ByteInt()
 {
-  std::vector<char> intBytes= readBytes(4);
   int32_t result = 0;
 
   for (int i = 0; i < 4 ; i++) {
-      int shift = (4 - 1 - i) * 8;
-      result += (*(intBytes.data() + i) & 0x000000FF) << shift;
+      result=(result << 8) + readByte();
   }
   return result;
 }

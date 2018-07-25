@@ -125,7 +125,8 @@ class ConfigurationBuilder
         connectionPoolConfigurationBuilder(*this),
         __pragma(warning(suppress:4355))
         securityConfigurationBuilder(*this),
-        nearCacheConfigurationBuilder(*this)
+        nearCacheConfigurationBuilder(*this),
+        m_transactional(false)
         {}
 
      void validate() {}
@@ -348,7 +349,7 @@ class ConfigurationBuilder
             m_maxRetries,
             nearCacheConfigurationBuilder.create(),
             m_balancingStrategyProducer,
-            m_eventMarshaller);
+            m_eventMarshaller, m_transactional);
 
     }
 
@@ -369,6 +370,7 @@ class ConfigurationBuilder
         m_valueSizeEstimate = configuration.getValueSizeEstimate();
         m_maxRetries = configuration.getMaxRetries();
         m_eventMarshaller = configuration.getEventMarshaller();
+        m_transactional = configuration.isTransactional();
         return *this;
     }
     /**
@@ -380,6 +382,18 @@ class ConfigurationBuilder
     {
         return securityConfigurationBuilder;
     }
+
+    bool isTransactional() const
+    {
+        return m_transactional;
+    }
+
+    ConfigurationBuilder& setTransactional(bool transactional)
+            {
+        m_transactional = transactional;
+        return *this;
+    }
+
   private:
     int m_connectionTimeout;
     bool m_forceReturnValue;
@@ -395,6 +409,7 @@ class ConfigurationBuilder
     SecurityConfigurationBuilder securityConfigurationBuilder;
     JBasicEventMarshaller m_defaultEventMarshaller;
     NearCacheConfigurationBuilder nearCacheConfigurationBuilder;
+    bool m_transactional;
 
     EventMarshaller &m_eventMarshaller=m_defaultEventMarshaller;
 };

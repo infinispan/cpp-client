@@ -113,6 +113,23 @@ struct HR_EXTERN UnsupportedOperationException: public HotRodClientException {
     UnsupportedOperationException();
 };
 
+class HR_EXTERN HotRodClientTxStateException: public HotRodClientException {
+public:
+    HotRodClientTxStateException(const std::string& state, const std::string& action);
+};
+
+class HR_EXTERN HotRodClientTxRemoteStateException: public HotRodClientException {
+public:
+    HotRodClientTxRemoteStateException(unsigned int status);
+
+    unsigned int getStatus() const
+    {
+        return status;
+    }
+private:
+    unsigned int status;
+};
+
 /**
  * InternalException
  *
