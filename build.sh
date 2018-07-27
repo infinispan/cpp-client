@@ -8,10 +8,10 @@ fi
 
 BUILD_DIR=build
 
-wget --progress=dot:giga -N http://downloads.jboss.org/infinispan/${INFINISPAN_VERSION}/infinispan-server-${INFINISPAN_VERSION}-bin.zip 
+wget --progress=dot:giga -N http://downloads.jboss.org/infinispan/${INFINISPAN_VERSION}/infinispan-server-${INFINISPAN_VERSION}.zip
 
 rm -rf infinispan-server-${INFINISPAN_VERSION}
-unzip -q infinispan-server-${INFINISPAN_VERSION}-bin.zip
+unzip -q infinispan-server-${INFINISPAN_VERSION}.zip
 export JBOSS_HOME=`pwd`/infinispan-server-${INFINISPAN_VERSION}
 cp test/data/* $JBOSS_HOME/standalone/configuration
 

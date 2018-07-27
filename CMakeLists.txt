@@ -511,7 +511,7 @@ hr_protobuf_generate_cpp(TEST_PROTO_SRCS TEST_PROTO_HDRS .
 add_custom_target(build_test COMMAND "echo" "build_test completed")
 add_dependencies(build_test JniTest krbserver unittest unittest-static simple simple-static queryTest queryTest-static events
                             nearCacheTest nearCacheFailoverTest continuousQueryTest continuousQueryTest-static
-                            simpleSasl simple-tls simple-tls-sni simpleSaslTls PutGetTest QueryTest ClearTest xunit_nearCacheTest CountersTest)
+                            simpleSasl simple-tls simple-tls-sni simpleSaslTls PutGetTest QueryTest ClearTest xunit_nearCacheTest CountersTest simpleTx simpleTx-static)
 
 # TESTS
 
@@ -713,6 +713,28 @@ set_target_properties(itest PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}"
 set_target_properties (itest PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${NO_UNUSED_FLAGS}")
 target_link_libraries (itest hotrod hotrod_protobuf ${PROTOBUF_LIBRARY} ${OPENSSL_LIBRARIES} ${platform_libs})
 
+add_executable (simpleTx test/SimpleTx.cpp)
+target_include_directories(simpleTx PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
+                                     "${INCLUDE_FILES_DIR}"
+                                     "${CMAKE_CURRENT_BINARY_DIR}"
+                                     "${PROTOBUF_INCLUDE_DIR}")
+set_property(TARGET simpleTx PROPERTY CXX_STANDARD 11)
+set_property(TARGET simpleTx PROPERTY CXX_STANDARD_REQUIRED ON)
+set_target_properties(simpleTx PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}")
+set_target_properties (simpleTx PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${NO_UNUSED_FLAGS}")
+target_link_libraries (simpleTx hotrod hotrod_protobuf ${PROTOBUF_LIBRARY} ${platform_libs})
+
+add_executable (simpleTx-static test/SimpleTx.cpp)
+target_include_directories(simpleTx-static PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
+                                     "${INCLUDE_FILES_DIR}"
+                                     "${CMAKE_CURRENT_BINARY_DIR}"
+                                     "${PROTOBUF_INCLUDE_DIR}")
+set_property(TARGET simpleTx-static PROPERTY CXX_STANDARD 11)
+set_property(TARGET simpleTx-static PROPERTY CXX_STANDARD_REQUIRED ON)
+set_target_properties (simpleTx-static PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${STATIC_FLAGS} ${NO_UNUSED_FLAGS}")
+set_target_properties(simpleTx-static PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}" )
+target_link_libraries (simpleTx-static hotrod-static hotrod_protobuf ${PROTOBUF_LIBRARY} ${OPENSSL_LIBRARIES} ${platform_libs})
+
 # the CTest include must be after the MEMORYCHECK settings are processed
 include (CTest)
 find_package(Java)
@@ -766,6 +788,8 @@ else (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.sh") AND (EXISTS "${HOTR
     add_test (nearCacheTest nearCacheTest)
     add_test (continuousQueryTest continuousQueryTest)
     add_test (continuousQueryTest-static continuousQueryTest-static)
+    add_test (simpleTx simpleTx)
+    add_test (simpleTx-static simpleTx-static)
     add_test (stop_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py stop)
     add_test (probe_port_stop ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/probe_port.py localhost 11222 60 down)
     add_test (start_cluster_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py start ${JAVA_RUNTIME} ${HOTROD_JBOSS_HOME} clustered.xml)
