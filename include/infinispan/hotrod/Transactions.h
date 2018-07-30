@@ -9,6 +9,7 @@
 #define INFINISPAN_HOTROD_CPP_SRC_HOTROD_API_TRANSACTIONS_H_
 
 #include "infinispan/hotrod/MetadataValue.h"
+#include "infinispan/hotrod/ImportExport.h"
 #include <map>
 #include <thread>
 #include <vector>
@@ -17,15 +18,15 @@
 namespace infinispan {
 namespace hotrod {
 
-class XID {
+ class XID {
 public:
-    XID();
-    bool operator< (const XID& other) const;
-    bool operator== (const XID& other) const;
-    bool operator== (const int id) const;
-    uint32_t getFormatId() const;
-    const std::vector<char>& getGlobalTransactionId() const;
-    const std::vector<char>& getBranchQualifier() const;
+    HR_EXTERN XID();
+    HR_EXTERN bool operator< (const XID& other) const;
+    HR_EXTERN bool operator== (const XID& other) const;
+    HR_EXTERN bool operator== (const int id) const;
+    HR_EXTERN uint32_t getFormatId() const;
+    HR_EXTERN const std::vector<char>& getGlobalTransactionId() const;
+    HR_EXTERN const std::vector<char>& getBranchQualifier() const;
 private:
     std::vector<char> globalId;
     std::vector<char> branchId;
