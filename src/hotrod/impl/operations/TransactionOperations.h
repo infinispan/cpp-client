@@ -14,7 +14,7 @@
 #include "infinispan/hotrod/Flag.h"
 #include "hotrod/impl/protocol/HotRodConstants.h"
 #include "infinispan/hotrod/TransactionManager.h"
-#include "hotrod/api/Transactions.h"
+#include "infinispan/hotrod/Transactions.h"
 
 namespace infinispan {
 namespace hotrod {

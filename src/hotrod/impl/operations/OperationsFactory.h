@@ -7,7 +7,7 @@
 #include "infinispan/hotrod/Query.h"
 #include "infinispan/hotrod/ClientListener.h"
 #include "infinispan/hotrod/TransactionManager.h"
-#include "hotrod/api/Transactions.h"
+#include "infinispan/hotrod/Transactions.h"
 #include <set>
 #include <functional>
 #include <memory>
