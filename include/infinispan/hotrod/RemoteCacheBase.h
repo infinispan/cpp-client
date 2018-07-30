@@ -49,9 +49,9 @@ class RemoteCacheBase
 {
 public:
     virtual ~RemoteCacheBase(){}
-    uint32_t base_prepareCommit(XID xid, TransactionContext& tctx);
-    uint32_t base_commit(XID xid, TransactionContext& tctx);
-    uint32_t base_rollback(XID xid, TransactionContext& tctx);
+    HR_EXTERN uint32_t base_prepareCommit(XID xid, TransactionContext& tctx);
+    HR_EXTERN uint32_t base_commit(XID xid, TransactionContext& tctx);
+    HR_EXTERN uint32_t base_rollback(XID xid, TransactionContext& tctx);
 
 
 protected:
