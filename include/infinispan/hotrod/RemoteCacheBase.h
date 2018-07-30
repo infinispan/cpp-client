@@ -13,7 +13,7 @@
 #include "infinispan/hotrod/QueryUtils.h"
 #include "infinispan/hotrod/BasicTypesProtoStreamMarshaller.h"
 #include "infinispan/hotrod/TransactionManager.h"
-#include "hotrod/api/Transactions.h"
+#include "infinispan/hotrod/Transactions.h"
 #include <map>
 #include <set>
 #include <vector>

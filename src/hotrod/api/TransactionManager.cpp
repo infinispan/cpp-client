@@ -6,7 +6,6 @@
  */
 
 #include "infinispan/hotrod/TransactionManager.h"
-#include "hotrod/api/Transactions.h"
 #include "infinispan/hotrod/RemoteCacheBase.h"
 #include "infinispan/hotrod/exceptions.h"
 #include <thread>
