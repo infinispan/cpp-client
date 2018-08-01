@@ -40,11 +40,11 @@ public:
     /***
      * Suspend the current transaction. Not Implemented
      */
-    HR_EXTERN void suspend();
+    // HR_EXTERN void suspend();
     /***
      * Resume the suspended current transaction. Not Implemented
      */
-    HR_EXTERN void resume();
+    // HR_EXTERN void resume();
     /***
      * Get the UUID of this transaction manager
      */
