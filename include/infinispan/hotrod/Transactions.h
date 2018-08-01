@@ -22,8 +22,6 @@ namespace hotrod {
 public:
     HR_EXTERN XID();
     HR_EXTERN bool operator< (const XID& other) const;
-    HR_EXTERN bool operator== (const XID& other) const;
-    HR_EXTERN bool operator== (const int id) const;
     HR_EXTERN uint32_t getFormatId() const;
     HR_EXTERN const std::vector<char>& getGlobalTransactionId() const;
     HR_EXTERN const std::vector<char>& getBranchQualifier() const;
@@ -156,8 +154,6 @@ public:
         return status != COMMITTED && status != ROLLEDBACK;
     }
     bool operator< (const Transaction& other) const { return this->xid < other.xid; }
-    bool operator== (const Transaction& other) const { return this->xid == other.xid; }
-    static bool isNull(const Transaction& other) { return other.xid == 0; }
     const std::string& statusToString();
 private:
     TransactionStatus status;
