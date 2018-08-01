@@ -154,7 +154,7 @@ public:
         return status != COMMITTED && status != ROLLEDBACK;
     }
     bool operator< (const Transaction& other) const { return this->xid < other.xid; }
-    const std::string& statusToString();
+    HR_EXTERN const std::string& statusToString();
 private:
     TransactionStatus status;
     XID xid;
