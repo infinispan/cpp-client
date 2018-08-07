@@ -113,21 +113,31 @@ void TransactionManager::commit() {
     infinispan::hotrod::Transaction& currentTransaction = *getCurrentTransaction();
     if (currentTransaction.canCommit()) {
         // Commit actually rolls back if transaction is marked as rolled back
-        if(currentTransaction.needsRollback()) {
-            // TODO: rollback everything
+        TransactionRemoteStatus exCode = TransactionRemoteStatus::XA_RBROLLBACK;
+        if (currentTransaction.needsRollback()) {
+            remoteRollback(currentTransaction);
+            currentTransaction.status = ROLLEDBACK;
         } else {
             try {
-            if (remotePrepareCommit(currentTransaction) == TransactionRemoteStatus::XA_OK) { // something to commit
-                remoteCommit(currentTransaction);
+                if (remotePrepareCommit(currentTransaction) == TransactionRemoteStatus::XA_OK) {
+                    remoteCommit(currentTransaction);
+                }
                 currentTransaction.status = COMMITTED;
-            }
+            } catch (const HotRodClientTxRemoteStateException& ex) {
+                remoteRollback(currentTransaction);
+                currentTransaction.status = ROLLEDBACK;
+                exCode = (TransactionRemoteStatus) ex.getStatus();
             } catch (const HotRodClientException& ex) {
                 remoteRollback(currentTransaction);
                 currentTransaction.status = ROLLEDBACK;
             }
         }
+        auto txStatus = currentTransaction.status;
         currentTransaction.sa.clear();
         cleanUpCurrentTransaction();
+        if (txStatus == ROLLEDBACK) {
+            throw HotRodClientRollbackException((unsigned int) exCode);
+        }
     } else {
         this->throwExceptionOnIllegalState(currentTransaction.statusToString(), "commit()");
     }

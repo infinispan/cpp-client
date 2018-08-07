@@ -62,7 +62,8 @@ enum class TransactionRemoteStatus : unsigned int {
     XAER_NOTA = 0xFFFFFFFC, // the XID is not valid
     XA_HEURMIX = 0x05,      // resource partially committed and rolledback after heuristic decision
     XA_HEURHAZ = 0x08,      // tx operation on resource completed somehow heuristically
-    XA_HEURRB = 0x06        // resource rolled back after heuristic decision
+    XA_HEURRB = 0x06,       // resource rolled back after heuristic decision
+    XA_RBROLLBACK = 0x64
 };
 
 /**
