@@ -384,7 +384,12 @@ TEST_F(TransactionTest, ConflictsAndFail) {
     // Check the correct value from the tx context
     std::unique_ptr<std::string> rv1(nontxCache.put(k1,vx));
     EXPECT_EQ(rv1, nullptr);
-    txManager.commit();
+    try {
+        txManager.commit();
+        FAIL();
+    } catch (const HotRodClientRollbackException& ex) {
+        ASSERT_STREQ("Transaction rolled back. Code: 100", ex.what());
+    }
     EXPECT_EQ(*cache.get(k1), vx);
     EXPECT_EQ(cache.get(k2), nullptr);
 }

@@ -118,6 +118,14 @@ public:
     HotRodClientTxStateException(const std::string& state, const std::string& action);
 };
 
+class HR_EXTERN HotRodClientRollbackException: public HotRodClientException {
+public:
+    HotRodClientRollbackException(unsigned int exCode);
+    unsigned int getStatus() const { return status; }
+private:
+    unsigned int status;
+};
+
 class HR_EXTERN HotRodClientTxRemoteStateException: public HotRodClientException {
 public:
     HotRodClientTxRemoteStateException(unsigned int status);
