@@ -48,7 +48,7 @@ RemoteCacheManagerNotStartedException::RemoteCacheManagerNotStartedException(con
 HotRodClientTxStateException::HotRodClientTxStateException(const std::string& state, const std::string& action) :
         HotRodClientException("Transaction: illegal state for action. Action: " + action + " called in state: " + state) {}
 
-HotRodClientRollbackException::HotRodClientRollbackException(unsigned int exCode) : HotRodClientException("Transaction rolled back. Code: "+std::to_string(exCode)), status(status) {}
+HotRodClientRollbackException::HotRodClientRollbackException(unsigned int exCode) : HotRodClientException("Transaction rolled back. Code: "+std::to_string(exCode)), status(exCode) {}
 
 
 HotRodClientTxRemoteStateException::HotRodClientTxRemoteStateException(unsigned int status) : HotRodClientException("Remote transaction has status: "+status), status(status) {}
