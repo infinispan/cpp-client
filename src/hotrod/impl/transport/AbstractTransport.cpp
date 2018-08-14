@@ -22,6 +22,12 @@ void AbstractTransport::writeArray(const std::vector<char>& bytes)
   writeBytes(bytes);
 }
 
+void AbstractTransport::writeString(const std::string& str)
+{
+    writeVInt(str.size());
+    writeBytes(str.data(), str.size());
+}
+
 void AbstractTransport::writeLong(int64_t longValue)
 {
   /*

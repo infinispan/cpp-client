@@ -88,15 +88,13 @@ int kinit();
 void kdestroy();
 #endif
 
-static char *simple_data; // plain
+static const char *simple_data; // plain
 
 #if !defined _WIN32 && !defined _WIN64
 static char realm_data[] = "applicationRealm";
 #else
 static char realm_data[] = "ApplicationRealm";
 #endif
-
-static char path_data[] = "/usr/lib64/sasl2";
 
 static int simple(void* /* context */, int id, const char **result, unsigned *len) {
     *result = simple_data;
@@ -115,15 +113,13 @@ static int getrealm(void* /* context */, int id, const char **result, unsigned *
 #define PLUGINDIR "/usr/lib64/sasl2"
 
 static int getpath(void *context, const char ** path) {
-    const char *searchpath = (const char *) context;
-
     if (!path)
         return SASL_BADPARAM;
     *path = PLUGINDIR;
     return SASL_OK;
 }
 
-static char *secret_data;
+static const char *secret_data;
 
 static int getsecret(void* /* conn */, void* /* context */, int id, sasl_secret_t **psecret) {
     size_t len;
@@ -156,8 +152,8 @@ int main(int argc, char** argv) {
         ConfigurationBuilder builder;
         simple_data = "writer";
         secret_data = "somePassword";
-        builder.addServer().host(argc > 1 ? argv[1] : "127.0.0.1").port(argc > 2 ? atoi(argv[2]) : 11222);
-        builder.protocolVersion(Configuration::PROTOCOL_VERSION_24);
+        builder.protocolVersion(argc > 1 ? argv[1] : Configuration::PROTOCOL_VERSION_24);
+        builder.addServer().host(argc > 2 ? argv[2] : "127.0.0.1").port(argc > 3 ? atoi(argv[3]) : 11222);
         builder.security().authentication().saslMechanism("PLAIN").serverFQDN(
                 "node0").callbackHandler(callbackHandler).enable();
         builder.balancingStrategyProducer(nullptr);
@@ -183,8 +179,8 @@ int main(int argc, char** argv) {
         ConfigurationBuilder builder;
         simple_data = "reader";
         secret_data = "password";
-        builder.addServer().host(argc > 1 ? argv[1] : "127.0.0.1").port(argc > 2 ? atoi(argv[2]) : 11222);
-        builder.protocolVersion(Configuration::PROTOCOL_VERSION_24);
+        builder.protocolVersion(argc > 1 ? argv[1] : Configuration::PROTOCOL_VERSION_24);
+        builder.addServer().host(argc > 2 ? argv[2] : "127.0.0.1").port(argc > 3 ? atoi(argv[3]) : 11222);
         builder.security().authentication().saslMechanism("DIGEST-MD5").serverFQDN(
                 "node0").callbackHandler(callbackHandler).enable();
         builder.balancingStrategyProducer(nullptr);
@@ -212,8 +208,8 @@ int main(int argc, char** argv) {
         ConfigurationBuilder builder;
         simple_data = "supervisor@INFINISPAN.ORG";
         secret_data = "lessStrongPassword";
-        builder.addServer().host(argc > 1 ? argv[1] : "127.0.0.1").port(argc > 2 ? atoi(argv[2]) : 11222);
-        builder.protocolVersion(Configuration::PROTOCOL_VERSION_24);
+        builder.protocolVersion(argc > 1 ? argv[1] : Configuration::PROTOCOL_VERSION_24);
+        builder.addServer().host(argc > 2 ? argv[2] : "127.0.0.1").port(argc > 3 ? atoi(argv[3]) : 11222);
         builder.security().authentication().saslMechanism("GSSAPI").serverFQDN(
                 "node0").callbackHandler(callbackHandler).enable();
         builder.balancingStrategyProducer(nullptr);
@@ -248,7 +244,7 @@ int kinit() {
     // Delegate Kerberos setup to the system
     setenv("KRB5CCNAME", "krb5cc_hotrod", 1);
     setenv("KRB5_CONFIG", "krb5.conf", 1);
-    std::system("echo lessStrongPassword | kinit -c krb5cc_hotrod supervisor@INFINISPAN.ORG");
+    return std::system("echo lessStrongPassword | kinit -c krb5cc_hotrod supervisor@INFINISPAN.ORG");
 }
 void kdestroy() {
     std::system("kdestroy");

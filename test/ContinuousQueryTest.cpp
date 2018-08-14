@@ -53,8 +53,8 @@ int main(int argc, char** argv) {
     int result = 0;
     std::cout << "Tests for Continuous Query" << std::endl;
     ConfigurationBuilder builder;
-    builder.addServer().host(argc > 1 ? argv[1] : "127.0.0.1").port(11222);
-    builder.protocolVersion(Configuration::PROTOCOL_VERSION_26);
+    builder.protocolVersion(argc > 1 ? argv[1] : Configuration::PROTOCOL_VERSION_26);
+    builder.addServer().host(argc > 2 ? argv[2] : "127.0.0.1").port(argc > 3 ? atoi(argv[3]) : 11222);
     builder.balancingStrategyProducer(nullptr);
     RemoteCacheManager cacheManager(builder.build(), false);
 
