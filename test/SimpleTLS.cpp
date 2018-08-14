@@ -26,7 +26,7 @@ int main(int argc, char** argv) {
     {
       ConfigurationBuilder builder;
       builder.addServer().host("127.0.0.1").port(11222);
-      builder.protocolVersion(Configuration::PROTOCOL_VERSION_24);
+      builder.protocolVersion(argc > 1 ? argv[1] : Configuration::PROTOCOL_VERSION_24);
       builder.ssl().enable().serverCAFile(argv[1]);
       if (argc > 2) {
           std::cout << "Using supplied client certificate" << std::endl;

@@ -54,8 +54,8 @@ int main(int argc, char** argv) {
     int result=0;
     std::cout << "Tests for Query" << std::endl;
     ConfigurationBuilder builder;
-    builder.addServer().host(argc > 1 ? argv[1] : "127.0.0.1").port(argc > 2 ? atoi(argv[2]) : 11222);
-    builder.protocolVersion(Configuration::PROTOCOL_VERSION_24);
+    builder.protocolVersion(argc > 1 ? argv[1] : Configuration::PROTOCOL_VERSION_24);
+    builder.addServer().host(argc > 2 ? argv[2] : "127.0.0.1").port(argc > 3 ? atoi(argv[3]) : 11222);
 //        builder.balancingStrategyProducer(transport::MyRoundRobinBalancingStrategy::newInstance);
     builder.balancingStrategyProducer(nullptr);
     RemoteCacheManager cacheManager(builder.build(), false);

@@ -57,7 +57,6 @@ void TcpTransportFactory::start(
     }
     topologyInfo = new TopologyInfo(defaultTopologyId, initialServers, configuration);
 
-
     createAndPreparePool();
 
     balancer->setServers(initialServers);

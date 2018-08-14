@@ -2,7 +2,9 @@
 #define ISPN_HOTROD_PROTOCOL_CODEC_H
 
 #include "infinispan/hotrod/defs.h"
+#include "infinispan/hotrod/Configuration.h"
 #include "hotrod/impl/protocol/HotRodConstants.h"
+#include "infinispan/hotrod/DataFormat.h"
 #include <set>
 #include <map>
 #include <vector>
@@ -31,6 +33,7 @@ class Codec
     virtual void writeExpirationParams(transport::Transport& t,uint64_t lifespan, uint64_t maxIdle) const = 0;
     virtual ~Codec() {}
     uint8_t getProtocolVersion() const { return protocolVersion; }
+    virtual void configure(DataFormat& ) {}
 protected:
     uint8_t protocolVersion;
 
