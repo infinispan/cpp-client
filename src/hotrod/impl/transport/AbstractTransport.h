@@ -21,6 +21,7 @@ class AbstractTransport : public Transport
 	AbstractTransport(TransportFactory& transportFactory);
 
     void writeArray(const std::vector<char>& bytes);
+    void writeString(const std::string& str);
     void writeLong(int64_t longValue);
     std::vector<char> readArray();
     int64_t readLong();
@@ -32,6 +33,7 @@ class AbstractTransport : public Transport
 
   protected:
     virtual void writeBytes(const std::vector<char>& bytes) = 0;
+    virtual void writeBytes(const char* data, unsigned int size) = 0;
     virtual std::vector<char> readBytes(uint32_t size) = 0;
 
   private:

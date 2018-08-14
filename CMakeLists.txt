@@ -386,6 +386,7 @@ else(DEFINED HOTROD_PREBUILT_LIB_DIR)
       src/hotrod/impl/protocol/Codec21.cpp
       src/hotrod/impl/protocol/Codec22.cpp
       src/hotrod/impl/protocol/Codec26.cpp
+      src/hotrod/impl/protocol/Codec28.cpp
       src/hotrod/impl/protocol/CodecFactory.cpp
       src/hotrod/impl/transport/AbstractTransport.cpp
       src/hotrod/impl/transport/tcp/ConnectionPool.cpp
@@ -771,6 +772,16 @@ else (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.sh") AND (EXISTS "${HOTR
     add_test (continuousQueryTest-static continuousQueryTest-static)
     add_test (simpleTx simpleTx)
     add_test (simpleTx-static simpleTx-static)
+    add_test (simple-mediatype simple 2.8)
+    add_test (simple-static-mediatype simple-static 2.8)
+    add_test (queryTest-mediatype queryTest 2.8)
+    add_test (queryTest-static-mediatype queryTest-static 2.8)
+    add_test (events-mediatype-mediatype events 2.8)
+    add_test (nearCacheTest-mediatype nearCacheTest 2.8)
+    add_test (continuousQueryTest-mediatype continuousQueryTest 2.8)
+    add_test (continuousQueryTest-static-mediatype continuousQueryTest-static 2.8)
+    add_test (simpleTx-mediatype simpleTx 2.8)
+    add_test (simpleTx-static-mediatype simpleTx-static 2.8)
     add_test (stop_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py stop)
     add_test (probe_port_stop ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/probe_port.py localhost 11222 60 down)
     add_test (start_cluster_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py start ${JAVA_RUNTIME} ${HOTROD_JBOSS_HOME} clustered.xml)

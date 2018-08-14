@@ -41,17 +41,11 @@ long Codec20::getMessageId() {
 HeaderParams& Codec20::writeHeader(
     Transport& transport, HeaderParams& params) const
 {
-    return writeHeader(transport, params, protocolVersion);
-}
-
-HeaderParams& Codec20::writeHeader(
-    Transport& transport, HeaderParams& params, uint8_t version) const
-{
     transport.writeByte(HotRodConstants::REQUEST_MAGIC);
     ScopedLock<Mutex> l(lock);
     transport.writeVLong(params.setMessageId(++msgId).messageId);
     ScopedUnlock<Mutex> ul(lock);
-    transport.writeByte(version);
+    transport.writeByte(protocolVersion);
     transport.writeByte(params.opCode);
     transport.writeArray(params.cacheName);
     transport.writeVInt(params.flags);
