@@ -29,8 +29,9 @@ const std::string& Transaction::statusToString() {
 }
 
 XID::XID() {
-    static std::default_random_engine e{};
-    static std::uniform_int_distribution<int> d{0,255};
+    static std::random_device r;
+    static std::default_random_engine e(r());
+    static std::uniform_int_distribution<int> d(0,255);
     std::vector<char> uuid(TransactionManagerLookup::lookup().getUuid());
     globalId.insert(globalId.end(), uuid.begin(), uuid.begin()+8);
     globalId.insert(globalId.end(), uuid.end()-8, uuid.end());
