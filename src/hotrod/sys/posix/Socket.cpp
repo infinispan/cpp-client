@@ -213,6 +213,14 @@ size_t Socket::read(char *p, size_t length) {
         return n;
     else if (n == 0)
         throwIOErr(host, port, "no read", 0);
+    // On call interrupted try one more time
+    if (errno == EINTR) {
+        n =  recv(fd, p, length, 0);
+        if (n > 0)
+            return n;
+        else if (n == 0)
+            throwIOErr(host, port, "no read", 0);
+    }
     if (errno == EAGAIN || errno == EWOULDBLOCK)
         throwIOErr(host, port, "timeout", errno);
     else
