@@ -48,7 +48,7 @@ pipeline{
                 sh 'printenv'
             }
             script {
-                sh "PATH=\"${env.JAVA_HOME}/bin:${env.M2_HOME}/bin:${PATH}\" ./build.sh"
+                sh "PATH=\"${env.JAVA_HOME}/bin:${env.M2_HOME}/bin:${PATH}\" CMAKE_EXTRAS=\"-DINSTALL_GTEST=FALSE\" ./build.sh"
                 archiveArtifacts artifacts: 'build/_CPack_Packages/RHEL-x86_64/RPM/*.rpm, build/*Source.zip'
             }
         }
