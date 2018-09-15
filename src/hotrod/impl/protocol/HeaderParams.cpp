@@ -10,7 +10,60 @@ namespace infinispan {
 namespace hotrod {
 namespace protocol {
 
-HeaderParams::HeaderParams(Topology& tid):topologyId(tid){
+// Well known media types and their ids mapping
+std::map<std::string, int> IdsMediaTypes::typesIds =
+{
+        std::pair<std::string,int>(APPLICATION_OBJECT_TYPE, 1),
+        std::pair<std::string,int>(APPLICATION_JSON_TYPE, 2),
+        std::pair<std::string,int>(APPLICATION_OCTET_STREAM_TYPE, 3),
+        std::pair<std::string,int>(APPLICATION_PDF_TYPE, 4),
+        std::pair<std::string,int>(APPLICATION_RTF_TYPE, 5),
+        std::pair<std::string,int>(APPLICATION_ZIP_TYPE, 6),
+        std::pair<std::string,int>(IMAGE_GIF_TYPE, 7),
+        std::pair<std::string,int>(IMAGE_JPEG_TYPE, 8),
+        std::pair<std::string,int>(IMAGE_PNG_TYPE, 9),
+        std::pair<std::string,int>(TEXT_CSS_TYPE, 10),
+        std::pair<std::string,int>(TEXT_CSV_TYPE, 11),
+        std::pair<std::string,int>(APPLICATION_PROTOSTREAM_TYPE, 12),
+        std::pair<std::string,int>(TEXT_PLAIN_TYPE, 13),
+        std::pair<std::string,int>(TEXT_HTML_TYPE, 14),
+        std::pair<std::string,int>(APPLICATION_JBOSS_MARSHALLING_TYPE, 15),
+        std::pair<std::string,int>(APPLICATION_INFINISPAN_MARSHALLING_TYPE, 16)
+};
+
+
+
+MediaType::MediaType(const char* typeSubtype) {
+    if (typeSubtype != nullptr) {
+        this->typeSubtype = typeSubtype;
+        auto pos = this->typeSubtype.find('/');
+        if (pos != std::string::npos) {
+            this->type = this->typeSubtype.substr(0,pos);
+            this->subType = this->typeSubtype.substr(pos, this->typeSubtype.length());
+        }
+    }
+}
+
+int IdsMediaTypes::getByMediaType(std::string mediaType) {
+    if (typesIds.find(mediaType) != typesIds.end())
+    {
+        return typesIds[mediaType];
+    }
+    return -1;
+}
+
+std::string IdsMediaTypes::getById(int id) {
+    for (auto it = typesIds.begin(); it != typesIds.end(); ++it)
+    {
+       if (it->second == id)
+       {
+           return it->first;
+       }
+    }
+    return std::string();
+}
+
+HeaderParams::HeaderParams(Topology& tid):topologyId(tid) {
 }
 
 HeaderParams& HeaderParams::setOpCode(uint8_t code) {

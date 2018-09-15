@@ -20,6 +20,7 @@ class Transport
     virtual void writeVInt(uint32_t uint) = 0;
     virtual void writeVLong(uint64_t ulong) = 0;
     virtual void writeArray(const std::vector<char>& bytes) = 0;
+    virtual void writeString(const std::string& str) = 0;
 
     virtual void writeLong(int64_t slong) = 0;
 

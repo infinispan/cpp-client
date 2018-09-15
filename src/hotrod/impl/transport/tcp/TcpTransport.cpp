@@ -74,6 +74,10 @@ void TcpTransport::writeBytes(const std::vector<char>& bytes) {
     socket.getOutputStream().write(not_const_bytes.data(), not_const_bytes.size());
 }
 
+void TcpTransport::writeBytes(const char* data, unsigned int size) {
+    socket.getOutputStream().write(data, size);
+}
+
 uint8_t TcpTransport::readByte() {
     char r = socket.getInputStream().read();
     return r;

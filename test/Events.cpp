@@ -31,8 +31,8 @@ int main(int argc, char** argv) {
     {
         ConfigurationBuilder builder;
         builder.balancingStrategyProducer(nullptr);
-        builder.addServer().host(argc > 1 ? argv[1] : "127.0.0.1").port(argc > 2 ? atoi(argv[2]) : 11222);
-        builder.protocolVersion(Configuration::PROTOCOL_VERSION_24);
+        builder.protocolVersion(argc > 1 ? argv[1] : Configuration::PROTOCOL_VERSION_24);
+        builder.addServer().host(argc > 2 ? argv[2] : "127.0.0.1").port(argc > 3 ? atoi(argv[3]) : 11222);
         RemoteCacheManager cacheManager(builder.build(), false);
         cacheManager.start();
         JBasicMarshaller<int> *km = new JBasicMarshaller<int>();

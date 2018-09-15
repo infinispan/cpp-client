@@ -21,7 +21,7 @@ int test(const std::string &test_desc, int argc, char** argv, const std::string 
     {
         ConfigurationBuilder builder;
         builder.addServer().host("127.0.0.1").port(11222);
-        builder.protocolVersion(Configuration::PROTOCOL_VERSION_24);
+        builder.protocolVersion(argc > 1 ? argv[1] : Configuration::PROTOCOL_VERSION_24);
         builder.ssl().serverCAFile(argv[1]).sniHostName(sni_name);
         if (argc > 2) {
             std::cout << "Using supplied client certificate" << std::endl;
