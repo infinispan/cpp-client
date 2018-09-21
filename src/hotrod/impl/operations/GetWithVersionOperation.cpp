@@ -13,9 +13,10 @@ GetWithVersionOperation::GetWithVersionOperation(
     const std::vector<char>&    key_,
     const std::vector<char>&    cacheName_,
     Topology&          topologyId_,
-    uint32_t    flags_)
+    uint32_t    flags_,
+    EntryMediaTypes* df)
     : AbstractKeyOperation<VersionedValueImpl<std::vector<char>> >(
-        codec_, transportFactory_, key_, cacheName_, topologyId_, flags_)
+        codec_, transportFactory_, key_, cacheName_, topologyId_, flags_, df)
 {}
 
 VersionedValueImpl<std::vector<char>> GetWithVersionOperation::executeOperation(Transport& transport)

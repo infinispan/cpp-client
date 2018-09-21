@@ -22,7 +22,8 @@ class FaultTolerantPingOperation : public RetryOnFailureOperation<PingResult>
             std::shared_ptr<transport::TransportFactory> transportFactory_,
             const std::vector<char>&                                   cacheName_,
             Topology&                                 topologyId_,
-            uint32_t                                   flags_);
+            uint32_t                                   flags_,
+            EntryMediaTypes* df);
 
         PingResult executeOperation(transport::Transport& transport);
 

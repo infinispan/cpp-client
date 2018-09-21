@@ -16,8 +16,8 @@ namespace operations {
 static void writeXID(transport::Transport& transport, XID& xid);
 
 PrepareCommitOperation::PrepareCommitOperation(const Codec &codec, std::shared_ptr<TransportFactory> transportFactory,
-        std::vector<char> cacheName, Topology& topologyId, int flags, XID xid, TransactionContext& tctx) :
-        RetryOnFailureOperation<uint32_t>(codec, transportFactory, cacheName, topologyId, flags), xid(xid), tctx(tctx) {
+        std::vector<char> cacheName, Topology& topologyId, int flags, XID xid, TransactionContext& tctx, EntryMediaTypes* df) :
+        RetryOnFailureOperation<uint32_t>(codec, transportFactory, cacheName, topologyId, flags, df), xid(xid), tctx(tctx) {
 
 }
 
@@ -54,8 +54,8 @@ uint32_t PrepareCommitOperation::executeOperation(transport::Transport& transpor
 }
 
 CommitOperation::CommitOperation(const Codec &codec, std::shared_ptr<TransportFactory> transportFactory,
-        std::vector<char> cacheName, Topology& topologyId, int flags, XID xid, TransactionContext& tctx) :
-        RetryOnFailureOperation<uint32_t>(codec, transportFactory, cacheName, topologyId, flags), xid(xid), tctx(tctx) {
+        std::vector<char> cacheName, Topology& topologyId, int flags, XID xid, TransactionContext& tctx, EntryMediaTypes* df) :
+        RetryOnFailureOperation<uint32_t>(codec, transportFactory, cacheName, topologyId, flags, df), xid(xid), tctx(tctx) {
 
 }
 
@@ -70,8 +70,8 @@ uint32_t CommitOperation::executeOperation(transport::Transport& transport) {
 }
 
 RollbackOperation::RollbackOperation(const Codec &codec, std::shared_ptr<TransportFactory> transportFactory,
-        std::vector<char> cacheName, Topology& topologyId, int flags, XID xid, TransactionContext& tctx) :
-        RetryOnFailureOperation<uint32_t>(codec, transportFactory, cacheName, topologyId, flags), xid(xid), tctx(tctx) {
+        std::vector<char> cacheName, Topology& topologyId, int flags, XID xid, TransactionContext& tctx, EntryMediaTypes* df) :
+        RetryOnFailureOperation<uint32_t>(codec, transportFactory, cacheName, topologyId, flags, df), xid(xid), tctx(tctx) {
 
 }
 

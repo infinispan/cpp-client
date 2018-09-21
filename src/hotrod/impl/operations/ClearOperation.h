@@ -22,7 +22,8 @@ class ClearOperation : public RetryOnFailureOperation<std::vector<char>>
             std::shared_ptr<transport::TransportFactory> transportFactory_,
             const std::vector<char>&                                   cacheName_,
             Topology&                                 topologyId_,
-            uint32_t                                   flags_);
+            uint32_t                                   flags_,
+            EntryMediaTypes* df);
 
         std::vector<char> executeOperation(infinispan::hotrod::transport::Transport& transport);
 

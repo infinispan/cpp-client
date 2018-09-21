@@ -41,7 +41,7 @@ public:
     DefineCounterOperation(protocol::Codec& codec, std::shared_ptr<transport::TransportFactory> transportFactory,
             Topology& topologyId, uint32_t flags, std::string counterName, CounterConfiguration configuration) :
             BaseCounterOperation(counterName), RetryOnFailureOperation<bool>(codec, transportFactory,
-                    std::vector<char>(), topologyId, flags), configuration(configuration) {
+                    std::vector<char>(), topologyId, flags, nullptr), configuration(configuration) {
     }
     bool executeOperation(infinispan::hotrod::transport::Transport& transport);
     private:
@@ -56,7 +56,7 @@ public:
             std::shared_ptr<transport::TransportFactory> transportFactory, Topology& topologyId, uint32_t flags,
             std::string counterName) :
             BaseCounterOperation(counterName), RetryOnFailureOperation<CounterConfiguration>(codec, transportFactory,
-                    std::vector<char>(), topologyId, flags) {
+                    std::vector<char>(), topologyId, flags, nullptr) {
     }
     CounterConfiguration executeOperation(infinispan::hotrod::transport::Transport& transport);
 };
@@ -67,7 +67,7 @@ public:
     ResetCounterOperation(protocol::Codec& codec, std::shared_ptr<transport::TransportFactory> transportFactory,
             Topology& topologyId, uint32_t flags, std::string counterName) :
             BaseCounterOperation(counterName), RetryOnFailureOperation<void>(codec, transportFactory,
-                    std::vector<char>(), topologyId, flags) {
+                    std::vector<char>(), topologyId, flags, nullptr) {
     }
     void executeOperation(infinispan::hotrod::transport::Transport& transport);
 };
@@ -78,7 +78,7 @@ public:
     RemoveCounterOperation(protocol::Codec& codec, std::shared_ptr<transport::TransportFactory> transportFactory,
             Topology& topologyId, uint32_t flags, std::string counterName) :
             BaseCounterOperation(counterName), RetryOnFailureOperation<void>(codec, transportFactory,
-                    std::vector<char>(), topologyId, flags) {
+                    std::vector<char>(), topologyId, flags, nullptr) {
     }
     void executeOperation(infinispan::hotrod::transport::Transport& transport);
 };
@@ -89,7 +89,7 @@ public:
     GetCounterNamesOperation(protocol::Codec& codec, std::shared_ptr<transport::TransportFactory> transportFactory,
             Topology& topologyId, uint32_t flags) :
             BaseCounterOperation(), RetryOnFailureOperation<std::set<std::string> >(codec, transportFactory,
-                    std::vector<char>(), topologyId, flags) {
+                    std::vector<char>(), topologyId, flags, nullptr) {
     }
     std::set<std::string> executeOperation(infinispan::hotrod::transport::Transport& transport);
 };
@@ -100,7 +100,7 @@ public:
     IsCounterDefinedOperation(protocol::Codec& codec, std::shared_ptr<transport::TransportFactory> transportFactory,
             Topology& topologyId, uint32_t flags, std::string counterName) :
             BaseCounterOperation(counterName), RetryOnFailureOperation<bool>(codec, transportFactory,
-                    std::vector<char>(), topologyId, flags) {
+                    std::vector<char>(), topologyId, flags, nullptr) {
     }
     bool executeOperation(infinispan::hotrod::transport::Transport& transport);
 };
@@ -111,7 +111,7 @@ public:
     GetCounterValueOperation(protocol::Codec& codec, std::shared_ptr<transport::TransportFactory> transportFactory,
             Topology& topologyId, uint32_t flags, std::string counterName) :
             BaseCounterOperation(counterName), RetryOnFailureOperation<long>(codec, transportFactory,
-                    std::vector<char>(), topologyId, flags) {
+                    std::vector<char>(), topologyId, flags, nullptr) {
     }
     long executeOperation(infinispan::hotrod::transport::Transport& transport);
 };
@@ -123,7 +123,7 @@ public:
             std::shared_ptr<transport::TransportFactory> transportFactory,
             Topology& topologyId, uint32_t flags, std::string counterName, long delta) :
             BaseCounterOperation(counterName), RetryOnFailureOperation<long>(codec, transportFactory,
-                    std::vector<char>(), topologyId, flags), delta(delta) {
+                    std::vector<char>(), topologyId, flags, nullptr), delta(delta) {
     }
     long executeOperation(infinispan::hotrod::transport::Transport& transport);
     private:
@@ -139,7 +139,7 @@ public:
             Topology& topologyId, uint32_t flags, std::string counterName, long expect, long update,
             CounterConfiguration& cc) :
             BaseCounterOperation(counterName), RetryOnFailureOperation<long>(codec, transportFactory,
-                    std::vector<char>(), topologyId, flags), expect(expect), update(update), cc(cc) {
+                    std::vector<char>(), topologyId, flags, nullptr), expect(expect), update(update), cc(cc) {
     }
     long executeOperation(infinispan::hotrod::transport::Transport& transport);
     private:
@@ -157,7 +157,7 @@ public:
             Topology& topologyId, uint32_t flags, std::string counterName, std::vector<char> listenerId,
             bool keepTransport) :
             BaseCounterOperation(counterName), RetryOnFailureOperation<Transport*>(codec, transportFactory,
-                    std::vector<char>(), topologyId, flags), listenerId(listenerId), keepTransport(keepTransport), failed(
+                    std::vector<char>(), topologyId, flags, nullptr), listenerId(listenerId), keepTransport(keepTransport), failed(
                     false) {
     }
     Transport* executeOperation(infinispan::hotrod::transport::Transport& transport);
@@ -177,7 +177,7 @@ public:
             std::shared_ptr<transport::TransportFactory> transportFactory,
             Topology& topologyId, uint32_t flags, std::string counterName, std::vector<char> listenerId) :
             BaseCounterOperation(counterName), RetryOnFailureOperation<bool>(codec, transportFactory,
-                    std::vector<char>(), topologyId, flags), listenerId(listenerId) {
+                    std::vector<char>(), topologyId, flags, nullptr), listenerId(listenerId) {
     }
     bool executeOperation(infinispan::hotrod::transport::Transport& transport);
     private:

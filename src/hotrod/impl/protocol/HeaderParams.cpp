@@ -194,7 +194,7 @@ HeaderParams& HeaderParams::setTopologyAge(int topologyAge_) {
 	return *this;
 }
 
-HeaderParams& HeaderParams::setDataFormat(DataFormat* df) {
+HeaderParams& HeaderParams::setDataFormat(EntryMediaTypes* df) {
 	dataFormat = df;
 	return *this;
 }

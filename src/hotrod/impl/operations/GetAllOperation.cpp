@@ -8,8 +8,8 @@ using namespace infinispan::hotrod::protocol;
 using namespace infinispan::hotrod::transport;
 
 GetAllOperation::GetAllOperation(const Codec& _codec, std::shared_ptr<transport::TransportFactory> _transportFactory, const std::set<std::vector<char>>& keySet,
-	    const std::vector<char>& _cacheName, Topology& _topologyId, uint32_t _flags)
-        : RetryOnFailureOperation<std::map<std::vector<char>, std::vector<char>>>(_codec, _transportFactory, _cacheName, _topologyId, _flags), keySet(keySet) {}
+	    const std::vector<char>& _cacheName, Topology& _topologyId, uint32_t _flags, EntryMediaTypes* df)
+        : RetryOnFailureOperation<std::map<std::vector<char>, std::vector<char>>>(_codec, _transportFactory, _cacheName, _topologyId, _flags, df), keySet(keySet) {}
 
 
 std::map<std::vector<char>, std::vector<char>> GetAllOperation::executeOperation(infinispan::hotrod::transport::Transport& transport)

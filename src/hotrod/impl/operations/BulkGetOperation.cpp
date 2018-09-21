@@ -13,9 +13,10 @@ BulkGetOperation::BulkGetOperation(
     const std::vector<char>&    cacheName_,
     Topology&  topologyId_,
     uint32_t    flags_,
-    int32_t  entryCount_)
+    int32_t  entryCount_,
+	EntryMediaTypes* df)
     : RetryOnFailureOperation<std::map<std::vector<char>, std::vector<char>> >(
-        codec_, transportFactory_, cacheName_, topologyId_, flags_), entryCount(entryCount_)
+        codec_, transportFactory_, cacheName_, topologyId_, flags_, df), entryCount(entryCount_)
 {}
 
 std::map<std::vector<char>,std::vector<char>> BulkGetOperation::executeOperation(infinispan::hotrod::transport::Transport& transport)

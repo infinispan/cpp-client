@@ -2,8 +2,8 @@
 #define ISPN_HOTROD_PROTOCOL_HEADERPARAMS_H
 
 #include <hotrod/impl/Topology.h>
+#include <infinispan/hotrod/DataFormat.h>
 #include "infinispan/hotrod/Flag.h"
-#include "infinispan/hotrod/DataFormat.h"
 #include <set>
 #include <vector>
 #include <map>
@@ -12,7 +12,7 @@ namespace infinispan {
 namespace hotrod {
 namespace protocol {
 
-using infinispan::hotrod::DataFormat;
+using infinispan::hotrod::EntryMediaTypes;
 
 class HeaderParams
 {
@@ -26,7 +26,7 @@ class HeaderParams
     HeaderParams& setMessageId(uint64_t messageId);
     uint64_t getMessageId();
     HeaderParams& setTopologyAge(int topologyAge_);
-    HeaderParams& setDataFormat(DataFormat* df);
+    HeaderParams& setDataFormat(EntryMediaTypes* df);
 
 
   private:
@@ -41,7 +41,7 @@ class HeaderParams
     Topology& topologyId;
     uint64_t messageId;
     int topologyAge;
-    DataFormat* dataFormat;
+    EntryMediaTypes* dataFormat;
 
     friend class Codec10;
     friend class Codec11;

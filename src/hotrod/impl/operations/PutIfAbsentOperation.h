@@ -28,7 +28,8 @@ class PutIfAbsentOperation : public AbstractKeyValueOperation<std::vector<char>>
             uint32_t flags,
             const std::vector<char>& value,
             uint32_t lifespan,
-            uint32_t maxIdle);
+            uint32_t maxIdle,
+			EntryMediaTypes* df);
 
     friend class OperationsFactory;
 };

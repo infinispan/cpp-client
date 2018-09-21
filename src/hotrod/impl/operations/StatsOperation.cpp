@@ -12,9 +12,10 @@ StatsOperation::StatsOperation(
     std::shared_ptr<transport::TransportFactory> transportFactory_,
     const std::vector<char>&    cacheName_,
     Topology&  topologyId_,
-    uint32_t    flags_)
+    uint32_t    flags_,
+    EntryMediaTypes* df)
     : RetryOnFailureOperation<std::map<std::string, std::string> >(
-        codec_, transportFactory_, cacheName_, topologyId_, flags_)
+        codec_, transportFactory_, cacheName_, topologyId_, flags_, df)
 {}
 
 std::map<std::string, std::string> StatsOperation::executeOperation(Transport& transport)

@@ -30,14 +30,16 @@ class PingOperation : public HotRodOperation<PingResult>
     PingOperation(
         const protocol::Codec& codec,
         Topology& topologyId,
-        transport::Transport& transport);
+        transport::Transport& transport,
+		EntryMediaTypes* df);
 
   private:
     PingOperation(
         const protocol::Codec& codec,
         Topology& topologyId,
         transport::Transport& transport,
-        const std::vector<char>& cacheName);
+        const std::vector<char>& cacheName,
+		EntryMediaTypes* df);
 
     transport::Transport& transport;
 

@@ -18,7 +18,7 @@ class GetAllOperation : public RetryOnFailureOperation<std::map<std::vector<char
 
   private:
     GetAllOperation(const Codec& _codec, std::shared_ptr<transport::TransportFactory> _transportFactory, const std::set<std::vector<char>>& keySet,
-    	    const std::vector<char>& _cacheName, Topology& _topologyId, uint32_t _flags);
+            const std::vector<char>& _cacheName, Topology& _topologyId, uint32_t _flags, EntryMediaTypes* df);
     virtual transport::Transport& getTransport(int /*retryCount*/, const std::set<transport::InetSocketAddress>& failedServers)
     {
             return transportFactory->getTransport(*keySet.begin(), this->cacheName, failedServers);

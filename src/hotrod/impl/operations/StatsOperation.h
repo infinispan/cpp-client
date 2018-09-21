@@ -25,7 +25,8 @@ class StatsOperation : public RetryOnFailureOperation<std::map<std::string, std:
             std::shared_ptr<transport::TransportFactory> transportFactory_,
             const std::vector<char>&                                   cacheName_,
             Topology&                                 topologyId_,
-            uint32_t                                   flags_);
+            uint32_t                                   flags_,
+            EntryMediaTypes* df);
 
         std::map<std::string, std::string> executeOperation(infinispan::hotrod::transport::Transport& transport);
     private:

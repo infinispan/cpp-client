@@ -23,9 +23,9 @@ public:
 	QueryOperation(const protocol::Codec& _codec,
 			std::shared_ptr<transport::TransportFactory> _transportFactory,
 			const std::vector<char>& _cacheName, Topology& _topologyId,
-			uint32_t _flags, const QueryRequest& _queryRequest) :
+			uint32_t _flags, const QueryRequest& _queryRequest, EntryMediaTypes* df) :
 			RetryOnFailureOperation<QueryResponse>(_codec, _transportFactory,
-					_cacheName, _topologyId, _flags), queryRequest(
+					_cacheName, _topologyId, _flags, df), queryRequest(
 					_queryRequest) {}
 	virtual ~QueryOperation();
 
@@ -53,6 +53,7 @@ public:
 
 private:
 	const QueryRequest &queryRequest;
+    friend class OperationsFactory;
 };
 
 

@@ -18,7 +18,7 @@ AuthOperation::~AuthOperation() {
 
 AuthOperation::AuthOperation(Codec& codec, Transport &transport,
                         std::vector<char> &saslMechanism, std::vector<char>& response) :
-             HotRodOperation(codec, 0, std::vector<char>(), topology), codec(codec)
+             HotRodOperation(codec, 0, std::vector<char>(), topology, nullptr), codec(codec)
            , transport(transport),  saslMechanism(saslMechanism), response(response) {
    }
 
