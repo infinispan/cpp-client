@@ -4,6 +4,7 @@
 
 
 #include <infinispan/hotrod/CacheTopologyInfo.h>
+#include <infinispan/hotrod/DataFormat.h>
 #include "infinispan/hotrod/ClientListener.h"
 #include "infinispan/hotrod/ContinuousQueryListener.h"
 #include "infinispan/hotrod/ImportExport.h"
@@ -87,15 +88,12 @@ protected:
 	HR_EXTERN void base_removeClientListener(ClientListener &clientListener);
 	HR_EXTERN void putScript(const std::vector<char>& name, const std::vector<char>& script);
 
-    RemoteCacheBase(TransactionManager& tm, TransactionTable& tt, bool forceReturnValue, bool transactional) : transactionManager(tm), transactionTable(tt), forceReturnValue(forceReturnValue), transactional(transactional) {}
-    RemoteCacheBase& operator=(const RemoteCacheBase other) {
-        this->transactionManager = other.transactionManager;
-        this->transactionTable = other.transactionTable;
-        this->forceReturnValue = other.forceReturnValue;
-        return *this;
-    }
+	HR_EXTERN RemoteCacheBase(TransactionManager& tm, TransactionTable& tt, bool forceReturnValue, bool transactional) : transactionManager(tm), transactionTable(tt), forceReturnValue(forceReturnValue), transactional(transactional) {}
+
+
     HR_EXTERN void setMarshallers(void* rc, MarshallHelperFn kf, MarshallHelperFn vf, UnmarshallHelperFn ukf,
             UnmarshallHelperFn uvf);
+    HR_EXTERN void setRemoteCachePtr(void* ptr);
 #ifndef SWIGCSHARP
     template<class K, class V, typename... Params>
 	void base_addContinuousQueryListener(ContinuousQueryListener<K, V, Params...>& cql) {
@@ -208,14 +206,18 @@ protected:
         this->valueMarshallerFn = valueMarshaller;
     }
 
+    HR_EXTERN void cloneImplWithDataFormat(EntryMediaTypes *df);
     TransactionManager &transactionManager;
+    TransactionTable &transactionTable;
     ValueCopyConstructHelperFn valueCopyConstructor = nullptr;
     ValueDestructorHelperFn valueDestructor = nullptr;
     ValueMarshallerHelperFn valueMarshallerFn = nullptr;
+    void *remoteCachePtr=nullptr; // TODO: pointer to self, is it really necessary?
+    bool forceReturnValue;
+    bool transactional;
 
 private:
     std::shared_ptr<RemoteCacheImpl> impl; // pointer to RemoteCacheImpl;
-    void *remoteCachePtr=nullptr; // TODO: pointer to self, is it really necessary?
     MarshallHelperFn baseKeyMarshallFn;
     MarshallHelperFn baseValueMarshallFn;
     HR_EXTERN void baseKeyMarshall(const void* k, std::vector<char> &buf);
@@ -229,9 +231,6 @@ private:
     void* transactional_base_put(Transaction& currentTransaction, const void* key, const void* val, int64_t life,
             int64_t idle, bool forceRV);
 
-    TransactionTable &transactionTable;
-    bool forceReturnValue;
-    bool transactional;
 
 friend class RemoteCacheManager;
 friend class RemoteCacheImpl;
@@ -244,7 +243,6 @@ friend class ::infinispan::hotrod::event::CacheClientListener;
 template <typename... Params>
 friend class ::infinispan::hotrod::event::ContinuousQueryListener;
 template <class M> friend class RemoteExecution;
-
 #endif
 };
 

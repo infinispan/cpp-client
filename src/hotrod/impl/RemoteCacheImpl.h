@@ -56,13 +56,24 @@ public:
 
     const char *getName() const;
     const std::string& getNameAsString() const;
+    void setDataFormat(EntryMediaTypes* df) { dataFormat = df; }
 private:
+    RemoteCacheImpl(const RemoteCacheImpl& other);
     RemoteCacheManagerImpl& remoteCacheManager;
     std::shared_ptr<operations::OperationsFactory> operationsFactory;
     std::string name;
+    EntryMediaTypes* dataFormat;
 
     void applyDefaultExpirationFlags(uint64_t lifespan, uint64_t maxIdle);
     void assertRemoteCacheManagerIsStarted();
+    friend void RemoteCacheBase::putScript(const std::vector<char>& name, const std::vector<char>& script);
+    friend RemoteCacheBase::RemoteCacheBase(const RemoteCacheBase& other);
+    friend void RemoteCacheBase::baseKeyMarshall(const void* k, std::vector<char> &buf);
+    friend void RemoteCacheBase::baseValueMarshall(const void* v, std::vector<char> &buf);
+    friend void* RemoteCacheBase::baseKeyUnmarshall(const std::vector<char> &buf);
+    friend void* RemoteCacheBase::baseValueUnmarshall(const std::vector<char> &buf);
+    friend void RemoteCacheBase::setMarshallers(void* rc, MarshallHelperFn kf, MarshallHelperFn vf, UnmarshallHelperFn ukf, UnmarshallHelperFn uvf);
+    friend void RemoteCacheBase::cloneImplWithDataFormat(EntryMediaTypes *df);
     friend void RemoteCacheBase::putScript(const std::vector<char>& name, const std::vector<char>& script);
 
 };

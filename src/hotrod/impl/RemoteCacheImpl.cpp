@@ -40,7 +40,10 @@ using namespace protocol;
 using namespace sys;
 
 RemoteCacheImpl::RemoteCacheImpl(RemoteCacheManagerImpl& rcm, const std::string& n)
-    :remoteCacheManager(rcm), name(n) {}
+    :remoteCacheManager(rcm), name(n), dataFormat(nullptr) {}
+
+RemoteCacheImpl::RemoteCacheImpl(const RemoteCacheImpl& other) : remoteCacheManager(other.remoteCacheManager), operationsFactory(other.operationsFactory), name(other.name), dataFormat(nullptr) { }
+
 
 void *RemoteCacheImpl::get(RemoteCacheBase& remoteCacheBase, const void *k) {
     assertRemoteCacheManagerIsStarted();
@@ -48,7 +51,7 @@ void *RemoteCacheImpl::get(RemoteCacheBase& remoteCacheBase, const void *k) {
     remoteCacheBase.baseKeyMarshall(k, kbuf);
     std::vector<char> keyBytes(kbuf.data(), kbuf.data()+kbuf.size());
 
-    std::unique_ptr<GetOperation> gco(operationsFactory->newGetKeyOperation(keyBytes));
+    std::unique_ptr<GetOperation> gco(operationsFactory->newGetKeyOperation(keyBytes, dataFormat));
     std::vector<char> bytes = gco->execute();
     return bytes.data() ? remoteCacheBase.baseValueUnmarshall(bytes) : NULL;
 }
@@ -67,7 +70,7 @@ std::map<std::vector<char>,std::vector<char>> RemoteCacheImpl::getAll(const std:
     // Execute separated GetAllOperations and merge the result
     for (auto item: splittedKeySet)
     {
-        std::unique_ptr<GetAllOperation> gco(operationsFactory->newGetAllOperation(item.second));
+        std::unique_ptr<GetAllOperation> gco(operationsFactory->newGetAllOperation(item.second, dataFormat));
         std::map<std::vector<char>,std::vector<char>> splittedResult = gco->execute();
         result.insert(splittedResult.begin(), splittedResult.end());
     }
@@ -77,7 +80,7 @@ std::map<std::vector<char>,std::vector<char>> RemoteCacheImpl::getAll(const std:
 std::vector<char> RemoteCacheImpl::putraw(const std::vector<char> &k, const std::vector<char> &v, uint64_t life, uint64_t idle) {
     assertRemoteCacheManagerIsStarted();
     applyDefaultExpirationFlags(life, idle);
-    std::unique_ptr<PutOperation> op(operationsFactory->newPutKeyValueOperation(k, v,life,idle));
+    std::unique_ptr<PutOperation> op(operationsFactory->newPutKeyValueOperation(k, v, life,idle, dataFormat));
     return op->execute();
 }
 
@@ -89,7 +92,7 @@ void *RemoteCacheImpl::put(RemoteCacheBase& remoteCacheBase, const void *k, cons
     std::vector<char> keyBytes(kbuf.data(), kbuf.data()+kbuf.size());
     std::vector<char> valueBytes(vbuf.data(), vbuf.data()+vbuf.size());
     applyDefaultExpirationFlags(life, idle);
-    std::unique_ptr<PutOperation> op(operationsFactory->newPutKeyValueOperation(keyBytes, valueBytes,life,idle));
+    std::unique_ptr<PutOperation> op(operationsFactory->newPutKeyValueOperation(keyBytes, valueBytes, life, idle, dataFormat));
     std::vector<char> bytes = op->execute();
     return bytes.data() ? remoteCacheBase.baseValueUnmarshall(bytes) : NULL;
 }
@@ -102,13 +105,13 @@ void *RemoteCacheImpl::putIfAbsent(RemoteCacheBase& remoteCacheBase, const void 
     std::vector<char> keyBytes(kbuf.data(), kbuf.data()+kbuf.size());
     std::vector<char> valueBytes(vbuf.data(), vbuf.data()+vbuf.size());
     applyDefaultExpirationFlags(life, idle);
-    std::unique_ptr<PutIfAbsentOperation> op(operationsFactory->newPutIfAbsentOperation(keyBytes, valueBytes,life,idle));
+    std::unique_ptr<PutIfAbsentOperation> op(operationsFactory->newPutIfAbsentOperation(keyBytes, valueBytes, life, idle, dataFormat));
     std::vector<char> bytes = op->execute();
     return bytes.data() ? remoteCacheBase.baseValueUnmarshall(bytes) : NULL;
 }
 
 PingResult RemoteCacheImpl::ping() {
-	std::unique_ptr<FaultTolerantPingOperation> op(operationsFactory->newFaultTolerantPingOperation());
+	std::unique_ptr<FaultTolerantPingOperation> op(operationsFactory->newFaultTolerantPingOperation(dataFormat));
     return op->execute();
 }
 
@@ -120,7 +123,7 @@ void *RemoteCacheImpl::replace(RemoteCacheBase& remoteCacheBase, const void *k, 
     std::vector<char> keyBytes(kbuf.data(), kbuf.data()+kbuf.size());
     std::vector<char> valueBytes(vbuf.data(), vbuf.data()+vbuf.size());
     applyDefaultExpirationFlags(life, idle);
-    std::unique_ptr<ReplaceOperation> op(operationsFactory->newReplaceOperation(keyBytes, valueBytes,life,idle));
+    std::unique_ptr<ReplaceOperation> op(operationsFactory->newReplaceOperation(keyBytes, valueBytes, life, idle, dataFormat));
     std::vector<char> bytes = op->execute();
     return bytes.data() ? remoteCacheBase.baseValueUnmarshall(bytes) : NULL;
 }
@@ -131,7 +134,7 @@ void *RemoteCacheImpl::remove(RemoteCacheBase& remoteCacheBase, const void* k) {
     remoteCacheBase.baseKeyMarshall(k, kbuf);
     std::vector<char> keyBytes(kbuf.data(), kbuf.data()+kbuf.size());
 
-    std::unique_ptr<RemoveOperation> gco(operationsFactory->newRemoveOperation(keyBytes));
+    std::unique_ptr<RemoveOperation> gco(operationsFactory->newRemoveOperation(keyBytes, dataFormat));
     std::vector<char> bytes = gco->execute();
     return bytes.data() ? remoteCacheBase.baseValueUnmarshall(bytes) : NULL;
 }
@@ -142,7 +145,7 @@ bool RemoteCacheImpl::containsKey(RemoteCacheBase& remoteCacheBase, const void* 
     remoteCacheBase.baseKeyMarshall(k, kbuf);
     std::vector<char> keyBytes(kbuf.data(), kbuf.data()+kbuf.size());
     std::unique_ptr<ContainsKeyOperation> gco(
-        operationsFactory->newContainsKeyOperation(keyBytes));
+        operationsFactory->newContainsKeyOperation(keyBytes, dataFormat));
     return gco->execute();
 }
 
@@ -156,7 +159,7 @@ bool RemoteCacheImpl::replaceWithVersion(RemoteCacheBase& remoteCacheBase,
     std::vector<char> keyBytes(kbuf.data(), kbuf.data()+kbuf.size());
     std::vector<char> valueBytes(vbuf.data(), vbuf.data()+vbuf.size());
 
-    std::unique_ptr<ReplaceIfUnmodifiedOperation> op(operationsFactory->newReplaceIfUnmodifiedOperation(keyBytes, valueBytes,life,idle,version));
+    std::unique_ptr<ReplaceIfUnmodifiedOperation> op(operationsFactory->newReplaceIfUnmodifiedOperation(keyBytes, valueBytes, life, idle, version, dataFormat));
     VersionedOperationResponse response = op->execute();
     return response.isUpdated();
 }
@@ -167,7 +170,7 @@ bool RemoteCacheImpl::removeWithVersion(RemoteCacheBase& remoteCacheBase, const 
     remoteCacheBase.baseKeyMarshall(k, kbuf);
     std::vector<char> keyBytes(kbuf.data(), kbuf.data()+kbuf.size());
 
-    std::unique_ptr<RemoveIfUnmodifiedOperation> gco(operationsFactory->newRemoveIfUnmodifiedOperation(keyBytes, version));
+    std::unique_ptr<RemoveIfUnmodifiedOperation> gco(operationsFactory->newRemoveIfUnmodifiedOperation(keyBytes, version, dataFormat));
     VersionedOperationResponse response = gco->execute();
     return response.isUpdated();
 }
@@ -178,7 +181,7 @@ void *RemoteCacheImpl::getWithVersion(RemoteCacheBase& remoteCacheBase, const vo
     std::vector<char> kbuf, obuf;
     remoteCacheBase.baseKeyMarshall(k, kbuf);
     std::vector<char> keyBytes(kbuf.data(), kbuf.data()+kbuf.size());
-    std::unique_ptr<GetWithVersionOperation> gco(operationsFactory->newGetWithVersionOperation(keyBytes));
+    std::unique_ptr<GetWithVersionOperation> gco(operationsFactory->newGetWithVersionOperation(keyBytes, dataFormat));
     VersionedValueImpl<std::vector<char>> m = gco->execute();
     obuf=m.getValue();
     version->version = m.version;
@@ -191,7 +194,7 @@ void *RemoteCacheImpl::getWithMetadata(RemoteCacheBase& remoteCacheBase, const v
     std::vector<char> kbuf, obuf;
     remoteCacheBase.baseKeyMarshall(k, kbuf);
     std::vector<char> keyBytes(kbuf.data(), kbuf.data()+kbuf.size());
-    std::unique_ptr<GetWithMetadataOperation> gco(operationsFactory->newGetWithMetadataOperation(keyBytes));
+    std::unique_ptr<GetWithMetadataOperation> gco(operationsFactory->newGetWithMetadataOperation(keyBytes, dataFormat));
     MetadataValueImpl<std::vector<char>> m = gco->execute();
     obuf=m.getValue();
     metadata->version = m.version;
@@ -208,7 +211,7 @@ void RemoteCacheImpl::getBulk(RemoteCacheBase& remoteCacheBase, std::map<void*, 
 
 void RemoteCacheImpl::getBulk(RemoteCacheBase& remoteCacheBase, int isize, std::map<void*, void*> &map) {
     assertRemoteCacheManagerIsStarted();
-    std::unique_ptr<BulkGetOperation> gco(operationsFactory->newBulkGetOperation(isize));
+    std::unique_ptr<BulkGetOperation> gco(operationsFactory->newBulkGetOperation(isize, dataFormat));
     std::map<std::vector<char>,std::vector<char>> res = gco->execute();
     for (auto it = res.begin(); it != res.end(); ++it)
     {
@@ -218,7 +221,7 @@ void RemoteCacheImpl::getBulk(RemoteCacheBase& remoteCacheBase, int isize, std::
 
 void RemoteCacheImpl::keySet(RemoteCacheBase& remoteCacheBase, int scope, std::vector<void*> &result) {
     assertRemoteCacheManagerIsStarted();
-    std::unique_ptr<BulkGetKeysOperation> gco(operationsFactory->newBulkGetKeysOperation(scope));
+    std::unique_ptr<BulkGetKeysOperation> gco(operationsFactory->newBulkGetKeysOperation(scope, dataFormat));
     std::set<std::vector<char>> res = gco->execute();
     for(auto it=res.begin(); it!=res.end(); it++)
     {
@@ -228,19 +231,19 @@ void RemoteCacheImpl::keySet(RemoteCacheBase& remoteCacheBase, int scope, std::v
 
 void RemoteCacheImpl::stats(std::map<std::string, std::string> &statistics) {
     assertRemoteCacheManagerIsStarted();
-    std::unique_ptr<StatsOperation> gco(operationsFactory->newStatsOperation());
+    std::unique_ptr<StatsOperation> gco(operationsFactory->newStatsOperation(dataFormat));
     statistics = gco->execute();
 }
 
 void RemoteCacheImpl::clear() {
     assertRemoteCacheManagerIsStarted();
-    std::unique_ptr<ClearOperation> gco(operationsFactory->newClearOperation());
+    std::unique_ptr<ClearOperation> gco(operationsFactory->newClearOperation(dataFormat));
     gco->execute();
 }
 
 uint64_t RemoteCacheImpl::size() {
     assertRemoteCacheManagerIsStarted();
-    std::unique_ptr<SizeOperation> szo(operationsFactory->newSizeOperation());
+    std::unique_ptr<SizeOperation> szo(operationsFactory->newSizeOperation(dataFormat));
     return szo->execute();
 }
 
@@ -281,13 +284,13 @@ void RemoteCacheImpl::assertRemoteCacheManagerIsStarted() {
 std::vector<char> RemoteCacheImpl::execute(std::vector<char> cmdNameBytes, const std::map<std::vector<char>,std::vector<char>>& args) {
 	assertRemoteCacheManagerIsStarted();
 
-    std::unique_ptr<ExecuteCmdOperation> op(operationsFactory->newExecuteCmdOperation(cmdNameBytes, args));
+    std::unique_ptr<ExecuteCmdOperation> op(operationsFactory->newExecuteCmdOperation(cmdNameBytes, args, dataFormat));
     return op->execute();
 
 }
 
 QueryResponse RemoteCacheImpl::query(const QueryRequest &qr) {
-	std::unique_ptr<QueryOperation> op(operationsFactory->newQueryOperation(qr));
+	std::unique_ptr<QueryOperation> op(operationsFactory->newQueryOperation(qr, dataFormat));
 	return op->execute();
 }
 
@@ -300,28 +303,28 @@ void RemoteCacheImpl::addClientListener(ClientListener& clientListener, const st
 	// Special behaviour for this operation. op will be keep by the dispatcher and reused if needed
 	// so op is not to be destroyed here.
 	// TODO: Maybe a good move semantic implementation for Add operation can uniform the code
-    auto op = std::shared_ptr<AddClientListenerOperation>(operationsFactory->newAddClientListenerOperation(clientListener, remoteCacheManager.getListenerNotifier(), filterFactoryParam, converterFactoryParams, recoveryCallback));
+    auto op = std::shared_ptr<AddClientListenerOperation>(operationsFactory->newAddClientListenerOperation(clientListener, remoteCacheManager.getListenerNotifier(), filterFactoryParam, converterFactoryParams, recoveryCallback, dataFormat));
     op->execute();
 }
 
 void RemoteCacheImpl::removeClientListener(ClientListener& clientListener) {
-    RemoveClientListenerOperation *rclo = operationsFactory->newRemoveClientListenerOperation(clientListener, remoteCacheManager.getListenerNotifier());
+    RemoveClientListenerOperation *rclo = operationsFactory->newRemoveClientListenerOperation(clientListener, remoteCacheManager.getListenerNotifier(), dataFormat);
     std::unique_ptr<RemoveClientListenerOperation> op(rclo);
     op->execute();
 }
 
 uint32_t RemoteCacheImpl::prepareCommit(XID xid, TransactionContext& tctx) {
-    auto pco =  std::unique_ptr<PrepareCommitOperation>(operationsFactory->newPrepareCommitOperation(xid, tctx));
+    auto pco =  std::unique_ptr<PrepareCommitOperation>(operationsFactory->newPrepareCommitOperation(xid, tctx, dataFormat));
     return pco->execute();
 }
 
 uint32_t RemoteCacheImpl::commit(XID xid, TransactionContext& tctx) {
-    auto co =  std::unique_ptr<CommitOperation>(operationsFactory->newCommitOperation(xid, tctx));
+    auto co =  std::unique_ptr<CommitOperation>(operationsFactory->newCommitOperation(xid, tctx, dataFormat));
     return co->execute();
 }
 
 uint32_t RemoteCacheImpl::rollback(XID xid, TransactionContext& tctx) {
-    auto co =  std::unique_ptr<RollbackOperation>(operationsFactory->newRollbackOperation(xid, tctx));
+    auto co =  std::unique_ptr<RollbackOperation>(operationsFactory->newRollbackOperation(xid, tctx, dataFormat));
     return co->execute();
 }
 

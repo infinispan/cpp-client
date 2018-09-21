@@ -13,6 +13,9 @@ namespace hotrod {
 
 #define IMPL ((RemoteCacheImpl *) impl.get())
 
+void RemoteCacheBase::setRemoteCachePtr(void* ptr) {
+    remoteCachePtr = ptr;
+}
 void RemoteCacheBase::setMarshallers(void* rc, MarshallHelperFn kf, MarshallHelperFn vf, UnmarshallHelperFn ukf, UnmarshallHelperFn uvf) {
     remoteCachePtr = rc;
     baseKeyMarshallFn = kf;
@@ -21,7 +24,7 @@ void RemoteCacheBase::setMarshallers(void* rc, MarshallHelperFn kf, MarshallHelp
     baseValueUnmarshallFn = uvf;
     valueMarshallerFn = [this] (const void * v, std::vector<char> & mv) { this->baseValueMarshallFn(this, v, mv); };
 }
-    
+
 void RemoteCacheBase::baseKeyMarshall(const void* k, std::vector<char> &buf) {
     baseKeyMarshallFn(remoteCachePtr, k, buf);
 }
@@ -423,6 +426,7 @@ void RemoteCacheBase::base_removeClientListener(ClientListener& clientListener)
 void RemoteCacheBase::putScript(const std::vector<char>& name, const std::vector<char>& script) {
     std::shared_ptr<RemoteCacheImpl> rcImpl = this->impl->remoteCacheManager.createRemoteCache("___script_cache", false,
             NearCacheConfiguration());
+    rcImpl->setDataFormat(this->impl->dataFormat);
     rcImpl->putraw(name, script, 0, 0);
 }
 
@@ -437,6 +441,10 @@ uint32_t RemoteCacheBase::base_commit(XID xid, TransactionContext& tctx) {
 uint32_t RemoteCacheBase::base_rollback(XID xid, TransactionContext& tctx) {
     return IMPL->rollback(xid, tctx);
 }
+
+void RemoteCacheBase::cloneImplWithDataFormat(EntryMediaTypes *df) {
+    impl.reset(new RemoteCacheImpl(*impl));
+    impl->setDataFormat(df); }
 
 }
 } /* namespace */
