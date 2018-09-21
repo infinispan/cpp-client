@@ -17,9 +17,10 @@ BulkGetKeysOperation::BulkGetKeysOperation(
     const std::vector<char>&    cacheName_,
     Topology&  topologyId_,
     uint32_t    flags_,
-    int32_t  scope_)
+    int32_t  scope_,
+    EntryMediaTypes* df)
     : RetryOnFailureOperation<std::set<std::vector<char>> >(
-        codec_, transportFactory_, cacheName_, topologyId_, flags_), scope(scope_)
+        codec_, transportFactory_, cacheName_, topologyId_, flags_, df), scope(scope_)
 {}
 
 std::set<std::vector<char>> BulkGetKeysOperation::executeOperation(Transport& transport)

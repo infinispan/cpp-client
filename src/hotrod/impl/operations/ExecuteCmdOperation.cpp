@@ -16,9 +16,10 @@ ExecuteCmdOperation::ExecuteCmdOperation(
     Topology&  topologyId_,
     uint32_t          flags_,
     const std::vector<char>&    cmdName_,
-    const std::map<std::vector<char>,std::vector<char>>&   cmdArgs_)
+    const std::map<std::vector<char>,std::vector<char>>&   cmdArgs_,
+	EntryMediaTypes* df)
     : RetryOnFailureOperation<std::vector<char>>(
-        codec_, transportFactory_, cacheName_, topologyId_, flags_), cmdName(cmdName_), cmdArgs(cmdArgs_)
+        codec_, transportFactory_, cacheName_, topologyId_, flags_, df), cmdName(cmdName_), cmdArgs(cmdArgs_)
 {}
 
 std::vector<char> ExecuteCmdOperation::executeOperation(Transport& transport) {

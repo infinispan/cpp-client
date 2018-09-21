@@ -40,195 +40,255 @@ using namespace protocol;
 using namespace transport;
 
 OperationsFactory::OperationsFactory(
-    std::shared_ptr<infinispan::hotrod::transport::TransportFactory> tf, const std::string& cn,
-    bool frv, const Codec& c) :
-        transportFactory(tf), codec(c), forceReturnValue(frv), flags(), cacheNameBytes(cn.begin(),cn.end())
-{
-	if (transportFactory)
-	{
-	  topologyId=transportFactory->createTopologyId(cacheNameBytes);
+		std::shared_ptr<infinispan::hotrod::transport::TransportFactory> tf,
+		const std::string& cn, bool frv, infinispan::hotrod::protocol::Codec& c) :
+		transportFactory(tf), codec(c), forceReturnValue(frv), flags(), cacheNameBytes(
+				cn.begin(), cn.end()) {
+	if (transportFactory) {
+		topologyId = transportFactory->createTopologyId(cacheNameBytes);
 	}
 }
 
-PingOperation* OperationsFactory::newPingOperation(Transport& transport)
-{
-    return new PingOperation(codec, topologyId, transport, cacheNameBytes);
+PingOperation* OperationsFactory::newPingOperation(Transport& transport,
+		EntryMediaTypes* df) {
+	infinispan::hotrod::operations::PingOperation* pingOperation =
+			new PingOperation(codec, topologyId, transport, cacheNameBytes, df);
+	return pingOperation;
 }
 
-GetOperation* OperationsFactory::newGetKeyOperation(const std::vector<char>& key)
-{
-    return new GetOperation(
-        codec, transportFactory, key, cacheNameBytes, topologyId, getFlags());
+GetOperation* OperationsFactory::newGetKeyOperation(
+		const std::vector<char>& key, EntryMediaTypes* df) {
+	infinispan::hotrod::operations::GetOperation* operation = new GetOperation(
+			codec, transportFactory, key, cacheNameBytes, topologyId,
+			getFlags(), df);
+	return operation;
 }
 
-GetAllOperation* OperationsFactory::newGetAllOperation(const std::set<std::vector<char>>& keySet)
-{
-	return new GetAllOperation(codec, transportFactory, keySet, cacheNameBytes, topologyId, getFlags());
+GetAllOperation* OperationsFactory::newGetAllOperation(
+		const std::set<std::vector<char>>& keySet, EntryMediaTypes* df) {
+	infinispan::hotrod::operations::GetAllOperation* allOperation =
+			new GetAllOperation(codec, transportFactory, keySet, cacheNameBytes,
+					topologyId, getFlags(), df);
+	return allOperation;
 }
-
 
 PutOperation* OperationsFactory::newPutKeyValueOperation(
-    const std::vector<char>& key, const std::vector<char>& value,
-    uint32_t lifespanSecs, uint32_t maxIdleSecs)
-{
-    return new PutOperation(
-        codec, transportFactory, key, cacheNameBytes,
-        topologyId, getFlags(), value, lifespanSecs, maxIdleSecs);
+		const std::vector<char>& key, const std::vector<char>& value,
+		uint32_t lifespanSecs, uint32_t maxIdleSecs, EntryMediaTypes* df) {
+	infinispan::hotrod::operations::PutOperation* putOperation =
+			new PutOperation(codec, transportFactory, key, cacheNameBytes,
+					topologyId, getFlags(), value, lifespanSecs, maxIdleSecs, df);
+	return putOperation;
 }
 
 PutIfAbsentOperation* OperationsFactory::newPutIfAbsentOperation(
-    const std::vector<char>& key, const std::vector<char>& value,
-    uint32_t lifespanSecs, uint32_t maxIdleSecs)
-{
-    return new PutIfAbsentOperation(
-        codec, transportFactory, key, cacheNameBytes,
-        topologyId, getFlags(), value, lifespanSecs, maxIdleSecs);
+		const std::vector<char>& key, const std::vector<char>& value,
+		uint32_t lifespanSecs, uint32_t maxIdleSecs, EntryMediaTypes* df) {
+	infinispan::hotrod::operations::PutIfAbsentOperation* putIfAbsentOperation =
+			new PutIfAbsentOperation(codec, transportFactory, key,
+					cacheNameBytes, topologyId, getFlags(), value, lifespanSecs,
+					maxIdleSecs, df);
+	return putIfAbsentOperation;
 }
 
 ReplaceOperation* OperationsFactory::newReplaceOperation(
-    const std::vector<char>& key, const std::vector<char>& value,
-    uint32_t lifespanSecs, uint32_t maxIdleSecs)
-{
-    return new ReplaceOperation(
-        codec, transportFactory, key, cacheNameBytes,
-        topologyId, getFlags(), value, lifespanSecs, maxIdleSecs);
+		const std::vector<char>& key, const std::vector<char>& value,
+		uint32_t lifespanSecs, uint32_t maxIdleSecs, EntryMediaTypes* df) {
+	infinispan::hotrod::operations::ReplaceOperation* replaceOperation =
+			new ReplaceOperation(codec, transportFactory, key, cacheNameBytes,
+					topologyId, getFlags(), value, lifespanSecs, maxIdleSecs, df);
+	return replaceOperation;
 }
 
-RemoveOperation* OperationsFactory::newRemoveOperation(const std::vector<char>& key) {
-    return new RemoveOperation(
-        codec, transportFactory, key, cacheNameBytes, topologyId, getFlags());
+RemoveOperation* OperationsFactory::newRemoveOperation(
+		const std::vector<char>& key, EntryMediaTypes* df) {
+	infinispan::hotrod::operations::RemoveOperation* removeOperation =
+			new RemoveOperation(codec, transportFactory, key, cacheNameBytes,
+					topologyId, getFlags(), df);
+	return removeOperation;
 }
 
-ContainsKeyOperation* OperationsFactory::newContainsKeyOperation(const std::vector<char>& key) {
-    return new ContainsKeyOperation(
-        codec, transportFactory, key, cacheNameBytes, topologyId, getFlags());
+ContainsKeyOperation* OperationsFactory::newContainsKeyOperation(
+		const std::vector<char>& key, EntryMediaTypes* df) {
+	infinispan::hotrod::operations::ContainsKeyOperation* containsKeyOperation =
+			new ContainsKeyOperation(codec, transportFactory, key,
+					cacheNameBytes, topologyId, getFlags(), df);
+	return containsKeyOperation;
 }
 
 ReplaceIfUnmodifiedOperation* OperationsFactory::newReplaceIfUnmodifiedOperation(
-    const std::vector<char>& key, const std::vector<char>& value,
-    uint32_t lifespanSecs, uint32_t maxIdleSecs, int64_t version)
-{
-    return new ReplaceIfUnmodifiedOperation(
-        codec, transportFactory, key, cacheNameBytes,
-        topologyId, getFlags(), value, lifespanSecs, maxIdleSecs, version);
+		const std::vector<char>& key, const std::vector<char>& value,
+		uint32_t lifespanSecs, uint32_t maxIdleSecs, int64_t version,
+		EntryMediaTypes* df) {
+	infinispan::hotrod::operations::ReplaceIfUnmodifiedOperation* replaceIfUnmodifiedOperation =
+			new ReplaceIfUnmodifiedOperation(codec, transportFactory, key,
+					cacheNameBytes, topologyId, getFlags(), value, lifespanSecs,
+					maxIdleSecs, version, df);
+	return replaceIfUnmodifiedOperation;
 }
 
 RemoveIfUnmodifiedOperation* OperationsFactory::newRemoveIfUnmodifiedOperation(
-    const std::vector<char>& key, int64_t version)
-{
-    return new RemoveIfUnmodifiedOperation(
-        codec, transportFactory, key, cacheNameBytes, topologyId, getFlags(), version);
+		const std::vector<char>& key, int64_t version, EntryMediaTypes* df) {
+	infinispan::hotrod::operations::RemoveIfUnmodifiedOperation* removeIfUnmodifiedOperation =
+			new RemoveIfUnmodifiedOperation(codec, transportFactory, key,
+					cacheNameBytes, topologyId, getFlags(), version, df);
+	return removeIfUnmodifiedOperation;
 }
 
-GetWithMetadataOperation* OperationsFactory::newGetWithMetadataOperation(const std::vector<char>& key) {
-    return new GetWithMetadataOperation(
-        codec, transportFactory, key, cacheNameBytes, topologyId, getFlags());
+GetWithMetadataOperation* OperationsFactory::newGetWithMetadataOperation(
+		const std::vector<char>& key, EntryMediaTypes* df) {
+	infinispan::hotrod::operations::GetWithMetadataOperation* withMetadataOperation =
+			new GetWithMetadataOperation(codec, transportFactory, key,
+					cacheNameBytes, topologyId, getFlags(), df);
+	return withMetadataOperation;
 }
 
-GetWithVersionOperation* OperationsFactory::newGetWithVersionOperation(const std::vector<char>& key) {
-    return new GetWithVersionOperation(
-        codec, transportFactory, key, cacheNameBytes, topologyId, getFlags());
+GetWithVersionOperation* OperationsFactory::newGetWithVersionOperation(
+		const std::vector<char>& key, EntryMediaTypes* df) {
+	infinispan::hotrod::operations::GetWithVersionOperation* withVersionOperation =
+			new GetWithVersionOperation(codec, transportFactory, key,
+					cacheNameBytes, topologyId, getFlags(), df);
+	return withVersionOperation;
 }
 
-BulkGetOperation* OperationsFactory::newBulkGetOperation(int size) {
-    return new BulkGetOperation(
-        codec, transportFactory, cacheNameBytes, topologyId, getFlags(), size);
+BulkGetOperation* OperationsFactory::newBulkGetOperation(int size,
+		EntryMediaTypes* df) {
+	infinispan::hotrod::operations::BulkGetOperation* bulkGetOperation =
+			new BulkGetOperation(codec, transportFactory, cacheNameBytes,
+					topologyId, getFlags(), size, df);
+	return bulkGetOperation;
 }
 
-BulkGetKeysOperation* OperationsFactory::newBulkGetKeysOperation(int scope) {
-    return new BulkGetKeysOperation(
-        codec, transportFactory, cacheNameBytes, topologyId, getFlags(), scope);
+BulkGetKeysOperation* OperationsFactory::newBulkGetKeysOperation(int scope,
+		EntryMediaTypes* df) {
+	infinispan::hotrod::operations::BulkGetKeysOperation* bulkGetKeysOperation =
+			new BulkGetKeysOperation(codec, transportFactory, cacheNameBytes,
+					topologyId, getFlags(), scope, df);
+	return bulkGetKeysOperation;
 }
 
-StatsOperation* OperationsFactory::newStatsOperation() {
-    return new StatsOperation(
-        codec, transportFactory, cacheNameBytes, topologyId, getFlags());
+StatsOperation* OperationsFactory::newStatsOperation(EntryMediaTypes* df) {
+	infinispan::hotrod::operations::StatsOperation* statsOperation =
+			new StatsOperation(codec, transportFactory, cacheNameBytes,
+					topologyId, getFlags(), df);
+	return statsOperation;
 }
 
-ClearOperation* OperationsFactory::newClearOperation() {
-    return new ClearOperation(
-        codec, transportFactory, cacheNameBytes, topologyId, getFlags());
+ClearOperation* OperationsFactory::newClearOperation(EntryMediaTypes* df) {
+	return new ClearOperation(codec, transportFactory, cacheNameBytes,
+			topologyId, getFlags(), df);
 }
 
-SizeOperation* OperationsFactory::newSizeOperation() {
-    return new SizeOperation(
-        codec, transportFactory, cacheNameBytes, topologyId, getFlags());
+SizeOperation* OperationsFactory::newSizeOperation(EntryMediaTypes* df) {
+	infinispan::hotrod::operations::SizeOperation* sizeOperation =
+			new SizeOperation(codec, transportFactory, cacheNameBytes,
+					topologyId, getFlags(), df);
+	return sizeOperation;
 }
 
-FaultTolerantPingOperation* OperationsFactory::newFaultTolerantPingOperation() {
-    return new FaultTolerantPingOperation(
-        codec, transportFactory, cacheNameBytes, topologyId, getFlags());
+FaultTolerantPingOperation* OperationsFactory::newFaultTolerantPingOperation(
+		EntryMediaTypes* df) {
+	infinispan::hotrod::operations::FaultTolerantPingOperation* faultTolerantPingOperation =
+			new FaultTolerantPingOperation(codec, transportFactory,
+					cacheNameBytes, topologyId, getFlags(), df);
+	return faultTolerantPingOperation;
 }
 
 ExecuteCmdOperation* OperationsFactory::newExecuteCmdOperation(
-    const std::vector<char>& cmdName, const std::map<std::vector<char>,std::vector<char>>& values)
-{
-    return new ExecuteCmdOperation(
-        codec, transportFactory, cacheNameBytes,
-        topologyId, getFlags(), cmdName, values);
+		const std::vector<char>& cmdName,
+		const std::map<std::vector<char>, std::vector<char>>& values,
+		EntryMediaTypes* df) {
+	infinispan::hotrod::operations::ExecuteCmdOperation* executeCmdOperation =
+			new ExecuteCmdOperation(codec, transportFactory, cacheNameBytes,
+					topologyId, getFlags(), cmdName, values, df);
+	return executeCmdOperation;
 }
 
-QueryOperation* OperationsFactory::newQueryOperation(const QueryRequest& qr)
-{
-	return new QueryOperation(codec, transportFactory, cacheNameBytes,
-	        topologyId, getFlags(), qr);
+QueryOperation* OperationsFactory::newQueryOperation(const QueryRequest& qr,
+		EntryMediaTypes* df) {
+	infinispan::hotrod::operations::QueryOperation* queryOperation =
+			new QueryOperation(codec, transportFactory, cacheNameBytes,
+					topologyId, getFlags(), qr, df);
+	return queryOperation;
 }
 
 uint32_t OperationsFactory::getFlags() {
-    uint32_t result = flags;
-    if (forceReturnValue) {
-        result |= FORCE_RETURN_VALUE;
-    }
-    flags = 0;
-    return result;
+	uint32_t result = flags;
+	if (forceReturnValue) {
+		result |= FORCE_RETURN_VALUE;
+	}
+	flags = 0;
+	return result;
 }
-AddClientListenerOperation* OperationsFactory::newAddClientListenerOperation(ClientListener& listener, ClientListenerNotifier& listenerNotifier,const std::vector<std::vector<char> > filterFactoryParam, const std::vector<std::vector<char> > converterFactoryParams, const std::function<void()> &recoveryCallback) {
-   return new AddClientListenerOperation(codec, transportFactory,
-         cacheNameBytes, topologyId, getFlags(), listenerNotifier,
-         listener,  filterFactoryParam, converterFactoryParams, recoveryCallback);
-}
-
-RemoveClientListenerOperation* OperationsFactory::newRemoveClientListenerOperation(ClientListener& listener, ClientListenerNotifier& listenerNotifier)
-{
-   return new RemoveClientListenerOperation(codec, transportFactory,
-	         cacheNameBytes, topologyId, getFlags(), listenerNotifier,
-	         listener);
-}
-
-PrepareCommitOperation* OperationsFactory::newPrepareCommitOperation(XID xid, TransactionContext& tctx) {
-    return new PrepareCommitOperation(codec, transportFactory, cacheNameBytes, topologyId, getFlags(), xid, tctx);
+AddClientListenerOperation* OperationsFactory::newAddClientListenerOperation(
+		ClientListener& listener, ClientListenerNotifier& listenerNotifier,
+		const std::vector<std::vector<char> > filterFactoryParam,
+		const std::vector<std::vector<char> > converterFactoryParams,
+		const std::function<void()> &recoveryCallback, EntryMediaTypes* df) {
+	infinispan::hotrod::operations::AddClientListenerOperation* addClientListenerOperation =
+			new AddClientListenerOperation(codec, transportFactory,
+					cacheNameBytes, topologyId, getFlags(), listenerNotifier,
+					listener, filterFactoryParam, converterFactoryParams,
+					recoveryCallback, df);
+	return addClientListenerOperation;
 }
 
-CommitOperation* OperationsFactory::newCommitOperation(XID xid, TransactionContext& tctx) {
-    return new CommitOperation(codec, transportFactory, cacheNameBytes, topologyId, getFlags(), xid, tctx);
+RemoveClientListenerOperation* OperationsFactory::newRemoveClientListenerOperation(
+		ClientListener& listener, ClientListenerNotifier& listenerNotifier,
+		EntryMediaTypes* df) {
+	infinispan::hotrod::operations::RemoveClientListenerOperation* removeClientListenerOperation =
+			new RemoveClientListenerOperation(codec, transportFactory,
+					cacheNameBytes, topologyId, getFlags(), listenerNotifier,
+					listener, df);
+	return removeClientListenerOperation;
 }
 
-RollbackOperation* OperationsFactory::newRollbackOperation(XID xid, TransactionContext& tctx) {
-    return new RollbackOperation(codec, transportFactory, cacheNameBytes, topologyId, getFlags(), xid, tctx);
+PrepareCommitOperation* OperationsFactory::newPrepareCommitOperation(XID xid,
+		TransactionContext& tctx, EntryMediaTypes* df) {
+	infinispan::hotrod::operations::PrepareCommitOperation* prepareCommitOperation =
+			new PrepareCommitOperation(codec, transportFactory, cacheNameBytes,
+					topologyId, getFlags(), xid, tctx, df);
+	return prepareCommitOperation;
+}
+
+CommitOperation* OperationsFactory::newCommitOperation(XID xid,
+		TransactionContext& tctx, EntryMediaTypes* df) {
+	infinispan::hotrod::operations::CommitOperation* commitOperation =
+			new CommitOperation(codec, transportFactory, cacheNameBytes,
+					topologyId, getFlags(), xid, tctx, df);
+	return commitOperation;
+}
+
+RollbackOperation* OperationsFactory::newRollbackOperation(XID xid,
+		TransactionContext& tctx, EntryMediaTypes* df) {
+	infinispan::hotrod::operations::RollbackOperation* rollbackOperation =
+			new RollbackOperation(codec, transportFactory, cacheNameBytes,
+					topologyId, getFlags(), xid, tctx, df);
+	return rollbackOperation;
 }
 
 void OperationsFactory::addFlags(uint32_t f) {
-    flags |= f;
+	flags |= f;
 }
 
 void OperationsFactory::setFlags(uint32_t f) {
-    flags = f;
+	flags = f;
 }
 
 AdminOperation* OperationsFactory::newAdminOperation(
-    const std::vector<char>& cmdName, const std::map<std::vector<char>,std::vector<char>>& values)
-{
-    return new AdminOperation(
-        codec, transportFactory, cacheNameBytes,
-        topologyId, getFlags(), cmdName, values);
+		const std::vector<char>& cmdName,
+		const std::map<std::vector<char>, std::vector<char>>& values) {
+	infinispan::hotrod::operations::AdminOperation* adminOperation =
+			new AdminOperation(codec, transportFactory, cacheNameBytes,
+					topologyId, getFlags(), cmdName, values);
+	return adminOperation;
 }
 
 CacheTopologyInfo infinispan::hotrod::operations::OperationsFactory::getCacheTopologyInfo() {
-	    	return transportFactory->getCacheTopologyInfo(cacheNameBytes);
-	    }
+	return transportFactory->getCacheTopologyInfo(cacheNameBytes);
+}
 
 }
 }
 } // namespace infinispan::hotrod::operations
-
 

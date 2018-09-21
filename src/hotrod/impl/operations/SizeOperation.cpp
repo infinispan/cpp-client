@@ -12,9 +12,10 @@ SizeOperation::SizeOperation(
     std::shared_ptr<TransportFactory> transportFactory_,
     const std::vector<char>&    cacheName_,
     Topology&  topologyId_,
-    uint32_t    flags_)
+    uint32_t    flags_,
+    EntryMediaTypes* df)
     : RetryOnFailureOperation<uint64_t>(
-        codec_, transportFactory_, cacheName_, topologyId_, flags_)
+        codec_, transportFactory_, cacheName_, topologyId_, flags_, df)
 {}
 
 uint64_t SizeOperation::executeOperation(infinispan::hotrod::transport::Transport& transport)

@@ -13,9 +13,10 @@ RemoveOperation::RemoveOperation(
     const std::vector<char>&    key_,
     const std::vector<char>&    cacheName_,
     Topology&  topologyId_,
-    uint32_t    flags_)
+    uint32_t    flags_,
+    EntryMediaTypes* df)
     : AbstractKeyOperation<std::vector<char>>(
-        codec_, transportFactory_, key_, cacheName_, topologyId_, flags_)
+        codec_, transportFactory_, key_, cacheName_, topologyId_, flags_, df)
 {}
 
 std::vector<char> RemoveOperation::executeOperation(Transport& transport)

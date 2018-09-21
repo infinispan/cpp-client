@@ -25,7 +25,8 @@ class BulkGetOperation : public RetryOnFailureOperation<std::map<std::vector<cha
             const std::vector<char>&                                   cacheName_,
             Topology&                                 topologyId_,
             uint32_t                                   flags_,
-            int                                    entryCount_);
+            int                                    entryCount_,
+            EntryMediaTypes* df);
 
         std::map<std::vector<char>,std::vector<char>> executeOperation(infinispan::hotrod::transport::Transport& transport);
     private:

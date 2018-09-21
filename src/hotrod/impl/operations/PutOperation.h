@@ -27,7 +27,8 @@ class PutOperation : public AbstractKeyValueOperation<std::vector<char>>
             uint32_t                                         flags_,
             const std::vector<char>&                                   value_,
             uint32_t                                         lifespan_,
-            uint32_t                                         maxIdle_);
+            uint32_t                                         maxIdle_,
+            EntryMediaTypes* df);
 
     friend class OperationsFactory;
 };

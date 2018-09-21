@@ -11,13 +11,13 @@ using transport::Transport;
 namespace operations {
 
 PingOperation::PingOperation(const Codec& c, Topology& id,
-		Transport& t, const std::vector<char>& n)
-    : HotRodOperation<PingResult>(c, 0, n, id), transport(t)
+		Transport& t, const std::vector<char>& n, EntryMediaTypes* df)
+    : HotRodOperation<PingResult>(c, 0, n, id, df), transport(t)
 {}
 
 PingOperation::PingOperation(const Codec& c, Topology& id,
-		Transport& t)
-    : HotRodOperation<PingResult>(c, 0, std::vector<char>(), id), transport(t)
+		Transport& t, EntryMediaTypes* df)
+    : HotRodOperation<PingResult>(c, 0, std::vector<char>(), id, df), transport(t)
 {}
 
 PingResult PingOperation::execute() {

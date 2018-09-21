@@ -12,9 +12,10 @@ ClearOperation::ClearOperation(
     std::shared_ptr<TransportFactory> transportFactory_,
     const std::vector<char>&    cacheName_,
     Topology&  topologyId_,
-    uint32_t    flags_)
+    uint32_t    flags_,
+    EntryMediaTypes* df)
     : RetryOnFailureOperation<std::vector<char>>(
-        codec_, transportFactory_, cacheName_, topologyId_, flags_)
+        codec_, transportFactory_, cacheName_, topologyId_, flags_, df)
 {}
 
 std::vector<char> ClearOperation::executeOperation(infinispan::hotrod::transport::Transport& transport)

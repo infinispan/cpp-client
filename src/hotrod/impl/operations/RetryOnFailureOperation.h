@@ -59,8 +59,8 @@ template<class T> class RetryOnFailureOperation : public HotRodOperation<T>
     RetryOnFailureOperation(
         const protocol::Codec& _codec,
         std::shared_ptr<transport::TransportFactory> _transportFactory,
-        const std::vector<char>& _cacheName, Topology& _topologyId, uint32_t _flags) :
-            HotRodOperation<T>(_codec, _flags, _cacheName, _topologyId),
+        const std::vector<char>& _cacheName, Topology& _topologyId, uint32_t _flags, EntryMediaTypes* df) :
+            HotRodOperation<T>(_codec, _flags, _cacheName, _topologyId, df),
             transportFactory(_transportFactory) {}
 
     bool shouldRetry(int retryCount) {
@@ -150,8 +150,8 @@ template<> class RetryOnFailureOperation<void> : public HotRodOperation<void>
     RetryOnFailureOperation(
         const protocol::Codec& _codec,
         std::shared_ptr<transport::TransportFactory> _transportFactory,
-        const std::vector<char>& _cacheName, Topology& _topologyId, uint32_t _flags) :
-            HotRodOperation<void>(_codec, _flags, _cacheName, _topologyId),
+        const std::vector<char>& _cacheName, Topology& _topologyId, uint32_t _flags, EntryMediaTypes* df) :
+            HotRodOperation<void>(_codec, _flags, _cacheName, _topologyId, df),
             transportFactory(_transportFactory) {}
 
     bool shouldRetry(int retryCount) {

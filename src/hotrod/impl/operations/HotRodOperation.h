@@ -20,9 +20,9 @@ template<class T> class HotRodOperation : public protocol::HotRodConstants
   protected:
     HotRodOperation(
         const protocol::Codec& _codec,
-        uint32_t _flags, const std::vector<char>& _cacheName, Topology& _topologyId) :
+        uint32_t _flags, const std::vector<char>& _cacheName, Topology& _topologyId, EntryMediaTypes* df) :
             codec(_codec), flags(_flags),
-            cacheName(_cacheName), topologyId(_topologyId) {
+            cacheName(_cacheName), topologyId(_topologyId), dataFormat(df) {
     }
 
     protocol::HeaderParams* writeHeader(
@@ -32,7 +32,7 @@ template<class T> class HotRodOperation : public protocol::HotRodConstants
             new protocol::HeaderParams(topologyId);
         (*params).setOpCode(opCode).setCacheName(cacheName)
             .setFlags(flags).setClientIntel(CLIENT_INTELLIGENCE_HASH_DISTRIBUTION_AWARE)
-            .setTxMarker(NO_TX).setTopologyAge(0);
+            .setTxMarker(NO_TX).setTopologyAge(0).setDataFormat(dataFormat);
         codec.writeHeader(transport, *params);
         return params;
     }
@@ -51,7 +51,8 @@ template<class T> class HotRodOperation : public protocol::HotRodConstants
     std::vector<char> cacheName;
     // TODO: atomic
     Topology& topologyId;
-
+    void setDataFormat(EntryMediaTypes *df) { this->dataFormat = df; }
+    EntryMediaTypes* dataFormat;
   private:
     static const uint8_t NO_TX = 0x0;
 
