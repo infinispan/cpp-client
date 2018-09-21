@@ -16,16 +16,38 @@
 
 using namespace infinispan::hotrod;
 
+struct OptionsMap : public std::map<std::string, std::string> {
+	const char* get(std::string k, const std::string& default_v) {
+       return (*this)[k].empty() ? default_v.data() : (*this)[k].data();
+	}
+};
+
+OptionsMap command_line_options(int argc, char** argv) {
+	OptionsMap opts;
+	for (auto i = 1; i < argc-1; i+=2) {
+	    opts[argv[i]] = argv[i+1];
+	}
+	return opts;
+}
+
 int test(const std::string &test_desc, int argc, char** argv, const std::string &sni_name) {
     std::cout << test_desc << std::endl;
     {
+
         ConfigurationBuilder builder;
+        OptionsMap options = command_line_options(argc, argv);
+
+        if (options["--server_cert_file"].empty()) {
+            std::cerr << "Usage: " << argv[0] << " --server_cert_file <filename> [--client_cert_file <filename>] [--protocol_version <version string>]" << std::endl;
+            return 1;
+        }
+
         builder.addServer().host("127.0.0.1").port(11222);
-        builder.protocolVersion(argc > 1 ? argv[1] : Configuration::PROTOCOL_VERSION_24);
-        builder.ssl().serverCAFile(argv[1]).sniHostName(sni_name);
-        if (argc > 2) {
+        builder.protocolVersion(options.get("--protocol_version", Configuration::PROTOCOL_VERSION_24));
+        builder.ssl().serverCAFile(options["--server_cert_file"].data()).sniHostName(sni_name);
+        if (!options["--client_cert_file"].empty()) {
             std::cout << "Using supplied client certificate" << std::endl;
-            builder.ssl().clientCertificateFile(argv[2]);
+            builder.ssl().clientCertificateFile(options["--client_cert_file"].data());
         }
         builder.ssl().enable();
         RemoteCacheManager cacheManager(builder.build(), false);
