@@ -1194,20 +1194,46 @@ public:
         setMarshallers(this, &keyMarshall, &valueMarshall, &keyUnmarshall, &valueUnmarshall);
         valueCopyConstructor = [](const void* src) { V* v = new V(*static_cast<const V*>(src)); return (void*) v; };
         valueDestructor = [](const void* obj) { delete static_cast<const V*>(obj); };
-        // valueMarshaller = [this] (const void*, std::vector<char>&)
     }
 
-    RemoteCache<K, V>& operator=(const RemoteCache& other)
-    {
-        RemoteCacheBase::operator=(other);
-        keyMarshaller = other.keyMarshaller;
-        valueMarshaller = other.valueMarshaller;
-        setMarshallers(this, &keyMarshall, &valueMarshall, &keyUnmarshall, &valueUnmarshall);
-        valueCopyConstructor = [](const void* src) { return (void*) new V((const V&)src); };
-        valueDestructor = [](const void* obj) { delete (V*)obj; };
-        return *this;
+    /**
+     * Create a new RemoteCache instance with the specified DataFormat
+     *
+     * \param df the DataFormat struct specifying entry media type and marshaller
+     *
+     * \return the new RemoteCache that can handle the specified DataFormat
+     */
+    RemoteCache withDataFormat(DataFormat<K,V>* df) {
+        RemoteCache rc(*this);
+        rc.keyMarshaller = (df->keyMarshaller != nullptr) ? df->keyMarshaller : this->keyMarshaller;
+        rc.valueMarshaller = (df->valueMarshaller != nullptr) ? df->valueMarshaller : this->valueMarshaller;
+        rc.cloneImplWithDataFormat(df);
+        return rc;
     }
+
+    /**
+     * Create a new RemoteCache instance with the specified DataFormat
+     *
+     * Use this method if the new cache must deal with different key,value types than those defined for this cache
+     *
+     * \param df the DataFormat struct specifying entry media type and marshaller
+     *
+     * \return the new RemoteCache that can handle the specified DataFormat
+     */
+    template <class K1, class V1> RemoteCache<K1,V1> withDataFormat(DataFormat<K1,V1>* df) {
+        RemoteCache<K1,V1> rc((RemoteCacheBase&)*this);
+        rc.keyMarshaller = df->keyMarshaller;
+        rc.valueMarshaller = df->valueMarshaller;
+        rc.cloneImplWithDataFormat(df);
+    return rc;
+    }
+
 protected:
+
+    RemoteCache(const RemoteCacheBase& rcb) : RemoteCacheBase(rcb){
+        setRemoteCachePtr(this);
+    }
+
     RemoteCache(TransactionManager& tm, TransactionTable& tt, bool forceReturnValue, bool transactional) :
             RemoteCacheBase(tm, tt, forceReturnValue, transactional)
     {
@@ -1273,6 +1299,7 @@ private:
     std::shared_ptr<Marshaller<V> > valueMarshaller;
 
     friend class RemoteCacheManager;
+    template <class K1, class V1> friend class RemoteCache;
 };
 }
 } // namespace
