@@ -51,25 +51,25 @@ int main(int argc, char** args) {
 	try {
 		RemoteCacheManager manager(builder.build(), true);
 
-		StringCache cache = manager.getCache<std::string, std::string>(args[3], true);
+		StringCache* cache = &manager.getCache<std::string, std::string>(args[3], true);
 		bool printHelp = true;
 		for (;;) {
 			if (printHelp) {
-				std::cout << "Type command: [g]et | [p]ut | [r]emove | [c]hange cache (currently: " << cache.getName() << ") | [q]uit\n";
+				std::cout << "Type command: [g]et | [p]ut | [r]emove | [c]hange cache (currently: " << cache->getName() << ") | [q]uit\n";
 			}
 			printHelp = true;
 			int c = getchar();
 			switch (c) {
 			case 'q': return 0;
-			case 'g': doGet(cache); break;
-			case 'p': doPut(cache); break;
-			case 'r': doRemove(cache); break;
+			case 'g': doGet(*cache); break;
+			case 'p': doPut(*cache); break;
+			case 'r': doRemove(*cache); break;
             case 'c': {
                 std::string cacheName;
                 std::cout << "Cache: ";
                 std::cin >> cacheName;
                 try {
-                    cache = manager.getCache<std::string, std::string>(cacheName, true);
+                    cache = &manager.getCache<std::string, std::string>(cacheName, true);
                 } catch (Exception e) {
                     std::cerr << "Failed: " << e.what() << std::endl;
                 }
