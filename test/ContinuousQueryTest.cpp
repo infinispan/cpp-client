@@ -57,31 +57,35 @@ int main(int argc, char** argv) {
     builder.addServer().host(argc > 2 ? argv[2] : "127.0.0.1").port(argc > 3 ? atoi(argv[3]) : 11222);
     builder.balancingStrategyProducer(nullptr);
     RemoteCacheManager cacheManager(builder.build(), false);
+    cacheManager.start();
 
     //initialize server-side serialization
     auto *km = new BasicTypesProtoStreamMarshaller<std::string>();
     auto *vm = new BasicTypesProtoStreamMarshaller<std::string>();
 
-    RemoteCache<std::string, std::string> metadataCache = cacheManager.getCache<std::string, std::string>(km,
-            &Marshaller<std::string>::destroy, vm, &Marshaller<std::string>::destroy, PROTOBUF_METADATA_CACHE_NAME,
-            false);
+    RemoteCache<std::string, std::string> metadataCache = cacheManager.getCache<std::string, std::string>(
+            km, &Marshaller<std::string>::destroy, vm, &Marshaller<std::string>::destroy,PROTOBUF_METADATA_CACHE_NAME, false);
+
+    DataFormat<std::string, std::string> df;
+    df.keyMediaType.typeSubtype = std::string("application/x-protostream");
+    df.valueMediaType.typeSubtype = std::string("application/x-protostream");
+
+    RemoteCache<std::string, std::string> metadataCacheDF = metadataCache.withDataFormat(&df);
 
     ResourceManager rMain;
-    cacheManager.start();
 
     rMain.add([&cacheManager]
     {   cacheManager.stop();});
 
-    metadataCache.put("sample_bank_account/bank.proto", read("query_proto/bank.proto"));
-    if (metadataCache.containsKey(ERRORS_KEY_SUFFIX)) {
+    metadataCacheDF.put("sample_bank_account/bank.proto", read("query_proto/bank.proto"));
+    if (metadataCacheDF.containsKey(ERRORS_KEY_SUFFIX)) {
         std::cerr << "fail: error in registering .proto model" << std::endl;
         result = -1;
         return result;
     }
-    rMain.add([&metadataCache]
-    {
-        metadataCache.remove("sample_bank_account/bank.proto");
-    });
+
+    rMain.add([&metadataCacheDF] { metadataCacheDF.remove("sample_bank_account/bank.proto"); });
+
     auto *testkm = new BasicTypesProtoStreamMarshaller<int>();
     auto *testvm = new ProtoStreamMarshaller<sample_bank_account::User>();
     RemoteCache<int, sample_bank_account::User> testCache = cacheManager.getCache<int, sample_bank_account::User>(

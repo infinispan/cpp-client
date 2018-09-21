@@ -46,11 +46,12 @@ int main(int argc, char** argv) {
     builder.addServer().host(argc > 2 ? argv[2] : "127.0.0.1").port(argc > 3 ? atoi(argv[3]) : 11222);
     builder.setTransactional(true);
     RemoteCacheManager cacheManager(builder.build(), false);
+    cacheManager.start();
+
     JBasicMarshaller<std::string> *km = new JBasicMarshaller<std::string>();
     JBasicMarshaller<std::string> *vm = new JBasicMarshaller<std::string>();
     RemoteCache<std::string, std::string> cache = cacheManager.getCache<std::string, std::string>(km,
             &Marshaller<std::string>::destroy, vm, &Marshaller<std::string>::destroy, "non_xa", true);
-    cacheManager.start();
 
     // Example
     try {

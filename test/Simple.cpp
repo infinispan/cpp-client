@@ -80,6 +80,33 @@ void assert_not_null(const std::string& message, int line, const std::unique_ptr
     }
 }
 
+class StaticBasicMarshaller {
+public:
+    template<typename R> static R unmarshall(const std::vector<char>& b);
+    template<typename R> static std::vector<char> marshall(const R& s);
+};
+
+template<> std::string* StaticBasicMarshaller::unmarshall(const std::vector<char>& b) {
+    std::string* s = new std::string(b.begin(), b.end());
+    return s;
+}
+
+template<> int* StaticBasicMarshaller::unmarshall(const std::vector<char>& b) {
+    int* s = new int();
+    std::memcpy(s, b.data(), sizeof(*s));
+    return s;
+}
+
+template<> std::vector<char> StaticBasicMarshaller::marshall(const std::string& s) {
+    return std::vector<char>(s.begin(), s.end());
+}
+
+
+template<> std::vector<char> StaticBasicMarshaller::marshall(const int& s) {
+    return std::vector<char>(&s, (&s)+1);
+}
+
+
 template<typename K, typename V>
 int basicTest(RemoteCacheManager &cacheManager, RemoteCache<K, V> &cache) {
 
@@ -425,7 +452,7 @@ int main(int argc, char** argv) {
     std::cout << "Tests for CacheManager" << std::endl;
     {
         ConfigurationBuilder builder;
-        builder.protocolVersion(argc > 1 ? argv[1] : Configuration::PROTOCOL_VERSION_24);
+        builder.protocolVersion(argc > 1 ? argv[1] : Configuration::PROTOCOL_VERSION_28);
         builder.addServer().host(argc > 2 ? argv[2] : "127.0.0.1").port(argc > 3 ? atoi(argv[3]) : 11222);
 //        builder.balancingStrategyProducer(transport::MyRoundRobinBalancingStrategy::newInstance);
         builder.balancingStrategyProducer(nullptr);
@@ -473,11 +500,6 @@ int main(int argc, char** argv) {
 //        builder.balancingStrategyProducer(transport::MyRoundRobinBalancingStrategy::newInstance);
         builder.balancingStrategyProducer(nullptr);
         RemoteCacheManager cacheManager(builder.build(), false);
-        BasicMarshaller<std::string> *km = new BasicMarshaller<std::string>();
-        BasicMarshaller<std::string> *vm = new BasicMarshaller<std::string>();
-        RemoteCache<std::string, std::string> cache = cacheManager.getCache<std::string, std::string>(km,
-                &Marshaller<std::string>::destroy, vm, &Marshaller<std::string>::destroy);
-
         cacheManager.start();
 
         {
@@ -489,18 +511,28 @@ int main(int argc, char** argv) {
             float k1 = 1.0;
             double v1 = 1e-3;
 
-            cache.clear();
+            cache1.clear();
 
             // put
             cache1.put(k1, v1);
             std::unique_ptr<double> rv(cache1.get(k1));
             assert_not_null("get returned null!", __LINE__, rv);
-            cache.clear();
+            cache1.clear();
             if (*rv != v1) {
                 std::cerr << "get/put fail for " << k1 << " got " << *rv << " expected " << v1 << std::endl;
                 return 1;
             }
         }
+
+        BasicMarshaller<std::string> *km = new BasicMarshaller<std::string>();
+        BasicMarshaller<std::string> *vm = new BasicMarshaller<std::string>();
+        RemoteCache<std::string, std::string> cache0 = cacheManager.getCache<std::string, std::string>(km,
+                &Marshaller<std::string>::destroy, vm, &Marshaller<std::string>::destroy);
+        DataFormat<std::string, std::string> df;
+        df.keyMediaType.typeSubtype = std::string("application/x-jboss-marshalling");
+        df.valueMediaType.typeSubtype = std::string("application/x-jboss-marshalling");
+        RemoteCache<std::string, std::string> cache = cache0.withDataFormat(&df);
+        cache.clear();
 
         try {
             result = basicTest<std::string, std::string>(cacheManager, cache);
@@ -515,7 +547,7 @@ int main(int argc, char** argv) {
                     "cache.get(keyName);\n");
             std::string script_name("script.js");
 
-            RemoteExecution<> execution = cache.getRemoteExecution();
+            auto execution = cache.getRemoteExecution<>();
             execution.putScript(script_name, script);
             execution.addArg(argName1, argValue1);
             execution.addArg(argName2, argValue2);
@@ -544,11 +576,16 @@ int main(int argc, char** argv) {
         builder.protocolVersion(argc > 1 ? argv[1] : Configuration::PROTOCOL_VERSION_24);
         builder.addServer().host(argc > 2 ? argv[2] : "127.0.0.1").port(argc > 3 ? atoi(argv[3]) : 11222);
         RemoteCacheManager cacheManager(builder.build(), false);
+        cacheManager.start();
+
         JBasicMarshaller<std::string> *km = new JBasicMarshaller<std::string>();
         JBasicMarshaller<std::string> *vm = new JBasicMarshaller<std::string>();
-        RemoteCache<std::string, std::string> cache = cacheManager.getCache<std::string, std::string>(km,
+        RemoteCache<std::string, std::string> cache0 = cacheManager.getCache<std::string, std::string>(km,
                 &Marshaller<std::string>::destroy, vm, &Marshaller<std::string>::destroy);
-        cacheManager.start();
+        DataFormat<std::string, std::string> df;
+        df.keyMediaType.typeSubtype = std::string("application/x-jboss-marshalling");
+        df.valueMediaType.typeSubtype = std::string("application/x-jboss-marshalling");
+        RemoteCache<std::string, std::string> cache = cache0.withDataFormat(&df);
         try {
             result = basicTest<std::string, std::string>(cacheManager, cache);
             std::string argName1 = std::string("keyValue");
@@ -564,7 +601,7 @@ int main(int argc, char** argv) {
                     "num;\n");
             std::string script_name("script1.js");
 
-            RemoteExecution<> execution = cache.getRemoteExecution();
+            auto execution = cache.getRemoteExecution<>();
             execution.putScript(script_name, script);
             execution.addArg(argName1, argValue1);
             execution.addArg(argName2, argValue2);

@@ -3,7 +3,7 @@
 #include "infinispan/hotrod/RemoteCache.h"
 #include "infinispan/hotrod/Version.h"
 
-#include "infinispan/hotrod/JBasicMarshaller.h"
+#include "infinispan/hotrod/BasicMarshaller.h"
 #include "infinispan/hotrod/CacheClientListener.h"
 #include <stdlib.h>
 #include <iostream>
