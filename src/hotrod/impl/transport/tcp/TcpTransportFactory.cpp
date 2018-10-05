@@ -101,8 +101,6 @@ transport::Transport& TcpTransportFactory::getTransport(const std::vector<char>&
 transport::Transport& TcpTransportFactory::getTransport(const std::vector<char>& key, const std::vector<char>& cacheName, const std::set<transport::InetSocketAddress>& failedServers) {
     InetSocketAddress server;
     {
-        ScopedLock<Mutex> l(lock);
-
         server = topologyInfo->getHashAwareServer(key,cacheName);
         if (server.isEmpty())
         {   // Return balanced transport
@@ -202,7 +200,6 @@ bool TcpTransportFactory::isTcpNoDelay() {
 }
 
 int TcpTransportFactory::getMaxRetries() {
-    ScopedLock<Mutex> l(lock);
     return maxRetries;
 }
 
@@ -284,7 +281,6 @@ Transport& TcpTransportFactory::borrowTransportFromPool(
 
 ConnectionPool* TcpTransportFactory::getConnectionPool()
 {
-    ScopedLock<Mutex> l(lock);
     return connectionPool.get();
 }
 
