@@ -12,7 +12,7 @@ namespace hotrod {
 namespace operations {
 
 AuthMechListOperation::AuthMechListOperation(Codec& codec, Transport &transport) :
-         HotRodOperation(codec, 0, std::vector<char>(), topology), codec(codec), transport(transport) {
+         HotRodOperation(codec, 0, std::vector<char>(), topology, nullptr), codec(codec), transport(transport) {
 }
 AuthMechListOperation::~AuthMechListOperation() {
     // TODO Auto-generated destructor stub

@@ -20,7 +20,7 @@ class RemoveOperation : public AbstractKeyOperation<std::vector<char>>
             const infinispan::hotrod::protocol::Codec& codec,
             std::shared_ptr<transport::TransportFactory> transportFactory,
             const std::vector<char>& key, const std::vector<char>& cacheName,
-            Topology& topologyId, uint32_t flags);
+            Topology& topologyId, uint32_t flags, EntryMediaTypes* df);
 
     friend class OperationsFactory;
 };

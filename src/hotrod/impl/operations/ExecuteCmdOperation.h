@@ -23,7 +23,8 @@ protected:
             Topology&                                 topologyId_,
             uint32_t                                         flags_,
             const std::vector<char>&                                   cmdName_,
-            const std::map<std::vector<char>,std::vector<char>>&   cmdArgs_);
+            const std::map<std::vector<char>,std::vector<char>>&   cmdArgs_,
+            EntryMediaTypes* df);
             std::vector<char> sendExecuteOperation(
                     transport::Transport&     transport,
 					uint8_t                                       opCode,

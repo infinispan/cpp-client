@@ -11,9 +11,9 @@ using namespace infinispan::hotrod::transport;
 
 GetOperation::GetOperation(
     const Codec& _codec, std::shared_ptr<transport::TransportFactory> _transportFactory, const std::vector<char>& _key,
-    const std::vector<char>& _cacheName, Topology& _topologyId, uint32_t _flags)
+    const std::vector<char>& _cacheName, Topology& _topologyId, uint32_t _flags, EntryMediaTypes* df)
     : AbstractKeyOperation<std::vector<char>>(
-        _codec, _transportFactory, _key, _cacheName, _topologyId, _flags)
+        _codec, _transportFactory, _key, _cacheName, _topologyId, _flags, df)
 {}
 
 std::vector<char> GetOperation::executeOperation(Transport& transport) {

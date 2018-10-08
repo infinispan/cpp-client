@@ -26,9 +26,9 @@ template<class T> class AbstractKeyOperation : public RetryOnFailureOperation<T>
         const protocol::Codec& _codec,
         std::shared_ptr<transport::TransportFactory> _transportFactory,
         const std::vector<char>& _key, const std::vector<char>& _cacheName,
-        Topology& _topologyId, uint32_t  _flags) :
+        Topology& _topologyId, uint32_t  _flags, EntryMediaTypes* df) :
             RetryOnFailureOperation<T>(
-                _codec, _transportFactory, _cacheName, _topologyId, _flags),
+                _codec, _transportFactory, _cacheName, _topologyId, _flags, df),
             key(_key)
         {}
 

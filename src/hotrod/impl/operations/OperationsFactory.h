@@ -2,6 +2,7 @@
 #define ISPN_HOTROD_OPERATIONS_OPERATIONSFACTORY_H
 
 #include <infinispan/hotrod/CacheTopologyInfo.h>
+#include <infinispan/hotrod/DataFormat.h>
 #include "infinispan/hotrod/Flag.h"
 
 #include "infinispan/hotrod/Query.h"
@@ -69,61 +70,61 @@ class OperationsFactory
   public:
 
     PingOperation* newPingOperation(
-      infinispan::hotrod::transport::Transport& transport);
+      infinispan::hotrod::transport::Transport& transport, EntryMediaTypes* df);
 
-    GetOperation* newGetKeyOperation(const std::vector<char>& key);
+    GetOperation* newGetKeyOperation(const std::vector<char>& key, EntryMediaTypes* df);
 
-    GetAllOperation* newGetAllOperation(const std::set<std::vector<char>>& keySet);
+    GetAllOperation* newGetAllOperation(const std::set<std::vector<char>>& keySet, EntryMediaTypes* df);
 
     PutOperation* newPutKeyValueOperation(
       const std::vector<char>& key, const std::vector<char>& value,
-      uint32_t lifespanSecs, uint32_t maxIdleSecs);
+      uint32_t lifespanSecs, uint32_t maxIdleSecs, EntryMediaTypes* df);
 
     PutIfAbsentOperation* newPutIfAbsentOperation(
       const std::vector<char>& key, const std::vector<char>& value,
-      uint32_t lifespanSecs, uint32_t maxIdleSecs);
+      uint32_t lifespanSecs, uint32_t maxIdleSecs, EntryMediaTypes* df);
 
     ReplaceOperation* newReplaceOperation(
       const std::vector<char>& key, const std::vector<char>& value,
-      uint32_t lifespanSecs, uint32_t maxIdleSecs);
+      uint32_t lifespanSecs, uint32_t maxIdleSecs, EntryMediaTypes* df);
 
-    RemoveOperation* newRemoveOperation(const std::vector<char>& key);
+    RemoveOperation* newRemoveOperation(const std::vector<char>& key, EntryMediaTypes* df);
 
-    ContainsKeyOperation* newContainsKeyOperation(const std::vector<char>& key);
+    ContainsKeyOperation* newContainsKeyOperation(const std::vector<char>& key, EntryMediaTypes* df);
 
     ReplaceIfUnmodifiedOperation* newReplaceIfUnmodifiedOperation(
       const std::vector<char>& key, const std::vector<char>& value,
-      uint32_t lifespanSecs, uint32_t maxIdleSecs, int64_t version);
+      uint32_t lifespanSecs, uint32_t maxIdleSecs, int64_t version, EntryMediaTypes* df);
 
-    RemoveIfUnmodifiedOperation* newRemoveIfUnmodifiedOperation(const std::vector<char>& key, int64_t version);
+    RemoveIfUnmodifiedOperation* newRemoveIfUnmodifiedOperation(const std::vector<char>& key, int64_t version, EntryMediaTypes* df);
 
-    GetWithMetadataOperation* newGetWithMetadataOperation(const std::vector<char>& key);
+    GetWithMetadataOperation* newGetWithMetadataOperation(const std::vector<char>& key, EntryMediaTypes* df);
 
-    GetWithVersionOperation* newGetWithVersionOperation(const std::vector<char>& key);
+    GetWithVersionOperation* newGetWithVersionOperation(const std::vector<char>& key, EntryMediaTypes* df);
 
-    BulkGetOperation* newBulkGetOperation(int size);
+    BulkGetOperation* newBulkGetOperation(int size, EntryMediaTypes* df);
 
-    BulkGetKeysOperation* newBulkGetKeysOperation(int scope);
+    BulkGetKeysOperation* newBulkGetKeysOperation(int scope, EntryMediaTypes* df);
 
-    StatsOperation* newStatsOperation();
+    StatsOperation* newStatsOperation(EntryMediaTypes* df);
 
-    ClearOperation* newClearOperation();
+    ClearOperation* newClearOperation(EntryMediaTypes* df);
 
-    SizeOperation* newSizeOperation();
+    SizeOperation* newSizeOperation(EntryMediaTypes* df);
 
     ExecuteCmdOperation* newExecuteCmdOperation(
-        const std::vector<char>& cmdName, const std::map<std::vector<char>,std::vector<char>>& values);
+        const std::vector<char>& cmdName, const std::map<std::vector<char>,std::vector<char>>& values, EntryMediaTypes* df);
 
-    QueryOperation* newQueryOperation(const QueryRequest& qr);
+    QueryOperation* newQueryOperation(const QueryRequest& qr, EntryMediaTypes* df);
 
-    FaultTolerantPingOperation* newFaultTolerantPingOperation();
+    FaultTolerantPingOperation* newFaultTolerantPingOperation(EntryMediaTypes* df);
 
-    AddClientListenerOperation* newAddClientListenerOperation(ClientListener& listener, ClientListenerNotifier& listenerNotifier, const std::vector<std::vector<char> > filterFactoryParam, const std::vector<std::vector<char> > converterFactoryParams,const std::function<void()> &recoveryCallback);
-    RemoveClientListenerOperation* newRemoveClientListenerOperation(ClientListener& listener, ClientListenerNotifier& listenerNotifier);
+    AddClientListenerOperation* newAddClientListenerOperation(ClientListener& listener, ClientListenerNotifier& listenerNotifier, const std::vector<std::vector<char> > filterFactoryParam, const std::vector<std::vector<char> > converterFactoryParams,const std::function<void()> &recoveryCallback, EntryMediaTypes* df);
+    RemoveClientListenerOperation* newRemoveClientListenerOperation(ClientListener& listener, ClientListenerNotifier& listenerNotifier, EntryMediaTypes* df);
 
-    PrepareCommitOperation* newPrepareCommitOperation(XID xid, TransactionContext& tctx);
-    CommitOperation* newCommitOperation(XID xid, TransactionContext& tctx);
-    RollbackOperation* newRollbackOperation(XID xid, TransactionContext& tctx);
+    PrepareCommitOperation* newPrepareCommitOperation(XID xid, TransactionContext& tctx, EntryMediaTypes* df);
+    CommitOperation* newCommitOperation(XID xid, TransactionContext& tctx, EntryMediaTypes* df);
+    RollbackOperation* newRollbackOperation(XID xid, TransactionContext& tctx, EntryMediaTypes* df);
 
     void addFlags(uint32_t flags);
     void setFlags(uint32_t flags);
@@ -141,6 +142,7 @@ class OperationsFactory
 private:
     std::shared_ptr<infinispan::hotrod::transport::TransportFactory> transportFactory;
     Topology topologyId;
+    std::shared_ptr<infinispan::hotrod::protocol::Codec> codecPtr;
     const infinispan::hotrod::protocol::Codec& codec;
     bool forceReturnValue;
     uint32_t flags;
@@ -150,8 +152,7 @@ private:
 
     OperationsFactory(
       std::shared_ptr<infinispan::hotrod::transport::TransportFactory> transportFactory,
-      const std::string& cacheName, bool forceReturnValue,
-      const infinispan::hotrod::protocol::Codec& codec);
+      const std::string& cacheName, bool forceReturnValue, infinispan::hotrod::protocol::Codec& codec);
 
   friend class infinispan::hotrod::RemoteCacheManagerImpl;
 };

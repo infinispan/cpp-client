@@ -28,7 +28,8 @@ class ReplaceIfUnmodifiedOperation
         const std::vector<char>& value,
         uint32_t lifespan,
         uint32_t maxIdle,
-        int64_t version);
+        int64_t version,
+        EntryMediaTypes* df);
 
     int64_t version;
 

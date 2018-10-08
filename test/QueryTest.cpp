@@ -8,6 +8,7 @@
 #include "addressbook.pb.h"
 #include "bank.pb.h"
 #include <infinispan/hotrod/ProtoStreamMarshaller.h>
+#include <infinispan/hotrod/JBasicMarshaller.h>
 #include "infinispan/hotrod/ConfigurationBuilder.h"
 #include "infinispan/hotrod/RemoteCacheManager.h"
 #include "infinispan/hotrod/RemoteCache.h"
@@ -48,42 +49,53 @@ public:
 	}
 };
 
-
 int main(int argc, char** argv) {
 
     int result=0;
     std::cout << "Tests for Query" << std::endl;
     ConfigurationBuilder builder;
-    builder.addServer().host(argc > 1 ? argv[1] : "127.0.0.1").port(argc > 2 ? atoi(argv[2]) : 11222);
-    builder.protocolVersion(Configuration::PROTOCOL_VERSION_24);
-//        builder.balancingStrategyProducer(transport::MyRoundRobinBalancingStrategy::newInstance);
+    builder.protocolVersion(argc > 1 ? argv[1] : Configuration::PROTOCOL_VERSION_24);
+    builder.addServer().host(argc > 2 ? argv[2] : "127.0.0.1").port(argc > 3 ? atoi(argv[3]) : 11222);
     builder.balancingStrategyProducer(nullptr);
     RemoteCacheManager cacheManager(builder.build(), false);
     cacheManager.start();
-    //initialize server-side serialization
+
     auto *km = new BasicTypesProtoStreamMarshaller<std::string>();
     auto *vm = new BasicTypesProtoStreamMarshaller<std::string>();
 
     RemoteCache<std::string, std::string> metadataCache = cacheManager.getCache<std::string, std::string>(
             km, &Marshaller<std::string>::destroy, vm, &Marshaller<std::string>::destroy,PROTOBUF_METADATA_CACHE_NAME, false);
 
+    DataFormat<std::string, std::string> df;
+    df.keyMediaType.typeSubtype = std::string("application/x-protostream");
+    df.valueMediaType.typeSubtype = std::string("application/x-protostream");
+    RemoteCache<std::string, std::string> metadataCacheDF = metadataCache.withDataFormat(&df);
+
     ResourceManager rMain;
     rMain.add([&cacheManager] { cacheManager.stop();});
 
-    metadataCache.put("sample_bank_account/bank.proto", read("query_proto/bank.proto"));
-    if (metadataCache.containsKey(ERRORS_KEY_SUFFIX))
+    metadataCacheDF.put("sample_bank_account/bank.proto", read("query_proto/bank.proto"));
+    if (metadataCacheDF.containsKey(ERRORS_KEY_SUFFIX))
     {
       std::cerr << "fail: error in registering .proto model" << std::endl;
       result=-1;
       return result;
     }
 
-    rMain.add([&metadataCache] { metadataCache.remove("sample_bank_account/bank.proto");});
+    rMain.add([&metadataCacheDF] { metadataCacheDF.remove("sample_bank_account/bank.proto");});
 
     auto *testkm = new BasicTypesProtoStreamMarshaller<int>();
     auto *testvm = new ProtoStreamMarshaller<sample_bank_account::User>();
-    RemoteCache<int, sample_bank_account::User> testCache = cacheManager.getCache<int, sample_bank_account::User>(
+    RemoteCache<int, sample_bank_account::User> testCache0 = cacheManager.getCache<int, sample_bank_account::User>(
             testkm, &Marshaller<int>::destroy, testvm, &Marshaller<sample_bank_account::User>::destroy, "queryCache", false);
+
+    DataFormat<int, sample_bank_account::User> dfb;
+
+    dfb.keyMediaType.typeSubtype = std::string("application/x-protostream");
+    dfb.valueMediaType.typeSubtype = std::string("application/x-protostream");
+
+    auto testCache = testCache0.withDataFormat(&dfb);
+
     testCache.clear();
     sample_bank_account::User_Address a;
     sample_bank_account::User user1;

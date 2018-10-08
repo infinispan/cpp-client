@@ -24,10 +24,11 @@ template<class T> class AbstractKeyValueOperation : public AbstractKeyOperation<
             uint32_t                                         flags_,
             const std::vector<char>&                                   value_,
             uint32_t                                         lifespan_,
-            uint32_t                                         maxIdle_)
+            uint32_t                                         maxIdle_,
+            EntryMediaTypes* df)
             : AbstractKeyOperation<T>(codec_, transportFactory_, key_,
                                      cacheName_,
-                                      topologyId_, flags_),
+                                      topologyId_, flags_, df),
             value(value_), lifespan(lifespan_), maxIdle(maxIdle_)
         {}
 

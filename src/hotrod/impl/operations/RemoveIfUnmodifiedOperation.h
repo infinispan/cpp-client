@@ -22,7 +22,7 @@ class RemoveIfUnmodifiedOperation
             const infinispan::hotrod::protocol::Codec& codec,
             std::shared_ptr<transport::TransportFactory> transportFactory,
             const std::vector<char>& key, const std::vector<char>& cacheName,
-            Topology& topologyId, uint32_t flags, int64_t version);
+            Topology& topologyId, uint32_t flags, int64_t version, EntryMediaTypes* df);
 
         int64_t version;
 

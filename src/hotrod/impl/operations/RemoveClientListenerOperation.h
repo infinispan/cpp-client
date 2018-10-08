@@ -18,15 +18,15 @@ class RemoveClientListenerOperation: public RetryOnFailureOperation<char> {
 public:
 	RemoveClientListenerOperation(const Codec &codec, std::shared_ptr<TransportFactory> transportFactory,
                              std::vector<char> cacheName, Topology& topologyId, int flags,
-                             ClientListenerNotifier &listenerNotifier, const ClientListener& clientListener)
-                           : RetryOnFailureOperation<char>(codec, transportFactory, cacheName, topologyId, flags), listenerNotifier(listenerNotifier), clientListener(clientListener)
+                             ClientListenerNotifier &listenerNotifier, const ClientListener& clientListener, EntryMediaTypes* df)
+                           : RetryOnFailureOperation<char>(codec, transportFactory, cacheName, topologyId, flags, df), listenerNotifier(listenerNotifier), clientListener(clientListener)
 							 {};
     virtual void releaseTransport(transport::Transport* transport);
     virtual transport::Transport& getTransport(int retryCount, const std::set<transport::InetSocketAddress>& failedServers);
 	virtual char executeOperation(transport::Transport& transport);
     ClientListenerNotifier& listenerNotifier;
     const ClientListener& clientListener;
-
+    friend class OperationsFactory;
 };
 
 } /* namespace event */

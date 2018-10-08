@@ -25,7 +25,8 @@ class BulkGetKeysOperation : public RetryOnFailureOperation<std::set<std::vector
             const std::vector<char>&                                   cacheName_,
             Topology&                                 topologyId_,
             uint32_t                                   flags_,
-            int                                    entryCount_);
+            int                                    entryCount_,
+            EntryMediaTypes* df);
 
         std::set<std::vector<char>> executeOperation(infinispan::hotrod::transport::Transport& transport);
     private:

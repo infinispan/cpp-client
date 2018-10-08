@@ -13,9 +13,10 @@ GetWithMetadataOperation::GetWithMetadataOperation(
     const std::vector<char>&    key_,
     const std::vector<char>&    cacheName_,
     Topology&  topologyId_,
-    uint32_t    flags_)
+    uint32_t    flags_,
+    EntryMediaTypes* df)
     : AbstractKeyOperation<MetadataValueImpl<std::vector<char>> >(
-        codec_, transportFactory_, key_, cacheName_, topologyId_, flags_)
+        codec_, transportFactory_, key_, cacheName_, topologyId_, flags_, df)
 {}
 
 MetadataValueImpl<std::vector<char>> GetWithMetadataOperation::executeOperation(Transport& transport)

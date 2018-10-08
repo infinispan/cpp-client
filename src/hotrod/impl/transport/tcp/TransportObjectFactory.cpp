@@ -308,7 +308,7 @@ PingResult TransportObjectFactory::ping(
     TcpTransport& tcpTransport)
 {
     Topology tid(-1);
-    PingOperation po(codec, tid, tcpTransport);
+    PingOperation po(codec, tid, tcpTransport, nullptr);
     return po.execute();
 }
 

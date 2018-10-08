@@ -30,8 +30,8 @@ public:
                              std::vector<char> cacheName, Topology& topologyId, int flags,
                              ClientListenerNotifier &listenerNotifier, const ClientListener& clientListener,
 		             std::vector<std::vector<char> > filterFactoryParams,
-	std::vector<std::vector<char> > converterFactoryParams, const std::function<void()> &recoveryCallback)
-                           : RetryOnFailureOperation<char>(codec, transportFactory, cacheName, topologyId, flags), listenerNotifier(listenerNotifier),
+	std::vector<std::vector<char> > converterFactoryParams, const std::function<void()> &recoveryCallback, EntryMediaTypes* df)
+                           : RetryOnFailureOperation<char>(codec, transportFactory, cacheName, topologyId, flags, df), listenerNotifier(listenerNotifier),
 							 listenerId(generateV4UUID()), clientListener(clientListener), filterFactoryParams(filterFactoryParams), converterFactoryParams(converterFactoryParams),
 							 recoveryCallback(recoveryCallback), cacheName(cacheName)
 							 {};
@@ -60,7 +60,7 @@ private:
      * client listener is removed.
      */
     Transport *dedicatedTransport;
-
+    friend class OperationsFactory;
 };
 
 } /* namespace operations */

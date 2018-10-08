@@ -24,34 +24,37 @@ namespace operations {
 class PrepareCommitOperation: public RetryOnFailureOperation<uint32_t> {
 public:
     PrepareCommitOperation(const Codec &codec, std::shared_ptr<TransportFactory> transportFactory,
-            std::vector<char> cacheName, Topology& topologyId, int flags, XID xid, TransactionContext& tctx);
+            std::vector<char> cacheName, Topology& topologyId, int flags, XID xid, TransactionContext& tctx, EntryMediaTypes* df);
     uint32_t executeOperation(transport::Transport& transport);
 
 private:
     XID xid;
     TransactionContext& tctx;
+    friend class OperationsFactory;
 };
 
 class CommitOperation: public RetryOnFailureOperation<uint32_t> {
 public:
     CommitOperation(const Codec &codec, std::shared_ptr<TransportFactory> transportFactory,
-            std::vector<char> cacheName, Topology& topologyId, int flags, XID xid, TransactionContext& tctx);
+            std::vector<char> cacheName, Topology& topologyId, int flags, XID xid, TransactionContext& tctx, EntryMediaTypes* df);
     uint32_t executeOperation(transport::Transport& transport);
 
 private:
     XID xid;
     TransactionContext& tctx;
+    friend class OperationsFactory;
 };
 
 class RollbackOperation: public RetryOnFailureOperation<uint32_t> {
 public:
     RollbackOperation(const Codec &codec, std::shared_ptr<TransportFactory> transportFactory,
-            std::vector<char> cacheName, Topology& topologyId, int flags, XID xid, TransactionContext& tctx);
+            std::vector<char> cacheName, Topology& topologyId, int flags, XID xid, TransactionContext& tctx, EntryMediaTypes* df);
     uint32_t executeOperation(transport::Transport& transport);
 
 private:
     XID xid;
     TransactionContext& tctx;
+    friend class OperationsFactory;
 };
 
 }

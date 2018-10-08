@@ -57,13 +57,13 @@ private:
 };
 
 // Some utility functions
-RemoteCacheManager* getNewRemoteCacheManager()
+RemoteCacheManager* getNewRemoteCacheManager(const char* protocol)
 {
     ConfigurationBuilder nearCacheBuilder;
     nearCacheBuilder.addServer().host("127.0.0.1").port(11222);
     nearCacheBuilder.addServer().host("127.0.0.1").port(11322);
 
-    nearCacheBuilder.protocolVersion(Configuration::PROTOCOL_VERSION_24);
+    nearCacheBuilder.protocolVersion(protocol);
     nearCacheBuilder.balancingStrategyProducer(StickyBalancingStrategy::newInstance);
     nearCacheBuilder.nearCache().mode(NearCacheMode::INVALIDATED).maxEntries(10);
     auto *manager = new RemoteCacheManager(nearCacheBuilder.build(), false);
@@ -100,11 +100,11 @@ int main(int argc, char** argv) {
     std::string server_ctl(argv[2]);
     std::string probe_port(argv[3]);
     std::string server_pid_filename(argv[4]);
-
+    const char* protocol = (argc > 5 ? argv[5] : Configuration::PROTOCOL_VERSION_24);
     std::unique_ptr<RemoteCacheManager, decltype(&releaseRemoteCacheManager)> nearCacheManager(
-            getNewRemoteCacheManager(), &releaseRemoteCacheManager);
+            getNewRemoteCacheManager(protocol), &releaseRemoteCacheManager);
     std::unique_ptr<RemoteCacheManager, decltype(&releaseRemoteCacheManager)> nearCacheManager2(
-            getNewRemoteCacheManager(), &releaseRemoteCacheManager);
+            getNewRemoteCacheManager(protocol), &releaseRemoteCacheManager);
     try {
         RemoteCache<std::string, std::string> nearCache = getNewCache(*nearCacheManager);
         RemoteCache<std::string, std::string> nearCache2 = getNewCache(*nearCacheManager2);

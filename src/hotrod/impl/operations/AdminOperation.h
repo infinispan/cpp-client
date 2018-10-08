@@ -19,7 +19,7 @@ protected:
                    uint32_t flags_,
                    const std::vector<char>& cmdName_,
                    const std::map<std::vector<char>,std::vector<char>>& cmdArgs_)
-        : ExecuteCmdOperation(codec_, transportFactory_, cacheName_, topologyId_, flags_, cmdName_, cmdArgs_) {}
+        : ExecuteCmdOperation(codec_, transportFactory_, cacheName_, topologyId_, flags_, cmdName_, cmdArgs_, nullptr) {}
 
     friend class OperationsFactory;
 };

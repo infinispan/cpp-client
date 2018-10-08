@@ -14,9 +14,10 @@ RemoveIfUnmodifiedOperation::RemoveIfUnmodifiedOperation(
     const std::vector<char>&    cacheName_,
     Topology&  topologyId_,
     uint32_t    flags_,
-    int64_t version_)
+    int64_t version_,
+	EntryMediaTypes* df)
     : AbstractKeyOperation<VersionedOperationResponse>(
-        codec_, transportFactory_, key_, cacheName_, topologyId_, flags_),
+        codec_, transportFactory_, key_, cacheName_, topologyId_, flags_, df),
       version(version_)
 {}
 

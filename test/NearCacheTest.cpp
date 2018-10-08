@@ -16,8 +16,8 @@ using namespace infinispan::hotrod::event;
 
 int main(int argc, char** argv) {
     ConfigurationBuilder nearCacheBuilder;
-    nearCacheBuilder.addServer().host(argc > 1 ? argv[1] : "127.0.0.1").port(argc > 2 ? atoi(argv[2]) : 11222);
-    nearCacheBuilder.protocolVersion(Configuration::PROTOCOL_VERSION_24);
+    nearCacheBuilder.protocolVersion(argc > 1 ? argv[1] : Configuration::PROTOCOL_VERSION_24);
+    nearCacheBuilder.addServer().host(argc > 2 ? argv[2] : "127.0.0.1").port(argc > 3 ? atoi(argv[3]) : 11222);
     nearCacheBuilder.balancingStrategyProducer(nullptr);
     nearCacheBuilder.nearCache().mode(NearCacheMode::INVALIDATED).maxEntries(10);
     RemoteCacheManager nearCacheManager(nearCacheBuilder.build(), false);

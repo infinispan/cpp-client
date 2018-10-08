@@ -16,21 +16,38 @@
 
 using namespace infinispan::hotrod;
 
+struct OptionsMap : public std::map<std::string, std::string> {
+	const char* get(std::string k, const std::string& default_v) {
+       return (*this)[k].empty() ? default_v.data() : (*this)[k].data();
+	}
+};
+
+OptionsMap command_line_options(int argc, char** argv) {
+	OptionsMap opts;
+	for (auto i = 1; i < argc-1; i+=2) {
+	    opts[argv[i]] = argv[i+1];
+	}
+	return opts;
+}
+
 int main(int argc, char** argv) {
     std::cout << "TLS Test" << std::endl;
 
-    if (argc < 2) {
-        std::cerr << "Usage: " << argv[0] << " ca_path [client_ca_file]" << std::endl;
+    OptionsMap options = command_line_options(argc, argv);
+
+    if (options["--server_cert_file"].empty()) {
+        std::cerr << "Usage: " << argv[0] << " ca_path --server_cert_file <filename> [--client_cert_file <filename>] [--protocol_version <version string>]" << std::endl;
         return 1;
     }
+
     {
       ConfigurationBuilder builder;
       builder.addServer().host("127.0.0.1").port(11222);
-      builder.protocolVersion(Configuration::PROTOCOL_VERSION_24);
-      builder.ssl().enable().serverCAFile(argv[1]);
-      if (argc > 2) {
+      builder.protocolVersion(options.get("--protocol_version", Configuration::PROTOCOL_VERSION_24));
+      builder.ssl().enable().serverCAFile(options["--server_cert_file"].data());
+      if (!options["--client_cert_file"].empty()) {
           std::cout << "Using supplied client certificate" << std::endl;
-          builder.ssl().clientCertificateFile(argv[2]);
+          builder.ssl().clientCertificateFile(options["--client_cert_file"].data());
       }
       RemoteCacheManager cacheManager(builder.build(), false);
       BasicMarshaller<std::string> *km = new BasicMarshaller<std::string>();

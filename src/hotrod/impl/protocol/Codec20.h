@@ -21,7 +21,7 @@ using namespace infinispan::hotrod::event;
 class Codec20 : public Codec
 {
   public:
-    HeaderParams& writeHeader(
+    virtual HeaderParams& writeHeader(
         infinispan::hotrod::transport::Transport& transport,
         HeaderParams& params) const;
 
@@ -51,10 +51,6 @@ class Codec20 : public Codec
 
     virtual event::EventHeaderParams readEventHeader(transport::Transport& transport) const;
   protected:
-    HeaderParams& writeHeader(
-        infinispan::hotrod::transport::Transport& transport,
-        HeaderParams& params, uint8_t version) const;
-
     Codec20()  { protocolVersion=HotRodConstants::VERSION_20; }
 
   friend class CodecFactory;

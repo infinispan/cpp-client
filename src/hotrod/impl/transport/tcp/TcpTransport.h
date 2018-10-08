@@ -26,6 +26,7 @@ class TcpTransport : public AbstractTransport
     void writeVInt(uint32_t uint);
     void writeVLong(uint64_t ulong);
     void writeBytes(const std::vector<char>& bytes);
+    void writeBytes(const char* data, unsigned int size);
 
     uint8_t readByte();
     uint32_t readVInt();
