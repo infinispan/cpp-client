@@ -21,6 +21,7 @@ void RoundRobinBalancingStrategy::setServers(const std::vector<transport::InetSo
 }
 
 const transport::InetSocketAddress& RoundRobinBalancingStrategy::nextServer(const std::set<transport::InetSocketAddress>& /*failedServer*/) {
+    sys::ScopedLock<sys::Mutex> scopedLock(lock);
     const transport::InetSocketAddress& server = getServerByIndex(index++);
     if (index >= servers.size()) {
        index = 0;
