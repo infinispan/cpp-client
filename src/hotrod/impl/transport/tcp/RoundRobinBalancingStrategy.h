@@ -2,6 +2,7 @@
 #define ISPN_HOTROD_TRANSPORT_ROUNDROBINBALANCINGSTRATEGY_H
 
 #include "infinispan/hotrod/FailOverRequestBalancingStrategy.h"
+#include "hotrod/sys/Mutex.h"
 #include <set>
 
 namespace infinispan {
@@ -18,6 +19,7 @@ class RoundRobinBalancingStrategy : public FailOverRequestBalancingStrategy
 
   private:
     std::vector<transport::InetSocketAddress> servers;
+    sys::Mutex lock;
     size_t index;
 
     const transport::InetSocketAddress& getServerByIndex(size_t pos);
