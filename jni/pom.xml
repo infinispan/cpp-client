@@ -17,10 +17,10 @@
    <description>Infinispan HotRod JNI Wrapper</description>
 
    <properties>
-      <version.org.infinispan>9.2.3.Final</version.org.infinispan>
+      <version.org.infinispan>9.4.1.Final</version.org.infinispan>
       <version.org.jboss.logging.processor>1.2.1.Final</version.org.jboss.logging.processor>
       <version.org.jboss.jbossts>4.17.13.Final</version.org.jboss.jbossts>
-      <version.org.testng>6.8</version.org.testng>
+      <version.org.testng>6.10</version.org.testng>
       <maven.test.skip.exec>true</maven.test.skip.exec>
       <maven.compiler.source>1.8</maven.compiler.source>
       <maven.compiler.target>1.8</maven.compiler.target>
@@ -57,6 +57,17 @@
       </dependency>
       <dependency>
          <groupId>org.infinispan</groupId>
+         <artifactId>infinispan-commons</artifactId>
+         <version>${version.org.infinispan}</version>
+         <classifier>tests</classifier>
+      </dependency>
+      <dependency>
+         <groupId>org.infinispan</groupId>
+         <artifactId>infinispan-commons-test</artifactId>
+         <version>${version.org.infinispan}</version>
+      </dependency>
+      <dependency>
+         <groupId>org.infinispan</groupId>
          <artifactId>infinispan-remote-query-client</artifactId>
          <version>${version.org.infinispan}</version>
       </dependency>
@@ -69,6 +80,11 @@
       <dependency>
          <groupId>org.infinispan</groupId>
          <artifactId>infinispan-query</artifactId>
+         <version>${version.org.infinispan}</version>
+      </dependency>
+            <dependency>
+         <groupId>org.infinispan</groupId>
+         <artifactId>infinispan-remote-query-server</artifactId>
          <version>${version.org.infinispan}</version>
       </dependency>
       <dependency>

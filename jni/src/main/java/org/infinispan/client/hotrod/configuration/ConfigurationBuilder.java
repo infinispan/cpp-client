@@ -46,6 +46,7 @@ public class ConfigurationBuilder implements ConfigurationChildBuilder, Builder<
    private int maxRetries = ConfigurationProperties.DEFAULT_MAX_RETRIES;
 
    private org.infinispan.client.hotrod.jni.ConfigurationBuilder jniConfigurationBuilder;
+   private StatisticsConfigurationBuilder statistics = new StatisticsConfigurationBuilder(this);
 
    public ConfigurationBuilder() {
       this.jniConfigurationBuilder = new org.infinispan.client.hotrod.jni.ConfigurationBuilder();
@@ -92,8 +93,7 @@ public class ConfigurationBuilder implements ConfigurationChildBuilder, Builder<
 
    @Override
    public ExecutorFactoryConfigurationBuilder asyncExecutorFactory() {
-      throw new UnsupportedOperationException();
-//      return this.asyncExecutorFactory;
+      return this.asyncExecutorFactory;
    }
 
    @Override
@@ -327,6 +327,10 @@ public class ConfigurationBuilder implements ConfigurationChildBuilder, Builder<
       return this;
    }
 
+   public StatisticsConfigurationBuilder statistics() {
+	   return statistics;
+   }
+   
    static {
       try {
          System.loadLibrary("hotrod");

@@ -142,6 +142,8 @@ public interface RemoteCache<K, V> extends BasicCache<K, V>{
 
     ServerStatistics stats();
 
+    ServerStatistics serverStatistics();
+
    CompletableFuture<Boolean> replaceWithVersionAsync(K key, V newValue, long version);
     
    CompletableFuture<Boolean> replaceWithVersionAsync(K key, V newValue, long version, int lifespanSeconds);
@@ -154,4 +156,6 @@ public interface RemoteCache<K, V> extends BasicCache<K, V>{
    CacheTopologyInfo getCacheTopologyInfo();
 
    <T> T execute(String scriptName, Map<String, ?> params);
+
+   <T> T execute(String scriptName, Map<String, ?> params, Object key);
 }
