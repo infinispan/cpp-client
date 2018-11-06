@@ -98,7 +98,10 @@ public class JniTest implements IMethodSelector {
             "GetAllLocalTest.testBulkGetAfterLifespanExpire",
             "GetAllReplTest.testBulkGetAfterLifespanExpire",
             "RemoteCacheAdminTest.cacheReindexTest",                             // See HRCPP-469
-            "RemoteCacheAdminTest.cacheCreateWithEmbeddedConfigurationTest"      // conf to XML doesn't work here
+            "RemoteCacheAdminTest.cacheCreateWithEmbeddedConfigurationTest",     // conf to XML doesn't work here
+            "HotRodStatisticsTest.testHitsAndMisses",                            // We don't have client statistics here
+            "HotRodStatisticsTest.testStoresAndEntries",                         // We don't have client statistics here
+            "ExecTest.testExecWithHint"                                          // We don't have execute with hint method
       ));
       Set<String> expectedSkips = Collections.emptySet();
 

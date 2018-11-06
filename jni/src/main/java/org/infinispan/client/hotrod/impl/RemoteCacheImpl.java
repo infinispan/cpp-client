@@ -21,6 +21,8 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 import org.infinispan.client.hotrod.Flag;
 import org.infinispan.client.hotrod.MetadataValue;
@@ -916,6 +918,11 @@ public class RemoteCacheImpl<K, V> extends RemoteCacheUnsupported<K, V> {
     }
 
     @Override
+    public ServerStatistics serverStatistics() {
+        return this.stats();
+    }
+
+    @Override
     public <T> T execute(String scriptName, Map<String, ?> params) {
         MapType argsMap = new MapType();
         JBossMarshaller jb = new JBossMarshaller();
@@ -935,11 +942,139 @@ public class RemoteCacheImpl<K, V> extends RemoteCacheUnsupported<K, V> {
             buf[i] = (byte) executeResult.get(i);
         }
         try {
-            return (T) jb.objectFromByteBuffer(buf);
+            if (buf.length != 0 ) {
+                return (T) jb.objectFromByteBuffer(buf);
+            } else {
+                return (T) null;
+            }
         } catch (ClassNotFoundException | IOException e) {
             throw new RuntimeException(e);
         }
     }
+
+	@Override
+	public V compute(K arg0, BiFunction<? super K, ? super V, ? extends V> arg1, long arg2, TimeUnit arg3) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public V compute(K arg0, BiFunction<? super K, ? super V, ? extends V> arg1, long arg2, TimeUnit arg3, long arg4,
+			TimeUnit arg5) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public V computeIfAbsent(K arg0, Function<? super K, ? extends V> arg1, long arg2, TimeUnit arg3) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public V computeIfAbsent(K arg0, Function<? super K, ? extends V> arg1, long arg2, TimeUnit arg3, long arg4,
+			TimeUnit arg5) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public V computeIfPresent(K arg0, BiFunction<? super K, ? super V, ? extends V> arg1, long arg2, TimeUnit arg3) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public V computeIfPresent(K arg0, BiFunction<? super K, ? super V, ? extends V> arg1, long arg2, TimeUnit arg3,
+			long arg4, TimeUnit arg5) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public CompletableFuture<V> computeAsync(K arg0, BiFunction<? super K, ? super V, ? extends V> arg1) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public CompletableFuture<V> computeAsync(K arg0, BiFunction<? super K, ? super V, ? extends V> arg1, long arg2,
+			TimeUnit arg3) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public CompletableFuture<V> computeAsync(K arg0, BiFunction<? super K, ? super V, ? extends V> arg1, long arg2,
+			TimeUnit arg3, long arg4, TimeUnit arg5) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public CompletableFuture<V> computeIfAbsentAsync(K arg0, Function<? super K, ? extends V> arg1) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public CompletableFuture<V> computeIfAbsentAsync(K arg0, Function<? super K, ? extends V> arg1, long arg2,
+			TimeUnit arg3) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public CompletableFuture<V> computeIfAbsentAsync(K arg0, Function<? super K, ? extends V> arg1, long arg2,
+			TimeUnit arg3, long arg4, TimeUnit arg5) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public CompletableFuture<V> computeIfPresentAsync(K arg0, BiFunction<? super K, ? super V, ? extends V> arg1) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public CompletableFuture<V> computeIfPresentAsync(K arg0, BiFunction<? super K, ? super V, ? extends V> arg1,
+			long arg2, TimeUnit arg3) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public CompletableFuture<V> computeIfPresentAsync(K arg0, BiFunction<? super K, ? super V, ? extends V> arg1,
+			long arg2, TimeUnit arg3, long arg4, TimeUnit arg5) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public CompletableFuture<V> mergeAsync(K arg0, V arg1, BiFunction<? super V, ? super V, ? extends V> arg2) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public CompletableFuture<V> mergeAsync(K arg0, V arg1, BiFunction<? super V, ? super V, ? extends V> arg2,
+			long arg3, TimeUnit arg4) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public CompletableFuture<V> mergeAsync(K arg0, V arg1, BiFunction<? super V, ? super V, ? extends V> arg2,
+			long arg3, TimeUnit arg4, long arg5, TimeUnit arg6) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public <T> T execute(String scriptName, Map<String, ?> params, Object key) {
+		return execute(scriptName, params);
+	}
 
 
 
