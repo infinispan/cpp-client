@@ -20,7 +20,8 @@ include(UseSWIG)
 
 find_program(MVN_PROGRAM "mvn")
 if (MVN_PROGRAM STREQUAL "MVN_PROGRAM-NOTFOUND")
-    message(FATAL_ERROR "Apache Maven (mvn) not found in path")
+    message(WARNING "Apache Maven (mvn) not found in path")
+    message(WARNING "If you don't need the xunit test suite, this should be ok.")
 endif (MVN_PROGRAM STREQUAL "MVN_PROGRAM-NOTFOUND")
 
 if(WIN32 AND NOT CYGWIN)
