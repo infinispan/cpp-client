@@ -442,22 +442,22 @@ else(DEFINED HOTROD_PREBUILT_LIB_DIR)
     
     # Build a shared library
     add_library (hotrod SHARED ${library_sources})
-    
+
     set_target_properties(hotrod PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}")
     set_target_properties(hotrod PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS} ${STATIC_FLAGS}")
     target_link_libraries (hotrod ${platform_libs}  ${OPENSSL_LIBRARIES} hotrod_protobuf ${PROTOBUF_LIBRARY})
-    
+
     if (WIN32 AND NOT CMAKE_SIZEOF_VOID_P MATCHES "8")
         set (OUTPUT_NAME_SUFFIX "32")
     else (WIN32 AND NOT CMAKE_SIZEOF_VOID_P MATCHES "8")
         set (OUTPUT_NAME_SUFFIX "")
     endif (WIN32 AND NOT CMAKE_SIZEOF_VOID_P MATCHES "8")
-    
+
     set_target_properties (hotrod PROPERTIES OUTPUT_NAME "hotrod${OUTPUT_NAME_SUFFIX}")
     set_target_properties (hotrod PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${NO_UNUSED_FLAGS}")
     set_target_properties (hotrod PROPERTIES LINK_FLAGS "${CATCH_UNDEFINED}")
     set_target_properties (hotrod PROPERTIES SOVERSION "1.0")
-    
+
     # Build a static library
     add_library (hotrod-static STATIC ${library_sources})
     set_target_properties(hotrod-static PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}" )
@@ -495,7 +495,12 @@ hr_protobuf_generate_cpp(TEST_PROTO_SRCS TEST_PROTO_HDRS .
 add_custom_target(build_test COMMAND "echo" "build_test completed")
 add_dependencies(build_test JniTest krbserver unittest unittest-static simple simple-static queryTest queryTest-static events
                             nearCacheTest nearCacheFailoverTest continuousQueryTest continuousQueryTest-static
-                            simpleSasl simple-tls simple-tls-sni simpleSaslTls PutGetTest QueryTest ClearTest xunit_nearCacheTest CountersTest simpleTx simpleTx-static)
+                            simpleSasl simple-tls simple-tls-sni simpleSaslTls PutGetTest QueryTest ClearTest xunit_nearCacheTest CountersTest simpleTx simpleTx-static transcoder TranscoderTest TransactionTest)
+
+add_custom_target(build_native_test COMMAND "echo" "build_native_test completed")
+add_dependencies(build_native_test unittest unittest-static simple simple-static queryTest queryTest-static events
+                            nearCacheTest continuousQueryTest continuousQueryTest-static
+                            simpleSasl simple-tls simple-tls-sni simpleSaslTls  transcoder docs)
 
 # TESTS
 
