@@ -738,7 +738,7 @@ target_link_libraries (transcoder hotrod hotrod_protobuf ${PROTOBUF_LIBRARY} ${p
 # the CTest include must be after the MEMORYCHECK settings are processed
 include (CTest)
 find_package(Java)
-find_package(PythonInterp REQUIRED)
+find_package(PythonInterp)
 if (NOT DEFINED PythonInterp_FOUND)
       message(WARNING "Python interpreter not found. This could be ok if you don't need tests")
 endif (NOT DEFINED PythonInterp_FOUND)
