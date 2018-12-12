@@ -739,6 +739,10 @@ target_link_libraries (transcoder hotrod hotrod_protobuf ${PROTOBUF_LIBRARY} ${p
 include (CTest)
 find_package(Java)
 find_package(PythonInterp REQUIRED)
+if (NOT DEFINED PythonInterp_FOUND)
+      message(WARNING "Python interpreter not found. This could be ok if you don't need tests")
+endif (NOT DEFINED PythonInterp_FOUND)
+
 set (CMAKE_ROOT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 if (NOT DEFINED HOTROD_JBOSS_HOME)
