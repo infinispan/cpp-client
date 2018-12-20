@@ -494,7 +494,7 @@ hr_protobuf_generate_cpp(TEST_PROTO_SRCS TEST_PROTO_HDRS .
 )
 
 add_custom_target(build_test COMMAND "echo" "build_test completed")
-add_dependencies(build_test JniTest krbserver unittest unittest-static simple simple-static queryTest queryTest-static events
+add_dependencies(build_test ${JAVA_TESTS} krbserver unittest unittest-static simple simple-static queryTest queryTest-static events
                             nearCacheTest nearCacheFailoverTest continuousQueryTest continuousQueryTest-static
                             simpleSasl simple-tls simple-tls-sni simpleSaslTls PutGetTest xunitQueryTest ClearTest xunit_nearCacheTest CountersTest simpleTx simpleTx-static transcoder TranscoderTest TransactionTest)
 
@@ -868,8 +868,10 @@ endif (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.sh") AND (EXISTS "${HOT
 if (ENABLE_SWIG_TESTING)
     if (NOT JAVA_RUNTIME)
         message(WARNING "Cannot enable SWIG tests without Java")
+	set (JAVA_TESTS "")
     else (NOT JAVA_RUNTIME)
         include(jni/swig.cmake)
+	set (JAVA_TESTS "JniTest")
     endif (NOT JAVA_RUNTIME)
 endif (ENABLE_SWIG_TESTING)
 
