@@ -53,7 +53,7 @@ include(ExternalProject)
 # Download and install GoogleTest
 ExternalProject_Add(
     gtest
-    URL https://github.com/google/googletest/archive/master.zip
+    URL https://github.com/google/googletest/archive/release-1.8.0.zip
     PREFIX ${CMAKE_CURRENT_BINARY_DIR}/gtest
     CMAKE_ARGS -DCMAKE_BUILD_TYPE:STRING=Debug -Dgtest_force_shared_crt=ON
     BUILD_COMMAND cmake --build . --config RelWithDebInfo
