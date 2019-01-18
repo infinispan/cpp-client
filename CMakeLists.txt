@@ -73,7 +73,7 @@ add_dependencies(libgtest gtest)
 if(WIN32 AND NOT CYGWIN)
     set(GTEST_LIBRARY "${binary_dir}/googlemock/gtest/RelWithDebInfo/gtest.lib")
 else(WIN32 AND NOT CYGWIN)
-    set(GTEST_LIBRARY "${binary_dir}/googlemock/gtest/libgtestd.a")
+    set(GTEST_LIBRARY "${binary_dir}/googlemock/gtest/libgtest.a")
 endif(WIN32 AND NOT CYGWIN)
 
 # Set libgtest properties
