@@ -75,8 +75,19 @@ endif (MSVC)
 
 file(GLOB_RECURSE JAVA_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/jni *.java)
 
+if(DEFINED maven.version.org.infinispan)
+  set(MVN_ISPN_VER_OPT "-Dversion.org.infinispan=${maven.version.org.infinispan}")
+endif(DEFINED maven.version.org.infinispan)
+
+if(DEFINED maven.settings.file)
+  set(MVN_SETTINGS_FILE_OPT -s ${maven.settings.file})
+else(DEFINED maven.settings.file)
+  set(MVN_SETTINGS_FILE_OPT "")
+endif(DEFINED maven.settings.file)
+
 add_custom_command(OUTPUT ${JNI_DIR}/target/org/infinispan/client/jni/hotrod/JniTest.class
-    COMMAND ${MVN_PROGRAM} ARGS "-B" "package"
+    COMMAND ${MVN_PROGRAM}
+    ARGS "-B" ${MVN_SETTINGS_FILE_OPT} ${MVN_ISPN_VER_OPT} "package"
     DEPENDS ${JAVA_SOURCES} 
     WORKING_DIRECTORY "${JNI_DIR}" 
 )
@@ -85,7 +96,7 @@ add_custom_target(JniTest ALL DEPENDS ${JNI_DIR}/target/org/infinispan/client/jn
 
 #Target for deploying the jar to the maven repo. Usage: cmake --build . --target JniDeploy
 add_custom_target(JniDeploy
-  ${MVN_PROGRAM} "deploy"
+  ${MVN_PROGRAM} "-B" "${MAVEN_SETTINGS_FILE_OPTS}" "${MVN_ISPN_VER_OPT}" "deploy"
   DEPENDS ${JNI_DIR}/target/org/infinispan/client/jni/hotrod/JniTest.class hotrod-swig
   WORKING_DIRECTORY "${JNI_DIR}")
 
