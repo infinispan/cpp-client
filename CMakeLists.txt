@@ -777,9 +777,22 @@ if (MVN_PROGRAM STREQUAL "MVN_PROGRAM-NOTFOUND")
     message(WARNING "Apache Maven (mvn) not found in path")
 endif (MVN_PROGRAM STREQUAL "MVN_PROGRAM-NOTFOUND")
 
+if(DEFINED maven.version.org.infinispan)
+  set(MVN_ISPN_VER_OPT "-Dversion.org.infinispan=${maven.version.org.infinispan}")
+endif(DEFINED maven.version.org.infinispan)
+
+if(DEFINED maven.settings.file)
+  set(MVN_SETTINGS_FILE_OPT -s ${maven.settings.file})
+  set(MVN_SETTINGS_EXEC_FILE_OPT "-s ${maven.settings.file}")
+else(DEFINED maven.settings.file)
+  set(MVN_SETTINGS_FILE_OPT "")
+  set(MVN_SETTINGS_EXEC_FILE_OPT "")
+endif(DEFINED maven.settings.file)
+
 set(KRBSERVER_DIR "${CMAKE_CURRENT_BINARY_DIR}/krbserver")
 add_custom_command(OUTPUT ${KRBSERVER_DIR}/target/classes/krbserver/Server.class
-    COMMAND ${MVN_PROGRAM} ARGS "-B" "package"
+    COMMAND ${MVN_PROGRAM}
+    ARGS "-B" ${MVN_SETTINGS_FILE_OPT} ${MVN_ISPN_VER_OPT} "package"
     WORKING_DIRECTORY "${KRBSERVER_DIR}"
 )
 
@@ -833,13 +846,13 @@ else (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.sh") AND (EXISTS "${HOTR
         add_test (stop_sasl_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py stop)
         add_test (probe_port_stop_sasl ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/probe_port.py localhost 11222 60 down)
     else (WIN32)
-        add_test (start_krbserver  ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/start_and_probe_port.py localhost 10389 60 "${MVN_PROGRAM} -f krbserver/pom.xml exec:java -Dexec.mainClass=krbserver.Server")
+        add_test (start_krbserver  ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/start_and_probe_port.py localhost 10389 60 "${MVN_PROGRAM} ${MVN_SETTINGS_EXEC_FILE_OPT} -f krbserver/pom.xml exec:java -Dexec.mainClass=krbserver.Server")
         add_test (start_sals_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py start ${Java_JAVA_EXECUTABLE} ${HOTROD_JBOSS_HOME} standalone-sasl.xml)
         add_test (probe_sasl_port ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/probe_port.py localhost 11222 60)
         add_test (simpleSasl simpleSasl)
         add_test (stop_sasl_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py stop)
         add_test (probe_port_stop_sasl ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/probe_port.py localhost 11222 60 down)
-        add_test (stop_krbserver ${MVN_PROGRAM} -f krbserver/pom.xml exec:java -Dexec.mainClass=krbserver.Server -Dexec.args=stop)
+        add_test (stop_krbserver ${MVN_PROGRAM} ${MVN_SETTINGS_FILE_OPT} -f krbserver/pom.xml exec:java -Dexec.mainClass=krbserver.Server -Dexec.args=stop)
     endif(WIN32)
     add_test (start_ssl_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py start ${Java_JAVA_EXECUTABLE} ${HOTROD_JBOSS_HOME} standalone-hotrod-ssl.xml)
     add_test (probe_ssl_port ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/probe_port.py localhost 11222 60)
