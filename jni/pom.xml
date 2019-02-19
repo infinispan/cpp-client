@@ -19,7 +19,7 @@
    <properties>
       <version.org.infinispan>9.4.1.Final</version.org.infinispan>
       <version.org.jboss.logging.processor>1.2.1.Final</version.org.jboss.logging.processor>
-      <version.org.jboss.jbossts>4.17.13.Final</version.org.jboss.jbossts>
+      <version.org.jboss.jbossts>4.17.24.Final</version.org.jboss.jbossts>
       <version.org.testng>6.10</version.org.testng>
       <maven.test.skip.exec>true</maven.test.skip.exec>
       <maven.compiler.source>1.8</maven.compiler.source>
