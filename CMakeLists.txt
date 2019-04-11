@@ -170,6 +170,17 @@ if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   endif (ENABLE_WARNING_ERROR)
 
   set (COMPILER_FLAGS "-fvisibility=hidden -fvisibility-inlines-hidden -std=c++11")
+  if (DEFINED CODE_COVERAGE)
+        set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-modules)
+        include(CodeCoverage)
+        setup_target_for_coverage_gcovr_html(NAME hotrod_coverage_html
+                                       EXECUTABLE ctest
+                                       DEPENDENCIES build_test)
+        setup_target_for_coverage_gcovr_xml(NAME hotrod_coverage_xml
+                                       EXECUTABLE ctest
+                                       DEPENDENCIES build_test)
+        set (COMPILER_FLAGS "${COMPILER_FLAGS} ${CMAKE_CXX_FLAGS_COVERAGE}")
+  endif (DEFINED CODE_COVERAGE)
   if (CMAKE_COMPILER_IS_GNUCXX)
   set (WARNING_FLAGS
         "${WERROR} -pedantic -Wall -Wextra -Wno-shadow -Wpointer-arith -Wcast-qual -Wcast-align -Wno-long-long -Wvolatile-register-var -Winvalid-pch -Wno-system-headers -Woverloaded-virtual -Wno-variadic-macros -Wno-error=shadow")
