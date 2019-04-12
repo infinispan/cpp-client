@@ -47,11 +47,6 @@ class TcpTransportFactory : public TransportFactory
 
     void updateServers(std::vector<InetSocketAddress>& );
     void updateHashFunction(
-                std::map<InetSocketAddress, std::set<int32_t> >& servers2Hash,
-                int32_t numKeyOwners, uint8_t hashFunctionVersion,
-                int32_t hashSpace,
-                const std::vector<char>& cacheName);
-    void updateHashFunction(
             std::vector<std::vector<InetSocketAddress>>& segmentOwners,
             uint32_t &numSegment, uint8_t &hashFunctionVersion,
             const std::vector<char>& cacheName, int topologyId);

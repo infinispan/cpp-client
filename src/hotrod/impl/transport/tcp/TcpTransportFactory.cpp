@@ -332,13 +332,6 @@ void TcpTransportFactory::updateServers(std::vector<InetSocketAddress>& newServe
 }
 
 void TcpTransportFactory::updateHashFunction(
-        std::map<InetSocketAddress, std::set<int32_t> >& servers2Hash,
-        int32_t numKeyOwners, uint8_t hashFunctionVersion, int32_t hashSpace, const std::vector<char>& cacheName) {
-    ScopedLock<Mutex> l(lock);
-    topologyInfo->updateTopology(servers2Hash,numKeyOwners,hashFunctionVersion,hashSpace,cacheName);
-   }
-
-void TcpTransportFactory::updateHashFunction(
 		std::vector<std::vector<InetSocketAddress>>& segmentOwners,
         uint32_t &numSegment, uint8_t &hashFunctionVersion,
         const std::vector<char>& cacheName, int topologyId)
