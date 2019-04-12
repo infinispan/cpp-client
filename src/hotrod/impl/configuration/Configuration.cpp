@@ -3,10 +3,6 @@
 namespace infinispan {
 namespace hotrod {
 
-const char* Configuration::PROTOCOL_VERSION_10 = "1.0";
-const char* Configuration::PROTOCOL_VERSION_11 = "1.1";
-const char* Configuration::PROTOCOL_VERSION_12 = "1.2";
-const char* Configuration::PROTOCOL_VERSION_13 = "1.3";
 const char* Configuration::PROTOCOL_VERSION_20 = "2.0";
 const char* Configuration::PROTOCOL_VERSION_21 = "2.1";
 const char* Configuration::PROTOCOL_VERSION_22 = "2.2";

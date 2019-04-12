@@ -11,7 +11,7 @@
 #include "hotrod/sys/Log.h"
 #include "hotrod/impl/transport/tcp/TcpTransport.h"
 #include "hotrod/impl/protocol/CodecFactory.h"
-#include "hotrod/impl/protocol/Codec10.h"
+#include "hotrod/impl/protocol/Codec20.h"
 #include "infinispan/hotrod/Configuration.h"
 #include "hotrod/impl/protocol/HeaderParams.h"
 
@@ -95,7 +95,7 @@ class CodecInvoker : public Runnable {
 
 public:
 
-    CodecInvoker(Codec10 *testedCodecPassedIn) : testedCodec(testedCodecPassedIn) {
+    CodecInvoker(Codec20 *testedCodecPassedIn) : testedCodec(testedCodecPassedIn) {
         testedIntWrapper = new Topology(0);
         testedTransport = new TestTransport();
         testedHeaderParams = new HeaderParams(*testedIntWrapper);
@@ -121,7 +121,7 @@ private:
     Topology *testedIntWrapper;
     TestTransport *testedTransport;
     HeaderParams *testedHeaderParams;
-    Codec10 *testedCodec;
+    Codec20 *testedCodec;
 };
 
 class Sleeper : public Runnable {
@@ -460,10 +460,10 @@ HR_EXPORT void updateServersTest() {
 }
 
 HR_EXPORT void runConcurrentCodecWritesTest() {
-    Codec10 *testedCodec = NULL;
+    Codec20 *testedCodec = NULL;
     Thread** threads = new Thread*[CODEC_TEST_NUMBER_OF_ITERATIONS_PER_TEST];
     CodecInvoker** ci = new CodecInvoker*[CODEC_TEST_NUMBER_OF_ITERATIONS_PER_TEST];
-    testedCodec = (Codec10*)CodecFactory::getCodec(Configuration::PROTOCOL_VERSION_10);
+    testedCodec = (Codec20*)CodecFactory::getCodec(Configuration::PROTOCOL_VERSION_20);
 
     for(int testIterationCounter = 0; testIterationCounter < CODEC_TEST_NUMBER_OF_TESTS; ++testIterationCounter) {
         int expectedIterations = CODEC_TEST_NUMBER_OF_ITERATIONS_PER_TEST * (testIterationCounter + 1);

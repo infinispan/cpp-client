@@ -43,10 +43,6 @@ class HeaderParams
     int topologyAge;
     EntryMediaTypes* dataFormat;
 
-    friend class Codec10;
-    friend class Codec11;
-    friend class Codec12;
-    friend class Codec13;
     friend class Codec20;
     friend class Codec21;
     friend class Codec22;

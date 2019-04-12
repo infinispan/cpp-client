@@ -28,8 +28,8 @@ using infinispan::hotrod::sys::ScopedUnlock;
 
 namespace protocol {
 
-extern long msgId;
-extern Mutex lock;
+long msgId(0);
+Mutex lock;
 
 long Codec20::getMessageId() {
     ScopedLock<Mutex> l(lock);

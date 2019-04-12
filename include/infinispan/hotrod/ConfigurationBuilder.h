@@ -226,9 +226,7 @@ class ConfigurationBuilder
     }
 
     /**
-     * Sets the protocol version for this ConfigurationBuilder. Protocol version is either:
-     * Configuration::PROTOCOL_VERSION_10 or Configuration::PROTOCOL_VERSION_11 or
-     * Configuration::PROTOCOL_VERSION_12. Default is PROTOCOL_VERSION_12.
+     * Sets the protocol version for this ConfigurationBuilder.
      *
      *\return ConfigurationBuilder instance to be used for further configuration
      */
