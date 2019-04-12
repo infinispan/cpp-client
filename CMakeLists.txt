@@ -214,7 +214,7 @@ endif(WIN32 AND NOT CYGWIN)
 
 # Add options here called <whatever> they will turn into "ENABLE_<whatever" and can be
 # overridden on a platform specific basis above by NOENABLE_<whatever>
-set (OPTIONS WARNING_ERROR UNDEFINED_ERROR SWIG_TESTING INTERNAL_TESTING VALGRIND)
+set (OPTIONS UNDEFINED_ERROR SWIG_TESTING INTERNAL_TESTING VALGRIND)
 
 foreach (OPTION ${OPTIONS})
   if (NOT "NOENABLE_${OPTION}")
@@ -383,8 +383,6 @@ else(DEFINED HOTROD_PREBUILT_LIB_DIR)
       src/hotrod/impl/operations/FaultTolerantPingOperation.cpp
       src/hotrod/impl/operations/ExecuteCmdOperation.cpp
       src/hotrod/impl/protocol/HeaderParams.cpp
-      src/hotrod/impl/protocol/Codec10.cpp
-      src/hotrod/impl/protocol/Codec11.cpp
       src/hotrod/impl/protocol/Codec20.cpp
       src/hotrod/impl/protocol/Codec21.cpp
       src/hotrod/impl/protocol/Codec22.cpp

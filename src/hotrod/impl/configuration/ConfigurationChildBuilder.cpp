@@ -71,7 +71,6 @@ ConfigurationBuilder& ConfigurationChildBuilder::keySizeEstimate(int keySizeEsti
  * valid values include 1.0 and 1.1.
  *
  * \return ConfigurationBuilder for further configuration
- * \sa Configuration::PROTOCOL_VERSION_10
  */
 ConfigurationBuilder& ConfigurationChildBuilder::protocolVersion(const std::string &protocolVersion)
 {

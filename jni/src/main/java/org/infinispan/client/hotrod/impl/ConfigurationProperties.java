@@ -55,9 +55,6 @@ public class ConfigurationProperties {
    public static final String PROTOCOL_VERSION_22 = "2.2";
    public static final String PROTOCOL_VERSION_21 = "2.1";
    public static final String PROTOCOL_VERSION_20 = "2.0";
-   public static final String PROTOCOL_VERSION_12 = "1.2";
-   public static final String PROTOCOL_VERSION_11 = "1.1";
-   public static final String PROTOCOL_VERSION_10 = "1.0";
    public static final String DEFAULT_PROTOCOL_VERSION = PROTOCOL_VERSION_24;
 
    private final TypedProperties props;

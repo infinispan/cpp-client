@@ -70,10 +70,6 @@ using namespace infinispan::hotrod;
 %include "infinispan/hotrod/SecurityConfiguration.h"
 %include "infinispan/hotrod/NearCacheConfiguration.h"
 
-%immutable infinispan::hotrod::Configuration::PROTOCOL_VERSION_10;
-%immutable infinispan::hotrod::Configuration::PROTOCOL_VERSION_11;
-%immutable infinispan::hotrod::Configuration::PROTOCOL_VERSION_12;
-%immutable infinispan::hotrod::Configuration::PROTOCOL_VERSION_13;
 %immutable infinispan::hotrod::Configuration::PROTOCOL_VERSION_20;
 %immutable infinispan::hotrod::Configuration::PROTOCOL_VERSION_21;
 %immutable infinispan::hotrod::Configuration::PROTOCOL_VERSION_22;

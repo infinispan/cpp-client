@@ -28,10 +28,6 @@ namespace hotrod {
 class Configuration
 {
   public:
-    HR_EXTERN static const char* PROTOCOL_VERSION_10;
-    HR_EXTERN static const char* PROTOCOL_VERSION_11;
-    HR_EXTERN static const char* PROTOCOL_VERSION_12;
-    HR_EXTERN static const char* PROTOCOL_VERSION_13;
     HR_EXTERN static const char* PROTOCOL_VERSION_20;
     HR_EXTERN static const char* PROTOCOL_VERSION_21;
     HR_EXTERN static const char* PROTOCOL_VERSION_22;
