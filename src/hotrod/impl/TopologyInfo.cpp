@@ -22,7 +22,7 @@ std::shared_ptr<consistenthash::SegmentConsistentHash> TopologyInfo::updateTopol
 	}
 	createTopologyId(cacheName, topologyId);
 	segmentsByCache[cacheName]=numSegment;
-	topologyIdsByCache.insert(std::pair<std::vector<char>, int> (cacheName, topologyId));
+	topologyIdsByCache[cacheName]=topologyId;
 	consistentHashByCacheName[cacheName]=hash;
 	return hash;
 	}
@@ -67,7 +67,7 @@ CacheTopologyInfo TopologyInfo::getCacheTopologyInfo(const std::vector<char>& ca
     	for( auto it= servers.begin(); it<servers.end(); it ++){
     		std::vector<int> v(segmentsByCache[cacheName]);
     		std::iota(v.begin(),v.end(),0);
-    		segmentPerServers_.insert( std::pair<transport::InetSocketAddress, std::vector<int> >(*it,v));
+    		segmentPerServers_[*it]=v;
     	}
           return CacheTopologyInfo(segmentPerServers_, segmentsByCache[cacheName], topologyIdsByCache[cacheName]);
       }
@@ -90,17 +90,6 @@ transport::InetSocketAddress TopologyInfo::getHashAwareServer(
     }
 
 
-}
-
-int TopologyInfo::getSegmentsByCacheName(std::vector<char> cacheName) {
-    std::map<std::vector<char>,unsigned int>::iterator it=segmentsByCache.find(cacheName);
-    TRACE("getSegmentsByCacheName(%.16s)", cacheName.data());
-    if (it!=segmentsByCache.end()){
-		return it->second;
-    }
-		else{
-			return 0;
-			}
 }
 
 } /* namespace hotrod */
