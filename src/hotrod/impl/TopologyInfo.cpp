@@ -27,20 +27,6 @@ std::shared_ptr<consistenthash::SegmentConsistentHash> TopologyInfo::updateTopol
 	return hash;
 	}
 
-void TopologyInfo::updateTopology(
-		std::map<transport::InetSocketAddress, std::set<int32_t> >& servers2Hash,
-		int32_t numKeyOwners, uint8_t hashFunctionVersion, int32_t hashSpace,
-		const std::vector<char>& cacheName) {
-    std::shared_ptr<consistenthash::ConsistentHash> hash = hashFactory->newConsistentHash(hashFunctionVersion);
-    if (hash == NULL) {
-        std::cout << "updateHashFunction with hash version "
-            << hashFunctionVersion << " failed!" << std::endl;
-    } else {
-        hash->init(servers2Hash, numKeyOwners, hashSpace);
-    }
-      consistentHashByCacheName[cacheName] = hash;
-}
-
 Topology TopologyInfo::getTopology(const std::vector<char> &/*cacheName*/) {
   return Topology();
 }
