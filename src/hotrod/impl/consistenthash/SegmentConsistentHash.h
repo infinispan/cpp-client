@@ -13,6 +13,8 @@
 #include "hotrod/impl/hash/Hash.h"
 #include "hotrod/impl/hash/MurmurHash3.h"
 #include "infinispan/hotrod/exceptions.h"
+#include "hotrod/sys/Log.h"
+
 
 namespace infinispan {
 namespace hotrod {
@@ -39,7 +41,7 @@ public:
 
 private:
     uint32_t getSegmentSize(uint32_t num) {
-	  return (uint32_t)(((double)(1L<<31)-1)/num)+1;
+	  return (uint32_t)(0x7FFFFFFFUL/num)+1;
     }
 
     uint32_t getNormalizedHashUtil(const std::vector<char>& key, Hash* hashFct) {
