@@ -165,10 +165,10 @@ static uint32_t intMurmur3Hashes[] = {
 	0x80C5744F, 0xE8D3C286, 0x25A599D1, 0x9499C573, 0xC2F9FEDB, 0xC6C597B7,
 };
 
-bool testHashString(const Hash& hash, const char input[][MAX_LENGTH], unsigned inputSize, const uint32_t expected[]) {
+bool testHashString(const char input[][MAX_LENGTH], unsigned inputSize, const uint32_t expected[]) {
 	std::cout << "Testing " << std::dec << inputSize << " strings.\n";
 	for (unsigned i = 0; i < inputSize; ++i) {
-		uint32_t h = hash.hash(input[i], i + 1);
+		uint32_t h = MurmurHash3::hash(input[i], i + 1);
 		if (h != expected[i]) {
 			std::cerr << "Test failed for string " << i << ": ";
 			for (unsigned j = 0; j <= i; ++j) std::cerr << (int) input[i][j] << ", ";
@@ -180,10 +180,10 @@ bool testHashString(const Hash& hash, const char input[][MAX_LENGTH], unsigned i
 	return true;
 }
 
-bool testHashInt(const Hash& hash, const int32_t input[], unsigned inputSize, const uint32_t expected[]) {
+bool testHashInt(const int32_t input[], unsigned inputSize, const uint32_t expected[]) {
 	std::cout << "Testing " << std::dec << inputSize << " integers.\n";
 	for (unsigned i = 0; i < inputSize; ++i) {
-		uint32_t h = hash.hash(input[i]);
+		uint32_t h = MurmurHash3::hash(input[i]);
 		if (h != expected[i]) {
 			std::cerr << "Test failed for integer " << input[i]
 					  << "\nexpected=" << std::hex << expected[i]
@@ -196,8 +196,7 @@ bool testHashInt(const Hash& hash, const int32_t input[], unsigned inputSize, co
 
 HR_EXTERN bool murmurHash3StringTest() {
 	std::cout << "Running murmurHash3StringTest\n";
-	MurmurHash3 murmur3;
-    if (testHashString(murmur3, strings, sizeof(strings)/MAX_LENGTH, stringMurmur3Hashes)) {
+    if (testHashString(strings, sizeof(strings)/MAX_LENGTH, stringMurmur3Hashes)) {
     	std::cout << "MurmurHash3 passed consistency test for strings" << std::endl;
     	return true;
     }
@@ -206,8 +205,7 @@ HR_EXTERN bool murmurHash3StringTest() {
 
 HR_EXTERN bool murmurHash3IntTest() {
 	std::cout << "Running murmurHash3IntTest\n";
-    MurmurHash3 murmur3;
-    if (testHashInt(murmur3, integers, sizeof(integers)/sizeof(int32_t), intMurmur3Hashes)) {
+    if (testHashInt(integers, sizeof(integers)/sizeof(int32_t), intMurmur3Hashes)) {
     	std::cout << "MurmurHash3 passed consistency test for integers" << std::endl;
     	return true;
     }

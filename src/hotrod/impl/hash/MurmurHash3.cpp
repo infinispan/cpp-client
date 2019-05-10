@@ -200,13 +200,11 @@ int32_t MurmurHash3_x64_32(const void * key, const int32_t len, const int32_t se
 
 // Method declarations
 
-MurmurHash3::~MurmurHash3() {}
-
-uint32_t MurmurHash3::hash(const void *key, size_t size) const {
+uint32_t MurmurHash3::hash(const void *key, size_t size) {
     return (uint32_t) MurmurHash3_x64_32(key, (int32_t)size, 9001);
 }
 
-uint32_t MurmurHash3::hash(int32_t key) const {
+uint32_t MurmurHash3::hash(int32_t key) {
 	// Obtained by inlining MurmurHash3_x64_32(byte[], 9001) and removing all the unused code
 	// (since we know the input is always 4 bytes and we only need 4 bytes of output)
 	int8_t b0 = (int8_t) key;
