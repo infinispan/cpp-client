@@ -22,7 +22,7 @@ public:
 	virtual ~TopologyInfo();
 	Topology getTopology(const std::vector<char> &cacheName);
 	CacheTopologyInfo getCacheTopologyInfo(const std::vector<char> &cacheName);
-	std::shared_ptr<consistenthash::SegmentConsistentHash> updateTopology(std::vector<std::vector<transport::InetSocketAddress>>& segmentOwners,
+	std::shared_ptr<consistenthash::ConsistentHash> updateTopology(std::vector<std::vector<transport::InetSocketAddress>>& segmentOwners,
 	        uint32_t &numSegment, uint8_t &hashFunctionVersion, std::vector<char> cacheName, int topologyId);
 	void updateTopology(
 	        std::map<transport::InetSocketAddress, std::set<int32_t> >& servers2Hash,
