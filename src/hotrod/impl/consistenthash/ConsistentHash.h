@@ -3,7 +3,6 @@
 
 #include <infinispan/hotrod/InetSocketAddress.h>
 #include "infinispan/hotrod/defs.h"
-#include "hotrod/impl/hash/Hash.h"
 #include <set>
 #include <map>
 #include <vector>
@@ -15,12 +14,11 @@ namespace consistenthash {
 class ConsistentHash {
 
 public:
-    virtual ~ConsistentHash() { if (hash) delete hash; }
     virtual void init(
             std::map<infinispan::hotrod::transport::InetSocketAddress,
                     std::set<int32_t> > & servers2Hash, int32_t numKeyOwners,
             int32_t hashSpace) = 0;
-
+	virtual void init(std::vector<std::vector<transport::InetSocketAddress>> _segmentOwners, uint32_t _numSegments) = 0;
     virtual const infinispan::hotrod::transport::InetSocketAddress& getServer(const std::vector<char>& key) = 0;
 
     /**
@@ -38,11 +36,8 @@ public:
     	std::map<infinispan::hotrod::transport::InetSocketAddress, std::vector<int> > m;
     	return m;
     }
+    virtual ~ConsistentHash() {}
 
-protected:
-    ConsistentHash(Hash* hash_) : hash(hash_) {}
-
-    Hash* hash;
 };
 
 }}} // namespace infinispan::hotrod::consistenthash
