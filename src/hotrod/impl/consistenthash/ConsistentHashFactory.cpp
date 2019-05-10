@@ -26,21 +26,5 @@ std::shared_ptr<ConsistentHash> ConsistentHashFactory::newConsistentHash(uint8_t
     return result;
 }
 
-std::shared_ptr<SegmentConsistentHash> ConsistentHashFactory::newSegmentConsistentHash(uint8_t version) const {
-    std::shared_ptr<SegmentConsistentHash> result;
-    switch (version) {
-        case HotRodConstants::SEGMENT_CONSISTENT_HASH:
-            result.reset(new SegmentConsistentHash());
-            break;
-        default:
-			throw UnsupportedOperationException();
-            break;
-    }
-    return result;
-}
-
-
-
-
 
 }}} // namespace

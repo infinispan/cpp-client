@@ -13,12 +13,12 @@ TopologyInfo::~TopologyInfo() {
 	// TODO Auto-generated destructor stub
 }
 
-std::shared_ptr<consistenthash::SegmentConsistentHash> TopologyInfo::updateTopology(std::vector<std::vector<transport::InetSocketAddress>>& segmentOwners,
+std::shared_ptr<consistenthash::ConsistentHash> TopologyInfo::updateTopology(std::vector<std::vector<transport::InetSocketAddress>>& segmentOwners,
         uint32_t &numSegment, uint8_t &hashFunctionVersion, std::vector<char> cacheName, int topologyId) {
-	std::shared_ptr<consistenthash::SegmentConsistentHash> hash= hashFactory->newSegmentConsistentHash(hashFunctionVersion);
+	std::shared_ptr<consistenthash::ConsistentHash> hash= hashFactory->newConsistentHash(hashFunctionVersion);
 	if (hash)
 	{
-		hash->seg_init(segmentOwners, numSegment);
+		hash->init(segmentOwners, numSegment);
 	}
 	createTopologyId(cacheName, topologyId);
 	segmentsByCache[cacheName]=numSegment;

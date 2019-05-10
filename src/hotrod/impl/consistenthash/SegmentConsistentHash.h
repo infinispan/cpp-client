@@ -10,7 +10,6 @@
 
 
 #include <hotrod/impl/consistenthash/ConsistentHash.h>
-#include "hotrod/impl/hash/Hash.h"
 #include "hotrod/impl/hash/MurmurHash3.h"
 #include "infinispan/hotrod/exceptions.h"
 
@@ -20,9 +19,9 @@ namespace consistenthash {
 
 class SegmentConsistentHash: public ConsistentHash {
 public:
-	SegmentConsistentHash() : ConsistentHash(new MurmurHash3()), segmentOwners(), numSegments(0), segmentSize(0) {};
+	SegmentConsistentHash() : segmentOwners(), numSegments(0), segmentSize(0) {};
 	virtual ~SegmentConsistentHash() {};
-	void seg_init(std::vector<std::vector<transport::InetSocketAddress>> _segmentOwners, uint32_t _numSegments) {
+	void init(std::vector<std::vector<transport::InetSocketAddress>> _segmentOwners, uint32_t _numSegments) {
 	      segmentOwners = _segmentOwners;
 	      numSegments = _numSegments;
 	      segmentSize = getSegmentSize(_numSegments);
@@ -33,24 +32,22 @@ public:
 
     const infinispan::hotrod::transport::InetSocketAddress& getServer(const std::vector<char>& key);
 
-    int32_t getNormalizedHash(int32_t objectId) { return getNormalizedHashUtil(objectId, hash); }
+    int32_t getNormalizedHash(int32_t objectId) { return hash(objectId) & 0x7fffffff; }
 
-    int32_t getNormalizedHash(const std::vector<char>& key) { return getNormalizedHashUtil(key, hash); }
+    int32_t getNormalizedHash(const std::vector<char>& key) { return hash(key.data(),key.size()) & 0x7fffffff; }
 
 private:
+
+    static uint32_t hash(const void *key, size_t size) {
+    	return MurmurHash3::hash(key, size);
+    }
+    static uint32_t hash(int32_t key) {
+    	return MurmurHash3::hash(key);
+    }
+
     uint32_t getSegmentSize(uint32_t num) {
 	  return (uint32_t)(((double)(1L<<31)-1)/num)+1;
     }
-
-    uint32_t getNormalizedHashUtil(const std::vector<char>& key, Hash* hashFct) {
-     // make sure no negative numbers are involved.
-     return hashFct->hash(key.data(),key.size()) & 0x7fffffff;
-   }
-
-    uint32_t getNormalizedHashUtil(int32_t objectId, Hash* hashFct) {
-     // make sure no negative numbers are involved.
-     return hashFct->hash(objectId) & 0x7fffffff;
-   }
 
     uint32_t getSegment(const std::vector<char>& key);
 

@@ -1,6 +1,7 @@
 #include <infinispan/hotrod/InetSocketAddress.h>
 #include "hotrod/impl/consistenthash/ConsistentHashV2.h"
 #include "hotrod/impl/hash/MurmurHash3.h"
+
 #include <limits>
 #include <algorithm>
 
@@ -9,7 +10,7 @@ namespace hotrod {
 using transport::InetSocketAddress;
 namespace consistenthash {
 
-ConsistentHashV2::ConsistentHashV2(): ConsistentHash(new MurmurHash3()), hashSpace(0), numKeyOwners(0), hashSpaceIsMaxInt(false) {}
+ConsistentHashV2::ConsistentHashV2() : hashSpace(0), numKeyOwners(0), hashSpaceIsMaxInt(false) {}
 
 void ConsistentHashV2::init(
         std::map<InetSocketAddress, std::set<int32_t> > & servers2Hash, int32_t nKeyOwners,
@@ -69,12 +70,12 @@ const InetSocketAddress& ConsistentHashV2::getServer(const std::vector<char>& ke
 
 int32_t ConsistentHashV2::getNormalizedHash(int32_t objectId) {
     // make sure no negative numbers are involved.
-    return hash->hash(objectId) & std::numeric_limits<int32_t>::max();
+    return hash(objectId) & std::numeric_limits<int32_t>::max();
 }
 
 int32_t ConsistentHashV2::getNormalizedHash(const std::vector<char>& key) {
     // make sure no negative numbers are involved.
-    return hash->hash(key.data(), key.size()) & std::numeric_limits<int32_t>::max();
+    return hash(key.data(), key.size()) & std::numeric_limits<int32_t>::max();
 }
 
 int32_t ConsistentHashV2::getHashIndex(int32_t normalisedHashForKey) {
