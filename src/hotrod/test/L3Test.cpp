@@ -1,7 +1,6 @@
 #include "infinispan/hotrod/ImportExport.h"
 #include "hotrod/impl/consistenthash/ConsistentHashFactory.h"
 #include "hotrod/impl/consistenthash/ConsistentHash.h"
-#include "hotrod/impl/consistenthash/ConsistentHashV2.h"
 #include "hotrod/impl/protocol/HotRodConstants.h"
 #include "infinispan/hotrod/defs.h"
 #include <iostream>

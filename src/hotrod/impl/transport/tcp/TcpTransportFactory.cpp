@@ -341,16 +341,6 @@ void TcpTransportFactory::updateHashFunction(
    std::shared_ptr<consistenthash::ConsistentHash> h=topologyInfo->updateTopology(segmentOwners, numSegment, hashFunctionVersion, cacheName, topologyId);
 }
 
-
-void TcpTransportFactory::clearHashFunction(const std::vector<char>& cacheName) {
-    topologyInfo->consistentHashErase(cacheName);
-}
-
-ConsistentHashFactory& TcpTransportFactory::getConsistentHashFactory(){
-    ScopedLock<Mutex> l(lock);
-    return *topologyInfo->getHashFactory();
-}
-
 const std::string& TcpTransportFactory::getSniHostName(){
     return sniHostName;
 
