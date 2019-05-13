@@ -30,7 +30,6 @@ class HotRodConstants
     static const uint8_t VERSION_28 = 28;
 
     //hotrod consistenthash version
-    static const uint8_t CONSISTENT_HASH_V2      = 2;
     static const uint8_t SEGMENT_CONSISTENT_HASH = 3;
 
     //requests

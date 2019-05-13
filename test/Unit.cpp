@@ -27,7 +27,6 @@ int main(int, char**) {
     runOnceTest();
     testTopologyChangeResponse();
     updateServersTest();
-    consistentHashFactoryTests();
     murmurHash3StringTest();
     murmurHash3IntTest();
     //ConnectionPool unit tests

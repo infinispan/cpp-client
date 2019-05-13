@@ -339,7 +339,6 @@ else(DEFINED HOTROD_PREBUILT_LIB_DIR)
     if(ENABLE_INTERNAL_TESTING)
     set (internal_test_sources
       src/hotrod/test/Unit.cpp
-      src/hotrod/test/L3Test.cpp
       src/hotrod/test/HashTest.cpp
       src/hotrod/test/ConnectionPoolTest.cpp
     )
