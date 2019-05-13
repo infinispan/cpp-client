@@ -29,8 +29,8 @@ volatile int available = 0;
 volatile bool waitersDone = false;
 
 #define UNUSED(x) (void)(x)
-const int CODEC_TEST_NUMBER_OF_TESTS = 123;
-const int CODEC_TEST_NUMBER_OF_ITERATIONS_PER_TEST = 1023;
+const int CODEC_TEST_NUMBER_OF_TESTS = 12;
+const int CODEC_TEST_NUMBER_OF_ITERATIONS_PER_TEST = 102;
 
 using namespace infinispan::hotrod;
 using namespace infinispan::hotrod::protocol;
