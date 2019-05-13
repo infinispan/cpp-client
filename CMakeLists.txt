@@ -370,7 +370,6 @@ else(DEFINED HOTROD_PREBUILT_LIB_DIR)
       src/hotrod/impl/TopologyInfo.cpp
       src/hotrod/impl/hash/MurmurHash3.cpp
       src/hotrod/impl/consistenthash/ConsistentHashFactory.cpp
-      src/hotrod/impl/consistenthash/ConsistentHashV2.cpp
       src/hotrod/impl/consistenthash/SegmentConsistentHash.cpp
       src/hotrod/impl/operations/OperationsFactory.cpp
       src/hotrod/impl/operations/QueryOperation.cpp

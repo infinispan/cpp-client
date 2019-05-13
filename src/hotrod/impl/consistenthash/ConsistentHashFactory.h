@@ -3,7 +3,6 @@
 
 #include "infinispan/hotrod/defs.h"
 #include "hotrod/impl/protocol/HotRodConstants.h"
-#include "hotrod/impl/consistenthash/ConsistentHashV2.h"
 #include "hotrod/impl/consistenthash/SegmentConsistentHash.h"
 #include "infinispan/hotrod/Configuration.h"
 #include "infinispan/hotrod/exceptions.h"
@@ -20,13 +19,7 @@ using infinispan::hotrod::protocol::HotRodConstants;
 class ConsistentHashFactory
 {
   public:
-    /*
-     * We can not really dynamically load classes from configuration like in Java client
-     * This method is therefore useless. Keep it as a note and remove later
-     *
-    void init(Configuration& config); */
-
-	std::shared_ptr<ConsistentHash> newConsistentHash(uint8_t version) const;
+	static std::shared_ptr<ConsistentHash> newConsistentHash(uint8_t version);
 };
 
 }}} // namespace infinispan::hotrod::consistenthash

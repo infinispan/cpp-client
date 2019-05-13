@@ -50,9 +50,6 @@ class TcpTransportFactory : public TransportFactory
             std::vector<std::vector<InetSocketAddress>>& segmentOwners,
             uint32_t &numSegment, uint8_t &hashFunctionVersion,
             const std::vector<char>& cacheName, int topologyId);
-    void clearHashFunction(const std::vector<char>& cacheName);
-    infinispan::hotrod::consistenthash::ConsistentHashFactory
-            & getConsistentHashFactory();
     Transport& borrowTransportFromPool(const InetSocketAddress& server);
     virtual ~TcpTransportFactory() { }
     const Configuration& getConfiguration() { return configuration; }

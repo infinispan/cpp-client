@@ -57,11 +57,6 @@ class TransportFactory
             						uint32_t &numSegment, uint8_t &hashFunctionVersion,
             						const std::vector<char>& cacheName, int topologyId) = 0;
 
-    virtual void clearHashFunction(const std::vector<char>& cacheName) = 0;
-
-    virtual infinispan::hotrod::consistenthash::ConsistentHashFactory
-    & getConsistentHashFactory() = 0;
-
     int getTopologyId(const std::vector<char> &cacheName) {
     	if (topologyInfo) {
     	  return topologyInfo->getCacheTopologyInfo(cacheName).getTopologyId();
