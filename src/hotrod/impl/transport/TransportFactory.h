@@ -6,7 +6,8 @@
 #include "hotrod/impl/Topology.h"
 #include "hotrod/impl/TopologyInfo.h"
 #include "infinispan/hotrod/Flag.h"
-#include <hotrod/impl/event/ClientListenerNotifier.h>
+#include "hotrod/impl/event/ClientListenerNotifier.h"
+#include "infinispan/hotrod/exceptions.h"
 #include <vector>
 #include <set>
 #include <map>
