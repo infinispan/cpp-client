@@ -48,7 +48,6 @@ class RemoteCacheManagerImpl
     bool started;
     Configuration configuration;
     protocol::Codec* codec;
-    int defaultCacheTopologyId;
 
     typedef std::pair<std::shared_ptr<RemoteCacheImpl>, bool> RemoteCacheHolder;
     std::map<std::string, RemoteCacheHolder> cacheName2RemoteCache;
