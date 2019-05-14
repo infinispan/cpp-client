@@ -338,7 +338,7 @@ void TcpTransportFactory::updateHashFunction(
 {
     ScopedLock<Mutex> l(lock);
     TRACE("TcpTransportFactory::updateHashFunction(): hashversion=%d, topologyId=%d",hashFunctionVersion, topologyId);
-   std::shared_ptr<consistenthash::ConsistentHash> h=topologyInfo->updateTopology(segmentOwners, numSegment, hashFunctionVersion, cacheName, topologyId);
+    topologyInfo->updateTopology(segmentOwners, numSegment, hashFunctionVersion, cacheName, topologyId);
 }
 
 const std::string& TcpTransportFactory::getSniHostName(){
