@@ -6,7 +6,7 @@
  */
 
 #include <hotrod/impl/operations/RemoveClientListenerOperation.h>
-#include <hotrod/impl/transport/tcp/TcpTransportFactory.h>
+#include <hotrod/impl/transport/TransportFactory.h>
 
 namespace infinispan {
 namespace hotrod {
@@ -15,13 +15,13 @@ namespace operations {
 
 void RemoveClientListenerOperation::releaseTransport(transport::Transport* transport)
 {
-    std::dynamic_pointer_cast<TcpTransportFactory>(transportFactory)->releaseTransport(*transport);
+    std::dynamic_pointer_cast<TransportFactory>(transportFactory)->releaseTransport(*transport);
 }
 
 transport::Transport& RemoveClientListenerOperation::getTransport(int /*retryCount*/, const std::set<transport::InetSocketAddress>& /*failedServers*/)
 {
     const TcpTransport &listenerTransport = (const TcpTransport&)listenerNotifier.findClientListenerTransport(clientListener.getListenerId());
-    return std::dynamic_pointer_cast<TcpTransportFactory>(transportFactory)->borrowTransportFromPool(listenerTransport.getServerAddress());
+    return std::dynamic_pointer_cast<TransportFactory>(transportFactory)->borrowTransportFromPool(listenerTransport.getServerAddress());
 }
 
 char RemoveClientListenerOperation::executeOperation(transport::Transport& transport)

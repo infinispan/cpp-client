@@ -24,7 +24,7 @@ class SSLTcpTransport : public TcpTransport
     //Testing only!
     SSLTcpTransport();
 
-  friend class TcpTransportFactory;
+  friend class TransportFactory;
 };
 
 }}} // namespace infinispan::hotrod::transport::tcp

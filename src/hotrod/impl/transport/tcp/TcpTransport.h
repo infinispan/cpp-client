@@ -53,7 +53,7 @@ class TcpTransport : public AbstractTransport
     Socket socket;
     std::shared_ptr<InetSocketAddress> serverAddress;
 
-  friend class TcpTransportFactory;
+  friend class TransportFactory;
 };
 
 }}} // namespace infinispan::hotrod::transport::tcp

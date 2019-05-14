@@ -2,7 +2,7 @@
 #include <hotrod/impl/transport/tcp/SChannelTcpTransport.h>
 #include "hotrod/impl/transport/tcp/TransportObjectFactory.h"
 #include "hotrod/impl/transport/tcp/TcpTransport.h"
-#include "hotrod/impl/transport/tcp/TcpTransportFactory.h"
+#include "hotrod/impl/transport/TransportFactory.h"
 #include "hotrod/impl/operations/AuthOperation.h"
 #include "hotrod/impl/operations/AuthMechListOperation.h"
 #if !defined _WIN32 && !defined _WIN64
@@ -37,7 +37,7 @@ void saslfail(int why, const char *what)
     throw HotRodClientException(s);
 }
 #endif
-TransportObjectFactory::TransportObjectFactory(Codec& c, TcpTransportFactory& factory) :
+TransportObjectFactory::TransportObjectFactory(Codec& c, TransportFactory& factory) :
         tcpTransportFactory(factory), codec(c)  {
     /* callbacks we support */
     int r;

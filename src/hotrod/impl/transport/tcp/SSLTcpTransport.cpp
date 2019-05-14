@@ -1,6 +1,6 @@
 #include <hotrod/impl/transport/tcp/SSLTcpTransport.h>
 #include "infinispan/hotrod/exceptions.h"
-#include "hotrod/impl/transport/tcp/TcpTransportFactory.h"
+#include "hotrod/impl/transport/TransportFactory.h"
 #include "hotrod/sys/SSLSocket.h"
 
 #include <iostream>
