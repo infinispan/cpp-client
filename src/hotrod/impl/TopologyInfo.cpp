@@ -1,6 +1,7 @@
 #include <hotrod/impl/TopologyInfo.h>
 #include "hotrod/impl/consistenthash/SegmentConsistentHash.h"
 
+
 #include <map>
 #include <numeric>
 
@@ -12,18 +13,14 @@ TopologyInfo::~TopologyInfo() {
 	// TODO Auto-generated destructor stub
 }
 
-std::shared_ptr<consistenthash::ConsistentHash> TopologyInfo::updateTopology(std::vector<std::vector<transport::InetSocketAddress>>& segmentOwners,
+void TopologyInfo::updateTopology(std::vector<std::vector<transport::InetSocketAddress>>& segmentOwners,
         uint32_t &numSegment, uint8_t &hashFunctionVersion, std::vector<char> cacheName, int topologyId) {
-	std::shared_ptr<consistenthash::ConsistentHash> hash= newConsistentHash(hashFunctionVersion);
-	if (hash)
-	{
-		hash->init(segmentOwners, numSegment);
-	}
+	std::shared_ptr<consistenthash::ConsistentHash> hash(new infinispan::hotrod::consistenthash::SegmentConsistentHash());
+	hash->init(segmentOwners, numSegment);
 	createTopologyId(cacheName, topologyId);
 	segmentsByCache[cacheName]=numSegment;
 	topologyIdsByCache[cacheName]=topologyId;
 	consistentHashByCacheName[cacheName]=hash;
-	return hash;
 	}
 
 void TopologyInfo::traceEverythingOnTopology()

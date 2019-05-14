@@ -4,7 +4,8 @@
 #include <infinispan/hotrod/CacheTopologyInfo.h>
 #include <infinispan/hotrod/InetSocketAddress.h>
 #include "hotrod/impl/Topology.h"
-#include "hotrod/impl/consistenthash/ConsistentHashFactory.h"
+#include "hotrod/impl/consistenthash/ConsistentHash.h"
+#include "infinispan/hotrod/Configuration.h"
 #include "hotrod/sys/Log.h"
 #include <memory>
 #include <vector>
@@ -20,11 +21,8 @@ public:
 	};
 	virtual ~TopologyInfo();
 	CacheTopologyInfo getCacheTopologyInfo(const std::vector<char> &cacheName);
-	std::shared_ptr<consistenthash::ConsistentHash> updateTopology(std::vector<std::vector<transport::InetSocketAddress>>& segmentOwners,
+	void updateTopology(std::vector<std::vector<transport::InetSocketAddress>>& segmentOwners,
 	        uint32_t &numSegment, uint8_t &hashFunctionVersion, std::vector<char> cacheName, int topologyId);
-	void updateTopology(
-	        std::map<transport::InetSocketAddress, std::set<int32_t> >& servers2Hash,
-	        int32_t numKeyOwners, uint8_t hashFunctionVersion, int32_t hashSpace, const std::vector<char>& cacheName);
 	transport::InetSocketAddress getHashAwareServer(const std::vector<char>& key, const std::vector<char>& cacheName);
 	std::vector<transport::InetSocketAddress>& getServers() const {
 		return servers;
@@ -51,9 +49,6 @@ private:
     const Configuration& configuration;
 
     void traceEverythingOnTopology();
-    static std::shared_ptr<consistenthash::ConsistentHash> newConsistentHash(uint8_t hashFunctionVersion) {
-    	return infinispan::hotrod::consistenthash::ConsistentHashFactory::newConsistentHash(hashFunctionVersion);
-    }
 };
 
 } /* namespace hotrod */
