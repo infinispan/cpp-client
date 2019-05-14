@@ -19,8 +19,7 @@ const std::string DefaultCacheName = "";
 
 RemoteCacheManagerImpl::RemoteCacheManagerImpl(bool start_)
   : started(false),
-    configuration(ConfigurationBuilder().build()), codec(0),
-	defaultCacheTopologyId(protocol::HotRodConstants::DEFAULT_CACHE_TOPOLOGY), rcm(listenerNotifier)
+    configuration(ConfigurationBuilder().build()), codec(0), rcm(listenerNotifier)
 {
 	; //force topology read on first op
 	if (start_) start();
@@ -39,16 +38,14 @@ Configuration buildConfig(const std::map<std::string,std::string>& properties)
 
 RemoteCacheManagerImpl::RemoteCacheManagerImpl(const std::map<std::string,std::string>& properties, bool start_)
   : started(false),
-    configuration(buildConfig(properties)), codec(0),
-	defaultCacheTopologyId(protocol::HotRodConstants::DEFAULT_CACHE_TOPOLOGY), rcm(listenerNotifier)
+    configuration(buildConfig(properties)), codec(0), rcm(listenerNotifier)
 {
   if (start_) start();
 }
 
 RemoteCacheManagerImpl::RemoteCacheManagerImpl(const Configuration& configuration_, bool start_)
   : started(false),
-    configuration(configuration_), codec(0),
-	defaultCacheTopologyId(protocol::HotRodConstants::DEFAULT_CACHE_TOPOLOGY), rcm(listenerNotifier)
+    configuration(configuration_), codec(0), rcm(listenerNotifier)
 {
   if (start_) start();
 }
@@ -59,7 +56,7 @@ void RemoteCacheManagerImpl::start() {
     if (!started) {
         transportFactory.reset(TransportFactory::newInstance(configuration));
         listenerNotifier.reset(ClientListenerNotifier::create(transportFactory));
-        transportFactory->start(*codec, defaultCacheTopologyId, listenerNotifier.get());
+        transportFactory->start(*codec, protocol::HotRodConstants::DEFAULT_CACHE_TOPOLOGY, listenerNotifier.get());
         for(std::map<std::string, RemoteCacheHolder>::iterator iter = cacheName2RemoteCache.begin(); iter != cacheName2RemoteCache.end(); ++iter ) {
            startRemoteCache(*iter->second.first.get(), iter->second.second);
         }
