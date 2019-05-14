@@ -1,11 +1,17 @@
-#ifndef ISPN_HOTROD_TRANSPORT_TRANSPORTFACTORY_H
-#define ISPN_HOTROD_TRANSPORT_TRANSPORTFACTORY_H
+#ifndef ISPN_HOTROD_TRANSPORT_TCPTRANSPORTFACTORY_H
+#define ISPN_HOTROD_TRANSPORT_TCPTRANSPORTFACTORY_H
 
 
-#include "hotrod/impl/transport/Transport.h"
+#include "infinispan/hotrod/Configuration.h"
+#include "infinispan/hotrod/Flag.h"
 #include "hotrod/impl/Topology.h"
 #include "hotrod/impl/TopologyInfo.h"
-#include "infinispan/hotrod/Flag.h"
+#include "hotrod/impl/transport/Transport.h"
+#include "hotrod/impl/transport/tcp/ConnectionPool.h"
+#include "hotrod/impl/transport/tcp/TcpTransport.h"
+#include "hotrod/impl/transport/tcp/TransportObjectFactory.h"
+#include "hotrod/impl/consistenthash/ConsistentHashFactory.h"
+#include "hotrod/sys/Mutex.h"
 #include "hotrod/impl/event/ClientListenerNotifier.h"
 #include "infinispan/hotrod/exceptions.h"
 #include <vector>
@@ -14,6 +20,8 @@
 
 namespace infinispan {
 namespace hotrod {
+
+class RequestBalancingStrategy;
 class RemoteCacheManagerImpl;
 class Configuration;
 
@@ -28,37 +36,40 @@ namespace transport {
 
 class Transport;
 class InetSocketAddress;
-
 class TransportFactory
 {
-  friend class infinispan::hotrod::RemoteCacheManagerImpl;
-
+	friend class infinispan::hotrod::RemoteCacheManagerImpl;
   public:
-    TransportFactory(TopologyInfo ti) : topologyInfo(ti) {}
-    virtual void start(protocol::Codec& codec, ClientListenerNotifier*) = 0;
-    virtual void destroy() = 0;
+    TransportFactory(const Configuration& config) : topologyInfo(TopologyInfo(initialServers, config)), configuration(config), maxRetries(config.getMaxRetries()) {}
+    void start(protocol::Codec& codec, ClientListenerNotifier* );
+    void destroy();
 
-    virtual Transport& getTransport(const std::vector<char>& cacheName, const std::set<InetSocketAddress>& failedServers) = 0;
-    virtual Transport& getTransport(const std::vector<char>& key, const std::vector<char>& cacheName, const std::set<InetSocketAddress>& failedServers) = 0;
-    virtual bool clusterSwitch() = 0;
-    virtual bool clusterSwitch(std::string) = 0;
-    virtual void releaseTransport(Transport& transport) = 0;
-    virtual void invalidateTransport(
-        const InetSocketAddress& serverAddress, Transport* transport) = 0;
+    transport::Transport& getTransport(const std::vector<char>& cacheName, const std::set<transport::InetSocketAddress>& failedServers);
+    transport::Transport& getTransport(const std::vector<char>& key, const std::vector<char>& cacheName, const std::set<transport::InetSocketAddress>& failedServers);
 
-    virtual bool isTcpNoDelay() = 0;
-    virtual int getMaxRetries() = 0;
-    virtual int getSoTimeout() = 0;
-    virtual int getConnectTimeout() = 0;
-    virtual const std::string& getSniHostName() = 0;
+    void releaseTransport(Transport& transport);
+    void invalidateTransport(
+        const InetSocketAddress& address, Transport* transport);
+    bool clusterSwitch();
+    bool clusterSwitch(std::string clusterName);
+    bool isTcpNoDelay();
+    int getMaxRetries();
+    int getSoTimeout();
+    int getConnectTimeout();
+    const std::string& getSniHostName();
+    bool isSslEnabled();
+    const std::string& getSslServerCAPath();
+    const std::string& getSslServerCAFile();
+    const std::string& getSslClientCertificateFile();
 
-    virtual void updateServers(std::vector<InetSocketAddress>& ) = 0;
-    virtual ~TransportFactory() {}
-
-    virtual void updateHashFunction( std::vector<std::vector<InetSocketAddress>>& segmentOwners,
-            						uint32_t &numSegment, uint8_t &hashFunctionVersion,
-            						const std::vector<char>& cacheName, int topologyId) = 0;
-
+    void updateServers(std::vector<InetSocketAddress>& );
+    void updateHashFunction(
+            std::vector<std::vector<InetSocketAddress>>& segmentOwners,
+            uint32_t &numSegment, uint8_t &hashFunctionVersion,
+            const std::vector<char>& cacheName, int topologyId);
+    Transport& borrowTransportFromPool(const InetSocketAddress& server);
+    ~TransportFactory() { }
+    const Configuration& getConfiguration() { return configuration; }
     int getTopologyId(const std::vector<char> &cacheName) {
     	  return topologyInfo.getCacheTopologyInfo(cacheName).getTopologyId();
     }
@@ -77,19 +88,31 @@ class TransportFactory
 
     TopologyInfo& getTopologyInfo() { return topologyInfo; }
 
-    // TODO: ssl
-    // getSSLContext
   protected:
     TopologyInfo topologyInfo;
     int topologyAge;
-    const std::string sniHostName;
+    std::string sniHostName;
 
   private:
+    sys::Mutex lock;
+    std::vector<InetSocketAddress> initialServers;
+    const Configuration& configuration;
+    int maxRetries;
+    std::shared_ptr<TransportObjectFactory> transportFactory;
+    std::shared_ptr<ConnectionPool> connectionPool;
+    std::shared_ptr<FailOverRequestBalancingStrategy> balancer;
+    std::string currCluster;
+    void createAndPreparePool();
+    void updateTransportCount();
+    void pingServers();
+    ConnectionPool* getConnectionPool();
+    std::vector<ServerConfiguration> getNextWorkingServersConfiguration();
+    void pingExternalServer(InetSocketAddress s);
+    ClientListenerNotifier* listenerNotifier;
     static TransportFactory* newInstance(const Configuration& config);
-
 };
 
 }}} // namespace infinispan::hotrod::transport
 
-#endif  /* ISPN_HOTROD_TRANSPORT_TRANSPORTFACTORY_H */
+#endif  /* ISPN_HOTROD_TRANSPORT_TCPTRANSPORTFACTORY_H */
 

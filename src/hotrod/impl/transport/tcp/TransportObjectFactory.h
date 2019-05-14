@@ -9,7 +9,7 @@ namespace infinispan {
 namespace hotrod {
 namespace transport {
 
-class TcpTransportFactory;
+class TransportFactory;
 
 class AbstractObjectFactory {
 public:
@@ -28,14 +28,14 @@ class TransportObjectFactory : public AbstractObjectFactory
   public:
     TransportObjectFactory(
         protocol::Codec& codec,
-        TcpTransportFactory& tcpTransportFactory);
+        TransportFactory& tcpTransportFactory);
 
     virtual TcpTransport& makeObject(const InetSocketAddress& address);
     virtual void destroyObject(const InetSocketAddress& address, TcpTransport& transport);
     virtual operations::PingResult ping(TcpTransport& tcpTransport);
     virtual ~TransportObjectFactory() {};
   private:
-    TcpTransportFactory& tcpTransportFactory;
+    TransportFactory& tcpTransportFactory;
     infinispan::hotrod::protocol::Codec& codec;
 };
 

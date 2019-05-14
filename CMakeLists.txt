@@ -402,7 +402,7 @@ else(DEFINED HOTROD_PREBUILT_LIB_DIR)
       src/hotrod/impl/transport/tcp/InetSocketAddress.cpp
       src/hotrod/impl/transport/tcp/Socket.cpp
       src/hotrod/impl/transport/tcp/TcpTransport.cpp
-      src/hotrod/impl/transport/tcp/TcpTransportFactory.cpp
+      src/hotrod/impl/transport/TransportFactory.cpp
       src/hotrod/impl/transport/tcp/TransportObjectFactory.cpp
       src/hotrod/impl/transport/tcp/RoundRobinBalancingStrategy.cpp
       src/hotrod/sys/Runnable.cpp

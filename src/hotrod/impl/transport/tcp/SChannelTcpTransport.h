@@ -24,7 +24,7 @@ namespace infinispan {
 				//Testing only!
 				SChannelTcpTransport();
 
-				friend class TcpTransportFactory;
+				friend class TransportFactory;
 			};
 
 		}
