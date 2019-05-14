@@ -56,7 +56,7 @@ void RemoteCacheManagerImpl::start() {
     if (!started) {
         transportFactory.reset(TransportFactory::newInstance(configuration));
         listenerNotifier.reset(ClientListenerNotifier::create(transportFactory));
-        transportFactory->start(*codec, protocol::HotRodConstants::DEFAULT_CACHE_TOPOLOGY, listenerNotifier.get());
+        transportFactory->start(*codec, listenerNotifier.get());
         for(std::map<std::string, RemoteCacheHolder>::iterator iter = cacheName2RemoteCache.begin(); iter != cacheName2RemoteCache.end(); ++iter ) {
            startRemoteCache(*iter->second.first.get(), iter->second.second);
         }

@@ -14,8 +14,8 @@ namespace hotrod {
 
 class TopologyInfo {
 public:
-	TopologyInfo(int defaultTopologyId_, std::vector<transport::InetSocketAddress>& servers_, const Configuration& c_):
-		defaultTopologyId(defaultTopologyId_), servers(servers_), configuration(c_) {
+	TopologyInfo(std::vector<transport::InetSocketAddress>& servers_, const Configuration& c_):
+		servers(servers_), configuration(c_) {
 		const std::vector<char> emptyCacheName;
 		topologyIdsByCache.insert(std::pair<std::vector<char>,int > (emptyCacheName, -1));
 	};
@@ -44,7 +44,6 @@ private:
     std::map<std::vector<char>, std::shared_ptr<infinispan::hotrod::consistenthash::ConsistentHash> > consistentHashByCacheName;
     std::map<std::vector<char>, uint32_t > segmentsByCache;
     std::map<std::vector<char>, int > topologyIdsByCache;
-    int defaultTopologyId;
     std::vector<transport::InetSocketAddress>& servers;
     const Configuration& configuration;
 
