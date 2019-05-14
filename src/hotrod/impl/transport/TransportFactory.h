@@ -34,7 +34,8 @@ class TransportFactory
   friend class infinispan::hotrod::RemoteCacheManagerImpl;
 
   public:
-    virtual void start(protocol::Codec& codec, int defaultTopologyId, ClientListenerNotifier*) = 0;
+    TransportFactory(TopologyInfo ti) : topologyInfo(ti) {}
+    virtual void start(protocol::Codec& codec, ClientListenerNotifier*) = 0;
     virtual void destroy() = 0;
 
     virtual Transport& getTransport(const std::vector<char>& cacheName, const std::set<InetSocketAddress>& failedServers) = 0;
@@ -59,15 +60,10 @@ class TransportFactory
             						const std::vector<char>& cacheName, int topologyId) = 0;
 
     int getTopologyId(const std::vector<char> &cacheName) {
-    	if (topologyInfo) {
-    	  return topologyInfo->getCacheTopologyInfo(cacheName).getTopologyId();
-    	}
-    	else {
-    		throw Exception("TopologyInfo is null");
-    	}
+    	  return topologyInfo.getCacheTopologyInfo(cacheName).getTopologyId();
     }
     int createTopologyId(std::vector<char> cacheName) {
-    	return topologyInfo->createTopologyId(cacheName,-1);
+    	return topologyInfo.createTopologyId(cacheName,-1);
     }
     int getTopologyAge()
     {
@@ -76,15 +72,15 @@ class TransportFactory
 
     CacheTopologyInfo getCacheTopologyInfo(const std::vector<char>& cacheName)
     {
-    	return topologyInfo->getCacheTopologyInfo(cacheName);
+    	return topologyInfo.getCacheTopologyInfo(cacheName);
     }
 
-    TopologyInfo* getTopologyInfo() { return topologyInfo; }
+    TopologyInfo& getTopologyInfo() { return topologyInfo; }
 
     // TODO: ssl
     // getSSLContext
   protected:
-    TopologyInfo* topologyInfo;
+    TopologyInfo topologyInfo;
     int topologyAge;
     const std::string sniHostName;
 

@@ -23,8 +23,8 @@ class InetSocketAddress;
 class TcpTransportFactory : public TransportFactory
 {
   public:
-    TcpTransportFactory(const Configuration& config) : configuration(config), maxRetries(config.getMaxRetries()) {}
-    void start(protocol::Codec& codec, int defaultTopologyId, ClientListenerNotifier* );
+    TcpTransportFactory(const Configuration& config) : TransportFactory(TopologyInfo(initialServers, config)), configuration(config), maxRetries(config.getMaxRetries()) {}
+    void start(protocol::Codec& codec, ClientListenerNotifier* );
     void destroy();
 
     transport::Transport& getTransport(const std::vector<char>& cacheName, const std::set<transport::InetSocketAddress>& failedServers);

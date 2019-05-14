@@ -24,7 +24,7 @@ TransportFactory* TransportFactory::newInstance(const Configuration& configurati
 }
 
 void TcpTransportFactory::start(
-    Codec& codec, int defaultTopologyId, ClientListenerNotifier* listenerNotifier)
+    Codec& codec, ClientListenerNotifier* listenerNotifier)
 {
 	ScopedLock<Mutex> l(lock);
 	topologyAge = 0;
@@ -55,7 +55,6 @@ void TcpTransportFactory::start(
     {
         balancer.reset(RoundRobinBalancingStrategy::newInstance());
     }
-    topologyInfo = new TopologyInfo(defaultTopologyId, initialServers, configuration);
 
     createAndPreparePool();
 
@@ -66,7 +65,6 @@ void TcpTransportFactory::start(
         pingServers();
     }
     catch (Exception &e) {
-        delete topologyInfo;
         throw e;
     }
     this->listenerNotifier = listenerNotifier;
@@ -100,7 +98,7 @@ transport::Transport& TcpTransportFactory::getTransport(const std::vector<char>&
 transport::Transport& TcpTransportFactory::getTransport(const std::vector<char>& key, const std::vector<char>& cacheName, const std::set<transport::InetSocketAddress>& failedServers) {
     InetSocketAddress server;
     {
-        server = topologyInfo->getHashAwareServer(key,cacheName);
+        server = topologyInfo.getHashAwareServer(key,cacheName);
         if (server.isEmpty())
         {   // Return balanced transport
         	return getTransport(cacheName, failedServers);
@@ -151,7 +149,7 @@ bool TcpTransportFactory::clusterSwitch()
     {
         balancer.reset(RoundRobinBalancingStrategy::newInstance());
     }
-    topologyInfo->updateServers(initialServers);
+    topologyInfo.updateServers(initialServers);
 
     createAndPreparePool();
 
@@ -184,8 +182,8 @@ bool TcpTransportFactory::clusterSwitch(std::string clusterName)
         balancer.reset(RoundRobinBalancingStrategy::newInstance());
     }
     // Consider all the current server as failed
-    auto failedServers = topologyInfo->getServers();
-    topologyInfo->updateServers(initialServers);
+    auto failedServers = topologyInfo.getServers();
+    topologyInfo.updateServers(initialServers);
 
     createAndPreparePool();
 
@@ -229,7 +227,7 @@ const std::string& TcpTransportFactory::getSslClientCertificateFile() {
 void TcpTransportFactory::createAndPreparePool()
 {
     connectionPool.reset(new ConnectionPool(transportFactory, configuration.getConnectionPoolConfiguration()));
-    std::vector<InetSocketAddress> servers = topologyInfo->getServers();
+    std::vector<InetSocketAddress> servers = topologyInfo.getServers();
     for (std::vector<InetSocketAddress>::const_iterator i = servers.begin();
         i != servers.end() ; ++i)
     {
@@ -245,7 +243,7 @@ void TcpTransportFactory::pingExternalServer(InetSocketAddress s) {
 
 
 void TcpTransportFactory::pingServers() {
-    std::vector<InetSocketAddress> s = topologyInfo->getServers();
+    std::vector<InetSocketAddress> s = topologyInfo.getServers();
     for (std::vector<InetSocketAddress>::const_iterator iter = s.begin(); iter != s.end(); iter++) {
         TcpTransport* transport = nullptr;
         try {
@@ -271,7 +269,6 @@ void TcpTransportFactory::destroy() {
     ScopedLock<Mutex> l(lock);
     connectionPool->clear();
     connectionPool->close();
-    delete topologyInfo;
 }
 
 Transport& TcpTransportFactory::borrowTransportFromPool(
@@ -289,7 +286,7 @@ ConnectionPool* TcpTransportFactory::getConnectionPool()
 void TcpTransportFactory::updateServers(std::vector<InetSocketAddress>& newServers) {
     ScopedLock<Mutex> l(lock);
     std::vector<InetSocketAddress> addedServers;
-    std::vector<InetSocketAddress> topoServers=topologyInfo->getServers();
+    std::vector<InetSocketAddress> topoServers=topologyInfo.getServers();
 
     std::sort(newServers.begin(), newServers.end());
 
@@ -328,7 +325,7 @@ void TcpTransportFactory::updateServers(std::vector<InetSocketAddress>& newServe
     }
 
     topoServers.clear();
-    topologyInfo->updateServers(newServers);
+    topologyInfo.updateServers(newServers);
 }
 
 void TcpTransportFactory::updateHashFunction(
@@ -338,7 +335,7 @@ void TcpTransportFactory::updateHashFunction(
 {
     ScopedLock<Mutex> l(lock);
     TRACE("TcpTransportFactory::updateHashFunction(): hashversion=%d, topologyId=%d",hashFunctionVersion, topologyId);
-    topologyInfo->updateTopology(segmentOwners, numSegment, hashFunctionVersion, cacheName, topologyId);
+    topologyInfo.updateTopology(segmentOwners, numSegment, hashFunctionVersion, cacheName, topologyId);
 }
 
 const std::string& TcpTransportFactory::getSniHostName(){

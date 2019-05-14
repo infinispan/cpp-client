@@ -63,7 +63,7 @@ std::map<std::vector<char>,std::vector<char>> RemoteCacheImpl::getAll(const std:
     for ( auto key : keySet)
     {
        std::vector<char> cacheNameBytes(name.begin(), name.end());
-       const InetSocketAddress& addr = operationsFactory->getTransportFactory()->getTopologyInfo()->getHashAwareServer(key, cacheNameBytes);
+       const InetSocketAddress& addr = operationsFactory->getTransportFactory()->getTopologyInfo().getHashAwareServer(key, cacheNameBytes);
        splittedKeySet[addr].insert(key);
     }
     std::map<std::vector<char>,std::vector<char>> result;
