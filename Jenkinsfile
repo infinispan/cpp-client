@@ -37,10 +37,9 @@ pipeline{
         environment {
           HOTROD_LOG_LEVEL = 'INFO'
           INFINISPAN_VERSION = '9.4.0.CR3'
-          JAVA_HOME = '/opt/oracle-jdk8'
           JBOSS_HOME = '/home/ec2-user/ispn/infinispan-server'
           M2_HOME = '/opt/maven'
-          PATH = "${JAVA_HOME}/bin:${M2_HOME}/bin:${PATH}"
+          PATH = "${M2_HOME}/bin:${PATH}"
         }
         steps {
             checkout scm
@@ -48,7 +47,7 @@ pipeline{
                 sh 'printenv'
             }
             script {
-                sh "PATH=\"${env.JAVA_HOME}/bin:${env.M2_HOME}/bin:${PATH}\" CMAKE_EXTRAS=\"-DINSTALL_GTEST=FALSE\" ./build.sh"
+                sh "PATH=\"${env.M2_HOME}/bin:${PATH}\" CMAKE_EXTRAS=\"-DINSTALL_GTEST=FALSE\" ./build.sh"
                 archiveArtifacts artifacts: 'build/_CPack_Packages/RHEL-x86_64/RPM/*.rpm, build/*Source.zip'
             }
         }
