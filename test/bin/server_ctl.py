@@ -19,13 +19,13 @@ def is_compressed_oops_supported(java):
     return true
 
 def static_java_args(java, jboss_home, config, opts):
-    # No luck calling standalone.bat without hanging.
+    # No luck calling server.bat without hanging.
     # This is what the batch file does in the default case for 6.0.0.
     cmd = [java, '-XX:+TieredCompilation', '-XX:+UseCompressedOops',
             '-Xms64M', '-Xmx512M', '-XX:MaxPermSize=256M', '-Djava.net.preferIPv4Stack=true',
             '-Djboss.modules.system.pkgs=org.jboss.byteman',
-            '-Dorg.jboss.boot.log.file=' + jboss_home + '/standalone/log/server.log',
-            '-Dlogging.configuration=file:' + jboss_home + '/standalone/configuration/logging.properties',
+            '-Dorg.jboss.boot.log.file=' + jboss_home + '/server/log/server.log',
+            '-Dlogging.configuration=file:' + jboss_home + '/server/conf/logging.properties',
             '-jar', jboss_home + '/jboss-modules.jar', '-mp', jboss_home + '/modules',
             '-jaxpmodule', 'javax.xml.jaxp-provider', 'org.jboss.as.standalone', 
             '-Djboss.home.dir=' + jboss_home, '-c', config]+ opts.split()
@@ -53,12 +53,12 @@ def start(args):
     # ctest.
 
     if os.name == 'nt' :
-        # Hangs on standalone.bat script.  Call Java directly.
+        # Hangs on server.bat script.  Call Java directly.
         jproc = subprocess.Popen(static_java_args(java_exe, ispn_server_home, ispn_server_config, ispn_server_opts), close_fds=True, creationflags=subprocess.CREATE_NEW_CONSOLE);
     else:
-        startup_script = ispn_server_home + '/bin/' + 'standalone.sh';
+        startup_script = ispn_server_home + '/bin/' + 'server.sh';
         new_env = os.environ.copy()
-        # Tell standalone.sh that you want termination signals to get through to the java process
+        # Tell server.sh that you want termination signals to get through to the java process
         new_env['LAUNCH_JBOSS_IN_BACKGROUND'] = 'yes'
         server_out = open('server.out', 'w')
         jproc = subprocess.Popen([startup_script, '-c', ispn_server_config]+ispn_server_opts.split(), stdout=server_out, stderr=server_out, close_fds=True, env=new_env);

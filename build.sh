@@ -13,7 +13,7 @@ wget --progress=dot:giga -N http://downloads.jboss.org/infinispan/${INFINISPAN_V
 rm -rf infinispan-server-${INFINISPAN_VERSION}
 unzip -q infinispan-server-${INFINISPAN_VERSION}.zip
 export JBOSS_HOME=`pwd`/infinispan-server-${INFINISPAN_VERSION}
-cp test/data/* $JBOSS_HOME/standalone/configuration
+cp test/data/* $JBOSS_HOME/server/conf
 
 if [  "${PROTOBUF_LIBRARY}" != "" ]
 then

@@ -29,7 +29,7 @@ int main(int argc, char** argv) {
     RemoteCache<std::string, std::string> nearCache = nearCacheManager.getCache<std::string, std::string>(km,
             &Marshaller<std::string>::destroy,
             vm,
-            &Marshaller<std::string>::destroy);
+            &Marshaller<std::string>::destroy, "Default", true);
     nearCache.clear();
     // Read stats to do some checks on hits and miss counter
     std::map<std::string,std::string> statsBegin= nearCache.stats();

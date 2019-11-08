@@ -759,15 +759,15 @@ add_custom_command(OUTPUT ${KRBSERVER_DIR}/target/classes/krbserver/Server.class
 
 add_custom_target(krbserver ALL DEPENDS ${KRBSERVER_DIR}/target/classes/krbserver/Server.class)
 
-if (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.sh") AND (EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.bat")))
+if (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/server.sh") AND (EXISTS "${HOTROD_JBOSS_HOME}/bin/server.bat")))
     message(WARNING "JBOSS_HOME ${HOTROD_JBOSS_HOME} does not have needed startup scripts")
-else (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.sh") AND (EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.bat")))
+else (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/server.sh") AND (EXISTS "${HOTROD_JBOSS_HOME}/bin/server.bat")))
     if (NOT Java_JAVA_EXECUTABLE)
         message(FATAL_ERROR "Java not found")
     endif (NOT Java_JAVA_EXECUTABLE)
     file(COPY ${CMAKE_SOURCE_DIR}/krbserver DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
     file(COPY ${CMAKE_SOURCE_DIR}/test/data/krb5.conf DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
-    add_test (start_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py start ${Java_JAVA_EXECUTABLE} ${HOTROD_JBOSS_HOME} standalone.xml)
+    add_test (start_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py start ${Java_JAVA_EXECUTABLE} ${HOTROD_JBOSS_HOME} infinispan.xml)
     add_test (probe_port ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/probe_port.py localhost 11222 60)
     add_test (simple simple)
     add_test (transcoder transcoder)
@@ -840,7 +840,7 @@ else (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.sh") AND (EXISTS "${HOTR
         add_test (simpleSaslTls-mediatype simpleSaslTls --server_cert_file ${CMAKE_CURRENT_SOURCE_DIR}/test/data/infinispan-ca.pem --client_cert_file ${CMAKE_CURRENT_SOURCE_DIR}/test/data/truststore_client.pem --protocol_version 2.8)
         add_test (stop_sasl_ssl_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py stop)
     endif(WIN32)
-endif (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.sh") AND (EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.bat")))
+endif (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/server.sh") AND (EXISTS "${HOTROD_JBOSS_HOME}/bin/server.bat")))
 
 if (ENABLE_SWIG_TESTING)
     if (NOT Java_JAVA_EXECUTABLE)
