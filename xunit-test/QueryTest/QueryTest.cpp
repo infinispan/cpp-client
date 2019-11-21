@@ -666,7 +666,7 @@ TEST_F(QueryTest, NotContainsTest)
                     NAMED_CACHE, false);
     QueryRequest qr;
     // JpqlString will be deprecated please use QueryString
-    qr.set_querystring("from sample_bank_account.User u where u.accountIds = 42");
+    qr.set_querystring("from sample_bank_account.User u where u.accountIds = 1000042");
     QueryResponse result = userCache.query(qr);
     std::vector<sample_bank_account::User> vectorOfUsers;
     if (!unwrapResults(result, vectorOfUsers)) {
