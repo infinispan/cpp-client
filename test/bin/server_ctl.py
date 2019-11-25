@@ -89,7 +89,7 @@ def stop(args, verbose=False):
                 time.sleep(1)
             else:
                 try:
-                    subprocess.call(["kill", str(jproc_pid)])
+                    subprocess.call(["pkill", "-P", str(jproc_pid)])
                     time.sleep(1)
                 except Exception:
                     pass
