@@ -75,7 +75,7 @@ RemoteCache<std::string, std::string> &getNewCache(RemoteCacheManager& m) {
     JBasicMarshaller<std::string> *vm = new JBasicMarshaller<std::string>();
     m.start();
     return m.getCache<std::string, std::string>(km, &Marshaller<std::string>::destroy,
-            vm, &Marshaller<std::string>::destroy, "Default", true);
+            vm, &Marshaller<std::string>::destroy, "distributed", true);
 }
 
 bool verifyAssert(int value, int expect, std::unique_ptr<std::string>& rest, int line) {

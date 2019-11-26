@@ -22,6 +22,9 @@
          <locking isolation="REPEATABLE_READ"/>
          <transaction mode="NON_XA" locking="PESSIMISTIC"/>
       </local-cache>
+      <distributed-cache name="distributed">
+         <expiration interval="1000"/>
+      </distributed-cache>
    </cache-container>
 
    <server xmlns="urn:infinispan:server:10.0">
