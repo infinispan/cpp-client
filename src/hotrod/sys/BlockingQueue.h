@@ -5,6 +5,7 @@
 #include <algorithm>
 #include "hotrod/sys/Condition.h"
 #include "hotrod/sys/Mutex.h"
+#include "infinispan/hotrod/exceptions.h"
 
 namespace infinispan {
 namespace hotrod {
@@ -45,6 +46,17 @@ public:
 
         while (queue.empty()) {
             condition.wait(lock);
+        }
+        T element = queue.front();
+        queue.pop_front();
+        return element;
+    }
+
+    T popOrThrow() {
+        ScopedLock<Mutex> l(lock);
+
+        if (queue.empty()) {
+            throw infinispan::hotrod::NoSuchElementException("Reached maximum number of connections");
         }
         T element = queue.front();
         queue.pop_front();

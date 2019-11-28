@@ -43,6 +43,8 @@ public:
 };
 
 template<> inline int* JBossMarshaller::unmarshall(const std::vector<char>& b) {
+    if (b.begin()==b.end())
+        return nullptr;
     int result = 0;
     for (int i = 0; i < 4; i++) {
         result <<= 8;
@@ -54,6 +56,8 @@ template<> inline int* JBossMarshaller::unmarshall(const std::vector<char>& b) {
 
 template<> inline std::string* JBossMarshaller::unmarshall(const std::vector<char>& b) {
     // TODO: this works only for SMALL_STRING
+    if (b.begin()==b.end())
+        return nullptr;
     std::string* s = new std::string(b.begin() + 3, b.end());
     return s;
 }
