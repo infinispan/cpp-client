@@ -89,51 +89,52 @@ bool ConnectionPool::tryRemoveIdleOrAskAllocate(const InetSocketAddress& key) {
 }
 
 TcpTransport& ConnectionPool::borrowObject(const InetSocketAddress& key) {
-	sys::ScopedLock<sys::Mutex> l(lock);
+    sys::ScopedLock<sys::Mutex> l(lock);
 
-	if (closed) {
-		throw HotRodClientException("Pool is closed");
-	}
-	if (!idle.count(key) || !busy.count(key)) {
-		throw HotRodClientException("Pool has no idle or no busy transports.");
-	}
-	TransportQueuePtr idleQ = idle[key];
-	TransportQueuePtr busyQ = busy[key];
+    if (closed) {
+        throw HotRodClientException("Pool is closed");
+    }
+    if (!idle.count(key) || !busy.count(key)) {
+        throw HotRodClientException("Pool has no idle or no busy transports.");
+    }
+    TransportQueuePtr idleQ = idle[key];
+    TransportQueuePtr busyQ = busy[key];
 
-	// See if an object is readily available
-	TcpTransport* obj = NULL;
-	bool ok = idleQ->poll(obj);
-	if (ok) {
-		totalIdle--;
-	}
-	// Loop for a valid object in the pool
-	while (obj == NULL
-			|| (configuration.isTestOnBorrow()
-					&& !factory->validateObject(key, *obj))) {
-		// obj is invalid here
-		if (obj != NULL) {
-			factory->destroyObject(key, *obj);
-		}
-		// See if we can create a new one
-		if (idleQ->size() == 0 	             // if the idle queue is empty
-				&& 	                         // and queue has space
-				(configuration.getMaxActive() < 0
-						|| busyQ->size() < (size_t) configuration.getMaxActive())
-				&& 				             // and there space for other objs or it can be freed
-				(!hasReachedMaxTotal() || tryRemoveIdleOrAskAllocate(key))) {
-			obj = &factory->makeObject(key); // then create new object
-		} else {
-			sys::ScopedUnlock<sys::Mutex> u(lock);
-			obj = idleQ->pop();  			 // else wait for the first available
-			totalIdle--;
-		}
-	}
+    // See if an object is readily available
+    TcpTransport* obj = NULL;
+    bool ok = idleQ->poll(obj);
+    if (ok) {
+        totalIdle--;
+    }
+    // Loop for a valid object in the pool
+    while (obj == NULL || (configuration.isTestOnBorrow() && !factory->validateObject(key, *obj))) {
+        // obj is invalid here
+        if (obj != NULL) {
+            factory->destroyObject(key, *obj);
+        }
+        // See if we can create a new one
+        if (idleQ->size() == 0               // if the idle queue is empty
+        &&// and queue has space
+                (configuration.getMaxActive() < 0 || busyQ->size() < (size_t) configuration.getMaxActive()) && // and there space for other objs or it can be freed
+                (!hasReachedMaxTotal() || tryRemoveIdleOrAskAllocate(key))) {
+            obj = &factory->makeObject(key); // then create new object
+        } else {
+            sys::ScopedUnlock<sys::Mutex> u(lock);
+            if (this->getConfiguration().getExhaustedAction() == EXCEPTION) {
+                obj = idleQ->popOrThrow();   // else wait for the first available
+            } else {
+                obj = idleQ->pop();          // else wait for the first available
+            }
 
-	busyQ->push(obj);
-	totalActive++;
+            totalIdle--;
+        }
+    }
 
-	factory->activateObject(key, *obj);
-	return *obj;
+    busyQ->push(obj);
+    totalActive++;
+
+    factory->activateObject(key, *obj);
+    return *obj;
 }
 
 void ConnectionPool::invalidateObject(const InetSocketAddress& key, TcpTransport* val) {

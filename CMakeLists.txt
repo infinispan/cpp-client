@@ -169,7 +169,11 @@ if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     set (WERROR "-Werror")
   endif (ENABLE_WARNING_ERROR)
 
-  set (COMPILER_FLAGS "-fvisibility=hidden -fvisibility-inlines-hidden -std=c++11")
+  if (ENABLE_INTERNAL_TESTS OR ENABLE_ADDITIONAL_TESTS)
+      set (COMPILER_FLAGS "-std=c++11")
+  else (ENABLE_INTERNAL_TESTS OR ENABLE_ADDITIONAL_TESTS)
+      set (COMPILER_FLAGS "-fvisibility=hidden -fvisibility-inlines-hidden -std=c++11")
+  endif (ENABLE_INTERNAL_TESTS OR ENABLE_ADDITIONAL_TESTS)
   if (DEFINED CODE_COVERAGE)
         set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-modules)
         include(CodeCoverage)
@@ -223,9 +227,11 @@ if(WIN32 AND NOT CYGWIN)
   set (NOENABLE_VALGRIND ON)
 endif(WIN32 AND NOT CYGWIN)
 
+set (NOENABLE_ADDITIONAL_TESTS ON)
+
 # Add options here called <whatever> they will turn into "ENABLE_<whatever" and can be
 # overridden on a platform specific basis above by NOENABLE_<whatever>
-set (OPTIONS WARNING_ERROR UNDEFINED_ERROR SWIG_TESTING INTERNAL_TESTING VALGRIND)
+set (OPTIONS WARNING_ERROR UNDEFINED_ERROR SWIG_TESTING INTERNAL_TESTING VALGRIND ADDITIONAL_TESTS)
 
 foreach (OPTION ${OPTIONS})
   if (NOT "NOENABLE_${OPTION}")
@@ -239,6 +245,7 @@ option(ENABLE_UNDEFINED_ERROR "Check for unresolved library symbols" ${DEFAULT_U
 option(ENABLE_SWIG_TESTING "Create SWIG Java binding and test structure" ${DEFAULT_SWIG_TESTING})
 option(ENABLE_INTERNAL_TESTING "Compile the library with internal tests (unit tests)" ${DEFAULT_INTERNAL_TESTING})
 option(ENABLE_VALGRIND "Enable running the tests using Valgrind" ${DEFAULT_VALGRIND})
+option(NO_ENABLE_ADDITIONAL_TESTS "Enable running tests that require full visibility on the hotrod library" ${DEFAULT_ADDITIONAL_TESTS})
 
 if(DEFINED HOTROD_PREBUILT_LIB_DIR)
     set(PROTOBUF_GENERATE_CPP_APPEND_PATH true)
@@ -527,6 +534,19 @@ add_dependencies(build_native_test unittest unittest-static simple simple-static
 
 # TESTS
 
+if (DEFINED ENABLE_ADDITIONAL_TESTS)  # Compile a version with all symbols for additional tests with gcc
+    add_executable (poolUnitTest test/PoolUnitTest.cpp)
+    target_include_directories(poolUnitTest PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
+                                         "${INCLUDE_FILES_DIR}"
+                                         "${CMAKE_CURRENT_BINARY_DIR}"
+                                         "${PROTOBUF_INCLUDE_DIR}")
+    set_property(TARGET poolUnitTest PROPERTY CXX_STANDARD 11)
+    set_property(TARGET poolUnitTest PROPERTY CXX_STANDARD_REQUIRED ON)
+    set_target_properties(poolUnitTest PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}")
+    set_target_properties (poolUnitTest PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${NO_UNUSED_FLAGS}")
+    target_link_libraries (poolUnitTest hotrod hotrod_protobuf ${PROTOBUF_LIBRARY} ${platform_libs})
+endif (DEFINED ENABLE_ADDITIONAL_TESTS)
+
 add_executable (simple test/Simple.cpp)
 target_include_directories(simple PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
                                      "${INCLUDE_FILES_DIR}"
@@ -548,6 +568,17 @@ set_property(TARGET simple-static PROPERTY CXX_STANDARD_REQUIRED ON)
 set_target_properties (simple-static PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${STATIC_FLAGS} ${NO_UNUSED_FLAGS}")
 set_target_properties(simple-static PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}" )
 target_link_libraries (simple-static hotrod-static hotrod_protobuf ${PROTOBUF_LIBRARY} ${OPENSSL_LIBRARIES} ${platform_libs})
+
+add_executable (poolTest test/PoolTest.cpp)
+target_include_directories(poolTest PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
+                                     "${INCLUDE_FILES_DIR}"
+                                     "${CMAKE_CURRENT_BINARY_DIR}"
+                                     "${PROTOBUF_INCLUDE_DIR}")
+set_property(TARGET poolTest PROPERTY CXX_STANDARD 11)
+set_property(TARGET poolTest PROPERTY CXX_STANDARD_REQUIRED ON)
+set_target_properties(poolTest PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}")
+set_target_properties (poolTest PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${NO_UNUSED_FLAGS}")
+target_link_libraries (poolTest hotrod hotrod_protobuf ${PROTOBUF_LIBRARY} ${platform_libs})
 
 add_executable (queryTest test/QueryTest.cpp ${TEST_PROTO_SRCS})
 target_include_directories(queryTest PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
@@ -782,6 +813,9 @@ if (ENABLE_INTERNAL_TESTING)
     add_test (unittest-static unittest-static)
 endif (ENABLE_INTERNAL_TESTING)    
 
+if (DEFINED ENABLE_ADDITIONAL_TESTS)  # Run unit tests that require full symbols visibility
+    add_test (poolUnitTest poolUnitTest)
+endif (DEFINED ENABLE_ADDITIONAL_TESTS)
 
 find_program(MVN_PROGRAM "mvn")
 if (MVN_PROGRAM STREQUAL "MVN_PROGRAM-NOTFOUND")
@@ -830,6 +864,7 @@ else (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.sh") AND (EXISTS "${HOTR
     add_test (continuousQueryTest-static continuousQueryTest-static)
     add_test (simpleTx simpleTx)
     add_test (simpleTx-static simpleTx-static)
+    add_test (poolTest poolTest)
     add_test (simple-mediatype simple 2.8)
     add_test (simple-static-mediatype simple-static 2.8)
     add_test (queryTest-mediatype queryTest 2.8)

@@ -36,7 +36,7 @@ pipeline{
         }
         environment {
           HOTROD_LOG_LEVEL = 'INFO'
-          INFINISPAN_VERSION = '9.4.0.CR3'
+          INFINISPAN_VERSION = '9.4.0.Final'
           JBOSS_HOME = '/home/ec2-user/ispn/infinispan-server'
           M2_HOME = '/opt/maven'
           PATH = "${M2_HOME}/bin:${PATH}"
