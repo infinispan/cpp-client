@@ -162,6 +162,11 @@ public:
     std::string name;
 };
 
+class HR_EXTERN NoSuchElementException: public Exception {
+public:
+	NoSuchElementException(const std::string& msg) : Exception(msg) { }
+};
+
 }
 } // namespace
 
