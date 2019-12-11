@@ -34,7 +34,7 @@ TEST_F(ClearTest, ClearEmptiesTheCacheTest) {
     RemoteCache<std::string, std::string> cache = ClearTest::remoteCacheManager->getCache<std::string, std::string>(km,
             &Marshaller<std::string>::destroy,
             vm,
-            &Marshaller<std::string>::destroy, true);
+            &Marshaller<std::string>::destroy, "Default", true);
     cache.clear();
     EXPECT_EQ(0,cache.size());
 }
