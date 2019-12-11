@@ -226,7 +226,7 @@ void QueryTest::SetUp()
         putUsers(userCache);
 
         auto *acc_testkm = new BasicTypesProtoStreamMarshaller<int>();
-        auto *acc_testvm = new ProtoStreamMarshaller<sample_bank_account::Account, 43>();
+        auto *acc_testvm = new ProtoStreamMarshaller<sample_bank_account::Account, 1000043>();
         RemoteCache<int, sample_bank_account::Account> accCache = remoteCacheManager->getCache<int,
                 sample_bank_account::Account>(
                 acc_testkm, &Marshaller<int>::destroy, acc_testvm, &Marshaller<sample_bank_account::Account>::destroy,
@@ -235,7 +235,7 @@ void QueryTest::SetUp()
         PutAccounts(accCache);
 
         auto *tra_testkm = new BasicTypesProtoStreamMarshaller<int>();
-        auto *tra_testvm = new ProtoStreamMarshaller<sample_bank_account::Transaction, 44>();
+        auto *tra_testvm = new ProtoStreamMarshaller<sample_bank_account::Transaction, 1000044>();
         RemoteCache<int, sample_bank_account::Transaction> traCache = remoteCacheManager->getCache<int,
                 sample_bank_account::Transaction>(
                 tra_testkm, &Marshaller<int>::destroy, tra_testvm, &Marshaller<sample_bank_account::Transaction>::destroy,

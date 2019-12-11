@@ -1,4 +1,3 @@
-syntax = "proto2";
 package sample_bank_account;
 
 option java_package = "com.example.generated_by_protoc";
@@ -6,7 +5,7 @@ option java_outer_classname = "BankProtos";
 
 /**
  * @Indexed
- * @TypeId(42)
+ * @TypeId(1000042)
  */
 message User {
 
@@ -47,7 +46,7 @@ message User {
     */
    optional int32 age = 6;   // persisting age instead of birth date is not ideal but is ok for our sample code
 
-   /* @TypeId(41) */
+   /* @TypeId(100041) */
    enum Gender {
       MALE = 0;    //NOTE: It seems negative values are accepted too!
       FEMALE = 1;
@@ -63,7 +62,7 @@ message User {
 
 /**
  * @Indexed
- * @TypeId(43)
+ * @TypeId(1000043)
  */
 message Account {
 
@@ -100,7 +99,7 @@ message Account {
 
 /**
  * @Indexed
- * @TypeId(44) 
+ * @TypeId(1000044) 
  */
 message Transaction {
 

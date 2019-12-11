@@ -22,9 +22,18 @@
          <locking isolation="REPEATABLE_READ"/>
          <transaction mode="NON_XA" locking="PESSIMISTIC"/>
       </local-cache>
+      <local-cache name="non_xa2">
+         <locking isolation="REPEATABLE_READ"/>
+         <transaction mode="NON_XA" locking="PESSIMISTIC"/>
+      </local-cache>
       <distributed-cache name="distributed">
          <expiration interval="1000"/>
       </distributed-cache>
+      <replicated-cache name="InMemoryNonSharedIndex" mode="SYNC" start="EAGER">
+         <indexing index="ALL">
+           <property name="default.directory_provider">ram</property>
+         </indexing>
+      </replicated-cache>
    </cache-container>
 
    <server xmlns="urn:infinispan:server:10.0">

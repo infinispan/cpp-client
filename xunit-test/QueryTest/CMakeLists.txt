@@ -17,7 +17,7 @@ set_target_properties(xunitQueryTest PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT
 
 target_link_libraries(xunitQueryTest hotrod hotrod_protobuf ${PROTOBUF_LIBRARY} ${OPENSSL_LIBRARIES} ${platform_libs} gtest_main)
 
-add_test (start_server ${PYTHON_EXECUTABLE} ${CMAKE_ROOT_SOURCE_DIR}/test/bin/server_ctl.py start ${JAVA_RUNTIME} ${HOTROD_JBOSS_HOME} clustered-indexing.xml)
+add_test (start_server ${PYTHON_EXECUTABLE} ${CMAKE_ROOT_SOURCE_DIR}/test/bin/server_ctl.py start ${JAVA_RUNTIME} ${HOTROD_JBOSS_HOME} infinispan.xml)
 add_test (probe_port ${PYTHON_EXECUTABLE} ${CMAKE_ROOT_SOURCE_DIR}/test/bin/probe_port.py localhost 11222 60)
 
 add_test(xunit_QueryTest xunitQueryTest --gtest_output=xml:${PROJECT_BINARY_DIR}/test-output/)
