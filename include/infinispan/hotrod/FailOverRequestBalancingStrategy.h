@@ -31,8 +31,6 @@ class FailOverRequestBalancingStrategy
     virtual ~FailOverRequestBalancingStrategy() {};
   private:
     std::vector<transport::InetSocketAddress> servers;
-    size_t index;
-
 };
 
 }} // namespace infinispan::hotrod::transport
