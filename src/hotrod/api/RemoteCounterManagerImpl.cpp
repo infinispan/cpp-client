@@ -117,7 +117,7 @@ const void* RemoteCounterManagerImpl::addListener(const std::string counterName,
         AddCounterListenerOperation op(*codec, transportFactory, topology, 0, counterName, listenerId, true);
         Transport* t = op.execute();
         if (t == nullptr) {
-            return (long) nullptr;
+            return nullptr;
         }
         eventTransport = t;
         counterDispatcher = listenerNotifier->addCounterListener(listenerId, std::vector<char>(),
@@ -128,7 +128,7 @@ const void* RemoteCounterManagerImpl::addListener(const std::string counterName,
             AddCounterListenerOperation op(*codec, transportFactory, topology, 0, counterName, listenerId, false);
             Transport* t = op.execute();
             if (t == nullptr) {
-                return (long) nullptr;
+                return nullptr;
             }
         }
     }
