@@ -25,6 +25,15 @@
 //For OSX portability
 int sendFlag = 0;
 
+#ifndef MSG_NOSIGNAL
+#  define MSG_NOSIGNAL 0
+#  ifdef SO_NOSIGPIPE
+#    define USE_SO_NOSIGPIPE
+#  else
+#     error "Cannot block SIGPIPE!"
+#  endif
+#endif
+
 namespace infinispan {
 namespace hotrod {
 namespace sys {
@@ -86,6 +95,14 @@ static int attemptConnect(const char* ip, int port, int sock, int timeout,
 		struct addrinfo* addr) {
 	// Connect
 	DEBUG("Attempting connection to %s:%d", ip, port);
+#ifdef USE_SO_NOSIGPIPE
+        int val = 1;
+        int r = setsockopt(sock, SOL_SOCKET, SO_NOSIGPIPE, (void*)&val, sizeof(val));
+        if (r) {
+                r = -errno;
+		DEBUG("couldn't set SO_NOSIGPIPE. errno:%x %s:%d", r, ip, port);
+        }
+#endif
 	int s = ::connect(sock, addr->ai_addr, addr->ai_addrlen);
 	if (s < 0 && errno == EINPROGRESS) {
 		pollfd fds[1];

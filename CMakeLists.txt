@@ -156,7 +156,7 @@ if(WIN32 AND NOT CYGWIN)
   set (platform_libs ws2_32 Rpcrt4)
 elseif (APPLE)
   # OSX does not need rt
-  set (platform_libs pthread)
+  set (platform_libs pthread sasl2)
 else (WIN32 AND NOT CYGWIN)
   set (platform_libs pthread rt sasl2 krb5)
 endif(WIN32 AND NOT CYGWIN)
