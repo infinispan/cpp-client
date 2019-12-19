@@ -342,6 +342,7 @@ else(DEFINED HOTROD_PREBUILT_LIB_DIR)
       src/hotrod/test/HashTest.cpp
       src/hotrod/test/ConnectionPoolTest.cpp
     )
+    endif(ENABLE_INTERNAL_TESTING)
     if(WIN32)
     set (socket_impl
           src/hotrod/impl/transport/tcp/SChannelTcpTransport.cpp
@@ -353,7 +354,6 @@ else(DEFINED HOTROD_PREBUILT_LIB_DIR)
           src/hotrod/sys/SSLSocket.cpp
           )
     endif(WIN32)
-    endif(ENABLE_INTERNAL_TESTING)
 
     set (library_sources
       src/hotrod/api/RemoteCacheManager.cpp
