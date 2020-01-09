@@ -5,90 +5,90 @@ namespace infinispan {
 namespace hotrod {
 namespace transport {
 
-void ConnectionPool::addObject(const InetSocketAddress& key) {
+void ConnectionPool::addObject(const InetSocketAddress &key) {
     sys::ScopedLock<sys::Mutex> l(lock);
 
     if (idle.find(key) != idle.end()) {
         return; //key already existed.
     }
-    TransportQueuePtr idleQ(new BlockingQueue<TcpTransport *>()); // = TransportQueue(BlockingQueue<TcpTransport *>* idleQ = new BlockingQueue<TcpTransport *>();
+    TransportQueuePtr idleQ(new BlockingQueue<TcpTransport*>()); // = TransportQueue(BlockingQueue<TcpTransport *>* idleQ = new BlockingQueue<TcpTransport *>();
     idle.insert(std::pair<InetSocketAddress, TransportQueuePtr>(key, idleQ));
-    TransportQueuePtr busyQ(new BlockingQueue<TcpTransport *>()); // = TransportQueue(BlockingQueue<TcpTransport *>* idleQ = new BlockingQueue<TcpTransport *>();
+    TransportQueuePtr busyQ(new BlockingQueue<TcpTransport*>()); // = TransportQueue(BlockingQueue<TcpTransport *>* idleQ = new BlockingQueue<TcpTransport *>();
     busy.insert(std::pair<InetSocketAddress, TransportQueuePtr>(key, busyQ));
     ensureMinIdle(key);
 }
 
-void ConnectionPool::ensureMinIdle(const InetSocketAddress& key) {
-	int grown = calculateMinIdleGrow(key);
-	while (grown > 0) {
-		idle[key]->push(&factory->makeObject(key));
-		grown--;
-		totalIdle++;
-	}
+void ConnectionPool::ensureMinIdle(const InetSocketAddress &key) {
+    int grown = calculateMinIdleGrow(key);
+    while (grown > 0) {
+        idle[key]->push(&factory->makeObject(key));
+        grown--;
+        totalIdle++;
+    }
 }
 
-int ConnectionPool::calculateMinIdleGrow(const InetSocketAddress& key) {
-	TransportQueuePtr idleQ = idle[key];
-	int grown = configuration.getMinIdle() - (int)idleQ->size();
-	//Note: if we need to check maxActive, uncomment the code above
-	/*if (configuration.getMaxActive() > 0) {
-		int growLimit = std::max(0, configuration.getMaxActive() - (int) busy[key]->size() - (int) idleQ->size());
-		grown = std::min(grown, growLimit);
-	}*/
-	if (configuration.getMaxTotal() > 0) {
-		int growLimit = std::max(0, configuration.getMaxTotal() - totalIdle - totalActive);
-		grown = std::min(grown, growLimit);
-	}
-	return grown;
+int ConnectionPool::calculateMinIdleGrow(const InetSocketAddress &key) {
+    TransportQueuePtr idleQ = idle[key];
+    int grown = configuration.getMinIdle() - (int) idleQ->size();
+    //Note: if we need to check maxActive, uncomment the code above
+    /*if (configuration.getMaxActive() > 0) {
+     int growLimit = std::max(0, configuration.getMaxActive() - (int) busy[key]->size() - (int) idleQ->size());
+     grown = std::min(grown, growLimit);
+     }*/
+    if (configuration.getMaxTotal() > 0) {
+        int growLimit = std::max(0, configuration.getMaxTotal() - totalIdle - totalActive);
+        grown = std::min(grown, growLimit);
+    }
+    return grown;
 }
 
 bool ConnectionPool::hasReachedMaxTotal() {
-	int maxTotal = configuration.getMaxTotal();
-	return maxTotal > 0 && (maxTotal <= totalActive + totalIdle);
+    int maxTotal = configuration.getMaxTotal();
+    return maxTotal > 0 && (maxTotal <= totalActive + totalIdle);
 }
 
 bool ConnectionPool::tryRemoveIdle() {
-	//first, if we find an idle queue with more the minIdle connection, we destroy one of them.
-	//otherwise, we try to destroy and connection from the longer idle queue.
-	const int minIdle = configuration.getMinIdle();
+    //first, if we find an idle queue with more the minIdle connection, we destroy one of them.
+    //otherwise, we try to destroy and connection from the longer idle queue.
+    const int minIdle = configuration.getMinIdle();
 
-	do {
-		const InetSocketAddress* keyToRemove = NULL;
-		size_t longerQueueSize = 0;
+    do {
+        const InetSocketAddress *keyToRemove = NULL;
+        size_t longerQueueSize = 0;
 
-		for (std::map<InetSocketAddress, TransportQueuePtr>::iterator it = idle.begin(); it != idle.end(); ++it) {
-			TransportQueuePtr idleQ = it->second;
-			if (minIdle > 0 && (int) idleQ->size() > minIdle) {
-				keyToRemove = &it->first;
-				break;
-			} else if (idleQ->size() > longerQueueSize) {
-				keyToRemove = &it->first;
-				longerQueueSize = idleQ->size();
-			}
-		}
+        for (std::map<InetSocketAddress, TransportQueuePtr>::iterator it = idle.begin(); it != idle.end(); ++it) {
+            TransportQueuePtr idleQ = it->second;
+            if (minIdle > 0 && (int) idleQ->size() > minIdle) {
+                keyToRemove = &it->first;
+                break;
+            } else if (idleQ->size() > longerQueueSize) {
+                keyToRemove = &it->first;
+                longerQueueSize = idleQ->size();
+            }
+        }
 
-		if (keyToRemove != NULL) {
-			TcpTransport* t = NULL;
-			if (idle[*keyToRemove]->poll(t)) { //in case of concurrent removal, avoid blocking
-				factory->destroyObject(*keyToRemove, *t);
-				totalIdle--;
-				return true;
-			}
-		} else {
-			return false;
-		}
-	} while (true);
+        if (keyToRemove != NULL) {
+            TcpTransport *t = NULL;
+            if (idle[*keyToRemove]->poll(t)) { //in case of concurrent removal, avoid blocking
+                factory->destroyObject(*keyToRemove, *t);
+                totalIdle--;
+                return true;
+            }
+        } else {
+            return false;
+        }
+    } while (true);
 }
 
-bool ConnectionPool::tryRemoveIdleOrAskAllocate(const InetSocketAddress& key) {
-	if (!tryRemoveIdle()) {
-		allocationQueue.push(key);
-		return false;
-	}
-	return true;
+bool ConnectionPool::tryRemoveIdleOrAskAllocate(const InetSocketAddress &key) {
+    if (!tryRemoveIdle()) {
+        allocationQueue.push(key);
+        return false;
+    }
+    return true;
 }
 
-TcpTransport& ConnectionPool::borrowObject(const InetSocketAddress& key) {
+TcpTransport& ConnectionPool::borrowObject(const InetSocketAddress &key) {
     sys::ScopedLock<sys::Mutex> l(lock);
 
     if (closed) {
@@ -101,7 +101,7 @@ TcpTransport& ConnectionPool::borrowObject(const InetSocketAddress& key) {
     TransportQueuePtr busyQ = busy[key];
 
     // See if an object is readily available
-    TcpTransport* obj = NULL;
+    TcpTransport *obj = NULL;
     bool ok = idleQ->poll(obj);
     if (ok) {
         totalIdle--;
@@ -137,33 +137,33 @@ TcpTransport& ConnectionPool::borrowObject(const InetSocketAddress& key) {
     return *obj;
 }
 
-void ConnectionPool::invalidateObject(const InetSocketAddress& key, TcpTransport* val) {
+void ConnectionPool::invalidateObject(const InetSocketAddress &key, TcpTransport *val) {
     sys::ScopedLock<sys::Mutex> l(lock);
     bool maxTotalReached = hasReachedMaxTotal();
     if (val != NULL) {
-		// Remove from busy queue
-		std::map<InetSocketAddress, TransportQueuePtr>::iterator busyIt = busy.find(key);
-		if (busyIt == busy.end()) {
-			throw HotRodClientException("No busy queue for address!");
-		}
+        // Remove from busy queue
+        std::map<InetSocketAddress, TransportQueuePtr>::iterator busyIt = busy.find(key);
+        if (busyIt == busy.end()) {
+            throw HotRodClientException("No busy queue for address!");
+        }
 
-		busyIt->second->remove(val);
-		totalActive--;
+        busyIt->second->remove(val);
+        totalActive--;
 
-		if (maxTotalReached && !allocationQueue.empty()) {
-			InetSocketAddress keyToAllocate = allocationQueue.front();
-			allocationQueue.pop(); //front does not remove it...
-			//we need to allocate a new connection for other key.
-			idle[keyToAllocate]->push(&factory->makeObject(keyToAllocate));
-			totalIdle++;
-		}
+        if (maxTotalReached && !allocationQueue.empty()) {
+            InetSocketAddress keyToAllocate = allocationQueue.front();
+            allocationQueue.pop(); //front does not remove it...
+            //we need to allocate a new connection for other key.
+            idle[keyToAllocate]->push(&factory->makeObject(keyToAllocate));
+            totalIdle++;
+        }
 
-		// Destroy object
-		factory->destroyObject(key, *val);
+        // Destroy object
+        factory->destroyObject(key, *val);
     }
 }
 
-void ConnectionPool::returnObject(const InetSocketAddress& key, TcpTransport& val) {
+void ConnectionPool::returnObject(const InetSocketAddress &key, TcpTransport &val) {
     sys::ScopedLock<sys::Mutex> l(lock);
     bool ok = true;
     bool maxTotalReached = hasReachedMaxTotal();
@@ -215,28 +215,28 @@ void ConnectionPool::clear() {
     totalActive = 0;
 }
 
-void ConnectionPool::clear(std::map<InetSocketAddress, TransportQueuePtr>& queue) {
+void ConnectionPool::clear(std::map<InetSocketAddress, TransportQueuePtr> &queue) {
     for (std::map<InetSocketAddress, TransportQueuePtr>::iterator it = queue.begin(); it != queue.end(); ++it) {
         clear(it->first, it->second);
     }
     queue.clear();
 }
 
-void ConnectionPool::clear(const InetSocketAddress& key) {
+void ConnectionPool::clear(const InetSocketAddress &key) {
     sys::ScopedLock<sys::Mutex> l(lock);
     TransportQueuePtr idleQ = idle[key];
     if (!idleQ)
-    	return;
-    totalIdle -= (int)idleQ->size();
+        return;
+    totalIdle -= (int) idleQ->size();
     clear(key, idleQ);
     idle.erase(key);
 }
 
-void ConnectionPool::clear(const InetSocketAddress& key, TransportQueuePtr queue) {
-	if (!queue)
-		return;
+void ConnectionPool::clear(const InetSocketAddress &key, TransportQueuePtr queue) {
+    if (!queue)
+        return;
     while (queue->size() > 0) {
-        TcpTransport* transport = queue->pop();
+        TcpTransport *transport = queue->pop();
         factory->destroyObject(key, *transport);
     }
 }
@@ -251,7 +251,7 @@ void ConnectionPool::testIdle() {
     // TODO
 }
 
-void ConnectionPool::preparePool(const InetSocketAddress& key) {
+void ConnectionPool::preparePool(const InetSocketAddress &key) {
     addObject(key);
 }
 
@@ -268,15 +268,17 @@ void PoolWorker::run() {
         return;
     }
 
-    while(!pool->closed) {
+    while (!pool->closed) {
         pool->checkIdle();
         pool->testIdle();
         // Sleep in 1 second bursts to let us be cancellable
-        for(long t = 0; t < totalTime && !pool->closed; t+=1000) {
+        for (long t = 0; t < totalTime && !pool->closed; t += 1000) {
             sys::Thread::sleep(1000);
         }
     }
 }
 
-}}}
+}
+}
+}
 
