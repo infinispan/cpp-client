@@ -520,7 +520,8 @@ endif (ENABLE_SWIG_TESTING)
 add_custom_target(build_test COMMAND "echo" "build_test completed")
 add_dependencies(build_test ${JAVA_TESTS} krbserver unittest unittest-static simple simple-static queryTest queryTest-static events
                             nearCacheTest nearCacheFailoverTest continuousQueryTest continuousQueryTest-static
-                            simpleSasl simple-tls simple-tls-sni simpleSaslTls PutGetTest xunitQueryTest ClearTest xunit_nearCacheTest CountersTest simpleTx simpleTx-static transcoder TranscoderTest TransactionTest)
+                            simpleSasl simple-tls simple-tls-sni simpleSaslTls PutGetTest xunitQueryTest ClearTest xunit_nearCacheTest 
+                            CountersTest simpleTx simpleTx-static transcoder TranscoderTest TransactionTest poolTest)
 
 add_custom_target(build_native_test COMMAND "echo" "build_native_test completed")
 add_dependencies(build_native_test unittest unittest-static simple simple-static queryTest queryTest-static events
