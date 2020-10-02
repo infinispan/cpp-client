@@ -116,16 +116,21 @@ public:
         const std::string key = forceReturnValue ? "/true" : "/false";
         if (remoteCacheMap.find(key)==remoteCacheMap.end())
         {
-            RemoteCache<K,V> *pRc;
-            pRc= new RemoteCache<K,V>(transactionManager, transactionTable, forceReturnValue, getConfiguration().isTransactional());
-            remoteCacheMap[key]= std::unique_ptr<RemoteCacheBase>(pRc);
-            RemoteCache<K, V> *rcache=(RemoteCache<K, V> *)remoteCacheMap[key].get();
-            rcache->keyMarshaller.reset(new BasicMarshaller<K>());
-            rcache->valueMarshaller.reset(new BasicMarshaller<V>());
+			auto rcache = new RemoteCache<K, V>(transactionManager,
+					transactionTable, forceReturnValue,
+					getConfiguration().isTransactional());
+			try {
             initCache(*rcache, forceReturnValue, getConfiguration().getNearCacheConfiguration());
-            return *rcache;
+			} catch (...) {
+				delete rcache;
+				throw;
+			}
+			remoteCacheMap[key] = std::unique_ptr<RemoteCacheBase>(rcache);
         }
-        return *(RemoteCache<K, V> *)remoteCacheMap[key].get();
+         auto cache = (RemoteCache<K, V> *)remoteCacheMap[key].get();
+         cache->keyMarshaller.reset(new BasicMarshaller<K>());
+         cache->valueMarshaller.reset(new BasicMarshaller<V>());
+         return *cache;
     }
 
     /**
@@ -147,21 +152,27 @@ public:
      * \param forceReturnValue if true, force all the HotRod operation that have optional return to always return a value
      * \return a RemoteCache instance connected to the cache with the given name
      */
-    template <class K, class V> RemoteCache<K, V> &getCache(
-            const std::string& name, bool forceReturnValue) {
-        const std::string key = forceReturnValue ? name+"/true" : name+"/false";
-        if (remoteCacheMap.find(key)==remoteCacheMap.end())
-        {
-            RemoteCache<K,V> *pRc= new RemoteCache<K,V>(transactionManager, transactionTable, forceReturnValue, getConfiguration().isTransactional());
-            remoteCacheMap[key]= std::unique_ptr<RemoteCacheBase>(pRc);
-            RemoteCache<K, V> *rcache=(RemoteCache<K, V> *)remoteCacheMap[key].get();
-            rcache->keyMarshaller.reset(new BasicMarshaller<K>());
-            rcache->valueMarshaller.reset(new BasicMarshaller<V>());
-            initCache(*rcache, name.c_str(), forceReturnValue);
-            return *rcache;
-        }
-        return *(RemoteCache<K, V> *)remoteCacheMap[key].get();
-    }
+	template<class K, class V> RemoteCache<K, V>& getCache(
+			const std::string &name, bool forceReturnValue) {
+		const std::string key =
+				forceReturnValue ? name + "/true" : name + "/false";
+		if (remoteCacheMap.find(key) == remoteCacheMap.end()) {
+			auto rcache = new RemoteCache<K, V>(transactionManager,
+					transactionTable, forceReturnValue,
+					getConfiguration().isTransactional());
+			try {
+				initCache(*rcache, name.c_str(), forceReturnValue);
+			} catch (...) {
+				delete rcache;
+				throw;
+			}
+			remoteCacheMap[key] = std::unique_ptr<RemoteCacheBase >(rcache);
+		}
+        auto cache = (RemoteCache<K, V> *)remoteCacheMap[key].get();
+        cache->keyMarshaller.reset(new BasicMarshaller<K>());
+        cache->valueMarshaller.reset(new BasicMarshaller<V>());
+		return *cache;
+	}
 
     /**
      * Returns a RemoteCache instance connected to the cache with the given name
@@ -186,21 +197,28 @@ public:
      * \param forceReturnValue if true, force all the HotRod operation that have optional return to always return a value
      * \return a RemoteCache instance connected to the default cache
      */
-    template<class K, class V> RemoteCache<K, V> &getCache(
-            Marshaller<K> *km, void (*kd)(Marshaller<K> *),
-            Marshaller<V> *vm, void (*vd)(Marshaller<V> *), bool forceReturnValue) {
-        const std::string key = forceReturnValue ? "/true" : "/false";
-        if (remoteCacheMap.find(key) == remoteCacheMap.end()) {
-            RemoteCache<K, V> *pRc = new RemoteCache<K, V>(transactionManager, transactionTable, forceReturnValue, getConfiguration().isTransactional());
-            remoteCacheMap[key] = std::unique_ptr < RemoteCacheBase > (pRc);
-        }
-        RemoteCache<K, V> *rcache =
-                (RemoteCache<K, V> *) remoteCacheMap[key].get();
-        rcache->keyMarshaller.reset(km);
-        rcache->valueMarshaller.reset(vm);
-        initCache(*rcache, forceReturnValue, getConfiguration().getNearCacheConfiguration());
-        return *rcache;
-    }
+	template<class K, class V> RemoteCache<K, V>& getCache(Marshaller<K> *km,
+			void (*kd)(Marshaller<K>*), Marshaller<V> *vm,
+			void (*vd)(Marshaller<V>*), bool forceReturnValue) {
+		const std::string key = forceReturnValue ? "/true" : "/false";
+		if (remoteCacheMap.find(key) == remoteCacheMap.end()) {
+			auto rcache = new RemoteCache<K, V>(transactionManager,
+					transactionTable, forceReturnValue,
+					getConfiguration().isTransactional());
+			try {
+				initCache(*rcache, forceReturnValue,
+						getConfiguration().getNearCacheConfiguration());
+			} catch (...) {
+				delete rcache;
+				throw;
+			}
+			remoteCacheMap[key] = std::unique_ptr<RemoteCacheBase>(rcache);
+		}
+		auto cache = (RemoteCache<K, V>*) remoteCacheMap[key].get();
+		cache->keyMarshaller.reset(km);
+		cache->valueMarshaller.reset(vm);
+		return *cache;
+	}
 
     /**
      * Returns a RemoteCache instance connected to the default cache
@@ -230,23 +248,31 @@ public:
      * \param name the cache name to connect to on a remote Infinispan server
      * \param forceReturnValue if true, force all the HotRod operation that have optional return to always return a value
      * \return a RemoteCache instance connected to the cache with the given name
-     */
-    template <class K, class V> RemoteCache<K, V> &getCache(
-            Marshaller<K> *km, void (*kd)(Marshaller<K> *),
-            Marshaller<V> *vm, void (*vd)(Marshaller<V> *),
-            const std::string& name, bool forceReturnValue) {
-        const std::string key = forceReturnValue ? name+"/true" : name+"/false";
-        if (remoteCacheMap.find(key) == remoteCacheMap.end()) {
-            RemoteCache<K, V> *pRc = new RemoteCache<K, V>(transactionManager, transactionTable, forceReturnValue, getConfiguration().isTransactional());
-            remoteCacheMap[key] = std::unique_ptr < RemoteCacheBase > (pRc);
-        }
-        RemoteCache<K, V> *rcache =
-                (RemoteCache<K, V> *) remoteCacheMap[key].get();
-        rcache->keyMarshaller.reset(km);
-        rcache->valueMarshaller.reset(vm);
-        initCache(*rcache, name.c_str(), forceReturnValue, getConfiguration().getNearCacheConfiguration());
-        return *rcache;
-    }
+	 */
+	template<class K, class V> RemoteCache<K, V>& getCache(Marshaller<K> *km,
+			void (*kd)(Marshaller<K>*), Marshaller<V> *vm,
+			void (*vd)(Marshaller<V>*), const std::string &name,
+			bool forceReturnValue) {
+		const std::string key =
+				forceReturnValue ? name + "/true" : name + "/false";
+		if (remoteCacheMap.find(key) == remoteCacheMap.end()) {
+			auto rcache = new RemoteCache<K, V>(transactionManager,
+					transactionTable, forceReturnValue,
+					getConfiguration().isTransactional());
+			try {
+			initCache(*rcache, name.c_str(), forceReturnValue,
+					getConfiguration().getNearCacheConfiguration());
+			} catch (...) {
+				delete rcache;
+				throw;
+			}
+			remoteCacheMap[key] = std::unique_ptr<RemoteCacheBase >(rcache);
+		}
+		auto cache = (RemoteCache<K, V>*) remoteCacheMap[key].get();
+		cache->keyMarshaller.reset(km);
+		cache->valueMarshaller.reset(vm);
+		return *cache;
+	}
 
     /**
      * Returns a RemoteCache instance connected to the cache with the given name
