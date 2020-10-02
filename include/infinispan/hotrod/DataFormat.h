@@ -14,6 +14,7 @@
 #include <map>
 #include <vector>
 #include <memory>
+#include <string>
 
 namespace infinispan {
 namespace hotrod {

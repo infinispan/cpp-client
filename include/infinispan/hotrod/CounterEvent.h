@@ -8,6 +8,8 @@
 #ifndef INCLUDE_INFINISPAN_HOTROD_COUNTEREVENT_H_
 #define INCLUDE_INFINISPAN_HOTROD_COUNTEREVENT_H_
 
+#include <string>
+
 namespace infinispan {
 namespace hotrod {
 namespace event {
