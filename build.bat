@@ -13,7 +13,7 @@ set JBOSS_URL=http://download.jboss.org/infinispan/%INFINISPAN_VERSION%/%JBOSS_Z
 
 if not exist %JBOSS_HOME% (
   if not exist %JBOSS_ZIP% (
-     powershell.exe -Command "(new-object System.Net.WebClient).DownloadFile('%JBOSS_URL%','%JBOSS_ZIP%')"
+     powershell.exe -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; (new-object System.Net.WebClient).DownloadFile('%JBOSS_URL%','%JBOSS_ZIP%')"
    )
 "C:\Program Files\7-zip\7z.exe" x %JBOSS_ZIP% 
 )
