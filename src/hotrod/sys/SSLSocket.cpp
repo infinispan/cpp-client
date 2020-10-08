@@ -31,10 +31,10 @@ void SSLSocket::connect(const std::string& host, int port, int timeout) {
     m_socket->connect(host, port, timeout);
     this->host = host;
     this->port = port;
-	#if (OPENSSL_VERSION_NUMBER >= 0x10100000L)
+	#if (OPENSSL_VERSION_NUMBER <= 0x10100000L)
     	const SSL_METHOD* method = SSLv23_client_method();
 	#else
-    	const SSL_METHOD* method = TLSv1_2_client_method();
+    	const SSL_METHOD* method = TLS_client_method();
     #endif
     m_ctx = SSL_CTX_new(method);
     if (!m_ctx) {
