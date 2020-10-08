@@ -53,9 +53,19 @@
 using namespace infinispan::hotrod;
 %}
 
-
-
+#if SWIG_VERSION >= 0x030909
+%typemap(javacode) std::map<std::string, std::string> %{
+  public String set(String s1, String s2) {
+    return put(s1,s2);
+  }
+  public boolean has_key(Object key) {
+    return containsKey(key);
+}
+%}
+#endif
 %template(MapType) std::map<std::string, std::string>;
+
+
 %template(SegPerServer) std::map<infinispan::hotrod::transport::InetSocketAddress, std::vector<int> >;
 
 %include "infinispan/hotrod/defs.h"
@@ -190,12 +200,36 @@ inline bool operator< (const RelayBytes& lhs, const RelayBytes& rhs)
 %template(MetadataPairReturn) std::pair<std::shared_ptr<RelayBytes>, infinispan::hotrod::MetadataValue>;
 %template(VersionPairReturn) std::pair<std::shared_ptr<RelayBytes>, infinispan::hotrod::VersionedValue>;
 %template(MapReturn) std::map<std::shared_ptr<RelayBytes>, std::shared_ptr<RelayBytes> >;
+
+#if SWIG_VERSION >= 0x030909
+%typemap(javacode) std::map<RelayBytes, RelayBytes> %{
+  public org.infinispan.client.hotrod.jni.RelayBytes set(org.infinispan.client.hotrod.jni.RelayBytes r1, org.infinispan.client.hotrod.jni.RelayBytes r2) {
+    return put(r1,r2);
+  }
+%}
+#endif
+
 %template(MapArg) std::map<RelayBytes, RelayBytes >;
 %template(SetReturn) std::set<std::shared_ptr<RelayBytes> >;
 %template(SetArgs) std::set<RelayBytes>;
 %template(VectorReturn) std::vector<std::shared_ptr<RelayBytes> >;
 %template(StringVectorReturn) std::vector<std::string>;
 %template(IntegerVectorReturn) std::vector<int>;
+
+#if SWIG_VERSION >= 0x030909
+%typemap(javacode) std::vector<unsigned char> %{
+public byte getAsByte(int i) {
+        return this.get(i).byteValue();
+  }
+%}
+#else
+%typemap(javacode) std::vector<unsigned char> %{
+public byte getAsByte(int i) {
+        return this.get(i);
+  }
+%}
+#endif
+
 %template(UCharVector) std::vector<unsigned char>;
 %template(InetSocketAddressvectorReturn) std::vector<infinispan::hotrod::transport::InetSocketAddress>;
 %ignore std::vector<infinispan::hotrod::ServerConfigurationBuilder>::vector(size_type);
