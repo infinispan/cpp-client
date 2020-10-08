@@ -939,7 +939,7 @@ public class RemoteCacheImpl<K, V> extends RemoteCacheUnsupported<K, V> {
         byte[] buf = new byte[(int)executeResult.size()];
         for (int i = 0; i < buf.length; i++)
         {
-            buf[i] = (byte) executeResult.get(i);
+            buf[i] = (byte) executeResult.getAsByte(i);
         }
         try {
             if (buf.length != 0 ) {
