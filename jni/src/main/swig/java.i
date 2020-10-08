@@ -225,7 +225,7 @@ public byte getAsByte(int i) {
 #else
 %typemap(javacode) std::vector<unsigned char> %{
 public byte getAsByte(int i) {
-        return this.get(i);
+        return (byte) this.get(i);
   }
 %}
 #endif
