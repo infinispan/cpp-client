@@ -10,7 +10,8 @@ if [ "$#" == "1" ]; then
   echo CPACK_PACKAGE_VERSION_MINOR=$MIN
   echo CPACK_PACKAGE_VERSION_PATCH=$PAT
   if [ -n "$MAJ" ] && [ -n "$MIN" ] && [ -n "$PAT" ] && [ -z "$EXTRA" ]; then
-    git checkout -b __tmp origin/master
+    CURR_BRANCH=$(git branch --show-current)
+    git checkout -b __tmp
     sed -i -e 's/set (CPACK_PACKAGE_VERSION_MAJOR *".*")/set (CPACK_PACKAGE_VERSION_MAJOR "'"$MAJ"'")/' \
     -e 's/set (CPACK_PACKAGE_VERSION_MINOR *".*")/set (CPACK_PACKAGE_VERSION_MINOR "'"$MIN"'")/' \
     -e 's/set (CPACK_PACKAGE_VERSION_PATCH *".*")/set (CPACK_PACKAGE_VERSION_PATCH "'"$PAT"'")/' CMakeLists.txt
@@ -20,7 +21,7 @@ if [ "$#" == "1" ]; then
     git commit -m  "$MAJ.$MIN.$PAT"
     git tag -a "$MAJ.$MIN.$PAT" -m "$MAJ.$MIN.$PAT"
     git push origin "$MAJ.$MIN.$PAT"
-    git checkout master
+    git checkout $CURR_BRANCH
     git branch -D __tmp
     exit 0
   fi
