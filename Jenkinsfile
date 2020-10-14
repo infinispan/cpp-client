@@ -49,7 +49,7 @@ pipeline{
             }
             script {
                 sh "PATH=\"${env.M2_HOME}/bin:${PATH}\" CMAKE_EXTRAS=\"-DINSTALL_GTEST=FALSE\" ./build.sh"
-                archiveArtifacts artifacts: 'build/_CPack_Packages/RHEL-x86_64/RPM/*.rpm, build/*Source.zip'
+                archiveArtifacts artifacts: 'build/infinispan-hotrod-cpp-*.rpm, build/*Source.zip'
             }
         }
     }
