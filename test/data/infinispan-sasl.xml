@@ -1,10 +1,9 @@
 <infinispan
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="urn:infinispan:config:10.0 http://www.infinispan.org/schemas/infinispan-config-10.0.xsd
-                            urn:infinispan:server:10.0 http://www.infinispan.org/schemas/infinispan-server-10.0.xsd"
-        xmlns="urn:infinispan:config:10.0"
-        xmlns:server="urn:infinispan:server:10.0">
-
+        xsi:schemaLocation="urn:infinispan:config:11.0 http://www.infinispan.org/schemas/infinispan-config-11.0.xsd
+                            urn:infinispan:server:11.0 http://www.infinispan.org/schemas/infinispan-server-11.0.xsd"
+        xmlns="urn:infinispan:config:11.0"
+        xmlns:server="urn:infinispan:server:11.0">
    <cache-container name="default" statistics="true">
       <transport cluster="${infinispan.cluster.name}" stack="${infinispan.cluster.stack:tcp}"/>
       <security>
@@ -42,7 +41,7 @@
       </local-cache> 
    </cache-container>
 
-   <server xmlns="urn:infinispan:server:10.0">
+   <server xmlns="urn:infinispan:server:11.0">
       <interfaces>
          <interface name="public">
             <inet-address value="${infinispan.bind.address:127.0.0.1}"/>
@@ -57,6 +56,11 @@
       <security>
          <security-realms>
             <security-realm name="ApplicationRealm">
+               <server-identities>
+                  <kerberos keytab-path="hotrod_service.keytab"
+                            principal="hotrod/node0@INFINISPAN.ORG"
+                            required="true"/>
+               </server-identities>
                <properties-realm groups-attribute="Roles">
                   <user-properties path="application-users.properties" relative-to="infinispan.server.config.path"/>
                   <group-properties path="application-roles.properties" relative-to="infinispan.server.config.path" />
@@ -68,7 +72,7 @@
       <endpoints socket-binding="default" security-realm="ApplicationRealm">
          <hotrod-connector name="hotrod">
            <authentication security-realm="ApplicationRealm">
-             <sasl server-name="node0" mechanisms="GSSAPI DIGEST-MD5 PLAIN" qop="auth">
+             <sasl server-name="node0" mechanisms="GSSAPI DIGEST-MD5 PLAIN" qop="auth" server-principal="hotrod/node0@INFINISPAN.ORG">
                <policy>
                  <no-anonymous value="false"/>
                </policy>

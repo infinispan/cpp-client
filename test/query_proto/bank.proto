@@ -2,25 +2,6 @@ package sample_bank_account;
 
 /**
  * @Indexed
- */
-message Address {
-   /**
-    * @Field(store = Store.YES)
-    */
-      required string street = 1;
-   /**
-    * @Field(store = Store.YES)
-    */
-      required string postCode = 2;
-   /**
-    * @Field(store = Store.YES)
-    */
-      required int32 number = 3;
-   }
-
-
-/**
- * @Indexed
  * @TypeId(1000042)
  */
 message User {
@@ -44,6 +25,22 @@ message User {
     * @Field(store = Store.YES)
     */
    required string surname = 4;
+
+message Address {
+   /**
+    * @Field(store = Store.YES)
+    */
+      required string street = 1;
+   /**
+    * @Field(store = Store.YES)
+    */
+      required string postCode = 2;
+   /**
+    * @Field(store = Store.YES)
+    */
+      required int32 number = 3;
+   }
+
 
    /**
     * @Field(store = Store.YES)
