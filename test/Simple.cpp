@@ -495,7 +495,7 @@ int main(int argc, char** argv) {
     std::cout << "Basic Test with BasicMarshaller" << std::endl;
     {
         ConfigurationBuilder builder;
-        builder.protocolVersion(argc > 1 ? argv[1] : Configuration::PROTOCOL_VERSION_24);
+        builder.protocolVersion(argc > 1 ? argv[1] : Configuration::PROTOCOL_VERSION_28);
         builder.addServer().host(argc > 2 ? argv[2] : "127.0.0.1").port(argc > 3 ? atoi(argv[3]) : 11222);
 //        builder.balancingStrategyProducer(transport::MyRoundRobinBalancingStrategy::newInstance);
         builder.balancingStrategyProducer(nullptr);
@@ -574,7 +574,7 @@ int main(int argc, char** argv) {
         ConfigurationBuilder builder;
         //        builder.balancingStrategyProducer(transport::MyRoundRobinBalancingStrategy::newInstance);
         builder.balancingStrategyProducer(nullptr);
-        builder.protocolVersion(argc > 1 ? argv[1] : Configuration::PROTOCOL_VERSION_24);
+        builder.protocolVersion(argc > 1 ? argv[1] : Configuration::PROTOCOL_VERSION_28);
         builder.addServer().host(argc > 2 ? argv[2] : "127.0.0.1").port(argc > 3 ? atoi(argv[3]) : 11222);
         RemoteCacheManager cacheManager(builder.build(), false);
         cacheManager.start();

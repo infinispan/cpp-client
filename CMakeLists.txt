@@ -242,7 +242,6 @@ endforeach (OPTION)
 # And add the option here too with help text
 option(ENABLE_WARNING_ERROR "Consider compiler warnings to be errors" ${DEFAULT_WARNING_ERROR})
 option(ENABLE_UNDEFINED_ERROR "Check for unresolved library symbols" ${DEFAULT_UNDEFINED_ERROR})
-option(ENABLE_SWIG_TESTING "Create SWIG Java binding and test structure" ${DEFAULT_SWIG_TESTING})
 option(ENABLE_INTERNAL_TESTING "Compile the library with internal tests (unit tests)" ${DEFAULT_INTERNAL_TESTING})
 option(ENABLE_VALGRIND "Enable running the tests using Valgrind" ${DEFAULT_VALGRIND})
 option(NO_ENABLE_ADDITIONAL_TESTS "Enable running tests that require full visibility on the hotrod library" ${DEFAULT_ADDITIONAL_TESTS})
@@ -493,15 +492,6 @@ hr_protobuf_generate_cpp(TEST_PROTO_SRCS TEST_PROTO_HDRS .
 )
 
 find_package(Java)
-
-if (ENABLE_SWIG_TESTING)
-    if (NOT Java_JAVA_EXECUTABLE)
-        message(WARNING "Cannot enable SWIG tests without Java")
-	set (JAVA_TESTS "")
-    else (NOT Java_JAVA_EXECUTABLE)
-	set (JAVA_TESTS "JniTest")
-    endif (NOT Java_JAVA_EXECUTABLE)
-endif (ENABLE_SWIG_TESTING)
 
 add_custom_target(build_test COMMAND "echo" "build_test completed")
 add_dependencies(build_test ${JAVA_TESTS} krbserver unittest simple queryTest events
@@ -841,14 +831,6 @@ else (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/server.sh") AND (EXISTS "${HOTROD_J
         add_test (stop_sasl_ssl_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py stop)
     endif(WIN32)
 endif (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/server.sh") AND (EXISTS "${HOTROD_JBOSS_HOME}/bin/server.bat")))
-
-if (ENABLE_SWIG_TESTING)
-    if (NOT Java_JAVA_EXECUTABLE)
-        message(WARNING "Cannot enable SWIG tests without Java")
-    else (NOT Java_JAVA_EXECUTABLE)
-        include(jni/swig.cmake)
-    endif (NOT Java_JAVA_EXECUTABLE)
-endif (ENABLE_SWIG_TESTING)
 
 if (ENABLE_VALGRIND)
     add_custom_target(memtest ${CMAKE_CTEST_COMMAND} -D ExperimentalMemCheck

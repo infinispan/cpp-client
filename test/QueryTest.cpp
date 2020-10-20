@@ -78,6 +78,8 @@ int main(int argc, char** argv) {
     if (metadataCacheDF.containsKey(ERRORS_KEY_SUFFIX))
     {
       std::cerr << "fail: error in registering .proto model" << std::endl;
+      std::cerr << "error: " << *metadataCacheDF.get(ERRORS_KEY_SUFFIX) << std::endl;
+      std::cerr << "error: " << *metadataCacheDF.get("bank.proto") << std::endl;
       result=-1;
       return result;
     }
