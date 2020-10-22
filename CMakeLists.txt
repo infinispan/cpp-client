@@ -267,22 +267,12 @@ if(DEFINED HOTROD_PREBUILT_LIB_DIR)
         endif(WIN32)
     endif("${HOTROD_LIBRARY}" STREQUAL "HOTROD_LIBRARY-NOTFOUND")
 
-    # Find hotrod static libraries looking only into the distro pack
-    find_library(HOTROD_STATIC_LIBRARY NAMES hotrod-static PATHS ${HOTROD_PREBUILT_LIB_DIR} NO_DEFAULT_PATH)
-    if("${HOTROD_STATIC_LIBRARY}" STREQUAL "HOTROD_STATIC_LIBRARY-NOTFOUND")
-        message(FATAL_ERROR "Cannot find HotRod static library in directory '${HOTROD_PREBUILT_LIB_DIR}'.")
-    else("${HOTROD_STATIC_LIBRARY}" STREQUAL "HOTROD_STATIC_LIBRARY-NOTFOUND")
-        message("-- Found HotRod static library: ${HOTROD_STATIC_LIBRARY}")
-        add_library(hotrod-static STATIC IMPORTED GLOBAL)
-        set_target_properties(hotrod-static PROPERTIES IMPORTED_LOCATION ${HOTROD_STATIC_LIBRARY})
-    endif("${HOTROD_STATIC_LIBRARY}" STREQUAL "HOTROD_STATIC_LIBRARY-NOTFOUND")
-
     # Find hotrod_protobuf static libraries looking only into the distro pack
     find_library(HOTROD_PROTOBUF_LIBRARY NAMES hotrod_protobuf PATHS ${HOTROD_PREBUILT_LIB_DIR} NO_DEFAULT_PATH)
     if("${HOTROD_PROTOBUF_LIBRARY}" STREQUAL "HOTROD_PROTOBUF_LIBRARY-NOTFOUND")
-        message(FATAL_ERROR "Cannot find HotRod Protobuf static library in directory '${HOTROD_PREBUILT_LIB_DIR}'.")
+        message(FATAL_ERROR "Cannot find HotRod Protobuf library in directory '${HOTROD_PREBUILT_LIB_DIR}'.")
     else("${HOTROD_PROTOBUF_LIBRARY}" STREQUAL "HOTROD_PROTOBUF_LIBRARY-NOTFOUND")
-        message("-- Found HotRod Protobuf static library: ${HOTROD_PROTOBUF_LIBRARY}")
+        message("-- Found HotRod Protobuf library: ${HOTROD_PROTOBUF_LIBRARY}")
         add_library(hotrod_protobuf STATIC IMPORTED GLOBAL)
         set_target_properties(hotrod_protobuf PROPERTIES IMPORTED_LOCATION ${HOTROD_PROTOBUF_LIBRARY})
     endif("${HOTROD_PROTOBUF_LIBRARY}" STREQUAL "HOTROD_PROTOBUF_LIBRARY-NOTFOUND")
@@ -299,7 +289,7 @@ if(DEFINED HOTROD_PREBUILT_LIB_DIR)
             set (PROTOBUF_PROTOC_EXECUTABLE ${HOTROD_PREBUILT_LIB_DIR}/../bin/protoc.exe)
         endif(UNIX)
         # look only into the distro pack
-        find_library(HR_PROTOBUF_LIBRARY NAMES libprotobuf.a libprotobuf.lib libprotobuf-static.lib protobuf  PATHS ${HOTROD_PREBUILT_LIB_DIR}
+        find_library(HR_PROTOBUF_LIBRARY NAMES libprotobuf.lib protobuf  PATHS ${HOTROD_PREBUILT_LIB_DIR}
             NO_SYSTEM_ENVIRONMENT_PATH NO_DEFAULT_PATH
             NO_CMAKE_SYSTEM_ENVIRONMENT_PATH NO_CMAKE_DEFAULT_PATH)
     endif(DEFINED HR_USE_SYSTEM_PROTOBUF)
@@ -307,8 +297,8 @@ if(DEFINED HOTROD_PREBUILT_LIB_DIR)
     if("${HR_PROTOBUF_LIBRARY}" STREQUAL "HR_PROTOBUF_LIBRARY-NOTFOUND")
         message(FATAL_ERROR "Cannot find protobuf static library in directory '${HOTROD_PREBUILT_LIB_DIR}'.")
     else("${HR_PROTOBUF_LIBRARY}" STREQUAL "HR_PROTOBUF_LIBRARY-NOTFOUND")
-        message("-- Found Protobuf static library: ${HR_PROTOBUF_LIBRARY}")
-        add_library(protobuf STATIC IMPORTED GLOBAL)
+        message("-- Found Protobuf library: ${HR_PROTOBUF_LIBRARY}")
+        add_library(protobuf IMPORTED GLOBAL)
         set_target_properties(protobuf PROPERTIES IMPORTED_LOCATION ${HR_PROTOBUF_LIBRARY})
         set_target_properties(protobuf PROPERTIES IMPORTED_IMPLIB ${HR_PROTOBUF_LIBRARY})
         set(PROTOBUF_LIBRARY ${HR_PROTOBUF_LIBRARY})
@@ -473,13 +463,9 @@ else(DEFINED HOTROD_PREBUILT_LIB_DIR)
     set_target_properties (hotrod PROPERTIES SOVERSION "1.0")
 
     # Build a static library
-    add_library (hotrod-static STATIC ${library_sources})
-    set_target_properties(hotrod-static PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}" )
-    set_target_properties(hotrod-static PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS} ${STATIC_FLAGS}")
-    target_link_libraries (hotrod-static ${platform_libs}  ${PROTOBUF_LIBRARY} ${OPENSSL_LIBRARIES} hotrod_protobuf)
 
     add_custom_target(build_dist COMMAND "echo" "build_dist completed")
-    add_dependencies(build_dist hotrod hotrod-static docs)
+    add_dependencies(build_dist hotrod docs)
 endif(DEFINED HOTROD_PREBUILT_LIB_DIR)
 if (NOT DEFINED COMPILER_FLAGS)
     message(FATAL_ERROR "Compiler flags not set for this build type")
@@ -518,14 +504,14 @@ if (ENABLE_SWIG_TESTING)
 endif (ENABLE_SWIG_TESTING)
 
 add_custom_target(build_test COMMAND "echo" "build_test completed")
-add_dependencies(build_test ${JAVA_TESTS} krbserver unittest unittest-static simple simple-static queryTest queryTest-static events
-                            nearCacheTest nearCacheFailoverTest continuousQueryTest continuousQueryTest-static
+add_dependencies(build_test ${JAVA_TESTS} krbserver unittest simple queryTest events
+                            nearCacheTest nearCacheFailoverTest continuousQueryTest
                             simpleSasl simple-tls simple-tls-sni simpleSaslTls PutGetTest xunitQueryTest ClearTest xunit_nearCacheTest 
-                            CountersTest simpleTx simpleTx-static transcoder TranscoderTest TransactionTest poolTest)
+                            CountersTest simpleTx transcoder TranscoderTest TransactionTest poolTest)
 
 add_custom_target(build_native_test COMMAND "echo" "build_native_test completed")
-add_dependencies(build_native_test unittest unittest-static simple simple-static queryTest queryTest-static events
-                            nearCacheTest continuousQueryTest continuousQueryTest-static
+add_dependencies(build_native_test unittest simple queryTest events
+                            nearCacheTest continuousQueryTest
                             simpleSasl simple-tls simple-tls-sni simpleSaslTls  transcoder docs)
 
 # TESTS
@@ -554,17 +540,6 @@ set_target_properties(simple PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}
 set_target_properties (simple PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${NO_UNUSED_FLAGS}")
 target_link_libraries (simple hotrod hotrod_protobuf ${PROTOBUF_LIBRARY} ${platform_libs})
 
-add_executable (simple-static test/Simple.cpp)
-target_include_directories(simple-static PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
-                                     "${INCLUDE_FILES_DIR}"
-                                     "${CMAKE_CURRENT_BINARY_DIR}"
-                                     "${PROTOBUF_INCLUDE_DIR}")
-set_property(TARGET simple-static PROPERTY CXX_STANDARD 11)
-set_property(TARGET simple-static PROPERTY CXX_STANDARD_REQUIRED ON)
-set_target_properties (simple-static PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${STATIC_FLAGS} ${NO_UNUSED_FLAGS}")
-set_target_properties(simple-static PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}" )
-target_link_libraries (simple-static hotrod-static hotrod_protobuf ${PROTOBUF_LIBRARY} ${OPENSSL_LIBRARIES} ${platform_libs})
-
 add_executable (poolTest test/PoolTest.cpp)
 target_include_directories(poolTest PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
                                      "${INCLUDE_FILES_DIR}"
@@ -592,23 +567,6 @@ endif (MSVC)
 set_target_properties(queryTest PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}")
 target_link_libraries (queryTest hotrod hotrod_protobuf  ${PROTOBUF_LIBRARY} ${platform_libs})
 
-add_executable (queryTest-static ${TEST_PROTO_SRCS} test/QueryTest.cpp)
-target_include_directories(queryTest-static PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
-                                     "${INCLUDE_FILES_DIR}"
-                                     "${INCLUDE_FILES_DIR}/infinispan/hotrod"
-                                     "${CMAKE_CURRENT_BINARY_DIR}"
-                                     "${PROTOBUF_INCLUDE_DIR}")
-
-set_property(TARGET queryTest-static PROPERTY CXX_STANDARD 11)
-set_property(TARGET queryTest-static PROPERTY CXX_STANDARD_REQUIRED ON)
-set_target_properties(queryTest-static PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}" )
-if (MSVC)
-set_target_properties (queryTest-static PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS} ${STATIC_FLAGS} /wd4244 /wd4267")
-else (MSVC)
-set_target_properties (queryTest-static PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${STATIC_FLAGS} ${NO_UNUSED_FLAGS}")
-endif (MSVC)
-target_link_libraries (queryTest-static hotrod-static hotrod_protobuf ${PROTOBUF_LIBRARY} ${OPENSSL_LIBRARIES} ${platform_libs})
-
 add_executable (continuousQueryTest test/ContinuousQueryTest.cpp ${TEST_PROTO_SRCS})
 target_include_directories(continuousQueryTest PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
                                      "${INCLUDE_FILES_DIR}"
@@ -624,23 +582,6 @@ else (MSVC)
 endif (MSVC)
 set_target_properties(continuousQueryTest PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}")
 target_link_libraries (continuousQueryTest hotrod hotrod_protobuf  ${PROTOBUF_LIBRARY} ${platform_libs})
-
-add_executable (continuousQueryTest-static ${TEST_PROTO_SRCS} test/ContinuousQueryTest.cpp)
-target_include_directories(continuousQueryTest-static PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
-                                     "${INCLUDE_FILES_DIR}"
-                                     "${INCLUDE_FILES_DIR}/infinispan/hotrod"
-                                     "${CMAKE_CURRENT_BINARY_DIR}"
-                                     "${PROTOBUF_INCLUDE_DIR}")
-
-set_property(TARGET continuousQueryTest-static PROPERTY CXX_STANDARD 11)
-set_property(TARGET continuousQueryTest-static PROPERTY CXX_STANDARD_REQUIRED ON)
-set_target_properties(continuousQueryTest-static PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}" )
-if (MSVC)
-set_target_properties (continuousQueryTest-static PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS} ${STATIC_FLAGS} /wd4244 /wd4267")
-else (MSVC)
-set_target_properties (continuousQueryTest-static PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${STATIC_FLAGS} ${NO_UNUSED_FLAGS}")
-endif (MSVC)
-target_link_libraries (continuousQueryTest-static hotrod-static hotrod_protobuf ${PROTOBUF_LIBRARY} ${OPENSSL_LIBRARIES} ${platform_libs})
 
 add_executable (events test/Events.cpp)
 target_include_directories(events PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
@@ -731,15 +672,6 @@ target_include_directories(unittest PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/que
     set_target_properties (unittest PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS}")
     target_link_libraries (unittest hotrod hotrod_protobuf ${PROTOBUF_LIBRARY})
 
-    add_executable (unittest-static test/Unit.cpp)
-target_include_directories(unittest-static PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
-                                     "${INCLUDE_FILES_DIR}"
-                                     "${INCLUDE_FILES_DIR}/infinispan/hotrod"
-                                     "${CMAKE_CURRENT_BINARY_DIR}"
-                                     "${PROTOBUF_INCLUDE_DIR}")
-    set_target_properties(unittest-static PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}" )
-    set_target_properties (unittest-static PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS} ${STATIC_FLAGS}")
-    target_link_libraries (unittest-static hotrod-static hotrod_protobuf ${PROTOBUF_LIBRARY} ${OPENSSL_LIBRARIES} ${platform_libs})
 endif (ENABLE_INTERNAL_TESTING)
 
 add_executable (itest test/InteractiveTest.cpp)
@@ -762,17 +694,6 @@ set_property(TARGET simpleTx PROPERTY CXX_STANDARD_REQUIRED ON)
 set_target_properties(simpleTx PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}")
 set_target_properties (simpleTx PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${NO_UNUSED_FLAGS}")
 target_link_libraries (simpleTx hotrod hotrod_protobuf ${PROTOBUF_LIBRARY} ${platform_libs})
-
-add_executable (simpleTx-static test/SimpleTx.cpp)
-target_include_directories(simpleTx-static PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
-                                     "${INCLUDE_FILES_DIR}"
-                                     "${CMAKE_CURRENT_BINARY_DIR}"
-                                     "${PROTOBUF_INCLUDE_DIR}")
-set_property(TARGET simpleTx-static PROPERTY CXX_STANDARD 11)
-set_property(TARGET simpleTx-static PROPERTY CXX_STANDARD_REQUIRED ON)
-set_target_properties (simpleTx-static PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${STATIC_FLAGS} ${NO_UNUSED_FLAGS}")
-set_target_properties(simpleTx-static PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}" )
-target_link_libraries (simpleTx-static hotrod-static hotrod_protobuf ${PROTOBUF_LIBRARY} ${OPENSSL_LIBRARIES} ${platform_libs})
 
 add_executable (transcoder test/Transcoder.cpp)
 target_include_directories(transcoder PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
@@ -806,7 +727,6 @@ ADD_SUBDIRECTORY(xunit-test)
 
 if (ENABLE_INTERNAL_TESTING)
     add_test (unittest unittest)
-    add_test (unittest-static unittest-static)
 endif (ENABLE_INTERNAL_TESTING)    
 
 if (DEFINED ENABLE_ADDITIONAL_TESTS)  # Run unit tests that require full symbols visibility
@@ -850,27 +770,19 @@ else (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.sh") AND (EXISTS "${HOTR
     add_test (start_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py start ${Java_JAVA_EXECUTABLE} ${HOTROD_JBOSS_HOME} standalone.xml)
     add_test (probe_port ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/probe_port.py localhost 11222 60)
     add_test (simple simple)
-    add_test (simple-static simple-static)
     add_test (transcoder transcoder)
     add_test (queryTest queryTest)
-    add_test (queryTest-static queryTest-static)
     add_test (events events)
     add_test (nearCacheTest nearCacheTest)
     add_test (continuousQueryTest continuousQueryTest)
-    add_test (continuousQueryTest-static continuousQueryTest-static)
     add_test (simpleTx simpleTx)
-    add_test (simpleTx-static simpleTx-static)
     add_test (poolTest poolTest)
     add_test (simple-mediatype simple 2.8)
-    add_test (simple-static-mediatype simple-static 2.8)
     add_test (queryTest-mediatype queryTest 2.8)
-    add_test (queryTest-static-mediatype queryTest-static 2.8)
     add_test (events-mediatype-mediatype events 2.8)
     add_test (nearCacheTest-mediatype nearCacheTest 2.8)
     add_test (continuousQueryTest-mediatype continuousQueryTest 2.8)
-    add_test (continuousQueryTest-static-mediatype continuousQueryTest-static 2.8)
     add_test (simpleTx-mediatype simpleTx 2.8)
-    add_test (simpleTx-static-mediatype simpleTx-static 2.8)
     add_test (stop_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py stop)
     add_test (probe_port_stop ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/probe_port.py localhost 11222 60 down)
     add_test (start_cluster_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py start ${Java_JAVA_EXECUTABLE} ${HOTROD_JBOSS_HOME} clustered.xml)
@@ -1001,9 +913,7 @@ endif (NOT WIN32)
 if(NOT DEFINED HOTROD_PREBUILT_LIB_DIR)
     set_property(TARGET hotrod PROPERTY CXX_STANDARD 11)
     set_property(TARGET hotrod PROPERTY CXX_STANDARD_REQUIRED ON)
-    set_property(TARGET hotrod-static PROPERTY CXX_STANDARD 11)
-    set_property(TARGET hotrod-static PROPERTY CXX_STANDARD_REQUIRED ON)
-    install (TARGETS hotrod hotrod-static hotrod_protobuf DESTINATION lib${LIB_SUFFIX})
+    install (TARGETS hotrod hotrod_protobuf DESTINATION lib${LIB_SUFFIX})
 endif(NOT DEFINED HOTROD_PREBUILT_LIB_DIR)
 
 include (CPack)
