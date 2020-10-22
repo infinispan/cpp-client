@@ -12,10 +12,10 @@ add_executable(xunitQueryTest ${SRCS} ${TEST_PROTO_SRCS})
 add_definitions(-DHR_PROTO_EXPORT=)
 set_property(TARGET xunitQueryTest PROPERTY CXX_STANDARD 11)
 set_property(TARGET xunitQueryTest PROPERTY CXX_STANDARD_REQUIRED ON)
-set_target_properties (xunitQueryTest PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${STATIC_FLAGS} ${NO_UNUSED_FLAGS}")
+set_target_properties (xunitQueryTest PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${NO_UNUSED_FLAGS}")
 set_target_properties(xunitQueryTest PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}" )
 
-target_link_libraries(xunitQueryTest hotrod-static hotrod_protobuf ${PROTOBUF_LIBRARY} ${OPENSSL_LIBRARIES} ${platform_libs} gtest_main)
+target_link_libraries(xunitQueryTest hotrod hotrod_protobuf ${PROTOBUF_LIBRARY} ${OPENSSL_LIBRARIES} ${platform_libs} gtest_main)
 
 add_test (start_server ${PYTHON_EXECUTABLE} ${CMAKE_ROOT_SOURCE_DIR}/test/bin/server_ctl.py start ${JAVA_RUNTIME} ${HOTROD_JBOSS_HOME} clustered-indexing.xml)
 add_test (probe_port ${PYTHON_EXECUTABLE} ${CMAKE_ROOT_SOURCE_DIR}/test/bin/probe_port.py localhost 11222 60)

@@ -45,6 +45,7 @@ subst Y: .
 
 Y:
 
+PATH=Y:\RelWithDebInfo;%PATH%
 cmake --build . --config RelWithDebInfo
 if %errorlevel% neq 0 goto fail
 
