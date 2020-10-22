@@ -800,7 +800,7 @@ else (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/server.sh") AND (EXISTS "${HOTROD_J
         add_test (probe_port_stop_sasl ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/probe_port.py localhost 11222 60 down)
         add_test (stop_krbserver ${MVN_PROGRAM} ${MVN_SETTINGS_FILE_OPT} -f krbserver/pom.xml exec:java -Dexec.mainClass=krbserver.Server -Dexec.args=stop)
     endif(WIN32)
-    add_test (start_ssl_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py start ${Java_JAVA_EXECUTABLE} ${HOTROD_JBOSS_HOME} standalone-hotrod-ssl.xml)
+    add_test (start_ssl_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py start ${Java_JAVA_EXECUTABLE} ${HOTROD_JBOSS_HOME} infinispan-ssl.xml)
     add_test (probe_ssl_port ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/probe_port.py localhost 11222 60)
     add_test (simple-tls simple-tls --server_cert_file ${CMAKE_CURRENT_SOURCE_DIR}/test/data/infinispan-ca.pem)
     add_test (simple-tls-sni simple-tls-sni --server_cert_file ${CMAKE_CURRENT_SOURCE_DIR}/test/data/keystore_server_cert.pem)
