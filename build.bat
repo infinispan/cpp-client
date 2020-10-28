@@ -18,7 +18,7 @@ if not exist %JBOSS_HOME% (
 "C:\Program Files\7-zip\7z.exe" x %JBOSS_ZIP% 
 )
 copy test\data\*.* %JBOSS_HOME%\server\conf
-copy %JBOSS_HOME%\server %JBOSS_HOME%\server1
+xcopy /E /I /Y %JBOSS_HOME%\server %JBOSS_HOME%\server1\
 
 call:do_build %generator%
 goto:eof

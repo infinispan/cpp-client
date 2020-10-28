@@ -21,18 +21,9 @@ def is_compressed_oops_supported(java):
 def static_java_args(java, jboss_home, config, opts):
     # No luck calling server.bat without hanging.
     # This is what the batch file does in the default case for 6.0.0.
-    cmd = [java, '-XX:+TieredCompilation', '-XX:+UseCompressedOops',
-            '-Xms64M', '-Xmx512M', '-XX:MaxPermSize=256M', '-Djava.net.preferIPv4Stack=true',
-            '-Djboss.modules.system.pkgs=org.jboss.byteman',
-            '-Dorg.jboss.boot.log.file=' + jboss_home + '/server/log/server.log',
-            '-Dlogging.configuration=file:' + jboss_home + '/server/conf/logging.properties',
-            '-jar', jboss_home + '/jboss-modules.jar', '-mp', jboss_home + '/modules',
-            '-jaxpmodule', 'javax.xml.jaxp-provider', 'org.jboss.as.standalone', 
-            '-Djboss.home.dir=' + jboss_home, '-c', config]+ opts.split()
-    # This option doesn't work on a 32-bit JVM
-
-    if not is_compressed_oops_supported(java):
-        cmd.remove('-XX:+UseCompressedOops')
+    cmd = [jboss_home+"/bin/server.bat",
+            '-c', config]+ opts.split()
+    print (cmd)
 
     return cmd
 
@@ -85,7 +76,7 @@ def stop(args, verbose=False):
 
         if jproc_pid is not None:
             if os.name == 'nt' :
-                subprocess.call(["taskkill.exe", "/PID", str(jproc_pid), "/F"])
+                subprocess.call(["taskkill.exe", "/PID", str(jproc_pid), "/F", "/T"])
                 time.sleep(1)
             else:
                 try:
