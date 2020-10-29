@@ -45,7 +45,7 @@ namespace infinispan {
 				void            cleanup();
 
                 void setupCertStoreServer();
-                void setupCertClient(SCHANNEL_CRED& schannelCred);
+                void setupCertClient(PCCERT_CONTEXT& pClientContext);
                 void logAndThrow(const std::string& msg);
 
 				class SChannelInitializer

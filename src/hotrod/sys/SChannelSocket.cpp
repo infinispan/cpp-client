@@ -602,7 +602,7 @@ void SChannelSocket::setupCertStoreServer()
     }
 }
 
-void SChannelSocket::setupCertClient(SCHANNEL_CRED& schannelCred)
+void SChannelSocket::setupCertClient(PCCERT_CONTEXT& pClientContext)
 {
     // User provided the certificate to validate the client against the server
     // Read it and build certificate and set credentials for the schannel
@@ -610,7 +610,6 @@ void SChannelSocket::setupCertClient(SCHANNEL_CRED& schannelCred)
     BYTE             clientCertStore[8192];
     DWORD            clientCertStoreLen = 8192;
     CRYPT_DATA_BLOB blob;
-    PCCERT_CONTEXT pClientContext;
 
     // User provided the certificate to validate the server in a file
     // Read it and build certificate and certificates store
@@ -640,8 +639,6 @@ void SChannelSocket::setupCertClient(SCHANNEL_CRED& schannelCred)
     {
         raiseHotrodClientException("CertFindCertificateInStore failed.");
     }
-    schannelCred.cCreds = 1;
-    schannelCred.paCred = &pClientContext;
 }
 
 void SChannelSocket::connect(const std::string & host, int port, int timeout)
@@ -654,6 +651,7 @@ void SChannelSocket::connect(const std::string & host, int port, int timeout)
     ALG_ID           rgbSupportedAlgs[16];
     TimeStamp        tsExpiry;
     SecBuffer        ExtraData;
+    PCCERT_CONTEXT pClientContext;
 
     m_host = host;
     m_port = port;
@@ -669,7 +667,9 @@ void SChannelSocket::connect(const std::string & host, int port, int timeout)
     // Setup client certificate data
     if (!m_clientCertificateFile.empty())
     {
-        setupCertClient(SchannelCred);
+        setupCertClient(pClientContext);
+        SchannelCred.cCreds = 1;
+        SchannelCred.paCred = &pClientContext;
     }
 
     SchannelCred.grbitEnabledProtocols = dwProtocol;
