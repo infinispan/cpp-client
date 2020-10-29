@@ -757,7 +757,6 @@ else (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/server.sh") AND (EXISTS "${HOTROD_J
     endif (NOT Java_JAVA_EXECUTABLE)
     file(COPY ${CMAKE_SOURCE_DIR}/krbserver DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
     file(COPY ${CMAKE_SOURCE_DIR}/test/data/krb5.conf DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
-    set_tests_properties(simple-tls simple-tls-mediatype simple-tls-client-auth simpleSaslTls PROPERTIES WILL_FAIL TRUE)
     add_test (start_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py start ${Java_JAVA_EXECUTABLE} ${HOTROD_JBOSS_HOME} infinispan.xml)
     add_test (probe_port ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/probe_port.py localhost 11222 60)
     add_test (simple simple)
@@ -796,8 +795,8 @@ else (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/server.sh") AND (EXISTS "${HOTROD_J
         set_tests_properties(start_sals_server PROPERTIES
                   ENVIRONMENT JAVA_OPTS="-Djava.security.krb5.conf=${CMAKE_CURRENT_BINARY_DIR}/krb5.conf -Djava.security.krb5.debug=true -Djboss.security.disable.secdomain.option=true")
         add_test (probe_sasl_port ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/probe_port.py localhost 11222 60)
-	set_tests_properties(simpleSasl PROPERTIES WILL_FAIL TRUE)
         add_test (simpleSasl simpleSasl)
+	set_tests_properties(simpleSasl PROPERTIES WILL_FAIL TRUE)
         add_test (stop_sasl_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py stop)
         add_test (probe_port_stop_sasl ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/probe_port.py localhost 11222 60 down)
         add_test (stop_krbserver ${MVN_PROGRAM} ${MVN_SETTINGS_FILE_OPT} -f krbserver/pom.xml exec:java -Dexec.mainClass=krbserver.Server -Dexec.args=stop)
@@ -817,6 +816,7 @@ else (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/server.sh") AND (EXISTS "${HOTROD_J
 	#    add_test (simple-tls-sni-client-auth simple-tls-sni --server_cert_file ${CMAKE_CURRENT_SOURCE_DIR}/test/data/keystore_server_cert.pem --client_cert_file ${CMAKE_CURRENT_SOURCE_DIR}/test/data/truststore_client.p12)
         add_test (simple-tls-client-auth simple-tls --server_cert_file ${CMAKE_CURRENT_SOURCE_DIR}/test/data/infinispan-ca.pem --client_cert_file ${CMAKE_CURRENT_SOURCE_DIR}/test/data/truststore_client.p12 --protocol_version 2.8)
 	#    add_test (simple-tls-sni-client-auth simple-tls-sni --server_cert_file ${CMAKE_CURRENT_SOURCE_DIR}/test/data/keystore_server_cert.pem --client_cert_file ${CMAKE_CURRENT_SOURCE_DIR}/test/data/truststore_client.p12 --protocol_version 2.8)
+        add_test (simple-tls-client-auth-mediatype simple-tls --server_cert_file ${CMAKE_CURRENT_SOURCE_DIR}/test/data/infinispan-ca.pem --client_cert_file ${CMAKE_CURRENT_SOURCE_DIR}/test/data/truststore_client.pem --protocol_version 2.8)
         add_test (stop_ssl_server_client_auth ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py stop)
         add_test (start_sals_ssl_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py start ${Java_JAVA_EXECUTABLE} ${HOTROD_JBOSS_HOME} infinispan-sasl-ssl.xml)
         add_test (probe_sasl_ssl_port ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/probe_port.py localhost 11222 60)
@@ -834,6 +834,7 @@ else (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/server.sh") AND (EXISTS "${HOTROD_J
         add_test (simpleSaslTls-mediatype simpleSaslTls --server_cert_file ${CMAKE_CURRENT_SOURCE_DIR}/test/data/infinispan-ca.pem --client_cert_file ${CMAKE_CURRENT_SOURCE_DIR}/test/data/truststore_client.pem --protocol_version 2.8)
         add_test (stop_sasl_ssl_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py stop)
     endif(WIN32)
+    set_tests_properties(simple-tls simple-tls-mediatype simple-tls-client-auth simple-tls-client-auth-mediatype simpleSaslTls PROPERTIES WILL_FAIL TRUE)
 endif (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/server.sh") AND (EXISTS "${HOTROD_JBOSS_HOME}/bin/server.bat")))
 
 if (ENABLE_VALGRIND)
