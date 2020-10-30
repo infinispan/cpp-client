@@ -94,7 +94,7 @@ int main(int argc, char** argv) {
         }
     }
     catch (const Exception &e) {
-            std::cout << "Unexpected exception: " << e.what() << std::endl;    
+            std::cout << "Unexpected exception: " << e.what() << std::endl;
             return 1;
     }
     return 0;
