@@ -822,6 +822,7 @@ else (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/server.sh") AND (EXISTS "${HOTROD_J
         add_test (probe_sasl_ssl_port ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/probe_port.py localhost 11222 60)
         add_test (simpleSaslTls simpleSaslTls --server_cert_file ${CMAKE_CURRENT_SOURCE_DIR}/test/data/infinispan-ca.pem --client_cert_file ${CMAKE_CURRENT_SOURCE_DIR}/test/data/truststore_client.p12)
         add_test (stop_sasl_ssl_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py stop)
+    set_tests_properties(simple-tls simple-tls-mediatype simple-tls-client-auth simple-tls-client-auth-mediatype simpleSaslTls PROPERTIES WILL_FAIL TRUE)
     else (WIN32)
         add_test (simple-tls-client-auth simple-tls --server_cert_file ${CMAKE_CURRENT_SOURCE_DIR}/test/data/infinispan-ca.pem --client_cert_file ${CMAKE_CURRENT_SOURCE_DIR}/test/data/truststore_client.pem)
 	#    add_test (simple-tls-sni-client-auth simple-tls-sni --server_cert_file ${CMAKE_CURRENT_SOURCE_DIR}/test/data/keystore_server_cert.pem --client_cert_file ${CMAKE_CURRENT_SOURCE_DIR}/test/data/truststore_client.pem)
@@ -833,8 +834,8 @@ else (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/server.sh") AND (EXISTS "${HOTROD_J
         add_test (simpleSaslTls simpleSaslTls --server_cert_file ${CMAKE_CURRENT_SOURCE_DIR}/test/data/infinispan-ca.pem --client_cert_file ${CMAKE_CURRENT_SOURCE_DIR}/test/data/truststore_client.pem)
         add_test (simpleSaslTls-mediatype simpleSaslTls --server_cert_file ${CMAKE_CURRENT_SOURCE_DIR}/test/data/infinispan-ca.pem --client_cert_file ${CMAKE_CURRENT_SOURCE_DIR}/test/data/truststore_client.pem --protocol_version 2.8)
         add_test (stop_sasl_ssl_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py stop)
+    set_tests_properties(simple-tls simple-tls-mediatype simple-tls-client-auth simple-tls-client-auth-mediatype PROPERTIES WILL_FAIL TRUE)
     endif(WIN32)
-    set_tests_properties(simple-tls simple-tls-mediatype simple-tls-client-auth simple-tls-client-auth-mediatype simpleSaslTls PROPERTIES WILL_FAIL TRUE)
 endif (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/server.sh") AND (EXISTS "${HOTROD_JBOSS_HOME}/bin/server.bat")))
 
 if (ENABLE_VALGRIND)
