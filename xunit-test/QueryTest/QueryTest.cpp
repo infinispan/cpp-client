@@ -210,6 +210,7 @@ void QueryTest::SetUp()
         {
             FAIL() << "Error in reading .proto file";
         }
+        metadataCache.remove("sample_bank_account/bank-xunit.proto");
         metadataCache.put("sample_bank_account/bank-xunit.proto", protoDef);
         if (metadataCache.containsKey(ERRORS_KEY_SUFFIX))
         {
