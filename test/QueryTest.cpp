@@ -74,6 +74,7 @@ int main(int argc, char** argv) {
     rMain.add([&cacheManager] { cacheManager.stop();});
     std::cerr << "bank.proto" << std::endl;
 
+    metadataCacheDF.remove("bank.proto");
     metadataCacheDF.put("bank.proto", read("query_proto/bank.proto"));
     if (metadataCacheDF.containsKey(ERRORS_KEY_SUFFIX))
     {

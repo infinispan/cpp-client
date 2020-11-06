@@ -77,6 +77,7 @@ int main(int argc, char** argv) {
     rMain.add([&cacheManager]
     {   cacheManager.stop();});
 
+    metadataCacheDF.remove("sample_bank_account/bank.proto");
     metadataCacheDF.put("sample_bank_account/bank.proto", read("query_proto/bank.proto"));
     if (metadataCacheDF.containsKey(ERRORS_KEY_SUFFIX)) {
         std::cerr << "fail: error in registering .proto model" << std::endl;
