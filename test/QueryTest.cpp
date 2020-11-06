@@ -74,7 +74,7 @@ int main(int argc, char** argv) {
     rMain.add([&cacheManager] { cacheManager.stop();});
     std::cerr << "bank.proto" << std::endl;
 
-    metadataCacheDF.remove("bank.proto");
+    metadataCacheDF.clear();
     metadataCacheDF.put("bank.proto", read("query_proto/bank.proto"));
     if (metadataCacheDF.containsKey(ERRORS_KEY_SUFFIX))
     {
@@ -85,7 +85,7 @@ int main(int argc, char** argv) {
       return result;
     }
 
-    rMain.add([&metadataCacheDF] { metadataCacheDF.remove("bank.proto");});
+    rMain.add([&metadataCacheDF] { metadataCacheDF.clear();});
 
     auto *testkm = new BasicTypesProtoStreamMarshaller<int>();
     auto *testvm = new ProtoStreamMarshaller<sample_bank_account::User>();
