@@ -48,7 +48,7 @@ message Address {
    repeated Address addresses = 5;     //a repeated field cannot be marked required
 
    /**
-    * @Field(store = Store.YES)
+    * @Field(store = Store.YES, indexNullAs = "-1")
     */
    optional int32 age = 6;   // persisting age instead of birth date is not ideal but is ok for our sample code
 
