@@ -16,7 +16,7 @@
            <role name="executor" permissions="READ WRITE BULK_READ EXEC ADMIN"/>
          </authorization>
       </security>
-      <local-cache name="Default">
+      <local-cache name="default">
          <expiration interval="1000"/>
       </local-cache>
       <local-cache name="namedCache"/>

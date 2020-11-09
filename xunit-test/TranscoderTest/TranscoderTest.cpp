@@ -39,7 +39,7 @@ TEST_F(TranscoderTest, DefaultCacheWriteJbossReadRawBytes) {
             &Marshaller<std::string>::destroy,
             vm,
             &Marshaller<std::string>::destroy,
-            "Default", true);
+            "default", true);
 
     // Define a cache with a raw media type for the value
     // and check that it returns value with the jboss marshaller preamble
@@ -75,7 +75,7 @@ TEST_F(TranscoderTest, DefaultCacheWriteJbossReadJson) {
             &Marshaller<std::string>::destroy,
             vm,
             &Marshaller<std::string>::destroy,
-            "Default", true);
+            "default", true);
 
     // Use a cache with a raw media type for entries
     // and check that it returns a json formatted value with the jboss marshaller preamble

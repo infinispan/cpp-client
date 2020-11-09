@@ -50,7 +50,7 @@ TEST_F(NearCacheEvictionTest, EvictionOnFullNearCacheTest) {
             std::string>(km1,
             &Marshaller<std::string>::destroy,
             vm1,
-            &Marshaller<std::string>::destroy, "Default", true);
+            &Marshaller<std::string>::destroy, "default", true);
 
     cache.clear();
 

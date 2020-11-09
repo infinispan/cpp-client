@@ -457,15 +457,15 @@ int main(int argc, char** argv) {
 //        builder.balancingStrategyProducer(transport::MyRoundRobinBalancingStrategy::newInstance);
         builder.balancingStrategyProducer(nullptr);
         RemoteCacheManager cacheManager(builder.build(), false);
-        RemoteCache<std::string, std::string> &cachef1 = cacheManager.getCache<std::string, std::string>("Default",false);
-        RemoteCache<std::string, std::string> &cachet1 = cacheManager.getCache<std::string, std::string>("Default",true);
+        RemoteCache<std::string, std::string> &cachef1 = cacheManager.getCache<std::string, std::string>("default",false);
+        RemoteCache<std::string, std::string> &cachet1 = cacheManager.getCache<std::string, std::string>("default",true);
         RemoteCache<std::string, std::string> &cachenf1 = cacheManager.getCache<std::string, std::string>("namedCache",
                 false);
         RemoteCache<std::string, std::string> &cachent1 = cacheManager.getCache<std::string, std::string>("namedCache",
                 true);
 
-        RemoteCache<std::string, std::string> &cachet2 = cacheManager.getCache<std::string, std::string>("Default",true);
-        RemoteCache<std::string, std::string> &cachef2 = cacheManager.getCache<std::string, std::string>("Default",false);
+        RemoteCache<std::string, std::string> &cachet2 = cacheManager.getCache<std::string, std::string>("default",true);
+        RemoteCache<std::string, std::string> &cachef2 = cacheManager.getCache<std::string, std::string>("default",false);
         RemoteCache<std::string, std::string> &cachenf2 = cacheManager.getCache<std::string, std::string>("namedCache",
                 false);
         RemoteCache<std::string, std::string> &cachent2 = cacheManager.getCache<std::string, std::string>("namedCache",
@@ -507,7 +507,7 @@ int main(int argc, char** argv) {
             BasicMarshaller<float> *kmf = new BasicMarshaller<float>();
             BasicMarshaller<double> *vmd = new BasicMarshaller<double>();
             RemoteCache<float, double> cache1 = cacheManager.getCache<float, double>(kmf, &Marshaller<float>::destroy,
-                    vmd, &Marshaller<double>::destroy,"Default", true);
+                    vmd, &Marshaller<double>::destroy,"default", true);
             float k1 = 1.0;
             double v1 = 1e-3;
 
@@ -527,7 +527,7 @@ int main(int argc, char** argv) {
         BasicMarshaller<std::string> *km = new BasicMarshaller<std::string>();
         BasicMarshaller<std::string> *vm = new BasicMarshaller<std::string>();
         RemoteCache<std::string, std::string> cache0 = cacheManager.getCache<std::string, std::string>(km,
-                &Marshaller<std::string>::destroy, vm, &Marshaller<std::string>::destroy,"Default", true);
+                &Marshaller<std::string>::destroy, vm, &Marshaller<std::string>::destroy,"default", true);
         DataFormat<std::string, std::string> df;
         df.keyMediaType.typeSubtype = std::string("application/x-jboss-marshalling");
         df.valueMediaType.typeSubtype = std::string("application/x-jboss-marshalling");
@@ -582,7 +582,7 @@ int main(int argc, char** argv) {
         JBasicMarshaller<std::string> *km = new JBasicMarshaller<std::string>();
         JBasicMarshaller<std::string> *vm = new JBasicMarshaller<std::string>();
         RemoteCache<std::string, std::string> cache0 = cacheManager.getCache<std::string, std::string>(km,
-                &Marshaller<std::string>::destroy, vm, &Marshaller<std::string>::destroy, "Default", true);
+                &Marshaller<std::string>::destroy, vm, &Marshaller<std::string>::destroy, "default", true);
         DataFormat<std::string, std::string> df;
         df.keyMediaType.typeSubtype = std::string("application/x-jboss-marshalling");
         df.valueMediaType.typeSubtype = std::string("application/x-jboss-marshalling");

@@ -36,14 +36,14 @@ TEST_F(NearCacheTest, ClientsInvalidatedTest) {
     RemoteCache<std::string, std::string> cache1 = NearCacheTest::remoteCacheManager->getCache<std::string, std::string>(km1,
             &Marshaller<std::string>::destroy,
             vm1,
-            &Marshaller<std::string>::destroy, "Default", true);
+            &Marshaller<std::string>::destroy, "default", true);
 
     BasicMarshaller<std::string> *km2 = new BasicMarshaller<std::string>();
     BasicMarshaller<std::string> *vm2 = new BasicMarshaller<std::string>();
     RemoteCache<std::string, std::string> cache2 = NearCacheTest::remoteCacheManager->getCache<std::string, std::string>(km2,
             &Marshaller<std::string>::destroy,
             vm2,
-            &Marshaller<std::string>::destroy, "Default", true);
+            &Marshaller<std::string>::destroy, "default", true);
 
     cache1.clear();
     cache2.clear();
