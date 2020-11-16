@@ -28,7 +28,7 @@ void Repeat(std::function<void(int, RemoteCache<std::string, std::string>&)> f)
     RemoteCache<std::string, std::string> cache = NearCacheStaleReadsTest::remoteCacheManager->getCache<std::string, std::string>(km1,
             &Marshaller<std::string>::destroy,
             vm1,
-            &Marshaller<std::string>::destroy, false);
+            &Marshaller<std::string>::destroy, "default", false);
 
     cache.clear();
     cache.putIfAbsent("k", "v0");

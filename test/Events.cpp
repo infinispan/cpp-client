@@ -40,7 +40,7 @@ int main(int argc, char** argv) {
         RemoteCache<int, std::string> cache = cacheManager.getCache<int, std::string>(km,
                 &Marshaller<int>::destroy,
                 vm,
-                &Marshaller<std::string>::destroy);
+                &Marshaller<std::string>::destroy, "default", true);
         cache.clear();
         std::vector<std::vector<char> > filterFactoryParams;
         std::vector<std::vector<char> > converterFactoryParams;

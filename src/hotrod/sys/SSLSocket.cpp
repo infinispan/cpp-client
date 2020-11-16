@@ -79,6 +79,11 @@ void SSLSocket::connect(const std::string& host, int port, int timeout) {
         close();
         logAndThrow(host, port, "SSL_set_cipher_list");
     }
+    //const char* const PREFERRED_CIPHERS_TLSv1_3 = "TLSv1.3";
+    //if (!SSL_set_ciphersuites(m_ssl, PREFERRED_CIPHERS_TLSv1_3)) {
+    //    close();
+    //    logAndThrow(host, port, "SSL_set_ciphersuite");
+    //}
     m_bio = BIO_new_socket(getSocket(), BIO_NOCLOSE);
     if (!m_bio) {
         close();

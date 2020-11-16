@@ -32,7 +32,7 @@ TEST_F(PutGetTest, OperationOnCacheManagerNotStarted) {
     RemoteCache<std::string, std::string> cache = PutGetTest::remoteCacheManager->getCache<std::string, std::string>(km,
             &Marshaller<std::string>::destroy,
             vm,
-            &Marshaller<std::string>::destroy, true);
+            &Marshaller<std::string>::destroy, "default", true);
     EXPECT_ANY_THROW(cache.get("k1"));
 }
 
@@ -45,7 +45,7 @@ TEST_F(PutGetTest, SimplePutForcedReturnReturnsPrevVal) {
     RemoteCache<std::string, std::string> cache = PutGetTest::remoteCacheManager->getCache<std::string, std::string>(km,
             &Marshaller<std::string>::destroy,
             vm,
-            &Marshaller<std::string>::destroy, true);
+            &Marshaller<std::string>::destroy, "default", true);
     std::unique_ptr<std::string> prevVal(cache.get("k1"));
     std::unique_ptr<std::string> ret(cache.put("k1","v1"));
     EXPECT_TRUE(prevVal==ret || *prevVal==*ret);
@@ -58,7 +58,7 @@ TEST_F(PutGetTest, ATestThatFails) {
     RemoteCache<std::string, std::string> cache = PutGetTest::remoteCacheManager->getCache<std::string, std::string>(km,
             &Marshaller<std::string>::destroy,
             vm,
-            &Marshaller<std::string>::destroy, true);
+            &Marshaller<std::string>::destroy, "default", true);
     cache.clear();
     EXPECT_LT(0,cache.size());
 }

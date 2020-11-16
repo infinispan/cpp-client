@@ -210,6 +210,7 @@ void QueryTest::SetUp()
         {
             FAIL() << "Error in reading .proto file";
         }
+        metadataCache.clear();
         metadataCache.put("sample_bank_account/bank-xunit.proto", protoDef);
         if (metadataCache.containsKey(ERRORS_KEY_SUFFIX))
         {
@@ -222,11 +223,12 @@ void QueryTest::SetUp()
                 sample_bank_account::User>(
                 testkm, &Marshaller<int>::destroy, testvm, &Marshaller<sample_bank_account::User>::destroy, NAMED_CACHE,
                 false);
+
         userCache.clear();
         putUsers(userCache);
 
         auto *acc_testkm = new BasicTypesProtoStreamMarshaller<int>();
-        auto *acc_testvm = new ProtoStreamMarshaller<sample_bank_account::Account, 43>();
+        auto *acc_testvm = new ProtoStreamMarshaller<sample_bank_account::Account, 1000044>();
         RemoteCache<int, sample_bank_account::Account> accCache = remoteCacheManager->getCache<int,
                 sample_bank_account::Account>(
                 acc_testkm, &Marshaller<int>::destroy, acc_testvm, &Marshaller<sample_bank_account::Account>::destroy,
@@ -235,7 +237,7 @@ void QueryTest::SetUp()
         PutAccounts(accCache);
 
         auto *tra_testkm = new BasicTypesProtoStreamMarshaller<int>();
-        auto *tra_testvm = new ProtoStreamMarshaller<sample_bank_account::Transaction, 44>();
+        auto *tra_testvm = new ProtoStreamMarshaller<sample_bank_account::Transaction, 1000045>();
         RemoteCache<int, sample_bank_account::Transaction> traCache = remoteCacheManager->getCache<int,
                 sample_bank_account::Transaction>(
                 tra_testkm, &Marshaller<int>::destroy, tra_testvm, &Marshaller<sample_bank_account::Transaction>::destroy,
@@ -666,7 +668,7 @@ TEST_F(QueryTest, NotContainsTest)
                     NAMED_CACHE, false);
     QueryRequest qr;
     // JpqlString will be deprecated please use QueryString
-    qr.set_querystring("from sample_bank_account.User u where u.accountIds = 42");
+    qr.set_querystring("from sample_bank_account.User u where u.accountIds = 1000042");
     QueryResponse result = userCache.query(qr);
     std::vector<sample_bank_account::User> vectorOfUsers;
     if (!unwrapResults(result, vectorOfUsers)) {

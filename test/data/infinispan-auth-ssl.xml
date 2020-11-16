@@ -1,0 +1,79 @@
+<infinispan
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="urn:infinispan:config:11.0 http://www.infinispan.org/schemas/infinispan-config-11.0.xsd
+                            urn:infinispan:server:11.0 http://www.infinispan.org/schemas/infinispan-server-11.0.xsd"
+        xmlns="urn:infinispan:config:11.0"
+        xmlns:server="urn:infinispan:server:11.0">
+   <cache-container name="default" statistics="true">
+      <transport cluster="${infinispan.cluster.name}" stack="${infinispan.cluster.stack:tcp}"/>
+      <security>
+         <authorization>
+           <identity-role-mapper/>
+           <role name="admin" permissions="ALL"/>
+           <role name="reader" permissions="READ"/>
+           <role name="writer" permissions="WRITE BULK_WRITE"/>
+           <role name="supervisor" permissions="READ WRITE EXEC BULK_READ BULK_WRITE"/>
+           <role name="executor" permissions="READ WRITE BULK_READ EXEC ADMIN"/>
+         </authorization>
+      </security>
+      <local-cache name="default">
+         <expiration interval="1000"/>
+      </local-cache>
+      <local-cache name="namedCache"/>
+      <local-cache name="queryCache"/>
+      <local-cache name="transcodingCache">
+         <encoding>
+            <key media-type="application/x-jboss-marshalling"/>
+            <value media-type="application/x-jboss-marshalling"/>
+         </encoding>
+      </local-cache>
+      <local-cache name="non_xa">
+         <locking isolation="REPEATABLE_READ"/>
+         <transaction mode="NON_XA" locking="PESSIMISTIC"/>
+      </local-cache>
+      <distributed-cache name="distributed">
+         <expiration interval="1000"/>
+      </distributed-cache>
+      <local-cache name="authCache">
+      </local-cache> 
+   </cache-container>
+
+   <server xmlns="urn:infinispan:server:11.0">
+      <interfaces>
+         <interface name="public">
+            <inet-address value="${infinispan.bind.address:127.0.0.1}"/>
+         </interface>
+      </interfaces>
+
+      <socket-bindings default-interface="public" port-offset="${infinispan.socket.binding.port-offset:0}">
+         <socket-binding name="default" port="11222"/>
+         <socket-binding name="memcached" port="11221"/>
+      </socket-bindings>
+
+      <security>
+         <security-realms>
+            <security-realm name="ApplicationRealm">
+               <server-identities>
+                  <ssl>
+                     <keystore path="keystore.jks" relative-to="infinispan.server.config.path" keystore-password="secret"/>
+                  </ssl>
+               </server-identities>
+               <truststore-realm path="truststore.jks" relative-to="infinispan.server.config.path" keystore-password="secret"/>
+       </security-realm>
+         </security-realms>
+      </security>
+
+      <endpoints socket-binding="default" security-realm="ApplicationRealm" require-ssl-client-auth="true">
+         <hotrod-connector name="hotrod">
+            <authentication security-realm="ApplicationRealm">
+              <sasl server-name="client-one" mechanisms="EXTERNAL"/>
+            </authentication>
+         </hotrod-connector>
+         <rest-connector name="rest">
+            <authentication mechanisms="CLIENT_CERT"/>
+         </rest-connector>
+         <!-- Uncomment to enable the memcached connector -->
+         <!-- memcached-connector socket-binding="memcached" / -->
+      </endpoints>
+   </server>
+</infinispan>

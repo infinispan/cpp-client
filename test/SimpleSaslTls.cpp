@@ -141,6 +141,7 @@ int main(int argc, char** argv) {
     catch (Exception &ex)
       {
         std::cout << "Error: " << ex.what() << std::endl;
+        return 1;
       }
 }
 

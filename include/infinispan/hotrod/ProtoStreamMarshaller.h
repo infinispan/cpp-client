@@ -23,7 +23,7 @@ namespace hotrod {
 /**
  * A Marshaller based on Google Protobuf and on the WrappedMessage .proto specification
  */
-template <class T, unsigned int TypeId = 42> class ProtoStreamMarshaller : public infinispan::hotrod::Marshaller<T> {
+template <class T, unsigned int TypeId = 1000042> class ProtoStreamMarshaller : public infinispan::hotrod::Marshaller<T> {
     void marshall(const T& obj, std::vector<char>& b) {
     	std::vector<char> msg(obj.ByteSize());
     	obj.SerializeToArray(msg.data(),obj.ByteSize());

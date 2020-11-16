@@ -52,7 +52,7 @@ int main(int argc, char **argv) {
         std::cout << "Test pool with WAIT condition" << std::endl;
         // Cache configuration
         ConfigurationBuilder builder;
-        builder.protocolVersion(Configuration::PROTOCOL_VERSION_24);
+        builder.protocolVersion(Configuration::PROTOCOL_VERSION_28);
         builder.addServer().host("127.0.0.1").port(11222);
         builder.balancingStrategyProducer(nullptr);
         RemoteCacheManager cacheManager(builder.build(), false);
@@ -63,7 +63,12 @@ int main(int argc, char **argv) {
         RemoteCache<std::string, std::string> cache0 = cacheManager.getCache<std::string, std::string>(km,
                 &Marshaller<std::string>::destroy, vm, &Marshaller<std::string>::destroy, "namedCache", false);
 
-        prepareCache(cache0);
+        DataFormat<std::string, std::string> df;
+        df.keyMediaType.typeSubtype = std::string("application/x-jboss-marshalling");
+        df.valueMediaType.typeSubtype = std::string("application/x-jboss-marshalling");
+        RemoteCache<std::string, std::string> cache = cache0.withDataFormat(&df);
+
+        prepareCache(cache);
 
         // Start 50 threads and see if everything works.
         // With the WAIT setup the threads have to wait if the
@@ -72,8 +77,8 @@ int main(int argc, char **argv) {
         std::thread t[50];
         std::promise<void> p[50];
         for (int i = 0; i < 50; i++) {
-            t[i] = std::thread([&res, &p, &cache0, i]() {
-                res[i] = doSlowGet(cache0, i);
+            t[i] = std::thread([&res, &p, &cache, i]() {
+                res[i] = doSlowGet(cache, i);
                 p[i].set_value();
             });
         }
@@ -89,6 +94,7 @@ int main(int argc, char **argv) {
         for (int i = 0; i < 50; i++) {
             t[i].join();
         }
+        cache.clear();
         cacheManager.stop();
     }
     if (result != 0)
@@ -97,7 +103,7 @@ int main(int argc, char **argv) {
         std::cout << "Test pool with EXCEPTION condition" << std::endl;
         // Cache configuration
         ConfigurationBuilder builder;
-        builder.protocolVersion(Configuration::PROTOCOL_VERSION_24);
+        builder.protocolVersion(Configuration::PROTOCOL_VERSION_28);
         builder.addServer().host("127.0.0.1").port(11222);
         builder.balancingStrategyProducer(nullptr);
         builder.connectionPool().exhaustedAction(EXCEPTION);
@@ -107,7 +113,14 @@ int main(int argc, char **argv) {
         BasicMarshaller<std::string> *km = new BasicMarshaller<std::string>();
         BasicMarshaller<std::string> *vm = new BasicMarshaller<std::string>();
         RemoteCache<std::string, std::string> cache0 = cacheManager.getCache<std::string, std::string>(km,
-                &Marshaller<std::string>::destroy, vm, &Marshaller<std::string>::destroy);
+                &Marshaller<std::string>::destroy, vm, &Marshaller<std::string>::destroy, "namedCache", false);
+
+        DataFormat<std::string, std::string> df;
+        df.keyMediaType.typeSubtype = std::string("application/x-jboss-marshalling");
+        df.valueMediaType.typeSubtype = std::string("application/x-jboss-marshalling");
+        RemoteCache<std::string, std::string> cache = cache0.withDataFormat(&df);
+
+        prepareCache(cache);
 
         for (int i = 0; i < 50000; i++) {
             cache0.put("k" + std::to_string(i), "v" + std::to_string(i));
@@ -122,11 +135,11 @@ int main(int argc, char **argv) {
         std::promise<void> p[50];
         int exceptionsCaught = 0;
         for (int i = 0; i < 50; i++) {
-            t[i] = std::thread([&res, &p, &cache0, i, &exceptionsCaught]() {
+            t[i] = std::thread([&res, &p, &cache, i, &exceptionsCaught]() {
                 bool done = false;
                 while (!done) {
                     try {
-                        res[i] = doSlowGet(cache0, i);
+                        res[i] = doSlowGet(cache, i);
                         p[i].set_value();
                         done = true;
                     } catch (NoSuchElementException &ex) {
@@ -148,7 +161,7 @@ int main(int argc, char **argv) {
             }
         }
         std::cout << "Exceptions caught by the user: " << exceptionsCaught << std::endl;
-        if (*res[20] != *doSlowGet(cache0, 20)) {
+        if (*res[20] != *doSlowGet(cache, 20)) {
             std::cerr << "FAIL: value doesn't match for last get" << std::endl;
 
         }

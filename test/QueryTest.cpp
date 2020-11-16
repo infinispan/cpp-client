@@ -72,16 +72,20 @@ int main(int argc, char** argv) {
 
     ResourceManager rMain;
     rMain.add([&cacheManager] { cacheManager.stop();});
+    std::cerr << "bank.proto" << std::endl;
 
-    metadataCacheDF.put("sample_bank_account/bank.proto", read("query_proto/bank.proto"));
+    metadataCacheDF.clear();
+    metadataCacheDF.put("bank.proto", read("query_proto/bank.proto"));
     if (metadataCacheDF.containsKey(ERRORS_KEY_SUFFIX))
     {
       std::cerr << "fail: error in registering .proto model" << std::endl;
+      std::cerr << "error: " << *metadataCacheDF.get(ERRORS_KEY_SUFFIX) << std::endl;
+      std::cerr << "error: " << *metadataCacheDF.get("bank.proto") << std::endl;
       result=-1;
       return result;
     }
 
-    rMain.add([&metadataCacheDF] { metadataCacheDF.remove("sample_bank_account/bank.proto");});
+    rMain.add([&metadataCacheDF] { metadataCacheDF.clear();});
 
     auto *testkm = new BasicTypesProtoStreamMarshaller<int>();
     auto *testvm = new ProtoStreamMarshaller<sample_bank_account::User>();
