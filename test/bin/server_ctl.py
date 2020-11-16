@@ -9,6 +9,7 @@ import string
 import subprocess
 import time
 import pickle
+import shutil
 
 def is_compressed_oops_supported(java):
     try:
@@ -37,6 +38,10 @@ def start(args):
     ispn_server_pid_file = "servers.pkl";
     if (len(args)>6):
         ispn_server_pid_file = args[6];
+    server_data_home = "server";
+    if (len(args)>7):
+        server_data_home = args[7];
+
     stop(["server_ctl.py","stop",ispn_server_pid_file])
 
     # ctest likes to hang waiting for the subprocesses.  Different
@@ -45,8 +50,12 @@ def start(args):
 
     if os.name == 'nt' :
         # Hangs on server.bat script.  Call Java directly.
+        if (os.path.isdir(ispn_server_home+"/"+server_data_home+"/data")) :
+            shutil.rmtree(ispn_server_home+"/"+server_data_home+"/data")
         jproc = subprocess.Popen(static_java_args(java_exe, ispn_server_home, ispn_server_config, ispn_server_opts), close_fds=True, creationflags=subprocess.CREATE_NEW_CONSOLE);
     else:
+        if (os.path.isdir(ispn_server_home+"/"+server_data_home+"/data")) :
+            shutil.rmtree(ispn_server_home+"/"+server_data_home+"/data")
         startup_script = ispn_server_home + '/bin/' + 'server.sh';
         new_env = os.environ.copy()
         # Tell server.sh that you want termination signals to get through to the java process
