@@ -1,0 +1,17 @@
+//
+// Special characters
+//
+:plusplus: ++
+:underscores: ___
+
+:brandname: Infinispan
+:hr_cpp: Hot Rod C{plusplus}
+:rhel_long: Red Hat Enterprise Linux (RHEL)
+:rhel_short: RHEL
+:win_long: Microsoft Windows
+:win_short: Windows
+
+:doc_home: https://infinispan.org/documentation/
+:download_url: https://infinispan.org/hotrod-clients
+:cli_docs: https://infinispan.org/docs/stable/titles/cli/cli.html
+:cpp_api_docs: https://infinispan.org/hotrod-clients

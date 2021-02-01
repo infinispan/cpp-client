@@ -1,0 +1,13 @@
+[id='compiling_schema']
+:context: protobuf
+= Compiling Protobuf Schema
+{brandname} uses the ProtoStream API to store data as Protobuf-encoded entries.
+
+Protobuf is a language-neutral format that allows clients to create and retrieve entries in remote caches using both Hot Rod and REST endpoints.
+
+include::{topics}/proc_compiling_protobuf_nix.adoc[leveloffset=+1]
+include::{topics}/proc_compiling_protobuf_win.adoc[leveloffset=+1]
+
+// Restore the parent context.
+ifdef::parent-context[:context: {parent-context}]
+ifndef::parent-context[:!context:]

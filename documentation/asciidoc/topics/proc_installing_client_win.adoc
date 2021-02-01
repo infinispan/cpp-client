@@ -1,0 +1,15 @@
+[id='installing_client_win-{context}']
+= Installing {hr_cpp} clients on {win_long}
+{brandname} provides an archived version of the {hr_cpp} client for installation on {win_short}.
+
+.Procedure
+
+//Community
+ifdef::community[]
+. Download the ZIP archive for the {hr_cpp} client from the link:{download_url}[Hot Rod client downloads].
+endif::community[]
+//Downstream
+ifdef::downstream[]
+. Download the ZIP archive for the {hr_cpp} client from the link:{download_url}[{brandname} Software Downloads].
+endif::downstream[]
+. Extract the ZIP archive to your file system.

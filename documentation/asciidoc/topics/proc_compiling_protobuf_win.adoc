@@ -1,0 +1,22 @@
+[id='installing_protobuf_win-{context}']
+= Compiling Protobuf schema on {win_long}
+Compile Protobuf schema, `.proto` files, into C{plusplus} header and source files to describe your data to {brandname}.
+
+.Procedure
+
+. Open a command prompt to the installation directory for the {hr_cpp} client.
+. Compile Protobuf schema for the {hr_cpp} client as required.
++
+[source,bash,options="nowrap",subs=attributes+]
+----
+bin\protoc --cpp_out dllexport_decl=HR_PROTO_EXPORT:path\to\output\ $FILE
+----
++
+`HR_PROTO_EXPORT` is a macro that the {hr_cpp} client expands when it compiles the Protobuf schema.
++
+. Register your Protobuf schema with {brandname} if you plan to use queries.
+
+[role="_additional-resources"]
+.Additional resources
+
+* link:{cli_docs}#registering_protobuf_schemas[Registering Protobuf Schemas]

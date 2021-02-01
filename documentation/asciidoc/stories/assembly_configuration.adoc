@@ -1,0 +1,10 @@
+[id='hr_client_configuration']
+:context: configure
+= Configuring the {hr_cpp} client
+{hr_cpp} clients interact with remote {brandname} clusters via the `RemoteCache` API.
+
+include::{topics}/ref_configuration_builder.adoc[leveloffset=+1]
+
+// Restore the parent context.
+ifdef::parent-context[:context: {parent-context}]
+ifndef::parent-context[:!context:]

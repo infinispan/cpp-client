@@ -1,0 +1,26 @@
+//Directory attributes
+:stories: ../stories
+:topics: ../topics
+
+//Doc attributes
+//Community
+:community:
+include::{topics}/attributes/community-attributes.adoc[]
+//Downstream
+//include::{topics}/attributes/downstream-attributes.adoc[]
+//:downstream:
+
+//Title attributes
+:toc2:
+:icons: font
+:toclevels: 3
+:numbered:
+:sectanchors:
+
+//Title
+= {hr_cpp} Client Guide
+
+{hr_cpp} clients allow C{plusplus} runtime applications to connect and interact with remote {brandname} clusters.
+
+//User stories
+include::stories.adoc[]
