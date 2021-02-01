@@ -1,0 +1,17 @@
+//
+// Special characters
+//
+:plusplus: ++
+:underscores: ___
+
+:brandname: Data Grid
+:hr_cpp: Hot Rod C{plusplus}
+:rhel_long: Red Hat Enterprise Linux (RHEL)
+:rhel_short: RHEL
+:win_long: Microsoft Windows
+:win_short: Windows
+
+:doc_home: https://access.redhat.com/documentation/en-us/red_hat_data_grid/
+:download_url: https://access.redhat.com/jbossnetwork/restricted/listSoftware.html?product=data.grid&downloadType=distributions
+:cli_docs: https://access.redhat.com/documentation/en-us/red_hat_data_grid/8.1/html-single/data_grid_command_line_interface/index
+:cpp_api_docs: https://access.redhat.com/webassets/avalon/d/red-hat-data-grid/8.1/cpp/index.html

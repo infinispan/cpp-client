@@ -1,0 +1,6 @@
+//Reference user stories or topics.
+//Please review authoring guidelines in the Contributors Guide.
+
+include::{stories}/assembly_installation.adoc[leveloffset=+1]
+include::{stories}/assembly_compiling_protobuf.adoc[leveloffset=+1]
+include::{stories}/assembly_configuration.adoc[leveloffset=+1]

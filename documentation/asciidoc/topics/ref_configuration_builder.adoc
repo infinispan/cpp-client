@@ -1,0 +1,46 @@
+[id='configuration_builder-{context}']
+= Configuration and Remote Cache Manager APIs
+Use the `ConfigurationBuilder` API to configure {hr_cpp} client connections and the `RemoteCacheManager` API to obtain and configure remote caches.
+
+.Configuration builder
+[source,c++,options="nowrap"]
+----
+#include "infinispan/hotrod/ConfigurationBuilder.h"
+#include "infinispan/hotrod/RemoteCacheManager.h"
+#include <infinispan/hotrod/RemoteCache.h>
+#include <iostream>
+int main () {
+  ConfigurationBuilder builder;
+    // Configure a cache manager to connect with Hot Rod version 2.8
+    builder.protocolVersion(Configuration::PROTOCOL_VERSION_28);
+    // Connect to a server at localhost with the default port.
+    builder.addServer().host("127.0.0.1").port(11222);
+    // Create and start a RemoteCacheManager to interact with caches.
+    RemoteCacheManager cacheManager(builder.build(), false);
+    cacheManager.start();
+    ...
+}
+----
+
+.Cross-site replication
+[source,c++,options="nowrap"]
+----
+ConfigurationBuilder builder;
+  builder.addServer().host("127.0.0.1").port(11222);
+  // Configure a remote cluster and node when using cross-site replication.
+  builder.addCluster("NYC").addClusterNode("192.0.2.0", 11322);
+----
+
+.Near caching
+[source,c++,options="nowrap"]
+----
+ConfigurationBuilder builder;
+  builder.addServer().host("127.0.0.1").port(11222);
+  // Enable near-caching for the client.
+  builder.nearCache().mode(NearCacheMode::INVALIDATED).maxEntries(4);
+----
+
+[role="_additional-resources"]
+.Additional resources
+
+* link:{cpp_api_docs}[{hr_cpp} client API]

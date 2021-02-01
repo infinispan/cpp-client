@@ -1,0 +1,18 @@
+[id='library_dependencies-{context}']
+= C{plusplus} compiler requirements
+
+[cols="1,1", options="header"]
+|===
+| Operating system
+| Required compiler
+
+| {rhel_long} 7, 64-bit
+| C++ 11 compiler (GCC 4.8.1)
+
+| {rhel_short} 8, 64-bit
+| C++ 11 compiler (GCC 4.8.1)
+
+| {win_long} 7 x64
+| C++ 11 compiler (Visual Studio 2015, Microsoft Visual C++ 2013 Redistributable Package for the x64 platform)
+
+|===
