@@ -18,7 +18,7 @@ RUN yum -y install \
    cyrus-sasl-plain \
    cyrus-sasl-md5 \
    cyrus-sasl-gssapi \
-   krb5-workstation doxygen swig python3 && \
+   krb5-workstation doxygen python3 && \
    yum -y groupinstall "Development Tools"
 
 #RUN wget http://repos.fedorapeople.org/repos/dchen/apache-maven/epel-apache-maven.repo -O /etc/yum.repos.d/epel-apache-maven.repo

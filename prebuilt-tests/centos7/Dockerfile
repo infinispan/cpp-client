@@ -3,9 +3,7 @@ FROM centos:7
 RUN yum -y install \
    wget \
    cmake \
-   deltarpm \
    iputils \
-   jdg-cpp-client \
    java-1.8.0-openjdk-devel \
    openssl-devel \
    rpmdevtools \
@@ -18,7 +16,7 @@ RUN yum -y install \
    cyrus-sasl-plain \
    cyrus-sasl-md5 \
    cyrus-sasl-gssapi \
-   krb5-workstation brew && \
+   krb5-workstation && \
    yum -y groupinstall "Development Tools"
 
 #RUN wget http://repos.fedorapeople.org/repos/dchen/apache-maven/epel-apache-maven.repo -O /etc/yum.repos.d/epel-apache-maven.repo
