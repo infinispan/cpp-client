@@ -100,6 +100,8 @@ void TransactionManager::cleanUpCurrentTransaction() {
     }
 }
 
+TransactionManager::TransactionManager() : UUID(generateV4UUID()) {}
+
 void TransactionManager::begin() {
     infinispan::hotrod::Transaction& currentTransaction = *getCurrentTransaction();
     // TODO: check properly the tx status
