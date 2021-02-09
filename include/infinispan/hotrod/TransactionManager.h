@@ -23,7 +23,7 @@ enum class TransactionRemoteStatus : unsigned int;
  */
 class TransactionManager {
 public:
-    HR_EXTERN TransactionManager() : UUID(generateV4UUID()) {}
+    HR_EXTERN TransactionManager();
     /***
      * Start a transaction on this thread. All the caches of all RemoteCacheManager
      * will be involved
