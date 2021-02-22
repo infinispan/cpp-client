@@ -26,6 +26,9 @@ RUN yum -y install which && \
    yum clean all
 
 RUN useradd -ms /bin/bash jboss
+RUN usermod -aG wheel jboss
+
+RUN echo 'jboss ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers
 
 # Set the working directory to jboss' user home directory
 WORKDIR /home/jboss
