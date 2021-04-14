@@ -12,7 +12,10 @@
 | {rhel_short} 8, 64-bit
 | C++ 11 compiler (GCC 4.8.1)
 
+//Community content
+ifdef::community[]
 | {win_long} 7 x64
 | C++ 11 compiler (Visual Studio 2015, Microsoft Visual C++ 2013 Redistributable Package for the x64 platform)
+endif::community[]
 
 |===
