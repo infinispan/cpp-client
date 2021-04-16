@@ -2,16 +2,19 @@
 = Compiling Protobuf schema on {rhel_long}
 Compile Protobuf schema, `.proto` files, into C{plusplus} header and source files to describe your data to {brandname}.
 
-.Procedure
+.Prerequisites
 
-. Install the Protobuf library, if necessary.
+* Install the Protobuf library and `protobuf-devel` package.
 +
 [source,bash,options="nowrap",subs=attributes+]
 ----
 # yum install protobuf
+# yum install protobuf-devel
 ----
-+
-. Set the `LD_LIBRARY_PATH` environment variable, if necessary.
+
+.Procedure
+
+. Set the `LD_LIBRARY_PATH` environment variable, if it is not already set.
 +
 [source,bash,options="nowrap",subs=attributes+]
 ----
