@@ -111,7 +111,7 @@ int main(int argc, char** argv) {
     try
     {
       ConfigurationBuilder builder;
-      builder.addServer().host("127.0.0.1").port(11222);
+      builder.addServer().host("localhost").port(11222);
       builder.protocolVersion(options.get("--protocol_version",Configuration::PROTOCOL_VERSION_24));
       builder.ssl().enable().serverCAFile(options["--server_cert_file"].data());
       if (!options["--client_cert_file"].empty()) {
