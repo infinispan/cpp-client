@@ -33,7 +33,6 @@
                                keystore-password="secret" alias="hotrod" key-password="secret"/>
                   </ssl>
                </server-identities>
-	       <truststore-realm path="truststore.jks" relative-to="infinispan.server.config.path" keystore-password="secret"/>
             </security-realm>
          </security-realms>
       </security>

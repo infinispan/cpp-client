@@ -202,7 +202,7 @@ int main(int argc, char** argv) {
         cacheManager.stop();
     }
 
-#if !defined _WIN32 && !defined _WIN64
+#if !defined _WIN32 && !defined _WIN64 && false
     {
         kinit();
         ConfigurationBuilder builder;
