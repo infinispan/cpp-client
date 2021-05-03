@@ -6,7 +6,7 @@ pipeline{
         agent { label 'windows'
         }
         environment {
-            cppTag = '8.1.0.Final'
+            cppTag = "${gitBranchOrTag}"
             CMAKE_HOME = 'C:\\\\PROGRA~2\\\\CMake\\\\bin'
             generator = '"Visual Studio 14 2015 Win64"'
             INFINISPAN_VERSION = '11.0.9.Final'
@@ -22,6 +22,7 @@ pipeline{
             test32 = 'empty'
             test64 = 'empty'
             HOTROD_LOG_LEVEL = 'INFO'
+            CLIENT_VERSION= "${gitBranchOrTag}"
         }
         steps {
             checkout scm
