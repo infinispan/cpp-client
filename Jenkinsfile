@@ -6,7 +6,7 @@ pipeline{
         agent { label 'windows'
         }
         environment {
-            cppTag = "${gitBranchOrTag}"
+            cppTag = "${BRANCH_NAME}"
             CMAKE_HOME = 'C:\\\\PROGRA~2\\\\CMake\\\\bin'
             generator = '"Visual Studio 14 2015 Win64"'
             INFINISPAN_VERSION = '11.0.9.Final'
@@ -22,7 +22,7 @@ pipeline{
             test32 = 'empty'
             test64 = 'empty'
             HOTROD_LOG_LEVEL = 'INFO'
-            CLIENT_VERSION= "${gitBranchOrTag}"
+            CLIENT_VERSION= "${BRANCH_NAME}"
         }
         steps {
             checkout scm
@@ -42,7 +42,7 @@ pipeline{
           M2_HOME = '/opt/maven'
           PATH = "${M2_HOME}/bin:${PATH}"
           JAVA_HOME = '/etc/alternatives/java_sdk'
-          CLIENT_VERSION="${gitBranchOrTag}"
+          CLIENT_VERSION="${BRANCH_NAME}"
         }
         steps {
             checkout scm
