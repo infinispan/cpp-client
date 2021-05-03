@@ -41,6 +41,7 @@ pipeline{
           M2_HOME = '/opt/maven'
           PATH = "${M2_HOME}/bin:${PATH}"
           JAVA_HOME = '/etc/alternatives/java_sdk'
+          CLIENT_VERSION=${gitBranchOrTag}
         }
         steps {
             checkout scm
