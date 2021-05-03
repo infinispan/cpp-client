@@ -43,7 +43,9 @@ for /f "tokens=1,2,3,4 delims=." %%a in ("%CLIENT_VERSION%") do (
    set version_4qualifier=%%d
 )
 
-if [%version_3micro%.%version_4qualifier%] neq [.] set version_patch=%version_3micro%.%version_4qualifier%
+
+if [%version_3micro%] neq [] set version_patch=%version_3micro%
+if [%version_4qualifier%] neq [] set version_patch=%version_3micro%.%version_4qualifier%
 
 cmake -G "%~1" -DCPACK_PACKAGE_VERSION_MAJOR=%version_1major% -DCPACK_PACKAGE_VERSION_MINOR=%version_2minor% -DCPACK_PACKAGE_VERSION_PATCH="%version_patch%" -DSWIG_EXECUTABLE=%SWIG_EXECUTABLE% -DMVN_PROGRAM=%MVN_PROGRAM% -DPROTOBUF_LIBRARY="%PROTOBUF_LIBRARY%" -DPROTOBUF_PROTOC_LIBRARY="%PROTOBUF_PROTOC_LIBRARY%" -DPROTOBUF_INCLUDE_DIR="%PROTOBUF_INCLUDE_DIR%" -DPROTOBUF_PROTOC_EXECUTABLE="%PROTOBUF_PROTOC_EXECUTABLE%" -DOPENSSL_ROOT_DIR="%OPENSSL_ROOT_DIR%" ..
 if %errorlevel% neq 0 goto fai
