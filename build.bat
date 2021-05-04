@@ -63,7 +63,7 @@ if %errorlevel% neq 0 goto fail
 ctest -V --timeout 120
 if %errorlevel% neq 0 goto fail
 
-cpack -G ZIP -C RelWithDebInfo -DCPACK_PACKAGE_VERSION_MAJOR=%version_1major% -DCPACK_PACKAGE_VERSION_MINOR=%version_2minor% -DCPACK_PACKAGE_VERSION_PATCH="%version_3micro%.%version_4qualifier%"
+cpack -G ZIP -C RelWithDebInfo -DCPACK_PACKAGE_VERSION_MAJOR=%version_1major% -DCPACK_PACKAGE_VERSION_MINOR=%version_2minor% -DCPACK_PACKAGE_VERSION_PATCH="%version_patch%"
 
 %home_drive%
 
