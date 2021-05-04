@@ -43,8 +43,6 @@ for /f "tokens=1,2,3,4 delims=." %%a in ("%V1%") do (
    set version_4qualifier=%%d
 )
 
-goto fai
-
 if [%version_3micro%] neq [] set version_patch=%version_3micro%
 if [%version_4qualifier%] neq [] set version_patch=%version_3micro%.%version_4qualifier%
 
