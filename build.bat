@@ -43,12 +43,12 @@ for /f "tokens=1,2,3,4 delims=." %%a in ("%V1%") do (
    set version_4qualifier=%%d
 )
 
-if [%version_2minor%] equ [] set version_2minor=0
-if [%version_3micro%] equ [] set version_3micro=0
+if 0%version_1major% neq +%version_1major% set version_1major=0
+if 0%version_2minor% neq +%version_2minor% set version_2minor=1
+if 0%version_3micro% neq +%version_3micro% set version_3micro=0
 if [%version_4qualifier%] equ [] set version_4qualifier=SNAPSHOT
 
-if [%version_3micro%] neq [] set version_patch=%version_3micro%
-if [%version_4qualifier%] neq [] set version_patch=%version_3micro%.%version_4qualifier%
+set version_patch=%version_3micro%.%version_4qualifier%
 
 cmake -G "%~1" -DCPACK_PACKAGE_VERSION_MAJOR="%version_1major%" -DCPACK_PACKAGE_VERSION_MINOR="%version_2minor%" -DCPACK_PACKAGE_VERSION_PATCH="%version_patch%" -DSWIG_EXECUTABLE=%SWIG_EXECUTABLE% -DMVN_PROGRAM=%MVN_PROGRAM% -DPROTOBUF_LIBRARY="%PROTOBUF_LIBRARY%" -DPROTOBUF_PROTOC_LIBRARY="%PROTOBUF_PROTOC_LIBRARY%" -DPROTOBUF_INCLUDE_DIR="%PROTOBUF_INCLUDE_DIR%" -DPROTOBUF_PROTOC_EXECUTABLE="%PROTOBUF_PROTOC_EXECUTABLE%" -DOPENSSL_ROOT_DIR="%OPENSSL_ROOT_DIR%" ..
 if %errorlevel% neq 0 goto fai
