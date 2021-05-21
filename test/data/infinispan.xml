@@ -29,13 +29,7 @@
       <distributed-cache name="distributed">
          <expiration interval="1000"/>
       </distributed-cache>
-      <replicated-cache name="InMemoryNonSharedIndex" mode="SYNC" start="EAGER">
-	 <indexing>
-            <indexed-entities>
-               <indexed-entity>sample_bank_account.User</indexed-entity>
-            </indexed-entities>
-         </indexing>
-      </replicated-cache>
+      <replicated-cache name="InMemoryNonSharedIndex" mode="SYNC" start="EAGER"/>
    </cache-container>
 
    <server xmlns="urn:infinispan:server:10.0">
