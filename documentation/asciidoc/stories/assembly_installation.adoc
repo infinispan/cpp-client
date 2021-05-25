@@ -5,11 +5,7 @@ Install the {hr_cpp} client on your host system as a dynamic library.
 
 include::{topics}/ref_installation_prerequisites.adoc[leveloffset=+1]
 include::{topics}/proc_installing_client_nix.adoc[leveloffset=+1]
-//Community content
-ifdef::community[]
 include::{topics}/proc_installing_client_win.adoc[leveloffset=+1]
-endif::community[]
-
 
 // Restore the parent context.
 ifdef::parent-context[:context: {parent-context}]
