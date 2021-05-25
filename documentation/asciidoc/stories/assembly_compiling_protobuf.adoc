@@ -6,10 +6,7 @@
 Protobuf is a language-neutral format that allows clients to create and retrieve entries in remote caches using both Hot Rod and REST endpoints.
 
 include::{topics}/proc_compiling_protobuf_nix.adoc[leveloffset=+1]
-//Community content
-ifdef::community[]
 include::{topics}/proc_compiling_protobuf_win.adoc[leveloffset=+1]
-endif::community[]
 
 // Restore the parent context.
 ifdef::parent-context[:context: {parent-context}]
