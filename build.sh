@@ -68,14 +68,14 @@ then
   mkdir ${BUILD_DIR} &&
   cd ${BUILD_DIR} &&
   echo cmake -DCMAKE_BUILD_TYPE=Debug ${CMAKE_EXTRAS}.. &&
-  cmake -DCMAKE_BUILD_TYPE=Debug ${CMAKE_EXTRAS}.. &&
+  CXXFLAGS="-Wno-error=maybe-uninitialized" cmake -DCMAKE_BUILD_TYPE=Debug ${CMAKE_EXTRAS}.. &&
   cmake --build .
 else
   rm -rf ${BUILD_DIR} &&
   mkdir ${BUILD_DIR} &&
   cd ${BUILD_DIR} &&
-  echo cmake ${CMAKE_EXTRAS} .. &&
-  cmake ${CMAKE_EXTRAS} .. &&
+  echo CXXFLAGS="-Wno-error=maybe-uninitialized" cmake ${CMAKE_EXTRAS} .. &&
+  CXXFLAGS="-Wno-error=maybe-uninitialized" cmake ${CMAKE_EXTRAS} .. &&
   cmake --build . &&
   ctest -V &&
   cpack -G RPM &&

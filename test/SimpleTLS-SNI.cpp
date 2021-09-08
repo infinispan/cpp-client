@@ -69,7 +69,7 @@ int test(const std::string &test_desc, int argc, char** argv, const std::string 
                 return 1;
             }
             cacheManager.stop();
-        } catch (Exception e) {
+        } catch (const Exception& e) {
             cacheManager.stop();
             return 1;
         }

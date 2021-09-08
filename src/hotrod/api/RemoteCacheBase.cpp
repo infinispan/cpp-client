@@ -398,7 +398,7 @@ std::vector<unsigned char> RemoteCacheBase::base_query_char(std::vector<unsigned
 
 	QueryResponse resp= IMPL->query(req);
 
-	int respSize = resp.ByteSize();
+	int respSize = resp.ByteSizeLong();
 	std::vector<unsigned char> respToChar(respSize);
         resp.SerializeToArray(respToChar.data(),respSize);
 	return respToChar;

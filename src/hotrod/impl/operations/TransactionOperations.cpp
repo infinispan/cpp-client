@@ -47,7 +47,7 @@ uint32_t PrepareCommitOperation::executeOperation(transport::Transport& transpor
         }
     }
     transport.flush();
-    uint8_t status = this->readHeaderAndValidate(transport, *params);
+    this->readHeaderAndValidate(transport, *params);
     // TODO: check for error
     uint32_t xa_retcode = transport.read4ByteInt();
     return xa_retcode;
@@ -63,7 +63,7 @@ uint32_t CommitOperation::executeOperation(transport::Transport& transport) {
     std::unique_ptr<HeaderParams> params(this->writeHeader(transport, COMMIT_REQUEST));
     writeXID(transport, this->xid);
     transport.flush();
-    uint8_t status = this->readHeaderAndValidate(transport, *params);
+    this->readHeaderAndValidate(transport, *params);
     // TODO: check for error
     uint32_t xa_retcode = transport.read4ByteInt();
     return xa_retcode;
@@ -79,9 +79,9 @@ uint32_t RollbackOperation::executeOperation(transport::Transport& transport) {
     std::unique_ptr<HeaderParams> params(this->writeHeader(transport, ROLLBACK_REQUEST));
     writeXID(transport, this->xid);
     transport.flush();
-    uint8_t status = this->readHeaderAndValidate(transport, *params);
+    this->readHeaderAndValidate(transport, *params);
     // TODO: check for error
-    uint32_t xa_retcode = transport.read4ByteInt();
+    transport.read4ByteInt();
     return 0;
 }
 

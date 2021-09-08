@@ -70,7 +70,7 @@ int main(int argc, char** args) {
                 std::cin >> cacheName;
                 try {
                     cache = &manager.getCache<std::string, std::string>(cacheName, true);
-                } catch (Exception e) {
+                } catch (const Exception& e) {
                     std::cerr << "Failed: " << e.what() << std::endl;
                 }
                 break;

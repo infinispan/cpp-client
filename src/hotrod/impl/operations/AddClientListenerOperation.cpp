@@ -115,7 +115,7 @@ char AddClientListenerOperation::executeOperation(transport::Transport& transpor
                     if (HotRodConstants::isSuccess(status)) {
                         processImmediateEvent(clientListener, codec20, respOpCode, transport);
                     }
-                } catch (HotRodClientException e) {
+                } catch (const HotRodClientException& e) {
                     // ignore the error and try to go on with the rest of the events
                 }
                 respOpCode = codec20.readAddEventListenerResponseType(transport, respMessageId);

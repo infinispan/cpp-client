@@ -420,7 +420,7 @@ TEST_F(QueryTest, BetweenTest)
     QueryRequest qr;
     // JpqlString will be deprecated please use QueryString
     char strbuf[512];
-    std::sprintf(strbuf, "from sample_bank_account.Transaction t where t.date between \"%d\" and \"%d\"",MakeDate(2013,1,1), MakeDate(2013,1,31));
+    std::sprintf(strbuf, "from sample_bank_account.Transaction t where t.date between \"%ld\" and \"%ld\"",MakeDate(2013,1,1), MakeDate(2013,1,31));
     qr.set_querystring(std::string(strbuf));
 
     QueryResponse result = userCache.query(qr);
