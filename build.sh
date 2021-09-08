@@ -17,6 +17,31 @@ cp test/data/* $JBOSS_HOME/server/conf
 # Copy dir for near cache and cluster test
 cp -rf $JBOSS_HOME/server $JBOSS_HOME/server1
 
+if [  "${CLIENT_VERSION}" != "" ]
+then
+  V1=${CLIENT_VERSION/*\//}
+  VER_ARR=(${V1//./ })
+fi
+
+if [  "$VER_ARR[0]}" != "" ]
+then
+  CMAKE_EXTRAS="${CMAKE_EXTRAS} -DCPACK_PACKAGE_VERSION_MAJOR=${VER_ARR[0]}"
+fi
+
+if [  "$VER_ARR[1]}" != "" ]
+then
+  CMAKE_EXTRAS="${CMAKE_EXTRAS} -DCPACK_PACKAGE_VERSION_MINOR=${VER_ARR[1]}"
+fi
+
+if [  "${VER_ARR[2]}" != "" ]
+then
+  if [  "${VER_ARR[3]}" != "" ]
+  then
+    VER_ARR[2]=${VER_ARR[2]}.${VER_ARR[3]}
+  fi
+  CMAKE_EXTRAS="${CMAKE_EXTRAS} -DCPACK_PACKAGE_VERSION_PATCH=${VER_ARR[2]}"
+fi
+
 if [  "${PROTOBUF_LIBRARY}" != "" ]
 then
   CMAKE_EXTRAS="${CMAKE_EXTRAS} -DPROTOBUF_LIBRARY=${PROTOBUF_LIBRARY}"

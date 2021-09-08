@@ -1,9 +1,9 @@
 <infinispan
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="urn:infinispan:config:10.0 http://www.infinispan.org/schemas/infinispan-config-10.0.xsd
-                            urn:infinispan:server:10.0 http://www.infinispan.org/schemas/infinispan-server-10.0.xsd"
-        xmlns="urn:infinispan:config:10.0"
-        xmlns:server="urn:infinispan:server:10.0">
+        xsi:schemaLocation="urn:infinispan:config:13.0 http://www.infinispan.org/schemas/infinispan-config-13.0.xsd
+                            urn:infinispan:server:13.0 http://www.infinispan.org/schemas/infinispan-server-13.0.xsd"
+        xmlns="urn:infinispan:config:13.0"
+        xmlns:server="urn:infinispan:server:13.0">
 
    <cache-container name="default" statistics="true" default-cache="default">
       <transport cluster="${infinispan.cluster.name}" stack="${infinispan.cluster.stack:tcp}"/>
@@ -29,16 +29,10 @@
       <distributed-cache name="distributed">
          <expiration interval="1000"/>
       </distributed-cache>
-      <replicated-cache name="InMemoryNonSharedIndex" mode="SYNC" start="EAGER">
-	 <indexing>
-            <indexed-entities>
-               <indexed-entity>sample_bank_account.User</indexed-entity>
-            </indexed-entities>
-         </indexing>
-      </replicated-cache>
+      <replicated-cache name="InMemoryNonSharedIndex" mode="SYNC" start="EAGER"/>
    </cache-container>
 
-   <server xmlns="urn:infinispan:server:10.0">
+   <server xmlns="urn:infinispan:server:13.0">
       <interfaces>
          <interface name="public">
             <inet-address value="${infinispan.bind.address:127.0.0.1}"/>
@@ -50,30 +44,13 @@
          <socket-binding name="memcached" port="11221"/>
       </socket-bindings>
 
-      <security>
-         <security-realms>
-            <security-realm name="default">
-               <!-- Uncomment to enable TLS on the realm -->
-               <!-- server-identities>
-                  <ssl>
-                     <keystore path="application.keystore" relative-to="infinispan.server.config.path"
-                               keystore-password="password" alias="server" key-password="password"
-                               generate-self-signed-certificate-host="localhost"/>
-                  </ssl>
-               </server-identities-->
-               <properties-realm groups-attribute="Roles">
-                  <user-properties path="users.properties" relative-to="infinispan.server.config.path"/>
-                  <group-properties path="groups.properties" relative-to="infinispan.server.config.path" />
-               </properties-realm>
-            </security-realm>
-         </security-realms>
-      </security>
-
-      <endpoints socket-binding="default" security-realm="default">
+      <endpoints socket-binding="default">
+      <endpoint>
          <hotrod-connector name="hotrod"/>
          <rest-connector name="rest"/>
          <!-- Uncomment to enable the memcached connector -->
          <!-- memcached-connector socket-binding="memcached" / -->
+ </endpoint>
       </endpoints>
    </server>
 </infinispan>

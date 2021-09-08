@@ -34,9 +34,27 @@ if exist %build_dir% rmdir %build_dir% /s /q
 mkdir %build_dir%
 cd %build_dir%
 
-if [%version_3micro%.%version_4qualifier%] neq [.] set version_patch=%version_3micro%.%version_4qualifier%
+if [%CLIENT_VERSION%] neq [] set V1=%CLIENT_VERSION:*/=%
 
-cmake -G "%~1" -DCPACK_PACKAGE_VERSION_MAJOR=%version_1major% -DCPACK_PACKAGE_VERSION_MINOR=%version_2minor% -DCPACK_PACKAGE_VERSION_PATCH="%version_patch%" -DSWIG_EXECUTABLE=%SWIG_EXECUTABLE% -DMVN_PROGRAM=%MVN_PROGRAM% -DPROTOBUF_LIBRARY="%PROTOBUF_LIBRARY%" -DPROTOBUF_PROTOC_LIBRARY="%PROTOBUF_PROTOC_LIBRARY%" -DPROTOBUF_INCLUDE_DIR="%PROTOBUF_INCLUDE_DIR%" -DPROTOBUF_PROTOC_EXECUTABLE="%PROTOBUF_PROTOC_EXECUTABLE%" -DOPENSSL_ROOT_DIR="%OPENSSL_ROOT_DIR%" ..
+for /f "tokens=1,2,3,4 delims=." %%a in ("%V1%") do (
+   set version_1major=%%a
+   set version_2minor=%%b
+   set version_3micro=%%c
+   set version_4qualifier=%%d
+)
+rem If empty or not a numnber, set values to default
+if [%version_1major%] equ [] set version_1major=0
+if [%version_2minor%] equ [] set version_2minor=1
+if [%version_3micro%] equ [] set version_3micro=0
+if [%version_4qualifier%] equ [] set version_4qualifier=SNAPSHOT
+
+if 1%version_1major% neq +1%version_1major% set version_1major=0
+if 1%version_2minor% neq +1%version_2minor% set version_2minor=1
+if 1%version_3micro% neq +1%version_3micro% set version_3micro=0
+
+set version_patch=%version_3micro%.%version_4qualifier%
+
+cmake -G "%~1" -DCPACK_PACKAGE_VERSION_MAJOR="%version_1major%" -DCPACK_PACKAGE_VERSION_MINOR="%version_2minor%" -DCPACK_PACKAGE_VERSION_PATCH="%version_patch%" -DSWIG_EXECUTABLE=%SWIG_EXECUTABLE% -DMVN_PROGRAM=%MVN_PROGRAM% -DPROTOBUF_LIBRARY="%PROTOBUF_LIBRARY%" -DPROTOBUF_PROTOC_LIBRARY="%PROTOBUF_PROTOC_LIBRARY%" -DPROTOBUF_INCLUDE_DIR="%PROTOBUF_INCLUDE_DIR%" -DPROTOBUF_PROTOC_EXECUTABLE="%PROTOBUF_PROTOC_EXECUTABLE%" -DOPENSSL_ROOT_DIR="%OPENSSL_ROOT_DIR%" ..
 if %errorlevel% neq 0 goto fai
 
 set home_drive=%CD:~0,2%
@@ -53,7 +71,7 @@ if %errorlevel% neq 0 goto fail
 ctest -V --timeout 120
 if %errorlevel% neq 0 goto fail
 
-cpack -G ZIP -C RelWithDebInfo -DCPACK_PACKAGE_VERSION_MAJOR=%version_1major% -DCPACK_PACKAGE_VERSION_MINOR=%version_2minor% -DCPACK_PACKAGE_VERSION_PATCH="%version_3micro%.%version_4qualifier%"
+cpack -G ZIP -C RelWithDebInfo -DCPACK_PACKAGE_VERSION_MAJOR=%version_1major% -DCPACK_PACKAGE_VERSION_MINOR=%version_2minor% -DCPACK_PACKAGE_VERSION_PATCH="%version_patch%"
 
 %home_drive%
 
