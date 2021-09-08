@@ -55,8 +55,8 @@ class BasicTypesProtoStreamMarshaller<std::string> : public infinispan::hotrod::
     void marshall(const std::string& s, std::vector<char>& b) {
     	protobuf::base_types bt;
     	bt.set_str(s);
-    	b.resize(bt.ByteSize());
-    	bt.SerializePartialToArray(b.data(),bt.ByteSize());
+    	b.resize(bt.ByteSizeLong());
+    	bt.SerializePartialToArray(b.data(),bt.ByteSizeLong());
     }
 
     std::string* unmarshall(const std::vector<char>& b) {
@@ -75,8 +75,8 @@ class BasicTypesProtoStreamMarshaller<int> : public infinispan::hotrod::Marshall
     void marshall(const int& s, std::vector<char>& b) {
     	protobuf::base_types bt;
     	bt.set_i32(s);
-    	b.resize(bt.ByteSize());
-    	bt.SerializePartialToArray(b.data(),bt.ByteSize());
+    	b.resize(bt.ByteSizeLong());
+    	bt.SerializePartialToArray(b.data(),bt.ByteSizeLong());
     }
 
     int* unmarshall(const std::vector<char>& b) {

@@ -129,7 +129,7 @@ void Log::log(const char *level, const char *fname, const int lineno, const char
     if (bytes.size() > m_traceBytesMax) {
         buf << "...";
     }
-    buf << ", addr=0x" << std::setw(16) << (const unsigned long long) (const void *) bytes.data() << "]\n";
+    buf << ", addr=0x" << std::setw(16) << (unsigned long long) (const void *) bytes.data() << "]\n";
     
     ScopedLock<Mutex> sl(lock);
     log(level, fname, lineno);

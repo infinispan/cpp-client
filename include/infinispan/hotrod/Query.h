@@ -77,7 +77,7 @@ public:
 
   inline bool ParseFromArray(const void* data, int size) { return qrp.ParseFromArray(data, size); }
   inline bool SerializeToArray(void* data, int size) const { return qrp.SerializeToArray(data, size); }
-  inline int ByteSize() const { return qrp.ByteSize(); }
+  inline int ByteSize() const { return qrp.ByteSizeLong(); }
 };
 
 }}}}}
