@@ -1,5 +1,3 @@
-
-
 #include "infinispan/hotrod/RemoteCacheBase.h"
 #include "infinispan/hotrod/RemoteCacheManager.h"
 #include "hotrod/impl/RemoteCacheImpl.h"
@@ -395,7 +393,9 @@ std::vector<unsigned char> RemoteCacheBase::base_query_char(std::vector<unsigned
 {
 	QueryRequest req;
 	req.ParseFromArray(qr.data(),(int)size);
-
+	if (!req.has_local()) {
+		req.set_local(false);
+	}
 	QueryResponse resp= IMPL->query(req);
 
 	int respSize = resp.ByteSizeLong();
