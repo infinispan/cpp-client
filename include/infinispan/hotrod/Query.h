@@ -29,6 +29,7 @@ class QueryRequest
 private:
 	QueryRequestProtobuf qrp;
 public:
+  inline QueryRequest() { qrp.set_local(false); }
   inline bool has_jpqlstring() const { return qrp.has_querystring(); }
   inline bool has_querystring() const { return qrp.has_querystring(); }
 
@@ -56,6 +57,10 @@ public:
    */
   inline void set_jpqlstring(const char* value) { qrp.set_querystring(value); }
   inline void set_querystring(const char* value) { qrp.set_querystring(value); }
+  inline bool has_local() const { return qrp.has_local(); }
+  void clear_local() { qrp.clear_local(); }
+  bool local() const { return qrp.local(); }
+  void set_local(bool value) { set_local(value); }
 
   /**
    * Deprecated, use set_querystring() instead
