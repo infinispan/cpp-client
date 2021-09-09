@@ -60,7 +60,7 @@ public:
   inline bool has_local() const { return qrp.has_local(); }
   void clear_local() { qrp.clear_local(); }
   bool local() const { return qrp.local(); }
-  void set_local(bool value) { set_local(value); }
+  void set_local(bool value) { qrp.set_local(value); }
 
   /**
    * Deprecated, use set_querystring() instead
