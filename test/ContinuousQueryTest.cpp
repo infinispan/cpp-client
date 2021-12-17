@@ -78,9 +78,10 @@ int main(int argc, char** argv) {
     {   cacheManager.stop();});
 
     metadataCacheDF.clear();
-    metadataCacheDF.put("sample_bank_account/bank.proto", read("query_proto/bank.proto"));
+    metadataCacheDF.put("bank.proto", read("query_proto/bank.proto"));
     if (metadataCacheDF.containsKey(ERRORS_KEY_SUFFIX)) {
         std::cerr << "fail: error in registering .proto model" << std::endl;
+	std::cerr << "ERROR IS: " << *metadataCacheDF.get(ERRORS_KEY_SUFFIX) << std::endl;
         result = -1;
         return result;
     }

@@ -495,7 +495,12 @@ hr_protobuf_generate_cpp(TEST_PROTO_SRCS TEST_PROTO_HDRS .
 find_package(Java)
 
 add_custom_target(build_test COMMAND "echo" "build_test completed")
-add_dependencies(build_test ${JAVA_TESTS} krbserver unittest simple queryTest events
+
+if(UNIX)
+	set(KRBSERVER krbserver)
+endif(UNIX)
+
+add_dependencies(build_test ${KRBSERVER} unittest simple queryTest events
                             nearCacheTest nearCacheFailoverTest continuousQueryTest
                             simpleSasl simple-tls simple-tls-sni simpleSaslTls PutGetTest xunitQueryTest ClearTest xunit_nearCacheTest 
                             CountersTest simpleTx transcoder TranscoderTest TransactionTest poolTest)
@@ -741,6 +746,7 @@ else(DEFINED maven.settings.file)
   set(MVN_SETTINGS_EXEC_FILE_OPT "")
 endif(DEFINED maven.settings.file)
 
+if(UNIX)
 set(KRBSERVER_DIR "${CMAKE_CURRENT_BINARY_DIR}/krbserver")
 add_custom_command(OUTPUT ${KRBSERVER_DIR}/target/classes/krbserver/Server.class
     COMMAND ${MVN_PROGRAM}
@@ -749,15 +755,17 @@ add_custom_command(OUTPUT ${KRBSERVER_DIR}/target/classes/krbserver/Server.class
 )
 
 add_custom_target(krbserver ALL DEPENDS ${KRBSERVER_DIR}/target/classes/krbserver/Server.class)
-
+endif(UNIX)
 if (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/server.sh") AND (EXISTS "${HOTROD_JBOSS_HOME}/bin/server.bat")))
     message(WARNING "JBOSS_HOME ${HOTROD_JBOSS_HOME} does not have needed startup scripts")
 else (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/server.sh") AND (EXISTS "${HOTROD_JBOSS_HOME}/bin/server.bat")))
     if (NOT Java_JAVA_EXECUTABLE)
         message(FATAL_ERROR "Java not found")
     endif (NOT Java_JAVA_EXECUTABLE)
+if(UNIX)
     file(COPY ${CMAKE_SOURCE_DIR}/krbserver DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
     file(COPY ${CMAKE_SOURCE_DIR}/test/data/krb5.conf DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
+endif(UNIX)
     add_test (start_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py start ${Java_JAVA_EXECUTABLE} ${HOTROD_JBOSS_HOME} infinispan.xml)
     add_test (probe_port ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/probe_port.py localhost 11222 60)
     add_test (simple simple)
