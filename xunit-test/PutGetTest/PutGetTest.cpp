@@ -50,15 +50,3 @@ TEST_F(PutGetTest, SimplePutForcedReturnReturnsPrevVal) {
     std::unique_ptr<std::string> ret(cache.put("k1","v1"));
     EXPECT_TRUE(prevVal==ret || *prevVal==*ret);
 }
-
-TEST_F(PutGetTest, ATestThatFails) {
-	PutGetTest::remoteCacheManager->start();
-    BasicMarshaller<std::string> *km = new BasicMarshaller<std::string>();
-    BasicMarshaller<std::string> *vm = new BasicMarshaller<std::string>();
-    RemoteCache<std::string, std::string> cache = PutGetTest::remoteCacheManager->getCache<std::string, std::string>(km,
-            &Marshaller<std::string>::destroy,
-            vm,
-            &Marshaller<std::string>::destroy, "default", true);
-    cache.clear();
-    EXPECT_LT(0,cache.size());
-}
