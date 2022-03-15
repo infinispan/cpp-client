@@ -802,6 +802,13 @@ else (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/server.sh") AND (EXISTS "${HOTROD_J
         add_test (stop_krbserver ${MVN_PROGRAM} ${MVN_SETTINGS_FILE_OPT} -f krbserver/pom.xml exec:java -Dexec.mainClass=krbserver.Server -Dexec.args=stop)
     endif(WIN32)
     add_test (start_ssl_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py start ${Java_JAVA_EXECUTABLE} ${HOTROD_JBOSS_HOME} infinispan-ssl.xml)
+    if(OPENSSL_VERSION VERSION_LESS "1.1.1")
+        set_tests_properties(start_ssl_server PROPERTIES
+            ENVIRONMENT JAVA_OPTS="-Dtest.useTLS=TLSv1.2")
+    else(OPENSSL_VERSION VERSION_LESS "1.1.1")
+        set_tests_properties(start_ssl_server PROPERTIES
+        ENVIRONMENT JAVA_OPTS="-Dtest.useTLS=TLSv1.3")
+    endif(OPENSSL_VERSION VERSION_LESS "1.1.1")
     add_test (probe_ssl_port ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/probe_port.py localhost 11222 60)
     add_test (simple-tls simple-tls --server_cert_file ${CMAKE_CURRENT_SOURCE_DIR}/test/data/infinispan-ca.pem)
     #    add_test (simple-tls-sni simple-tls-sni --server_cert_file ${CMAKE_CURRENT_SOURCE_DIR}/test/data/keystore_server_cert.pem)
@@ -818,7 +825,7 @@ else (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/server.sh") AND (EXISTS "${HOTROD_J
 	#    add_test (simple-tls-sni-client-auth simple-tls-sni --server_cert_file ${CMAKE_CURRENT_SOURCE_DIR}/test/data/keystore_server_cert.pem --client_cert_file ${CMAKE_CURRENT_SOURCE_DIR}/test/data/truststore_client.p12 --protocol_version 2.8)
         add_test (simple-tls-client-auth-mediatype simple-tls --server_cert_file ${CMAKE_CURRENT_SOURCE_DIR}/test/data/infinispan-ca.pem --client_cert_file ${CMAKE_CURRENT_SOURCE_DIR}/test/data/truststore_client.pem --protocol_version 2.8)
         add_test (stop_ssl_server_client_auth ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py stop)
-        add_test (start_sals_ssl_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py start ${Java_JAVA_EXECUTABLE} ${HOTROD_JBOSS_HOME} infinispan-sasl-ssl.xml)
+        add_test (start_sasl_ssl_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py start ${Java_JAVA_EXECUTABLE} ${HOTROD_JBOSS_HOME} infinispan-sasl-ssl.xml)
         add_test (probe_sasl_ssl_port ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/probe_port.py localhost 11222 60)
         add_test (simpleSaslTls simpleSaslTls --server_cert_file ${CMAKE_CURRENT_SOURCE_DIR}/test/data/infinispan-ca.pem --client_cert_file ${CMAKE_CURRENT_SOURCE_DIR}/test/data/truststore_client.p12)
         add_test (stop_sasl_ssl_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py stop)
@@ -829,7 +836,14 @@ else (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/server.sh") AND (EXISTS "${HOTROD_J
         #    add_test (simple-tls-client-auth-mediatype simple-tls --server_cert_file ${CMAKE_CURRENT_SOURCE_DIR}/test/data/infinispan-ca.pem --client_cert_file ${CMAKE_CURRENT_SOURCE_DIR}/test/data/truststore_client.pem --protocol_version 2.8)
 	#    add_test (simple-tls-sni-client-auth-mediatype simple-tls-sni --server_cert_file ${CMAKE_CURRENT_SOURCE_DIR}/test/data/keystore_server_cert.pem --client_cert_file ${CMAKE_CURRENT_SOURCE_DIR}/test/data/truststore_client.pem --protocol_version 2.8)
         add_test (stop_ssl_server_client_auth ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py stop)
-        add_test (start_sals_ssl_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py start ${Java_JAVA_EXECUTABLE} ${HOTROD_JBOSS_HOME} infinispan-sasl-ssl.xml)
+        add_test (start_sasl_ssl_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py start ${Java_JAVA_EXECUTABLE} ${HOTROD_JBOSS_HOME} infinispan-sasl-ssl.xml)
+        if(OPENSSL_VERSION VERSION_LESS "1.1.1")
+            set_tests_properties(start_ssl_server PROPERTIES
+                ENVIRONMENT JAVA_OPTS="-Dtest.useTLS=TLSv1.2")
+        else(OPENSSL_VERSION VERSION_LESS "1.1.1")
+            set_tests_properties(start_ssl_server PROPERTIES
+                ENVIRONMENT JAVA_OPTS="-Dtest.useTLS=TLSv1.3")
+        endif(OPENSSL_VERSION VERSION_LESS "1.1.1")
         add_test (probe_sasl_ssl_port ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/probe_port.py localhost 11222 60)
         add_test (simpleSaslTls simpleSaslTls --server_cert_file ${CMAKE_CURRENT_SOURCE_DIR}/test/data/infinispan-ca.pem --client_cert_file ${CMAKE_CURRENT_SOURCE_DIR}/test/data/truststore_client.pem)
         add_test (simpleSaslTls-mediatype simpleSaslTls --server_cert_file ${CMAKE_CURRENT_SOURCE_DIR}/test/data/infinispan-ca.pem --client_cert_file ${CMAKE_CURRENT_SOURCE_DIR}/test/data/truststore_client.pem --protocol_version 2.8)

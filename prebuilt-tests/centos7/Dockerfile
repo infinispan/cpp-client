@@ -1,34 +1,40 @@
 FROM centos:7
 
-RUN yum -y install \
-   wget \
+VOLUME [ "/artifacts" ]
+
+ENV HOTROD_IPSTACK=IPV4
+ENV JAVA_HOME=/usr/lib/jvm/java-11
+
+RUN yum -y update && \
+   yum -y install \
    cmake \
-   iputils \
-   java-1.8.0-openjdk-devel \
-   openssl-devel \
-   rpmdevtools \
-   tar \
-   valgrind \
-   maven \
-   sudo \
-   protobuf-devel \
    cyrus-sasl-devel \
    cyrus-sasl-plain \
    cyrus-sasl-md5 \
    cyrus-sasl-gssapi \
-   krb5-workstation && \
-   yum -y groupinstall "Development Tools"
+   iputils \
+   java-11-openjdk-devel \
+   krb5-workstation \
+   maven \
+   openssl-devel \
+   procps-ng \
+   protobuf \
+   protobuf-compiler \
+   protobuf-devel \
+   rpmdevtools \
+   valgrind \
+   wget && \
+   yum groups mark convert && \
+   yum -y group install "Development Tools" && \
+   yum clean all && \
+   rm -rf /var/cache/yum
 
 #RUN wget http://repos.fedorapeople.org/repos/dchen/apache-maven/epel-apache-maven.repo -O /etc/yum.repos.d/epel-apache-maven.repo
 #RUN yum -y install apache-maven
 
-RUN yum -y install which && \
-   yum clean all
 
-RUN useradd -ms /bin/bash jboss
-RUN usermod -aG wheel jboss
-
-RUN echo 'jboss ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers
+RUN groupadd -r jboss -g 1000 && useradd -u 1000 -r -g jboss -m -d /home/jboss -s /sbin/nologin -c "JBoss user" jboss && \
+   chmod 755 /home/jboss
 
 # Set the working directory to jboss' user home directory
 WORKDIR /home/jboss
