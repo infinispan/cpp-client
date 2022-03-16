@@ -82,7 +82,11 @@ public:
 
   inline bool ParseFromArray(const void* data, int size) { return qrp.ParseFromArray(data, size); }
   inline bool SerializeToArray(void* data, int size) const { return qrp.SerializeToArray(data, size); }
+#if GOOGLE_PROTOBUF_VERSION < 3004001
+  inline int ByteSize() const { return qrp.ByteSize(); }
+#else
   inline int ByteSize() const { return qrp.ByteSizeLong(); }
+#endif
 };
 
 }}}}}

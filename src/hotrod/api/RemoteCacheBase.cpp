@@ -398,7 +398,11 @@ std::vector<unsigned char> RemoteCacheBase::base_query_char(std::vector<unsigned
 	}
 	QueryResponse resp= IMPL->query(req);
 
+#if GOOGLE_PROTOBUF_VERSION < 3004001
+	int respSize = resp.ByteSize();
+#else
 	int respSize = resp.ByteSizeLong();
+#endif
 	std::vector<unsigned char> respToChar(respSize);
         resp.SerializeToArray(respToChar.data(),respSize);
 	return respToChar;

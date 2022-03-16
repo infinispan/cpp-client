@@ -25,22 +25,32 @@ namespace hotrod {
  */
 template <class T, unsigned int TypeId = 1000042> class ProtoStreamMarshaller : public infinispan::hotrod::Marshaller<T> {
     void marshall(const T& obj, std::vector<char>& b) {
-    	std::vector<char> msg(obj.ByteSizeLong());
-    	obj.SerializeToArray(msg.data(),obj.ByteSizeLong());
-    	WrappedMessage wm;
-    	wm.set_wrappedmessagebytes(msg.data(), msg.size());
-    	wm.set_wrappeddescriptorid(TypeId);
-    	b.resize(wm.ByteSizeLong());
-    	wm.SerializeToArray(b.data(),wm.ByteSizeLong());
+#if GOOGLE_PROTOBUF_VERSION < 3004001
+        std::vector<char> msg(obj.ByteSize());
+        obj.SerializeToArray(msg.data(),obj.ByteSize());
+#else
+        std::vector<char> msg(obj.ByteSizeLong());
+        obj.SerializeToArray(msg.data(),obj.ByteSizeLong());
+#endif
+        WrappedMessage wm;
+        wm.set_wrappedmessagebytes(msg.data(), msg.size());
+        wm.set_wrappeddescriptorid(TypeId);
+#if GOOGLE_PROTOBUF_VERSION < 3004001
+        b.resize(wm.ByteSize());
+        wm.SerializeToArray(b.data(),wm.ByteSize());
+#else
+        b.resize(wm.ByteSizeLong());
+        wm.SerializeToArray(b.data(),wm.ByteSizeLong());
+#endif
     }
 
     T* unmarshall(const std::vector<char>& b) {
         WrappedMessage wm;
         wm.ParseFromArray(b.data(),b.size());
         const std::string &wmb=wm.wrappedmessagebytes();
-    	auto *bt = new T();
-    	bt->ParseFromArray(wmb.data(),wmb.size());
-    	return bt;
+        auto *bt = new T();
+        bt->ParseFromArray(wmb.data(),wmb.size());
+        return bt;
     }
 
 };

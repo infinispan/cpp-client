@@ -34,15 +34,15 @@ public:
 };
 
     template <> inline std::string BasicTypesProtoStreamMarshallerHelper::unmarshall(char *b, size_t size) {
-    	protobuf::base_types bt;
-    	bt.ParseFromArray(b,size);
-    	return bt.str();
+        protobuf::base_types bt;
+        bt.ParseFromArray(b,size);
+        return bt.str();
     }
 
     template <> inline int BasicTypesProtoStreamMarshallerHelper::unmarshall(char *b, size_t size) {
-    	protobuf::base_types bt;
-    	bt.ParseFromArray(b,size);
-    	return bt.i32();
+        protobuf::base_types bt;
+        bt.ParseFromArray(b,size);
+        return bt.i32();
     }
 
 
@@ -53,16 +53,21 @@ template <>
 class BasicTypesProtoStreamMarshaller<std::string> : public infinispan::hotrod::Marshaller<std::string> {
   public:
     void marshall(const std::string& s, std::vector<char>& b) {
-    	protobuf::base_types bt;
-    	bt.set_str(s);
-    	b.resize(bt.ByteSizeLong());
-    	bt.SerializePartialToArray(b.data(),bt.ByteSizeLong());
+        protobuf::base_types bt;
+        bt.set_str(s);
+#if GOOGLE_PROTOBUF_VERSION < 3004001
+        b.resize(bt.ByteSize());
+        bt.SerializePartialToArray(b.data(),bt.ByteSize());
+#else
+        b.resize(bt.ByteSizeLong());
+        bt.SerializePartialToArray(b.data(),bt.ByteSizeLong());
+#endif
     }
 
     std::string* unmarshall(const std::vector<char>& b) {
-    	protobuf::base_types bt;
-    	bt.ParseFromArray(b.data(),b.size());
-    	return new std::string(bt.str());
+        protobuf::base_types bt;
+        bt.ParseFromArray(b.data(),b.size());
+        return new std::string(bt.str());
     }
 
 
@@ -73,16 +78,22 @@ template <>
 class BasicTypesProtoStreamMarshaller<int> : public infinispan::hotrod::Marshaller<int> {
   public:
     void marshall(const int& s, std::vector<char>& b) {
-    	protobuf::base_types bt;
-    	bt.set_i32(s);
-    	b.resize(bt.ByteSizeLong());
-    	bt.SerializePartialToArray(b.data(),bt.ByteSizeLong());
+        protobuf::base_types bt;
+        bt.set_i32(s);
+#if GOOGLE_PROTOBUF_VERSION < 3004001
+        b.resize(bt.ByteSize());
+        bt.SerializePartialToArray(b.data(),bt.ByteSize());
+#else
+        b.resize(bt.ByteSizeLong());
+        bt.SerializePartialToArray(b.data(),bt.ByteSizeLong());
+#endif
+
     }
 
     int* unmarshall(const std::vector<char>& b) {
-    	protobuf::base_types bt;
-    	bt.ParseFromArray(b.data(),b.size());
-    	return new int(bt.i32());
+        protobuf::base_types bt;
+        bt.ParseFromArray(b.data(),b.size());
+        return new int(bt.i32());
     }
 };
 }} // namespace
