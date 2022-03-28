@@ -41,7 +41,7 @@ pipeline{
           JBOSS_HOME = '/home/ec2-user/ispn/infinispan-server'
           M2_HOME = '/opt/maven'
           PATH = "${M2_HOME}/bin:${PATH}"
-          JAVA_HOME = '/etc/alternatives/java_sdk'
+          JAVA_HOME = '/usr/lib/jvm/java-11'
           CLIENT_VERSION="${GIT_BRANCH}"
         }
         steps {
