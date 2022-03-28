@@ -10,7 +10,7 @@ pipeline{
             CMAKE_HOME = 'C:\\\\PROGRA~2\\\\CMake\\\\bin'
             generator = '"Visual Studio 14 2015 Win64"'
             INFINISPAN_VERSION = '13.0.5.Final'
-            JAVA_HOME = 'C:\\\\PROGRA~1\\\\JAVA\\\\JDK18~1.0_1'
+            JAVA_HOME = 'C:\\\\PROGRA~1\\\\JAVA\\\\JDK-11~1.2'
             M2_HOME = 'C:\\\\APACHE~1.9'
             MVN_PROGRAM = 'C:\\\\APACHE~1.9\\\\BIN\\\\MVN.BAT'
             PROTOBUF_INCLUDE_DIR = 'C:\\\\protobuf-3.5.2\\\\src'
