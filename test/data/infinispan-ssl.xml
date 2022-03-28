@@ -31,6 +31,7 @@
                   <ssl>
                      <keystore path="keystore.jks" relative-to="infinispan.server.config.path"
                                keystore-password="secret" alias="hotrod" key-password="secret"/>
+		     <engine enabled-protocols="${test.useTLS:TLSv1.2}"/>
                   </ssl>
                </server-identities>
             </security-realm>

@@ -1,37 +1,40 @@
-FROM centos:8
+FROM centos:stream8
+
+ENV JAVA_HOME=/usr/lib/jvm/java-11
 
 RUN yum -y install 'dnf-command(config-manager)'
-RUN yum config-manager --set-enabled PowerTools
-RUN yum -y install \
-   wget \
+RUN yum config-manager --set-enabled powertools
+RUN dnf -y update && \
+   dnf -y install \
    cmake \
-   iputils \
-   java-1.8.0-openjdk-devel \
-   openssl-devel \
-   rpmdevtools \
-   tar \
-   valgrind \
-   maven \
-   sudo \
-   protobuf-devel \
    cyrus-sasl-devel \
    cyrus-sasl-plain \
    cyrus-sasl-md5 \
    cyrus-sasl-gssapi \
-   krb5-workstation doxygen python3 && \
-   yum -y groupinstall "Development Tools"
+   drpm \
+   iputils \
+   java-11-openjdk-devel \
+   krb5-workstation \
+   maven \
+   openssl-devel \
+   procps-ng \
+   protobuf \
+   protobuf-devel \
+   python3 \
+   rpmdevtools \
+   valgrind \
+   wget \
+   yum-utils && \
+   dnf -y group install "Development Tools" && \
+   dnf clean all && \
+   rm -rf /var/cache/yum
 
 #RUN wget http://repos.fedorapeople.org/repos/dchen/apache-maven/epel-apache-maven.repo -O /etc/yum.repos.d/epel-apache-maven.repo
 #RUN yum -y install apache-maven
 
-RUN yum -y install which && \
-   yum clean all
 
-RUN useradd -ms /bin/bash jboss
-
-RUN usermod -aG wheel jboss
-
-RUN echo 'jboss ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers
+RUN groupadd -r jboss -g 1000 && useradd -u 1000 -r -g jboss -m -d /home/jboss -s /sbin/nologin -c "JBoss user" jboss && \
+   chmod 755 /home/jboss
 
 # Set the working directory to jboss' user home directory
 WORKDIR /home/jboss

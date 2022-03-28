@@ -57,6 +57,7 @@
                   <ssl>
                      <keystore path="keystore.jks" relative-to="infinispan.server.config.path" keystore-password="secret"/>
                      <truststore path="truststore.jks" relative-to="infinispan.server.config.path" password="secret"/>
+		     <engine enabled-protocols="${test.useTLS:TLSv1.2}"/>
                   </ssl>
                </server-identities>
                <truststore-realm/>
