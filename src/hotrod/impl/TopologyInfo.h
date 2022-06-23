@@ -9,6 +9,7 @@
 #include "hotrod/sys/Log.h"
 #include <memory>
 #include <vector>
+#include <mutex>
 namespace infinispan {
 namespace hotrod {
 
@@ -44,6 +45,7 @@ private:
     std::map<std::vector<char>, std::shared_ptr<infinispan::hotrod::consistenthash::ConsistentHash> > consistentHashByCacheName;
     std::map<std::vector<char>, uint32_t > segmentsByCache;
     std::map<std::vector<char>, int > topologyIdsByCache;
+    std::mutex mutexHash, mutexSeg;
     std::vector<transport::InetSocketAddress>& servers;
     const Configuration& configuration;
 
