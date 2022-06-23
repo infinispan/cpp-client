@@ -40,7 +40,7 @@ class TransportFactory
 {
 	friend class infinispan::hotrod::RemoteCacheManagerImpl;
   public:
-    TransportFactory(const Configuration& config) : topologyInfo(TopologyInfo(initialServers, config)), configuration(config), maxRetries(config.getMaxRetries()) {}
+    TransportFactory(const Configuration& config) : topologyInfo(initialServers, config), configuration(config), maxRetries(config.getMaxRetries()) {}
     void start(protocol::Codec& codec, ClientListenerNotifier* );
     void destroy();
 
