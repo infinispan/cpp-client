@@ -52,6 +52,11 @@ include_directories ("${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_SOUR
 include(ExternalProject)
 
 # Download and unpack googletest at configure time
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+	set(GTEST_VER "release-1.8.1")
+else ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+	set(GTEST_VER "release-1.11.0")
+endif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 configure_file(gtest-CMakeLists.txt.in googletest-download/CMakeLists.txt)
 execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
   RESULT_VARIABLE result
