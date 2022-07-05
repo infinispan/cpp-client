@@ -80,7 +80,7 @@ else
   cmake --build . &&
   popd &&
   pushd test & 
-  rm -rf ${TEST_BUILD_DIR} &&&
+  rm -rf ${TEST_BUILD_DIR} &&
   mkdir ${TEST_BUILD_DIR} &&
   cd ${TEST_BUILD_DIR} &&
   cmake ${CMAKE_EXTRAS} .. &&
