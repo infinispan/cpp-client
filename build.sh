@@ -7,6 +7,7 @@ if [ "$INFINISPAN_VERSION" == "" ]
 fi
 
 BUILD_DIR=build
+TEST_BUILD_DIR=testbuild
 
 wget --progress=dot:giga -N http://downloads.jboss.org/infinispan/${INFINISPAN_VERSION}/infinispan-server-${INFINISPAN_VERSION}.zip
 
@@ -73,11 +74,22 @@ then
 else
   rm -rf ${BUILD_DIR} &&
   mkdir ${BUILD_DIR} &&
-  cd ${BUILD_DIR} &&
-  echo CXXFLAGS="-Wno-error=maybe-uninitialized" cmake ${CMAKE_EXTRAS} .. &&
-  CXXFLAGS="-Wno-error=maybe-uninitialized" cmake ${CMAKE_EXTRAS} .. &&
+  pushd ${BUILD_DIR} &&
+  echo cmake ${CMAKE_EXTRAS} .. &&
+  cmake ${CMAKE_EXTRAS} .. &&
+  cmake --build . &&
+  popd &&
+  pushd test & 
+  rm -rf ${TEST_BUILD_DIR} &&&
+  mkdir ${TEST_BUILD_DIR} &&
+  cd ${TEST_BUILD_DIR} &&
+  cmake ${CMAKE_EXTRAS} .. &&
+  cmake ${CMAKE_EXTRAS} .. &&
   cmake --build . &&
   ctest -V &&
+  popd &&
+  pushd ${BUILD_DIR} &&
   cpack -G RPM &&
-  cpack -C RelWithDebInfo --config CPackSourceConfig.cmake -G ZIP
+  cpack -C RelWithDebInfo --config CPackSourceConfig.cmake -G ZIP &&
+  popd 
 fi
