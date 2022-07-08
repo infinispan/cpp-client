@@ -7,7 +7,6 @@ if [ "$INFINISPAN_VERSION" == "" ]
 fi
 
 BUILD_DIR=build
-
 wget --progress=dot:giga -N http://downloads.jboss.org/infinispan/${INFINISPAN_VERSION}/infinispan-server-${INFINISPAN_VERSION}.zip
 
 rm -rf infinispan-server-${INFINISPAN_VERSION}
@@ -77,7 +76,6 @@ else
   echo cmake -DINSTALL_GTEST=OFF ${CMAKE_EXTRAS} .. &&
   cmake -DINSTALL_GTEST=OFF  ${CMAKE_EXTRAS} .. &&
   cmake --build . &&
-  ctest -V &&
   cpack -G RPM &&
   cpack -C RelWithDebInfo --config CPackSourceConfig.cmake -G ZIP
 fi

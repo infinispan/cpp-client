@@ -1,5 +1,5 @@
+@echo on
 if [%generator%] == [] call:usage generator
-if [%JAVA_HOME%] == [] call:usage JAVA_HOME
 if [%INFINISPAN_VERSION%] == [] call:usage INFINISPAN_VERSION
 if [%SWIG_DIR%] == [] call:usage SWIG_DIR
 if [%SWIG_EXECUTABLE%] == [] call:usage SWIG_EXECUTABLE
@@ -17,7 +17,7 @@ if not exist %JBOSS_HOME% (
    )
 "C:\Program Files\7-zip\7z.exe" x %JBOSS_ZIP% 
 )
-copy test\data\*.* %JBOSS_HOME%\server\conf
+copy test\data\*.* %JBOSS_HOME%\server\conf /y
 xcopy /E /I /Y %JBOSS_HOME%\server %JBOSS_HOME%\server1\
 
 call:do_build %generator%
@@ -27,7 +27,7 @@ goto:eof
 setlocal
 set build_dir=build_win
 
-set PATH=%JAVA_HOME%\bin;%PATH%
+rem set PATH=%JAVA_HOME%\bin;%PATH%
 echo "Using JAVA_HOME=%JAVA_HOME%"
 
 if exist %build_dir% rmdir %build_dir% /s /q
@@ -54,7 +54,7 @@ if 1%version_3micro% neq +1%version_3micro% set version_3micro=0
 
 set version_patch=%version_3micro%.%version_4qualifier%
 
-cmake -G "%~1" -DCPACK_PACKAGE_VERSION_MAJOR="%version_1major%" -DCPACK_PACKAGE_VERSION_MINOR="%version_2minor%" -DCPACK_PACKAGE_VERSION_PATCH="%version_patch%" -DSWIG_EXECUTABLE=%SWIG_EXECUTABLE% -DMVN_PROGRAM=%MVN_PROGRAM% -DPROTOBUF_LIBRARY="%PROTOBUF_LIBRARY%" -DPROTOBUF_PROTOC_LIBRARY="%PROTOBUF_PROTOC_LIBRARY%" -DPROTOBUF_INCLUDE_DIR="%PROTOBUF_INCLUDE_DIR%" -DPROTOBUF_PROTOC_EXECUTABLE="%PROTOBUF_PROTOC_EXECUTABLE%" -DOPENSSL_ROOT_DIR="%OPENSSL_ROOT_DIR%" ..
+cmake -G "%~1" -DCPACK_PACKAGE_VERSION_MAJOR="%version_1major%" -DCPACK_PACKAGE_VERSION_MINOR="%version_2minor%" -DCPACK_PACKAGE_VERSION_PATCH="%version_patch%" -DSWIG_EXECUTABLE=%SWIG_EXECUTABLE% -DMVN_PROGRAM=%MVN_PROGRAM% -DPROTOBUF_LIBRARY="%PROTOBUF_LIBRARY%" -DPROTOBUF_PROTOC_LIBRARY="%PROTOBUF_PROTOC_LIBRARY%" -DProtobuf_INCLUDE_DIR="%PROTOBUF_INCLUDE_DIR%" -DPROTOBUF_PROTOC_EXECUTABLE="%PROTOBUF_PROTOC_EXECUTABLE%" -DOPENSSL_ROOT_DIR="%OPENSSL_ROOT_DIR%" ..
 if %errorlevel% neq 0 goto fai
 
 set home_drive=%CD:~0,2%
@@ -97,6 +97,7 @@ goto:eof
 
 :fail
     subst /D Y:
+    @echo off
     echo "Failure!"
     ()
     exit /b 1
