@@ -74,8 +74,8 @@ else
   rm -rf ${BUILD_DIR} &&
   mkdir ${BUILD_DIR} &&
   cd ${BUILD_DIR} &&
-  echo cmake ${CMAKE_EXTRAS} .. &&
-  cmake ${CMAKE_EXTRAS} .. &&
+  echo cmake -DINSTALL_GTEST=OFF ${CMAKE_EXTRAS} .. &&
+  cmake -DINSTALL_GTEST=OFF  ${CMAKE_EXTRAS} .. &&
   cmake --build . &&
   ctest -V &&
   cpack -G RPM &&

@@ -53,9 +53,13 @@ include(ExternalProject)
 
 # Download and unpack googletest at configure time
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-	set(GTEST_VER "release-1.8.1")
+  set(GTEST_VER "release-1.8.1")
 else ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-	set(GTEST_VER "release-1.11.0")
+  if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5.0)
+    set(GTEST_VER "release-1.8.1")
+  else ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5.0)
+    set(GTEST_VER "release-1.11.0")
+  endif()
 endif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 configure_file(gtest-CMakeLists.txt.in googletest-download/CMakeLists.txt)
 execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
