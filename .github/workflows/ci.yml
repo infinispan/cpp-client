@@ -67,6 +67,7 @@ jobs:
           set PROTOBUF_PROTOC_LIBRARY=${{ github.workspace }}\libs\lib\libprotoc.lib
           set PROTOBUF_INCLUDE_DIR=${{ github.workspace }}\libs\include
           set INFINISPAN_VERSION=11.0.9.Final
+          set CLIENT_VERSION=%GITHUB_REF_NAME%
           build.bat
       - uses: ncipollo/release-action@v1
         with:
