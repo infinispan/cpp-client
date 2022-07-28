@@ -1,6 +1,6 @@
 name: infinispan-netcore-tests
 env:
-  ISPN_VER: "13.0.10.Final"
+  ISPN_VER: "11.0.9.Final"
   CLIENT_VERSION: ${{ github.event.release.tag_name }}
 on:
   push:
@@ -15,8 +15,8 @@ jobs:
         uses: rlespinasse/github-slug-action@v4
       - run: echo $GITHUB_REF_NAME
       - run: mkdir build && chmod a+rwx . documentation build
-      - run: podman build -t quay.io/rigazilla/ci-build-centos-8:latest -f ci-build/centos-stream8.Dockerfile .
-      - run: podman run -v `pwd`:/home/jboss/cpp-client quay.io/rigazilla/ci-build-centos-8:latest /bin/bash -c "cd cpp-client && INFINISPAN_VERSION=13.0.10.Final CLIENT_VERSION=$GITHUB_REF_NAME ./build.sh"
+      - run: podman build -t quay.io/rigazilla/ci-build-centos-7:latest -f ci-build/centos-7.Dockerfile .
+      - run: podman run -v `pwd`:/home/jboss/cpp-client quay.io/rigazilla/ci-build-centos-7:latest /bin/bash -c "cd cpp-client && INFINISPAN_VERSION=13.0.10.Final CLIENT_VERSION=$GITHUB_REF_NAME ./build.sh"
       - uses: ncipollo/release-action@v1
         with:
           artifacts: "build/*.rpm,builddeb/*.deb"
