@@ -76,7 +76,7 @@ else
   echo cmake -DINSTALL_GTEST=OFF ${CMAKE_EXTRAS} .. &&
   cmake -DINSTALL_GTEST=OFF  ${CMAKE_EXTRAS} .. &&
   cmake --build . &&
-  ctest -V &&
+  if [ "x$SKIP_TESTS" == "x" ]; then ctest -V fi &&
   cpack -G RPM &&
   cpack -C RelWithDebInfo --config CPackSourceConfig.cmake -G ZIP
 fi
