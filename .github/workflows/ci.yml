@@ -1,0 +1,76 @@
+name: infinispan-netcore-tests
+env:
+  ISPN_VER: "11.0.9.Final"
+  CLIENT_VERSION: ${{ github.event.release.tag_name }}
+on:
+  push:
+    tags:
+      - "*"
+jobs:
+  run-ci-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Inject slug/short variables
+        uses: rlespinasse/github-slug-action@v4
+      - run: echo $GITHUB_REF_NAME
+      - run: mkdir build && chmod a+rwx . documentation build
+      - run: podman build -t quay.io/rigazilla/ci-build-centos-7:latest -f ci-build/centos-7.Dockerfile .
+      - run: podman run -v `pwd`:/home/jboss/cpp-client quay.io/rigazilla/ci-build-centos-7:latest /bin/bash -c "cd cpp-client && INFINISPAN_VERSION=11.0.9.Final CLIENT_VERSION=$GITHUB_REF_NAME ./build.sh"
+      - uses: ncipollo/release-action@v1
+        with:
+          artifacts: "build/*.rpm,builddeb/*.deb"
+          token: ${{ secrets.GITHUB_TOKEN }}
+          allowUpdates: true
+  run-ci-tests-win:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Inject slug/short variables
+        uses: rlespinasse/github-slug-action@v4
+      - run: echo $GITHUB_REF_NAME
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v1.1
+      #        with:
+      #          vs-version: "[17.0,17.2)"
+      - name: Build Protobuf
+        shell: cmd
+        run: |
+          cd ${{ github.workspace }}
+          git clone -b v3.5.0 https://github.com/protocolbuffers/protobuf.git
+          mkdir libs
+          cd protobuf
+          mkdir build && cd build
+          cmake -G "Visual Studio 17 2022" -Dprotobuf_MSVC_STATIC_RUNTIME=OFF -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}\libs -Dprotobuf_BUILD_TESTS=OFF ${{ github.workspace }}\protobuf\cmake
+          cmake --build . --config Release --target install
+      - name: Set up JDK 11
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.x" # Version range or exact version of a Python version to use, using SemVer's version range syntax
+          architecture: "x64" # optional x64 or x86. Defaults to x64 if not specified
+      - shell: cmd
+        run: |
+          echo '::echo::on'
+          where swig
+          where mvn
+          where java
+          dir C:\ProgramData\Chocolatey\tools
+          set generator="Visual Studio 17 2022"
+          set SWIG_DIR=C:\ProgramData\Chocolatey\bin
+          set SWIG_EXECUTABLE=C:\ProgramData\Chocolatey\bin\swig.exe
+          set MVN_PROGRAM=C:\ProgramData\chocolatey\lib\maven\apache-maven-3.8.6\bin\mvn
+          set PROTOBUF_LIBRARY=${{ github.workspace }}\libs\lib\libprotobuf.lib
+          set PROTOBUF_PROTOC_EXECUTABLE=${{ github.workspace }}\libs\bin\protoc.exe
+          set PROTOBUF_PROTOC_LIBRARY=${{ github.workspace }}\libs\lib\libprotoc.lib
+          set PROTOBUF_INCLUDE_DIR=${{ github.workspace }}\libs\include
+          set INFINISPAN_VERSION=11.0.9.Final
+          set CLIENT_VERSION=%GITHUB_REF_NAME%
+          build.bat
+      - uses: ncipollo/release-action@v1
+        with:
+          artifacts: "build_win/*.zip"
+          token: ${{ secrets.GITHUB_TOKEN }}
+          allowUpdates: true

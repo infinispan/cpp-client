@@ -13,6 +13,7 @@
 #include <memory>
 #include <thread>
 #include <map>
+#include <string>
 namespace infinispan {
 namespace hotrod {
 
