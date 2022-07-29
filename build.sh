@@ -7,7 +7,6 @@ if [ "$INFINISPAN_VERSION" == "" ]
 fi
 
 BUILD_DIR=build
-
 wget --progress=dot:giga -N http://downloads.jboss.org/infinispan/${INFINISPAN_VERSION}/infinispan-server-${INFINISPAN_VERSION}.zip
 
 rm -rf infinispan-server-${INFINISPAN_VERSION}
@@ -62,6 +61,11 @@ then
   CMAKE_EXTRAS="${CMAKE_EXTRAS} -DPROTOBUF_INCLUDE_DIR=${PROTOBUF_INCLUDE_DIR}"
 fi
 
+if [  "$PLATFORM_TAG" != "" ]
+then
+  CMAKE_EXTRAS="${CMAKE_EXTRAS} -DPLATFORM_TAG=${PLATFORM_TAG}"
+fi
+
 if [  "$1" == "DEBUG" ]
 then
   rm -rf ${BUILD_DIR} &&
@@ -77,7 +81,7 @@ else
   echo CXXFLAGS="-Wno-error=maybe-uninitialized" cmake ${CMAKE_EXTRAS} .. &&
   CXXFLAGS="-Wno-error=maybe-uninitialized" cmake ${CMAKE_EXTRAS} .. &&
   cmake --build . &&
-  ctest -V &&
+  if [ "x$SKIP_TESTS" == "x" ]; then ctest -V ; fi &&
   cpack -G RPM &&
   cpack -C RelWithDebInfo --config CPackSourceConfig.cmake -G ZIP
 fi

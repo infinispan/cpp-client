@@ -85,8 +85,11 @@ def stop(args, verbose=False):
 
         if jproc_pid is not None:
             if os.name == 'nt' :
-                subprocess.call(["taskkill.exe", "/PID", str(jproc_pid), "/F", "/T"])
-                time.sleep(1)
+                try:
+                    subprocess.call(["taskkill.exe", "/PID", str(jproc_pid), "/F", "/T"])
+                    time.sleep(1)
+                except Exception:
+                    pass
             else:
                 try:
                     subprocess.call(["pkill", "-P", str(jproc_pid)])
