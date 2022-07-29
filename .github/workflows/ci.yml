@@ -16,7 +16,7 @@ jobs:
       - run: echo $GITHUB_REF_NAME
       - run: mkdir build && chmod a+rwx . documentation build
       - run: podman build -t quay.io/rigazilla/ci-build-centos-8:latest -f ci-build/centos-stream8.Dockerfile .
-      - run: podman run -v `pwd`:/home/jboss/cpp-client quay.io/rigazilla/ci-build-centos-8:latest /bin/bash -c "cd cpp-client && INFINISPAN_VERSION=13.0.10.Final CLIENT_VERSION=$GITHUB_REF_NAME ./build.sh"
+      - run: podman run -v `pwd`:/home/jboss/cpp-client quay.io/rigazilla/ci-build-centos-8:latest /bin/bash -c "cd cpp-client && INFINISPAN_VERSION=13.0.10.Final CLIENT_VERSION=$GITHUB_REF_NAME PLATFORM_TAG=el7 ./build.sh"
       - uses: ncipollo/release-action@v1
         with:
           artifacts: "build/*.rpm,builddeb/*.deb"
@@ -67,6 +67,7 @@ jobs:
           set PROTOBUF_PROTOC_LIBRARY=${{ github.workspace }}\libs\lib\libprotoc.lib
           set PROTOBUF_INCLUDE_DIR=${{ github.workspace }}\libs\include
           set INFINISPAN_VERSION=13.0.10.Final
+          set CLIENT_VERSION=%GITHUB_REF_NAME%
           build.bat
       - uses: ncipollo/release-action@v1
         with:
