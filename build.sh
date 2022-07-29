@@ -61,6 +61,11 @@ then
   CMAKE_EXTRAS="${CMAKE_EXTRAS} -DPROTOBUF_INCLUDE_DIR=${PROTOBUF_INCLUDE_DIR}"
 fi
 
+if [  "$PLATFORM_TAG" != "" ]
+then
+  CMAKE_EXTRAS="${CMAKE_EXTRAS} -DPLATFORM_TAG=${PLATFORM_TAG}"
+fi
+
 if [  "$1" == "DEBUG" ]
 then
   rm -rf ${BUILD_DIR} &&
