@@ -956,7 +956,6 @@ if(NOT DEFINED HOTROD_PREBUILT_LIB_DIR)
   install(FILES ${PROTO_HDRS} DESTINATION include/infinispan/hotrod)
   install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/License.txt" "${CMAKE_CURRENT_SOURCE_DIR}/dist/README.md" DESTINATION ${DOCDIR})
 
-  # Include protobuf library in the distribution
   if(NOT DEFINED HOTROD_PREBUILT_LIB_DIR)
     set_property(TARGET hotrod PROPERTY CXX_STANDARD 11)
     set_property(TARGET hotrod PROPERTY CXX_STANDARD_REQUIRED ON)
