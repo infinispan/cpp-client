@@ -912,6 +912,9 @@ if(NOT DEFINED HOTROD_PREBUILT_LIB_DIR)
   set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY "1")
   set(CPACK_SOURCE_IGNORE_FILES "/CVS/;/.svn/;/.bzr/;/.hg/;/.git/;.swp$;.#;/#;${CMAKE_BINARY_DIR}/*;/infinispan-server-*")
 
+  if(DEFINED ENV{RPM_PROTOBUF_VERSION})
+    set(CPACK_RPM_PACKAGE_REQUIRES "protobuf = $ENV{RPM_PROTOBUF_VERSION}, protobuf-compiler = $ENV{RPM_PROTOBUF_VERSION}, protobuf-devel = $ENV{RPM_PROTOBUF_VERSION}")
+  endif(DEFINED ENV{RPM_PROTOBUF_VERSION})
   if(CMAKE_SIZEOF_VOID_P MATCHES "8")
     set(PACKAGE_ARCH "x86_64")
     set(LIB_SUFFIX 64)
@@ -952,21 +955,6 @@ if(NOT DEFINED HOTROD_PREBUILT_LIB_DIR)
   install(FILES ${includes} DESTINATION include/infinispan/hotrod)
   install(FILES ${PROTO_HDRS} DESTINATION include/infinispan/hotrod)
   install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/License.txt" "${CMAKE_CURRENT_SOURCE_DIR}/dist/README.md" DESTINATION ${DOCDIR})
-
-  # Include protobuf library in the distribution
-  install(DIRECTORY ${PROTOBUF_INCLUDE_DIRS}/google/protobuf DESTINATION include/google)
-  get_filename_component(real_protobuf_library "${PROTOBUF_LIBRARY}" REALPATH)
-  get_filename_component(real_protoc_library "${PROTOBUF_PROTOC_LIBRARY}" REALPATH)
-  install(FILES ${real_protobuf_library} ${real_protoc_library} ${PROTOBUF_LIBRARY} ${PROTOBUF_PROTOC_LIBRARY} DESTINATION lib${LIB_SUFFIX})
-  install(FILES ${PROTOBUF_PROTOC_EXECUTABLE}
-    DESTINATION bin
-    PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ WORLD_READ)
-
-  if(NOT WIN32)
-    get_filename_component(protobuf_dir "${PROTOBUF_LIBRARY}" PATH)
-    file(GLOB libproto_glob "${protobuf_dir}/libproto*")
-    install(FILES ${libproto_glob} DESTINATION lib${LIB_SUFFIX})
-  endif(NOT WIN32)
 
   if(NOT DEFINED HOTROD_PREBUILT_LIB_DIR)
     set_property(TARGET hotrod PROPERTY CXX_STANDARD 11)
