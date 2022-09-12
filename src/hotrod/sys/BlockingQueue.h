@@ -13,8 +13,9 @@ namespace sys {
 
 template<class T> class BlockingQueue {
 public:
-    BlockingQueue<T>(size_t capacity_) :
-            capacity(capacity_) {
+    int onWait = 0;
+    BlockingQueue<T>(size_t capacity_) : capacity(capacity_)
+    {
     }
 
     BlockingQueue<T>() :
@@ -44,8 +45,14 @@ public:
     T pop() {
         ScopedLock<Mutex> l(lock);
 
-        while (queue.empty()) {
+        if (queue.empty()) {
+            ++onWait;
             condition.wait(lock);
+            --onWait;
+        }
+        if (queue.empty()) {
+            // thread awaken by a notify, raise exception 
+            throw infinispan::hotrod::NoSuchElementException("Reached maximum number of connections");
         }
         T element = queue.front();
         queue.pop_front();
@@ -87,6 +94,10 @@ public:
         ScopedLock<Mutex> l(lock);
 
         return queue.size();
+    }
+
+    void notifyAll() {
+        condition.notifyAll();
     }
 
 private:

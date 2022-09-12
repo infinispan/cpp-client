@@ -87,6 +87,12 @@ class TransportFactory
     }
 
     TopologyInfo& getTopologyInfo() { return topologyInfo; }
+    const std::set<InetSocketAddress> &getFailedServers() {return failedServers;}
+
+    void addFailedServer(const InetSocketAddress &isa) {
+      infinispan::hotrod::sys::ScopedLock<sys::Mutex> sl(lockFailedServer);
+      failedServers.insert(isa);
+    }
 
   protected:
     TopologyInfo topologyInfo;
@@ -94,8 +100,9 @@ class TransportFactory
     std::string sniHostName;
 
   private:
-    sys::Mutex lock;
+    sys::Mutex lock, lockFailedServer;
     std::vector<InetSocketAddress> initialServers;
+    std::set<InetSocketAddress> failedServers;
     const Configuration& configuration;
     int maxRetries;
     std::shared_ptr<TransportObjectFactory> transportFactory;
