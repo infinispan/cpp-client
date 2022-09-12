@@ -2,6 +2,7 @@
 #define ISPN_HOTROD_WINDOWS_MUTEX_H
 
 #include <windows.h>
+#include "infinispan/hotrod/exceptions.h"
 
 namespace infinispan {
 namespace hotrod {
