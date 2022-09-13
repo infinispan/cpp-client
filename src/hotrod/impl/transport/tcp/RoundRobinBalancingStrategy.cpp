@@ -31,7 +31,7 @@ const transport::InetSocketAddress& RoundRobinBalancingStrategy::nextServer(cons
     return server;
         }
     }
-    throw NoSuchElementException("No more server available.");
+    throw NoSuchElementException("Balancing: No more server available.");
 }
 
 const transport::InetSocketAddress& RoundRobinBalancingStrategy::getServerByIndex(size_t pos) {

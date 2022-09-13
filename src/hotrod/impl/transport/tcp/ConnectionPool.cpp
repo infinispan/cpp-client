@@ -113,27 +113,28 @@ TcpTransport& ConnectionPool::borrowObject(const InetSocketAddress &key) {
             factory->destroyObject(key, *obj);
         }
         // See if we can create a new one
-        if (idleQ->size() == 0               // if the idle queue is empty
-        &&// and queue has space
-                (configuration.getMaxActive() < 0 || busyQ->size() < (size_t) configuration.getMaxActive()) && // and there space for other objs or it can be freed
-                (!hasReachedMaxTotal() || tryRemoveIdleOrAskAllocate(key))) {
-                    try {
-            obj = &factory->makeObject(key); // then create new object
-                    } catch (const Exception& ex) {
-                        // Unable to create new transport
-                        // free waiting threads and rise the exception
-                        idleQ->notifyAll();
-                        throw;
-                    }
-        } else {
-        if (busyQ->size() == 0)
+        if (idleQ->size() == 0
+        && (configuration.getMaxActive() < 0 || busyQ->size() < (size_t)configuration.getMaxActive())
+        && (!hasReachedMaxTotal() || tryRemoveIdleOrAskAllocate(key)))
         {
-            // If here, idleQ and busyQ are empty and cannot create new transport
-            // just, free waiting threads and rise an exception
-            idleQ->notifyAll();
-            throw NoSuchElementException("No more server available.");
-        }             
-        // if the idle queue is empty
+            try
+            {
+                obj = &factory->makeObject(key); // then create new object
+            } catch (const Exception& ex)
+            {
+                // Unable to create new transport
+                // free waiting threads and rise the exception
+                idleQ->notifyAll();
+                throw;
+            }
+        } else {
+            if (busyQ->size() == 0)
+            {
+                // If here, idleQ and busyQ are empty and cannot create new transport
+                // just, free waiting threads
+                idleQ->notifyAll();
+            }
+            // if the idle queue is empty
             sys::ScopedUnlock<sys::Mutex> u(lock);
             if (this->getConfiguration().getExhaustedAction() == EXCEPTION) {
                 obj = idleQ->popOrThrow();   // else get a transport or throw an exc
