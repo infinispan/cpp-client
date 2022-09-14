@@ -135,6 +135,7 @@ bool TransportFactory::clusterSwitch()
 	ScopedLock<Mutex> l(lock);
 	topologyAge = 0;
     initialServers.clear();
+    failedServers.clear();
     for (auto iter = configuredServers.begin();
         iter != configuredServers.end(); iter++)
     {
@@ -167,6 +168,7 @@ bool TransportFactory::clusterSwitch(std::string clusterName)
 	ScopedLock<Mutex> l(lock);
 	topologyAge = 0;
     initialServers.clear();
+    failedServers.clear();
     for (auto iter = configuredServers.begin();
         iter != configuredServers.end(); iter++)
     {
