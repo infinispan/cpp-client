@@ -20,13 +20,18 @@ void RoundRobinBalancingStrategy::setServers(const std::vector<transport::InetSo
     }
 }
 
-const transport::InetSocketAddress& RoundRobinBalancingStrategy::nextServer(const std::set<transport::InetSocketAddress>& /*failedServer*/) {
+const transport::InetSocketAddress& RoundRobinBalancingStrategy::nextServer(const std::set<transport::InetSocketAddress>& failedServers) {
     sys::ScopedLock<sys::Mutex> scopedLock(lock);
-    const transport::InetSocketAddress& server = getServerByIndex(index++);
-    if (index >= servers.size()) {
+    for (auto i = 0u; i < servers.size(); i++) {
+        if (++index >= servers.size()) {
        index = 0;
     }
+        const transport::InetSocketAddress &server = getServerByIndex(index);
+        if (failedServers.find(server) == failedServers.end()) {
     return server;
+        }
+    }
+    throw NoSuchElementException("Balancing: No more server available.");
 }
 
 const transport::InetSocketAddress& RoundRobinBalancingStrategy::getServerByIndex(size_t pos) {

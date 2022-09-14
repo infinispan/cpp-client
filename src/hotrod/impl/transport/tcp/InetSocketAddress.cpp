@@ -28,7 +28,7 @@ bool InetSocketAddress::operator==(const InetSocketAddress& rhs) const {
     if (port != rhs.getPort()) {
         return false;
     }
-    return isSameHost(this->getAddresses(), rhs.getAddresses());
+    return hostname.compare(rhs.hostname) ? isSameHost(this->getAddresses(), rhs.getAddresses()) : true;
 }
 
 HR_EXPORT bool InetSocketAddress::operator<(const InetSocketAddress& rhs) const {
