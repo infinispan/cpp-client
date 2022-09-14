@@ -114,12 +114,11 @@ template<> class RetryOnFailureOperation<void> : public HotRodOperation<void>
   public:
     void execute() {
         int retryCount = 0;
-        std::set<transport::InetSocketAddress> failedServers;
         while (shouldRetry(retryCount)) {
             transport::Transport* transport = NULL;
             try {
                 // Transport retrieval should be retried
-                transport = &getTransport(retryCount, failedServers);
+                transport = &getTransport(retryCount, transportFactory->getFailedServers());
                 executeOperation(*transport);
                 releaseTransport(transport);
                 return;
@@ -127,7 +126,7 @@ template<> class RetryOnFailureOperation<void> : public HotRodOperation<void>
                 // Invalidate transport since this exception means that this
                 // instance is no longer usable and should be destroyed
                 transport::InetSocketAddress isa(te.getHostCString(),te.getPort());
-                failedServers.insert(isa);
+                transportFactory->addFailedServer(isa);
                 invalidateTransport(isa, transport);
                 logErrorAndThrowExceptionIfNeeded(retryCount, te);
             } catch (const RemoteNodeSuspectException& rnse) {
