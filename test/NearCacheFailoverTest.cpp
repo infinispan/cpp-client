@@ -45,8 +45,9 @@ private:
     size_t index;
     const transport::InetSocketAddress &nextServer(
             const std::set<transport::InetSocketAddress>& failedServers) {
-        if (servers.size() == 1)
+        if (servers.size() == 1) {
             return servers[0];
+        }
         if (failedServers.size() == 0) {
             return (servers[0].getPort() == 11322) ? servers[0] : servers[1];
         }
@@ -150,10 +151,8 @@ int main(int argc, char** argv) {
             return -1;
         }
         std::string stop_server = python_exec + " " + server_ctl + " stop " + server_pid_filename;
-        std::cout << "Stopping with command: " << stop_server << std::endl;
         std::system(stop_server.c_str());
         std::string server_down = python_exec + " " + probe_port + " localhost 11322 60 down";
-        std::cout << "Probing with command: " << server_down << std::endl;
         std::system(server_down.c_str());
         pre_hits = std::stoi(nearCache.stats()["nearHits"]);
         // After failover, this get goes remote

@@ -200,9 +200,13 @@ private:
     }
     virtual void stop()
     {
+        try {
         this->shutdown = true;
         this->removeClientListener(cl);
         this->invalidateCache();
+        } catch (...) {
+            // Can't rise any exception here
+        }
     }
 };
 

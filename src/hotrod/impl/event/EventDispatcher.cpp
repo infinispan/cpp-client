@@ -33,9 +33,13 @@ void GenericDispatcher::waitThreadExit()
 {
     if (p_thread)
     {
+        try {
         if (p_thread->joinable())
         {
             p_thread->join();
+        }
+        } catch (...) {
+            // can't rise exception here
         }
     }
 }
@@ -90,8 +94,13 @@ void EventDispatcher::run() {
                 }
             }
         } catch (const TransportException& ) {
-            if (recoveryCallback) {
+            if (recoveryCallback)
+            {
+                try {
                 recoveryCallback();
+                } catch (...) {
+                    // can't rise exception here
+                }
             }
             break;
         }
