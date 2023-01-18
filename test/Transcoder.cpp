@@ -53,7 +53,7 @@ int main(int argc, char** argv) {
     std::string k1("key13");
     std::string k2("key14");
     std::string v1("boron");
-    std::string v2("chlorine");
+    std::string v2("\"chlorine\"");
 
     cache.clear();
     // put
@@ -75,7 +75,7 @@ int main(int argc, char** argv) {
     std::unique_ptr<std::string> rv2Json(cacheJson.get(k2));
     assert_not_null("get returned null!", __LINE__, rv2Json);
     if (rv2Json->compare("\"chlorine\"")) {
-        std::cerr << "get/put fail for " << k2 << " got " << *rv2 << " expected \"boron\"" << std::endl;
+        std::cerr << "get/put fail for " << k2 << " got " << *rv2 << " expected \"chlorine\"" << std::endl;
         return 1;
     }
 

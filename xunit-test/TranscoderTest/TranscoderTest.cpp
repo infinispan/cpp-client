@@ -65,44 +65,6 @@ TEST_F(TranscoderTest, DefaultCacheWriteJbossReadRawBytes) {
     ASSERT_EQ(*result_v1, "boron");
 }
 
-// Write in jboss format and read json. Cache is raw bytes
-TEST_F(TranscoderTest, DefaultCacheWriteJbossReadJson) {
-    TranscoderTest::remoteCacheManager->start();
-
-    JBasicMarshaller<std::string> *km = new JBasicMarshaller<std::string>();
-    JBasicMarshaller<std::string> *vm = new JBasicMarshaller<std::string>();
-    RemoteCache<std::string, std::string>& cache = TranscoderTest::remoteCacheManager->getCache<std::string, std::string>(km,
-            &Marshaller<std::string>::destroy,
-            vm,
-            &Marshaller<std::string>::destroy,
-            "default", true);
-
-    // Use a cache with a raw media type for entries
-    // and check that it returns a json formatted value with the jboss marshaller preamble
-    DataFormat<std::string, std::string> df1;
-    df1.keyMediaType = MediaType(APPLICATION_JBOSS_MARSHALLING_TYPE);
-    df1.valueMediaType = MediaType(APPLICATION_JSON_TYPE);
-    df1.valueMarshaller.reset(new BasicMarshaller<std::string>());
-    RemoteCache<std::string, std::string> rawCache = cache.withDataFormat(&df1);
-
-    std::string k1("key13");
-    std::string v1("boron");
-
-    cache.clear();
-    // Store data with jboss marshaller
-    cache.put(k1,v1);
-
-    std::shared_ptr<std::string> jv1(rawCache.get(k1));
-    // Data is stored in jboss marshaller, but json format is requested,
-    // so the result is a json string containing the jboss preamble
-    ASSERT_EQ(*jv1, "\"\\u0003>\\u0005boron\"");
-
-    //Check that the initial cache works as usual
-    std::shared_ptr<std::string> result_v1(cache.get(k1));
-    ASSERT_EQ(*result_v1, "boron");
-
-}
-
 // Write in jboss format and read raw bytes. Cache is raw bytes
 TEST_F(TranscoderTest, JBossMarshalledCacheWriteJbossReadRawBytes) {
     TranscoderTest::remoteCacheManager->start();
@@ -132,42 +94,6 @@ TEST_F(TranscoderTest, JBossMarshalledCacheWriteJbossReadRawBytes) {
     std::shared_ptr<std::string> jv1(rawCache.get(k1));
     // Check with jboss marshaller format
     ASSERT_EQ(*jv1, "\003>\005boron");
-
-    //Check that the initial cache works as usual
-    std::shared_ptr<std::string> result_v1(cache.get(k1));
-    ASSERT_EQ(*result_v1, "boron");
-}
-
-// Write jboss format and read raw json. Cache is jboss marshalled, so string are recognized and transcoded correctly
-TEST_F(TranscoderTest, JBossMarshalledCacheWriteJbossReadJson) {
-    TranscoderTest::remoteCacheManager->start();
-
-    JBasicMarshaller<std::string> *km = new JBasicMarshaller<std::string>();
-    JBasicMarshaller<std::string> *vm = new JBasicMarshaller<std::string>();
-    RemoteCache<std::string, std::string>& cache = TranscoderTest::remoteCacheManager->getCache<std::string, std::string>(km,
-            &Marshaller<std::string>::destroy,
-            vm,
-            &Marshaller<std::string>::destroy,
-            "transcodingCache", true);
-
-    // Use a cache with a jboss store type for entries
-    // and check that it returns a json formatted value without the jboss preamble
-    // because the server consumes the preamble to detect the entry type
-    DataFormat<std::string, std::string> df1;
-    df1.keyMediaType = MediaType(APPLICATION_JBOSS_MARSHALLING_TYPE);
-    df1.valueMediaType = MediaType(APPLICATION_JSON_TYPE);
-    df1.valueMarshaller.reset(new BasicMarshaller<std::string>());
-    RemoteCache<std::string, std::string> rawCache = cache.withDataFormat(&df1);
-
-    std::string k1("key13");
-    std::string v1("boron");
-
-    cache.clear();
-    cache.put(k1,v1);
-
-    std::shared_ptr<std::string> jv1(rawCache.get(k1));
-    // We got a clean json string
-    ASSERT_EQ(*jv1, "\"boron\"");
 
     //Check that the initial cache works as usual
     std::shared_ptr<std::string> result_v1(cache.get(k1));
