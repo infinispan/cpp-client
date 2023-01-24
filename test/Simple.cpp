@@ -554,6 +554,10 @@ int main(int argc, char** argv) {
             execution.addArg(argName2, argValue2);
 
             std::string* ret = execution.template execute<std::string*>(script_name);
+            if (*ret != "abc") {
+                std::cerr << "Task execution fails got " << *ret << " expected abc" << std::endl;
+                return 1;
+            }
             std::cout << "result is " << *ret << std::endl;
             result = 0;
         } catch (const Exception& e) {
@@ -593,6 +597,7 @@ int main(int argc, char** argv) {
             std::string argValue1 = std::string("abc");
             std::string argName2 = std::string("keyName");
             std::string argValue2 = std::string("a");
+            std::string argName3 = std::string("num");
             // execute() operation needs explicit JBossMarshalling<string> format for argument values
             std::string script("// mode=local, language=javascript, parameters=[keyValue, keyName, num]\n"
                     "var cache = cacheManager.getCache(\"namedCache\");\n"
@@ -606,12 +611,42 @@ int main(int argc, char** argv) {
             execution.putScript(script_name, script);
             execution.addArg(argName1, argValue1);
             execution.addArg(argName2, argValue2);
-            execution.addArg("num", 2);
+            execution.addArg(argName3, 2);
 
             int* ret = execution.template execute<int*>(script_name);
             std::cout << "result is " << *ret << std::endl;
+            if (*ret != 2) {
+                std::cerr << "Task execution fails got " << *ret << " expected 2" << std::endl;
+                return 1;
+            }
+
+            // Checking execute with key
             int* ret1 = execution.template execute<int*>(script_name, argName1);
             std::cout << "result is " << *ret1 << std::endl;
+            if (*ret1 != 2) {
+                std::cerr << "Task execution fails got " << *ret1 << " expected 2" << std::endl;
+                return 1;
+            }
+
+            // Checking old interface also
+            auto jbmStr = JBasicMarshaller<std::string>();
+            auto jbmInt = JBasicMarshaller<int>();
+            std::vector<char> argVal1, argVal2,argVal3;
+            jbmStr.marshall(argValue1, argVal1);
+            jbmStr.marshall(argValue2, argVal2);
+            jbmInt.marshall(2, argVal3);
+            std::map<std::vector<char>,std::vector<char>> args;
+            args[std::vector<char>(argName1.begin(), argName1.end())]=argVal1;
+            args[std::vector<char>(argName2.begin(), argName2.end())]=argVal2;
+            args[std::vector<char>(argName3.begin(), argName3.end())]=argVal3;
+            auto ret2 = cache.execute(script_name, args, std::string("aKey"));
+            std::vector<char> ret3(ret2.begin(), ret2.end());
+            int* ret4 = jbmInt.unmarshall(ret3);
+            std::cout << "result is " << *ret4 << std::endl;
+            if (*ret4 != 2) {
+                std::cerr << "Task execution fails got " << *ret4 << " expected 2" << std::endl;
+                return 1;
+            }
             return 0;
         } catch (const Exception& e) {
             cacheManager.stop();
