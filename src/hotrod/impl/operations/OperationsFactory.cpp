@@ -204,6 +204,17 @@ ExecuteCmdOperation* OperationsFactory::newExecuteCmdOperation(
 	return executeCmdOperation;
 }
 
+ExecuteCmdKeyOperation* OperationsFactory::newExecuteCmdKeyOperation(
+		const std::vector<char>& key,
+		const std::vector<char>& cmdName,
+		const std::map<std::vector<char>, std::vector<char>>& values,
+		EntryMediaTypes* df) {
+	infinispan::hotrod::operations::ExecuteCmdKeyOperation* executeCmdKeyOperation =
+			new ExecuteCmdKeyOperation(codec, transportFactory, key, cacheNameBytes,
+					topologyId, getFlags(), cmdName, values, df);
+	return executeCmdKeyOperation;
+}
+
 QueryOperation* OperationsFactory::newQueryOperation(const QueryRequest& qr,
 		EntryMediaTypes* df) {
 	infinispan::hotrod::operations::QueryOperation* queryOperation =

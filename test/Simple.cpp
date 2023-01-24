@@ -610,6 +610,8 @@ int main(int argc, char** argv) {
 
             int* ret = execution.template execute<int*>(script_name);
             std::cout << "result is " << *ret << std::endl;
+            int* ret1 = execution.template execute<int*>(script_name, argName1);
+            std::cout << "result is " << *ret1 << std::endl;
             return 0;
         } catch (const Exception& e) {
             cacheManager.stop();

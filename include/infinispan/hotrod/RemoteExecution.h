@@ -25,7 +25,7 @@ namespace hotrod {
  *  A Marshaller must be provided as template arguments. JBossMarshaller
  *  can be used as reference.
  */
-template<class M = JBossMarshaller>
+template<class M = JBossMarshaller, class K>
 class RemoteExecution {
 public:
     RemoteExecution(RemoteCacheBase& cache) :
@@ -43,6 +43,19 @@ public:
     ResultType execute(const std::string& s) {
         std::vector<char> buff(s.begin(), s.end());
         return M::template unmarshall<ResultType>(cache.base_execute(buff, m));
+    }
+
+    /**
+     * Execute a remote task
+     * \param k a key used to target a specific node in the topology
+     * \param s name of the script to invoke
+     * \return the result of the execution
+     * \tparam ResultType the type of the result value
+     */
+    template<typename ResultType>
+    ResultType execute(const std::string& s, K& key) {
+        std::vector<char> buff(s.begin(), s.end());
+        return M::template unmarshall<ResultType>(cache.base_execute(&key, buff, m));
     }
 
     /**

@@ -41,6 +41,7 @@ public:
     virtual void clear();
     uint64_t size();
     std::vector<char> execute(std::vector<char> cmdName, const std::map<std::vector<char>,std::vector<char>>& args);
+    std::vector<char> execute(RemoteCacheBase& rcb, const void* k, std::vector<char> cmdName, const std::map<std::vector<char>,std::vector<char>>& args);
     QueryResponse query(const QueryRequest & qr);
     operations::PingResult ping();
     CacheTopologyInfo getCacheTopologyInfo();
