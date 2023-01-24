@@ -355,6 +355,7 @@ void RemoteCacheBase::base_ping() {
 void RemoteCacheBase::base_withFlags(Flag flags) {
     IMPL->withFlags(flags);
 }
+
 std::vector<unsigned char> RemoteCacheBase::base_execute(const std::string &cmdName, const std::map<std::string,std::string>& args){
 	std::map<std::vector<char>,std::vector<char>> m;
     std::vector<char> cmdNameBuf;
@@ -382,6 +383,35 @@ std::vector<unsigned char> RemoteCacheBase::base_execute(const std::string &cmdN
 
 std::vector<char> RemoteCacheBase::base_execute(const std::vector<char> &cmdName, const std::map<std::vector<char> ,std::vector<char> >& args){
     return IMPL->execute(cmdName, args);
+}
+
+std::vector<unsigned char> RemoteCacheBase::base_execute(const void *key, const std::string &cmdName, const std::map<std::string,std::string>& args){
+	std::map<std::vector<char>,std::vector<char>> m;
+    std::vector<char> cmdNameBuf;
+//    std::vector<char> argNameBuf, argValueBuf;
+	for (std::map<std::string,std::string>::const_iterator it=args.begin(); it!=args.end(); ++it)
+	{
+        std::vector<char> argNameBytes(it->first.begin(),it->first.end());
+        std::vector<char> argValueBytes(it->second.begin(),it->second.end());
+        m.insert(std::pair<std::vector<char>,std::vector<char>>(argNameBytes, argValueBytes));
+	}
+    const std::vector<char> cmdNameBytes((cmdName.data()),(cmdName.data())+cmdName.size());
+	std::vector<char> resBytes= IMPL->execute(*this, key, cmdNameBytes, m);
+
+	std::vector<unsigned char> ures(reinterpret_cast<unsigned char*>(resBytes.data()),reinterpret_cast<unsigned char*>(resBytes.data()+resBytes.size()));
+	return ures;
+}
+
+std::vector<unsigned char> RemoteCacheBase::base_execute(const void *key, const std::string &cmdName, const std::map<std::vector<char> ,std::vector<char> >& args){
+        const std::vector<char> cmdNameBytes((cmdName.data()),(cmdName.data())+cmdName.size());
+	std::vector<char> resBytes= IMPL->execute(*this, key, cmdNameBytes, args);
+
+	std::vector<unsigned char> ures(reinterpret_cast<unsigned char*>(resBytes.data()),reinterpret_cast<unsigned char*>(resBytes.data()+resBytes.size()));
+	return ures;
+}
+
+std::vector<char> RemoteCacheBase::base_execute(const void *key, const std::vector<char> &cmdName, const std::map<std::vector<char> ,std::vector<char> >& args){
+    return IMPL->execute(*this, key, cmdName, args);
 }
 
 QueryResponse RemoteCacheBase::base_query(const QueryRequest &qr)

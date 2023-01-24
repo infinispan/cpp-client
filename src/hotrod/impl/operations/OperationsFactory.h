@@ -56,6 +56,7 @@ class ClearOperation;
 class SizeOperation;
 class FaultTolerantPingOperation;
 class ExecuteCmdOperation;
+class ExecuteCmdKeyOperation;
 class QueryOperation;
 class AddClientListenerOperation;
 class RemoveClientListenerOperation;
@@ -114,6 +115,9 @@ class OperationsFactory
 
     ExecuteCmdOperation* newExecuteCmdOperation(
         const std::vector<char>& cmdName, const std::map<std::vector<char>,std::vector<char>>& values, EntryMediaTypes* df);
+
+    ExecuteCmdKeyOperation* newExecuteCmdKeyOperation(
+        const std::vector<char>& key, const std::vector<char>& cmdName, const std::map<std::vector<char>,std::vector<char>>& values, EntryMediaTypes* df);
 
     QueryOperation* newQueryOperation(const QueryRequest& qr, EntryMediaTypes* df);
 
