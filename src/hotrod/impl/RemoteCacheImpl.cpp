@@ -289,6 +289,18 @@ std::vector<char> RemoteCacheImpl::execute(std::vector<char> cmdNameBytes, const
 
 }
 
+std::vector<char> RemoteCacheImpl::execute(RemoteCacheBase& remoteCacheBase, const void *k, std::vector<char> cmdNameBytes, const std::map<std::vector<char>,std::vector<char>>& args) {
+	assertRemoteCacheManagerIsStarted();
+
+    std::vector<char> kbuf, obuf;
+    remoteCacheBase.baseKeyMarshall(k, kbuf);
+    std::vector<char> keyBytes(kbuf.data(), kbuf.data()+kbuf.size());
+
+    std::unique_ptr<ExecuteCmdKeyOperation> op(operationsFactory->newExecuteCmdKeyOperation(keyBytes, cmdNameBytes, args, dataFormat));
+    return op->execute();
+
+}
+
 QueryResponse RemoteCacheImpl::query(const QueryRequest &qr) {
 	std::unique_ptr<QueryOperation> op(operationsFactory->newQueryOperation(qr, dataFormat));
 	return op->execute();

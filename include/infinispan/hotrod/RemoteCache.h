@@ -977,6 +977,30 @@ public:
     }
 
     /**
+     * Execute script on server
+     * \param name name of the script
+     * \param args maps of (name,value) arguments
+     * \param key a key used to target a specific node in the topology
+     * \return byte[] result in dark matter shape
+     */
+    std::vector<unsigned char> execute(const std::string& name, const std::map<std::string, std::string>& args, const K& key)
+    {
+        return base_execute(&key, name, args);
+    }
+
+    /**
+     * Execute script on server
+     * \param name name of the script
+     * \param args maps of (name,value) arguments
+     * \param key a key used to target a specific node in the topology
+     * \return byte[] result in dark matter shape
+     */
+    std::vector<unsigned char> execute(const std::string& name, const std::map<std::vector<char>, std::vector<char> >& args, const K& key)
+    {
+    	return base_execute(&key, name, args);
+    }
+
+    /**
      * Execute a query on server
      * \param qr the QueryRequest oject
      * \return a QueryResponse object with the query result
@@ -1183,9 +1207,9 @@ public:
      *
      */
     template <class M = JBossMarshaller>
-    RemoteExecution<M> getRemoteExecution()
+    RemoteExecution<V, M> getRemoteExecution()
     {
-        return RemoteExecution<M>(*this);
+        return RemoteExecution<V,M>(*this);
     }
 
     RemoteCache(const RemoteCache &other) :
