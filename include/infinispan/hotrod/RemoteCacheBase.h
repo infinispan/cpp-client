@@ -80,6 +80,9 @@ protected:
     HR_EXTERN std::vector<unsigned char> base_execute(const std::string &cmdName,  const std::map<std::string,std::string>& args);
     HR_EXTERN std::vector<unsigned char> base_execute(const std::string &cmdName, const std::map<std::vector<char> ,std::vector<char> >& args);
     HR_EXTERN std::vector<char> base_execute(const std::vector<char> &cmdName, const std::map<std::vector<char> ,std::vector<char> >& args);
+    HR_EXTERN std::vector<unsigned char> base_execute(const void* key, const std::string &cmdName,  const std::map<std::string,std::string>& args);
+    HR_EXTERN std::vector<unsigned char> base_execute(const void* key, const std::string &cmdName, const std::map<std::vector<char> ,std::vector<char> >& args);
+    HR_EXTERN std::vector<char> base_execute(const void* key, const std::vector<char> &cmdName, const std::map<std::vector<char> ,std::vector<char> >& args);
     HR_EXTERN CacheTopologyInfo base_getCacheTopologyInfo();
     HR_EXTERN QueryResponse base_query(const QueryRequest &qr);
     HR_EXTERN std::vector<unsigned char> base_query_char(std::vector<unsigned char> qr, size_t size);
@@ -242,7 +245,7 @@ friend class ::infinispan::hotrod::event::CacheClientListener;
 #ifndef SWIGCSHARP
 template <typename... Params>
 friend class ::infinispan::hotrod::event::ContinuousQueryListener;
-template <class M> friend class RemoteExecution;
+template <class M, class K> friend class RemoteExecution;
 #endif
 };
 
