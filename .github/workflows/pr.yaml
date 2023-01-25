@@ -3,9 +3,7 @@ env:
   ISPN_VER: "12.1.14.Final"
   CLIENT_VERSION: ${{ github.event.release.tag_name }}
 on:
-  push:
-    tags:
-      - "*"
+  pull_request:
 jobs:
   run-ci-tests:
     runs-on: ubuntu-latest
@@ -17,11 +15,6 @@ jobs:
       - run: mkdir build && chmod a+rwx . documentation build
       - run: podman build -t quay.io/rigazilla/ci-build-centos-7:latest -f ci-build/centos-7.Dockerfile .
       - run: podman run -v `pwd`:/home/jboss/cpp-client quay.io/rigazilla/ci-build-centos-7:latest /bin/bash -c "cd cpp-client && INFINISPAN_VERSION=12.1.14.Final CLIENT_VERSION=$GITHUB_REF_NAME PLATFORM_TAG=el7 ./build.sh"
-      - uses: ncipollo/release-action@v1
-        with:
-          artifacts: "build/*.rpm,builddeb/*.deb"
-          token: ${{ secrets.GITHUB_TOKEN }}
-          allowUpdates: true
   run-ci-tests-win:
     runs-on: windows-latest
     steps:
@@ -69,8 +62,3 @@ jobs:
           set INFINISPAN_VERSION=12.1.14.Final
           set CLIENT_VERSION=%GITHUB_REF_NAME%
           build.bat
-      - uses: ncipollo/release-action@v1
-        with:
-          artifacts: "build_win/*.zip"
-          token: ${{ secrets.GITHUB_TOKEN }}
-          allowUpdates: true
