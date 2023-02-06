@@ -5,7 +5,7 @@ env:
 on:
   push:
     tags:
-      - "*"
+      - 9.3.**
 jobs:
   run-ci-tests-stream-8:
     runs-on: ubuntu-latest
