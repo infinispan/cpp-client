@@ -1,6 +1,6 @@
 name: infinispan-netcore-tests
 env:
-  ISPN_VER: "12.1.14.Final"
+  ISPN_VER: "14.0.6.Final"
   CLIENT_VERSION: ${{ github.event.release.tag_name }}
 on:
   pull_request:
@@ -67,6 +67,6 @@ jobs:
           set PROTOBUF_PROTOC_EXECUTABLE=${{ github.workspace }}\libs\bin\protoc.exe
           set PROTOBUF_PROTOC_LIBRARY=${{ github.workspace }}\libs\lib\libprotoc.lib
           set PROTOBUF_INCLUDE_DIR=${{ github.workspace }}\libs\include
-          set INFINISPAN_VERSION=12.1.14.Final
+          set INFINISPAN_VERSION=14.0.6.Final
           set CLIENT_VERSION=%GITHUB_REF_NAME%
           build.bat
