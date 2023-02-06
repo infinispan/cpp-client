@@ -3,7 +3,14 @@ env:
   ISPN_VER: "14.0.6.Final"
   CLIENT_VERSION: ${{ github.event.release.tag_name }}
 on:
+  push:
+    branches:
+      - 'main'
+      - '9.3.x'
   pull_request:
+    branches:
+      - 'main'
+      - '9.3.x'
 jobs:
   run-ci-tests-stream-8:
     runs-on: ubuntu-latest
