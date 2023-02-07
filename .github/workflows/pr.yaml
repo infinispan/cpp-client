@@ -1,11 +1,10 @@
 name: infinispan-netcore-tests
 env:
-  ISPN_VER: "14.0.4.Final"
+  ISPN_VER: "14.0.6.Final"
   CLIENT_VERSION: ${{ github.event.release.tag_name }}
 on:
-  push:
-    tags:
-      - 9.2.**
+  pull_request:
+    branches: 9.2.x
 jobs:
   run-ci-tests-stream-8:
     runs-on: ubuntu-latest
@@ -13,15 +12,10 @@ jobs:
       - uses: actions/checkout@v2
       - name: Inject slug/short variables
         uses: rlespinasse/github-slug-action@v4
-      - run: echo $GITHUB_REF_NAME
+      - run: echo $GITHUB_BASE_REF
       - run: mkdir build && chmod a+rwx . documentation build
       - run: podman build -t quay.io/rigazilla/ci-build-centos-8:latest -f ci-build/centos-stream8.Dockerfile .
-      - run: podman run -v `pwd`:/home/jboss/cpp-client quay.io/rigazilla/ci-build-centos-8:latest /bin/bash -c "cd cpp-client && INFINISPAN_VERSION=14.0.4.Final CLIENT_VERSION=$GITHUB_REF_NAME PLATFORM_TAG=el8 ./build.sh"
-      - uses: ncipollo/release-action@v1
-        with:
-          artifacts: "build/*.rpm,builddeb/*.deb"
-          token: ${{ secrets.GITHUB_TOKEN }}
-          allowUpdates: true
+      - run: podman run -v `pwd`:/home/jboss/cpp-client quay.io/rigazilla/ci-build-centos-8:latest /bin/bash -c "cd cpp-client && INFINISPAN_VERSION=14.0.4.Final CLIENT_VERSION=$GITHUB_BASE_REF.$GITHUB_REF_SLUG  PLATFORM_TAG=el8 ./build.sh"
   run-ci-tests-stream-9:
     runs-on: ubuntu-latest
     steps:
@@ -31,12 +25,7 @@ jobs:
       - run: echo $GITHUB_REF_NAME
       - run: mkdir build && chmod a+rwx . documentation build
       - run: podman build -t quay.io/rigazilla/ci-build-centos-9:latest -f ci-build/centos-stream9.Dockerfile .
-      - run: podman run -v `pwd`:/home/jboss/cpp-client quay.io/rigazilla/ci-build-centos-9:latest /bin/bash -c "cd cpp-client && INFINISPAN_VERSION=14.0.4.Final CLIENT_VERSION=$GITHUB_REF_NAME PLATFORM_TAG=el9 ./build.sh"
-      - uses: ncipollo/release-action@v1
-        with:
-          artifacts: "build/*.rpm,builddeb/*.deb"
-          token: ${{ secrets.GITHUB_TOKEN }}
-          allowUpdates: true
+      - run: podman run -v `pwd`:/home/jboss/cpp-client quay.io/rigazilla/ci-build-centos-9:latest /bin/bash -c "cd cpp-client && INFINISPAN_VERSION=14.0.4.Final CLIENT_VERSION=$GITHUB_BASE_REF.$GITHUB_REF_SLUG PLATFORM_TAG=el9 ./build.sh"
   run-ci-tests-win:
     runs-on: windows-latest
     steps:
@@ -46,18 +35,16 @@ jobs:
       - run: echo $GITHUB_REF_NAME
       - name: Add msbuild to PATH
         uses: microsoft/setup-msbuild@v1.1
-      #        with:
-      #          vs-version: "[17.0,17.2)"
       - name: Build Protobuf
         shell: cmd
         run: |
           cd ${{ github.workspace }}
-          git clone -b v3.5.0 https://github.com/protocolbuffers/protobuf.git
+          git clone -b v3.7.1  https://github.com/protocolbuffers/protobuf.git
           mkdir libs
           cd protobuf
           mkdir build && cd build
           cmake -G "Visual Studio 17 2022" -Dprotobuf_MSVC_STATIC_RUNTIME=OFF -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}\libs -Dprotobuf_BUILD_TESTS=OFF ${{ github.workspace }}\protobuf\cmake
-          cmake --build . --config Release --target install
+          cmake --build . --config RelWithDebInfo --target install
       - name: Set up JDK 11
         uses: actions/setup-java@v1
         with:
@@ -81,11 +68,6 @@ jobs:
           set PROTOBUF_PROTOC_EXECUTABLE=${{ github.workspace }}\libs\bin\protoc.exe
           set PROTOBUF_PROTOC_LIBRARY=${{ github.workspace }}\libs\lib\libprotoc.lib
           set PROTOBUF_INCLUDE_DIR=${{ github.workspace }}\libs\include
-          set INFINISPAN_VERSION=14.0.4.Final
+          set INFINISPAN_VERSION=14.0.6.Final
           set CLIENT_VERSION=%GITHUB_REF_NAME%
           build.bat
-      - uses: ncipollo/release-action@v1
-        with:
-          artifacts: "build_win/*.zip"
-          token: ${{ secrets.GITHUB_TOKEN }}
-          allowUpdates: true
