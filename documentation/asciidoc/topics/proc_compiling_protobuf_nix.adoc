@@ -6,7 +6,7 @@ Compile Protobuf schema, `.proto` files, into C{plusplus} header and source file
 
 * Install the Protobuf library and `protobuf-devel` package.
 +
-[source,bash,options="nowrap",subs=attributes+]
+[source,options="nowrap",subs=attributes+]
 ----
 # yum install protobuf
 # yum install protobuf-devel
@@ -16,14 +16,14 @@ Compile Protobuf schema, `.proto` files, into C{plusplus} header and source file
 
 . Set the `LD_LIBRARY_PATH` environment variable, if it is not already set.
 +
-[source,bash,options="nowrap",subs=attributes+]
+[source,options="nowrap",subs=attributes+]
 ----
 # export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/lib64
 ----
 +
 . Compile Protobuf schema for the {hr_cpp} client as required.
 +
-[source,bash,options="nowrap",subs=attributes+]
+[source,options="nowrap",subs=attributes+]
 ----
 # /bin/protoc --cpp_out dllexport_decl=HR_PROTO_EXPORT:/path/to/output/ $FILE
 ----
