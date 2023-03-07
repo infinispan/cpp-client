@@ -7,7 +7,7 @@ Compile Protobuf schema, `.proto` files, into C{plusplus} header and source file
 . Open a command prompt to the installation directory for the {hr_cpp} client.
 . Compile Protobuf schema for the {hr_cpp} client as required.
 +
-[source,bash,options="nowrap",subs=attributes+]
+[source,options="nowrap",subs=attributes+]
 ----
 bin\protoc --cpp_out dllexport_decl=HR_PROTO_EXPORT:path\to\output\ $FILE
 ----
