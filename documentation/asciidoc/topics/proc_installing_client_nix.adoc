@@ -24,11 +24,11 @@ ifdef::downstream[]
 | {rhel_short} version
 | Repository
 
-| {rhel_short} 7
-| `jb-datagrid-8.1-for-rhel-7-server-rpms`
-
 | {rhel_short} 8
-| `jb-datagrid-8.1-for-rhel-8-x86_64-rpms`
+| `jb-datagrid-8.4-for-rhel-8-x86_64-rpms`
+
+| {rhel_short} 9
+| `jb-datagrid-8.4-for-rhel-9-x86_64-rpms`
 |===
 +
 . Install the {hr_cpp} client.
