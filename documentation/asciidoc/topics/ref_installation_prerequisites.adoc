@@ -6,13 +6,13 @@
 | Operating system
 | Required compiler
 
-| {rhel_long} 7, 64-bit
-| C++ 11 compiler (GCC 4.8.1)
+| {rhel_long} 8
+| C++ 11 compiler (GCC 8.5.0)
 
-| {rhel_short} 8, 64-bit
-| C++ 11 compiler (GCC 4.8.1)
+| {rhel_short} 9
+| C++ 11 compiler (GCC 11.3.1)
 
 | {win_long} 7 x64
-| C++ 11 compiler (Visual Studio 2015, Microsoft Visual C++ 2013 Redistributable Package for the x64 platform)
+| C{plusplus} 11 compiler (Visual Studio 14 2015 Win64, Microsoft Visual C{plusplus} 2013 Redistributable Package for the x64 platform)
 
 |===
