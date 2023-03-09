@@ -9,7 +9,7 @@ ifdef::community[]
 . Download the {hr_cpp} client from link:{download_url}[Hot Rod client downloads].
 . Install the RPM with either the `yum` package manager or `dnf` utility.
 +
-[source,bash,options="nowrap",subs=attributes+]
+[source,options="nowrap",subs=attributes+]
 ----
 # yum localinstall infinispan-hotrod-cpp-<version>-RHEL-x86_64.rpm
 ----
@@ -24,16 +24,16 @@ ifdef::downstream[]
 | {rhel_short} version
 | Repository
 
-| {rhel_short} 7
-| `jb-datagrid-8.1-for-rhel-7-server-rpms`
-
 | {rhel_short} 8
-| `jb-datagrid-8.1-for-rhel-8-x86_64-rpms`
+| `jb-datagrid-8.4-for-rhel-8-x86_64-rpms`
+
+| {rhel_short} 9
+| `jb-datagrid-8.4-for-rhel-9-x86_64-rpms`
 |===
 +
 . Install the {hr_cpp} client.
 +
-[source,bash,options="nowrap",subs=attributes+]
+[source,options="nowrap",subs=attributes+]
 ----
 # yum install jdg-cpp-client
 ----
