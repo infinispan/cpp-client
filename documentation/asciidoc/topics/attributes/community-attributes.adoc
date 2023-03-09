@@ -14,4 +14,4 @@
 :doc_home: https://infinispan.org/documentation/
 :download_url: https://infinispan.org/hotrod-clients
 :cli_docs: https://infinispan.org/docs/stable/titles/cli/cli.html
-:cpp_api_docs: https://infinispan.org/hotrod-clients
+:cpp_api_docs: https://infinispan.org/docs/hotrod-clients/cpp/docs/9.1.0.Final/api_docs/html/index.html

@@ -9,7 +9,7 @@ ifdef::community[]
 . Download the {hr_cpp} client from link:{download_url}[Hot Rod client downloads].
 . Install the RPM with either the `yum` package manager or `dnf` utility.
 +
-[source,bash,options="nowrap",subs=attributes+]
+[source,options="nowrap",subs=attributes+]
 ----
 # yum localinstall infinispan-hotrod-cpp-<version>-RHEL-x86_64.rpm
 ----
@@ -33,7 +33,7 @@ ifdef::downstream[]
 +
 . Install the {hr_cpp} client.
 +
-[source,bash,options="nowrap",subs=attributes+]
+[source,options="nowrap",subs=attributes+]
 ----
 # yum install jdg-cpp-client
 ----
