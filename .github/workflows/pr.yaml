@@ -1,4 +1,4 @@
-name: infinispan-netcore-tests
+name: infinispan-cpp-client-pr
 env:
   ISPN_VER: "14.0.6.Final"
   CLIENT_VERSION: ${{ github.event.release.tag_name }}
