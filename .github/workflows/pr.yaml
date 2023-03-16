@@ -3,6 +3,8 @@ env:
   ISPN_VER: "14.0.6.Final"
   CLIENT_VERSION: ${{ github.event.release.tag_name }}
 on:
+  push:
+    branches: '9.2.x'
   pull_request:
     branches: 9.2.x
 jobs:
