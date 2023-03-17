@@ -79,11 +79,11 @@ jobs:
           set INFINISPAN_VERSION=14.0.6.Final
           set CLIENT_VERSION=%GITHUB_REF_NAME%
           build.bat
-      - if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+      - if: ${{ github.event_name == 'push' }}
         uses: ncipollo/release-action@v1
         with:
           artifacts: "build_win/*.zip"
           token: ${{ secrets.GITHUB_TOKEN }}
           allowUpdates: true
-          tag: mail-latest
+          tag: ${{ GITHUB_REF_NAME }}-latest
 
