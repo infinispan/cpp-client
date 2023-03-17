@@ -958,6 +958,17 @@ if(NOT DEFINED HOTROD_PREBUILT_LIB_DIR)
   install(FILES ${PROTO_HDRS} DESTINATION include/infinispan/hotrod)
   install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/License.txt" "${CMAKE_CURRENT_SOURCE_DIR}/dist/README.md" DESTINATION ${DOCDIR})
 
+# Include protobuf library in the distribution
+if(WIN32)
+  install(DIRECTORY ${PROTOBUF_INCLUDE_DIRS}/google/protobuf DESTINATION include/google)
+  get_filename_component(real_protobuf_library "${PROTOBUF_LIBRARY}" REALPATH)
+  get_filename_component(real_protoc_library "${PROTOBUF_PROTOC_LIBRARY}" REALPATH)
+  install(FILES ${real_protobuf_library} ${real_protoc_library} ${PROTOBUF_LIBRARY} ${PROTOBUF_PROTOC_LIBRARY} DESTINATION lib${LIB_SUFFIX})
+  install(FILES ${PROTOBUF_PROTOC_EXECUTABLE}
+    DESTINATION bin
+    PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ WORLD_READ)
+endif(WIN32)
+
   if(NOT DEFINED HOTROD_PREBUILT_LIB_DIR)
     set_property(TARGET hotrod PROPERTY CXX_STANDARD 11)
     set_property(TARGET hotrod PROPERTY CXX_STANDARD_REQUIRED ON)
