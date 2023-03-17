@@ -85,5 +85,5 @@ jobs:
           artifacts: "build_win/*.zip"
           token: ${{ secrets.GITHUB_TOKEN }}
           allowUpdates: true
-          tag: ${{ GITHUB_REF_NAME }}-latest
+          tag: ${{ env.GITHUB_REF_NAME }}-latest
 
