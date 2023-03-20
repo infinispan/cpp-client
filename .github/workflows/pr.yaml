@@ -22,6 +22,12 @@ jobs:
       - run: mkdir build && chmod a+rwx . documentation build
       - run: podman build -t quay.io/rigazilla/ci-build-centos-8:latest -f ci-build/centos-stream8.Dockerfile .
       - run: podman run -v `pwd`:/home/jboss/cpp-client quay.io/rigazilla/ci-build-centos-8:latest /bin/bash -c "cd cpp-client && INFINISPAN_VERSION=14.0.4.Final CLIENT_VERSION=$GITHUB_BASE_REF.$GITHUB_REF_SLUG  PLATFORM_TAG=el8 ./build.sh"
+      - uses: ncipollo/release-action@v1
+        with:
+          artifacts: "build/*.rpm,builddeb/*.deb"
+          token: ${{ secrets.GITHUB_TOKEN }}
+          allowUpdates: true
+          tag: ${{ env.GITHUB_REF_NAME }}-latest
   run-ci-tests-stream-9:
     runs-on: ubuntu-latest
     steps:
@@ -32,6 +38,12 @@ jobs:
       - run: mkdir build && chmod a+rwx . documentation build
       - run: podman build -t quay.io/rigazilla/ci-build-centos-9:latest -f ci-build/centos-stream9.Dockerfile .
       - run: podman run -v `pwd`:/home/jboss/cpp-client quay.io/rigazilla/ci-build-centos-9:latest /bin/bash -c "cd cpp-client && INFINISPAN_VERSION=14.0.4.Final CLIENT_VERSION=$GITHUB_BASE_REF.$GITHUB_REF_SLUG PLATFORM_TAG=el9 ./build.sh"
+      - uses: ncipollo/release-action@v1
+        with:
+          artifacts: "build/*.rpm,builddeb/*.deb"
+          token: ${{ secrets.GITHUB_TOKEN }}
+          allowUpdates: true
+          tag: ${{ env.GITHUB_REF_NAME }}-latest
   run-ci-tests-win:
     runs-on: windows-latest
     steps:
@@ -86,4 +98,3 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           allowUpdates: true
           tag: ${{ env.GITHUB_REF_NAME }}-latest
-
