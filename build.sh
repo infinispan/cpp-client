@@ -22,12 +22,12 @@ then
   VER_ARR=(${V1//./ })
 fi
 
-if [  "$VER_ARR[0]}" != "" ]
+if [  "${VER_ARR[0]}" != "" ]
 then
   CMAKE_EXTRAS="${CMAKE_EXTRAS} -DCPACK_PACKAGE_VERSION_MAJOR=${VER_ARR[0]}"
 fi
 
-if [  "$VER_ARR[1]}" != "" ]
+if [  "${VER_ARR[1]}" != "" ]
 then
   CMAKE_EXTRAS="${CMAKE_EXTRAS} -DCPACK_PACKAGE_VERSION_MINOR=${VER_ARR[1]}"
 fi
@@ -65,14 +65,13 @@ if [  "$PLATFORM_TAG" != "" ]
 then
   CMAKE_EXTRAS="${CMAKE_EXTRAS} -DPLATFORM_TAG=${PLATFORM_TAG}"
 fi
-
 if [  "$1" == "DEBUG" ]
 then
   rm -rf ${BUILD_DIR} &&
   mkdir ${BUILD_DIR} &&
   cd ${BUILD_DIR} &&
   echo cmake -DCMAKE_BUILD_TYPE=Debug ${CMAKE_EXTRAS}.. &&
-  CXXFLAGS="-Wno-error=maybe-uninitialized" cmake -DCMAKE_BUILD_TYPE=Debug ${CMAKE_EXTRAS}.. &&
+  CXXFLAGS="-Wno-error=maybe-uninitialized" cmake -DCMAKE_BUILD_TYPE=Debug ${CMAKE_EXTRAS} .. &&
   cmake --build .
 else
   rm -rf ${BUILD_DIR} &&

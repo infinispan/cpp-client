@@ -17,7 +17,7 @@ jobs:
       - run: echo $GITHUB_BASE_REF
       - run: mkdir build && chmod a+rwx . documentation build
       - run: podman build -t quay.io/rigazilla/ci-build-centos-8:latest -f ci-build/centos-stream8.Dockerfile .
-      - run: podman run -v `pwd`:/home/jboss/cpp-client quay.io/rigazilla/ci-build-centos-8:latest /bin/bash -c "cd cpp-client && INFINISPAN_VERSION=14.0.4.Final CLIENT_VERSION=$GITHUB_BASE_REF.$GITHUB_REF_SLUG  PLATFORM_TAG=el8 ./build.sh"
+      - run: podman run -v `pwd`:/home/jboss/cpp-client quay.io/rigazilla/ci-build-centos-8:latest /bin/bash -c "cd cpp-client && INFINISPAN_VERSION=14.0.4.Final ISPN_CLIENT_VERSION=$GITHUB_REF_NAME.latest  PLATFORM_TAG=el8 ./build.sh"
       - uses: ncipollo/release-action@v1
         with:
           artifacts: "build/*.rpm,builddeb/*.deb"
@@ -33,7 +33,7 @@ jobs:
       - run: echo $GITHUB_REF_NAME
       - run: mkdir build && chmod a+rwx . documentation build
       - run: podman build -t quay.io/rigazilla/ci-build-centos-9:latest -f ci-build/centos-stream9.Dockerfile .
-      - run: podman run -v `pwd`:/home/jboss/cpp-client quay.io/rigazilla/ci-build-centos-9:latest /bin/bash -c "cd cpp-client && INFINISPAN_VERSION=14.0.4.Final CLIENT_VERSION=$GITHUB_BASE_REF.$GITHUB_REF_SLUG PLATFORM_TAG=el9 ./build.sh"
+      - run: podman run -v `pwd`:/home/jboss/cpp-client quay.io/rigazilla/ci-build-centos-9:latest /bin/bash -c "cd cpp-client && INFINISPAN_VERSION=14.0.4.Final CLIENT_VERSION=$GITHUB_REF_NAME.latest PLATFORM_TAG=el9 ./build.sh"
       - uses: ncipollo/release-action@v1
         with:
           artifacts: "build/*.rpm,builddeb/*.deb"
@@ -85,7 +85,7 @@ jobs:
           set PROTOBUF_PROTOC_LIBRARY=${{ github.workspace }}\libs\lib\libprotoc.lib
           set PROTOBUF_INCLUDE_DIR=${{ github.workspace }}\libs\include
           set INFINISPAN_VERSION=14.0.6.Final
-          set CLIENT_VERSION=%GITHUB_REF_NAME%
+          set ISPN_CLIENT_VERSION=%GITHUB_REF_NAME%.latest
           build.bat
       - if: ${{ github.event_name == 'push' }}
         uses: ncipollo/release-action@v1
@@ -93,4 +93,4 @@ jobs:
           artifacts: "build_win/*.zip"
           token: ${{ secrets.GITHUB_TOKEN }}
           allowUpdates: true
-          tag: ${{ env.GITHUB_REF_NAME }}-latest
+          tag: ${{ env.GITHUB_REF_NAME }}.latest
