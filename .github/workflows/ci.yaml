@@ -86,6 +86,7 @@ jobs:
           set PROTOBUF_INCLUDE_DIR=${{ github.workspace }}\libs\include
           set INFINISPAN_VERSION=14.0.6.Final
           set CLIENT_VERSION=%GITHUB_REF_NAME%-latest
+          set ISPN_CLIENT_VERSION=%GITHUB_REF_NAME%-latest
           build.bat
       - if: ${{ github.event_name == 'push' }}
         uses: ncipollo/release-action@v1
