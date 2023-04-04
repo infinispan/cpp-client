@@ -1,0 +1,46 @@
+name: infinispan-cpp-client-memcheck
+env:
+  ISPN_VER: "14.0.6.Final"
+  CLIENT_VERSION: ${{ github.event.release.tag_name }}
+on:
+  push:
+    branches:
+      - 'main'
+      - '9.3.x'
+  pull_request:
+    branches:
+      - 'main'
+      - '9.3.x'
+jobs:
+  run-memcheck-tests-stream-8:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Inject slug/short variables
+        uses: rlespinasse/github-slug-action@v4
+      - run: echo $GITHUB_BASE_REF
+      - run: mkdir build && chmod a+rwx . documentation build
+      - run: podman build -t quay.io/rigazilla/ci-build-centos-8:latest -f ci-build/centos-stream8.Dockerfile .
+      - run: podman run -v `pwd`:/home/jboss/cpp-client quay.io/rigazilla/ci-build-centos-8:latest /bin/bash -c "cd cpp-client && INFINISPAN_VERSION=14.0.4.Final CLIENT_VERSION=$GITHUB_BASE_REF.$GITHUB_REF_SLUG  PLATFORM_TAG=el8 ./build.sh MEMECHECK"
+      - name: Archive memcheck results
+        uses: actions/upload-artifact@v3
+        with:
+          name: memcheck-report-centos8
+          path: build/Testing/Temporary/*
+          retention-days: 10 
+  run-memcheck-tests-stream-9:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Inject slug/short variables
+        uses: rlespinasse/github-slug-action@v4
+      - run: echo $GITHUB_REF_NAME
+      - run: mkdir build && chmod a+rwx . documentation build
+      - run: podman build -t quay.io/rigazilla/ci-build-centos-9:latest -f ci-build/centos-stream9.Dockerfile .
+      - run: podman run -v `pwd`:/home/jboss/cpp-client quay.io/rigazilla/ci-build-centos-9:latest /bin/bash -c "cd cpp-client && INFINISPAN_VERSION=14.0.4.Final CLIENT_VERSION=$GITHUB_BASE_REF.$GITHUB_REF_SLUG PLATFORM_TAG=el9 ./build.sh MEMCHECK"
+      - name: Archive memcheck results
+        uses: actions/upload-artifact@v3
+        with:
+          name: memcheck-report-centos9
+          path: build/Testing/Temporary/*
+          retention-days: 10 
