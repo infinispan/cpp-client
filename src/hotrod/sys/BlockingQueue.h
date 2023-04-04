@@ -10,10 +10,8 @@
 namespace infinispan {
 namespace hotrod {
 namespace sys {
-
 template<class T> class BlockingQueue {
 public:
-    int onWait = 0;
     BlockingQueue<T>(size_t capacity_) : capacity(capacity_)
     {
     }
@@ -44,15 +42,8 @@ public:
 
     T pop() {
         ScopedLock<Mutex> l(lock);
-
-        if (queue.empty()) {
-            ++onWait;
+        while(queue.empty()) {
             condition.wait(lock);
-            --onWait;
-        }
-        if (queue.empty()) {
-            // thread awaken by a notify, raise exception 
-            throw infinispan::hotrod::NoSuchElementException("Reached maximum number of connections");
         }
         T element = queue.front();
         queue.pop_front();
