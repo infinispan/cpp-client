@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 if [ "$INFINISPAN_VERSION" == "" ]
   then
@@ -66,22 +66,33 @@ then
   CMAKE_EXTRAS="${CMAKE_EXTRAS} -DPLATFORM_TAG=${PLATFORM_TAG}"
 fi
 
-if [  "$1" == "DEBUG" ]
-then
-  rm -rf ${BUILD_DIR} &&
-  mkdir ${BUILD_DIR} &&
-  cd ${BUILD_DIR} &&
-  echo cmake -DCMAKE_BUILD_TYPE=Debug ${CMAKE_EXTRAS}.. &&
-  CXXFLAGS="-Wno-error=maybe-uninitialized" cmake -DCMAKE_BUILD_TYPE=Debug ${CMAKE_EXTRAS}.. &&
-  cmake --build .
-else
-  rm -rf ${BUILD_DIR} &&
-  mkdir ${BUILD_DIR} &&
-  cd ${BUILD_DIR} &&
-  echo CXXFLAGS="-Wno-error=maybe-uninitialized" cmake ${CMAKE_EXTRAS} .. &&
-  CXXFLAGS="-Wno-error=maybe-uninitialized" cmake ${CMAKE_EXTRAS} .. &&
-  cmake --build . &&
-  if [ "x$SKIP_TESTS" == "x" ]; then ctest -V ; fi &&
-  cpack -G RPM &&
-  cpack -C RelWithDebInfo --config CPackSourceConfig.cmake -G ZIP
-fi
+case $1 in
+
+        DEBUG)
+            rm -rf ${BUILD_DIR}
+            mkdir ${BUILD_DIR}
+            cd ${BUILD_DIR}
+            CXXFLAGS="-Wno-error=maybe-uninitialized" cmake -DCMAKE_BUILD_TYPE=Debug ${CMAKE_EXTRAS} ..
+            cmake --build .
+            ;;
+
+        MEMCHECK)
+            rm -rf ${BUILD_DIR} 
+            mkdir ${BUILD_DIR}
+            cd ${BUILD_DIR}
+            CXXFLAGS="-Wno-error=maybe-uninitialized" cmake -DCMAKE_BUILD_TYPE=Debug ${CMAKE_EXTRAS} ..
+            cmake --build .
+            ctest -T memcheck -V
+            ;;
+
+        *)
+            rm -rf ${BUILD_DIR}
+            mkdir ${BUILD_DIR}
+            cd ${BUILD_DIR}
+            CXXFLAGS="-Wno-error=maybe-uninitialized" cmake ${CMAKE_EXTRAS} ..
+            cmake --build .
+            if [ "x$SKIP_TESTS" == "x" ]; then ctest -V ; fi
+            cpack -G RPM
+            cpack -C RelWithDebInfo --config CPackSourceConfig.cmake -G ZIP
+            ;;
+esac
