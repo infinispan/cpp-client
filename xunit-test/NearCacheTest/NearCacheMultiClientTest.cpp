@@ -53,23 +53,25 @@ TEST_F(NearCacheTest, ClientsInvalidatedTest) {
     cache1.put(k, "v1");
     auto stats1 = cache2.stats();
     //Get needs to go remotely because this is first time cache2 client reads the value
-    ASSERT_EQ("v1", *cache2.get(k));
+    std::unique_ptr<std::string> v1(cache2.get(k));
+    ASSERT_EQ("v1", *v1);
     //Get is only local now
-    ASSERT_EQ("v1", *cache2.get(k));
+    v1 = std::unique_ptr<std::string>(cache2.get(k));
+    ASSERT_EQ("v1", *v1);
     auto stats2 = cache2.stats();
     ASSERT_EQ(std::stoi(stats1["hits"]) + 1, std::stoi(stats2["hits"])) << "Client 2 did not reach the server!";
-    cache1.put(k, "v2");
+    delete cache1.put(k, "v2");
     //Get needs to go remotely
-    std::function<bool()> f = [&cache2, &k](){std::string* res=cache2.get(k); return (res!=nullptr) && *res== std::string("v2");};
+    std::function<bool()> f = [&cache2, &k](){std::unique_ptr<std::string> res(cache2.get(k)); return (res!=nullptr) && *res== std::string("v2");};
     waitFor(f);
 
     auto stats3 = cache2.stats();
     ASSERT_EQ(std::stoi(stats2["hits"]) + 1, std::stoi(stats3["hits"])) << "Client 2 did not reach the server for new value!";
     auto cache1Stats1 = cache1.stats();
-    cache2.put(k, "v3");
+    delete cache2.put(k, "v3");
 
     //Get needs to go remotely
-    std::function<bool()> f1 = [&cache1, &k](){ std::string* res=cache1.get(k); return (res!=nullptr) && *res== std::string("v3"); };
+    std::function<bool()> f1 = [&cache1, &k](){ std::unique_ptr<std::string> res(cache1.get(k)); return (res!=nullptr) && !res->compare("v3"); };
     waitFor(f1);
 
     auto cache1Stats2 = cache1.stats();

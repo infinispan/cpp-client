@@ -55,13 +55,13 @@ TEST_F(NearCacheEvictionTest, EvictionOnFullNearCacheTest) {
     cache.clear();
 
     auto stats0 = cache.stats();
-    cache.get("key1");
-    cache.put("key1", "value1");
+    delete cache.get("key1");
+    delete cache.put("key1", "value1");
     // Sleep some time. This avoids that the events related to the prev put arrives after the next get
     std::this_thread::sleep_for(milliseconds(50));
-    cache.get("key1");
+    delete cache.get("key1");
     // key1 is near now
-    cache.get("key1");
+    delete cache.get("key1");
     auto stats1 = cache.stats();
     // Retrieve stats form the server and do some checks
     // counters don't consider hit and miss on the near cache
@@ -70,13 +70,13 @@ TEST_F(NearCacheEvictionTest, EvictionOnFullNearCacheTest) {
     // now fill the near cache
     for (int i = 0; i < 10; i++)
     {
-        cache.put(std::string("key") + std::to_string(i + 2), std::string("value") + std::to_string(i + 2));
+        delete cache.put(std::string("key") + std::to_string(i + 2), std::string("value") + std::to_string(i + 2));
         // Sleep some time. This avoids that the events related to the prev put arrives after the next get
         std::this_thread::sleep_for(milliseconds(50));
         //call Get to populate the near cache
         auto currStats = cache.stats();
         auto oneMoreHit = [&cache, &currStats,i]()->bool{
-            cache.get(std::string("key") + std::to_string(i + 2));
+            delete cache.get(std::string("key") + std::to_string(i + 2));
             auto tmpStat = cache.stats();
             return (std::stoi(currStats["hits"]) + 1 <= std::stoi(tmpStat["hits"]));
         };
@@ -85,7 +85,7 @@ TEST_F(NearCacheEvictionTest, EvictionOnFullNearCacheTest) {
     // key1 is now far
     auto stats2 = cache.stats();
     auto oneMoreHit = [&cache, &stats2]()->bool{
-        cache.get("key1");
+        delete cache.get("key1");
         auto tmpStat = cache.stats();
         return (std::stoi(stats2["hits"]) + 1 <= std::stoi(tmpStat["hits"]));
     };
@@ -93,8 +93,8 @@ TEST_F(NearCacheEvictionTest, EvictionOnFullNearCacheTest) {
     // key1 push key2 out from near cache
     // key2 is now far
     auto threeMoreHit = [&cache, &stats2]()->bool{
-        cache.get("key2");
-        cache.get("key3");
+        delete cache.get("key2");
+        delete cache.get("key3");
         auto tmpStat = cache.stats();
         return (std::stoi(stats2["hits"]) + 3 <= std::stoi(tmpStat["hits"]));
     };

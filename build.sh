@@ -12,6 +12,10 @@ wget --progress=dot:giga -N http://downloads.jboss.org/infinispan/${INFINISPAN_V
 rm -rf infinispan-server-${INFINISPAN_VERSION}
 unzip -q infinispan-server-${INFINISPAN_VERSION}.zip
 export JBOSS_HOME=`pwd`/infinispan-server-${INFINISPAN_VERSION}
+JAVA_VER=$(java -version 2>&1 | grep -oP 'version "?(1\.)?\K\d+')
+if [[ $JAVA_VER -ge 15 ]]; then
+  $JBOSS_HOME/bin/cli.sh install org.openjdk.nashorn:nashorn-core:15.4 org.ow2.asm:asm:7.3.1 org.ow2.asm:asm-util:7.3.1
+fi
 cp test/data/* $JBOSS_HOME/server/conf
 # Copy dir for near cache and cluster test
 cp -rf $JBOSS_HOME/server $JBOSS_HOME/server1

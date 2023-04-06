@@ -62,10 +62,12 @@ void NearCacheStaleReadsTest::TearDown() {
 TEST_F(NearCacheStaleReadsTest, AvoidStaleReadAfterPutRemoveTest) {
     std::function<void(int, RemoteCache<std::string, std::string>&)> f = [](int i, RemoteCache<std::string, std::string> &cache) {
     std::string value = std::string("v") + std::to_string(i);
-    cache.put("k", value);
-    ASSERT_EQ(value, *cache.get("k")) << "Return value different from: " << value;
-    cache.remove("k");
-    ASSERT_EQ(nullptr, cache.get("k")) << "Return value is not null";
+    delete cache.put("k", value);
+    std::unique_ptr<std::string> v(cache.get("k"));
+    ASSERT_EQ(value, *v) << "Return value different from: " << value;
+    delete cache.remove("k");
+    v=std::unique_ptr<std::string>(cache.get("k"));
+    ASSERT_EQ(nullptr, v) << "Return value is not null";
 };
     Repeat(f);
 }
@@ -76,7 +78,8 @@ TEST_F(NearCacheStaleReadsTest, AvoidStaleReadAfterPutAllTest) {
         std::string value = std::string("v") + std::to_string(i);
         map["k"]=value;
         cache.putAll(map);
-        ASSERT_EQ(value, *cache.get("k"));
+        std::unique_ptr<std::string> v(cache.get("k"));
+        ASSERT_EQ(value, *v);
 };
     Repeat(f);
 }
@@ -84,7 +87,7 @@ TEST_F(NearCacheStaleReadsTest, AvoidStaleReadAfterPutAllTest) {
 TEST_F(NearCacheStaleReadsTest, AvoidStaleReadAfterReplaceTest) {
     std::function<void(int, RemoteCache<std::string, std::string>&)> f = [](int i, RemoteCache<std::string, std::string> &cache) {
         std::string value = std::string("v") + std::to_string(i);
-        cache.replace("k", value);
+        delete cache.replace("k", value);
         auto versioned = cache.getWithVersion("k");
         ASSERT_EQ(value, *versioned.first);
 };
@@ -96,7 +99,8 @@ TEST_F(NearCacheStaleReadsTest, AvoidStaleReadAfterReplaceWithVersionTest) {
         std::string value = std::string("v") + std::to_string(i);
         auto versioned = cache.getWithVersion("k");
         ASSERT_TRUE(cache.replaceWithVersion("k", value, (uint64_t) versioned.second.version)) << "Not replaced!";
-        ASSERT_EQ(value, *cache.get("k"));
+        std::unique_ptr<std::string> v(cache.get("k"));
+        ASSERT_EQ(value, *v);
     };
     Repeat(f);
 }
@@ -108,7 +112,8 @@ TEST_F(NearCacheStaleReadsTest, AvoidStaleReadAfterPutAsyncRemoveWithVersionTest
         auto versioned = cache.getWithVersion("k");
         ASSERT_EQ(value, *versioned.first);
         ASSERT_TRUE(cache.removeWithVersion("k", (uint64_t) versioned.second.version)) << "Not removed!";
-        ASSERT_EQ(nullptr, cache.get("k"));
+        std::unique_ptr<std::string> v(cache.get("k"));
+        ASSERT_EQ(nullptr, v);
     };
     Repeat(f);
 }

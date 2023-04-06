@@ -121,6 +121,7 @@ void do_sasl_authentication(Codec& codec, TcpTransport& t, const AuthenticationC
     if (r != SASL_OK && r != SASL_CONTINUE) {
         saslfail(r, "performing SASL negotiation");
     }
+    sasl_dispose(&conn);
 #else
     SecBufferDesc   OutBuffer, InBuffer;
     SecBuffer       InBuffers[2], OutBuffers[1];
