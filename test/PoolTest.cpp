@@ -161,10 +161,13 @@ int main(int argc, char **argv) {
             }
         }
         std::cout << "Exceptions caught by the user: " << exceptionsCaught << std::endl;
-        if (*res[20] != *doSlowGet(cache, 20)) {
+        auto slowGetRet = doSlowGet(cache, 20);
+        if (*res[20] != *slowGetRet) {
             std::cerr << "FAIL: value doesn't match for last get" << std::endl;
-
+            delete slowGetRet;
+            return 1;
         }
+        delete slowGetRet;
         std::cout << "PASS: test pool with EXCEPTION condition" << std::endl;
         for (int i = 0; i < 50; i++) {
             t[i].join();

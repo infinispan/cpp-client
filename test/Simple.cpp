@@ -106,7 +106,6 @@ template<> std::vector<char> StaticBasicMarshaller::marshall(const int& s) {
     return std::vector<char>(&s, (&s)+1);
 }
 
-
 template<typename K, typename V>
 int basicTest(RemoteCacheManager &cacheManager, RemoteCache<K, V> &cache) {
 
@@ -174,7 +173,7 @@ int basicTest(RemoteCacheManager &cacheManager, RemoteCache<K, V> &cache) {
             return 1;
         }
 
-        cache.putIfAbsent(k3, v4);
+        delete cache.putIfAbsent(k3, v4);
         std::unique_ptr<std::string> rv4(cache.get(k3));
         assert_not_null("get returned null!", __LINE__, rv4);
         if (rv4->compare(v3)) {
@@ -190,7 +189,7 @@ int basicTest(RemoteCacheManager &cacheManager, RemoteCache<K, V> &cache) {
         std::string v4("beatles");
 
         // putIfAbsent
-        cache.putIfAbsent(k3, v3);
+        delete cache.putIfAbsent(k3, v3);
         std::unique_ptr<std::string> rv3(cache.get(k3));
         assert_not_null("get returned null!", __LINE__, rv3);
         if (rv3->compare(v3)) {
@@ -212,7 +211,7 @@ int basicTest(RemoteCacheManager &cacheManager, RemoteCache<K, V> &cache) {
     std::string v3("stones");
     std::string v4("beatles");
 
-    cache.put(k3, v3, 10, SECONDS);
+    delete cache.put(k3, v3, 10, SECONDS);
     // getWithMetadata
     std::pair<std::shared_ptr<std::string>, MetadataValue> rv5 = cache.getWithMetadata(k3);
     if (!rv5.first.get() || rv5.second.lifespan != 10) {
@@ -221,7 +220,7 @@ int basicTest(RemoteCacheManager &cacheManager, RemoteCache<K, V> &cache) {
     }
     std::cout << "PASS: simple getWithMetadata with mortal entry" << std::endl;
 
-    cache.put(k3, v3);
+    delete cache.put(k3, v3);
     // getWithMetadata
     rv5 = cache.getWithMetadata(k3);
     if (!rv5.first.get()
@@ -344,7 +343,7 @@ int basicTest(RemoteCacheManager &cacheManager, RemoteCache<K, V> &cache) {
     std::cout << "PASS: simple getBulk" << std::endl;
 
     // replace
-    cache.replace(k4, v5);
+    delete cache.replace(k4, v5);
     std::unique_ptr<std::string> rv10(cache.get(k4));
     assert_not_null("get returned null!", __LINE__, rv10);
     if (rv10->compare(v5)) {
