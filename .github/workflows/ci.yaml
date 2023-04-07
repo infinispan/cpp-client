@@ -21,7 +21,7 @@ jobs:
       - run: echo $GITHUB_BASE_REF
       - run: mkdir build && chmod a+rwx . documentation build
       - run: podman build -t quay.io/rigazilla/ci-build-centos-8:latest -f ci-build/centos-stream8.Dockerfile .
-      - run: podman run -v `pwd`:/home/jboss/cpp-client quay.io/rigazilla/ci-build-centos-8:latest /bin/bash -c "cd cpp-client && INFINISPAN_VERSION=14.0.4.Final CLIENT_VERSION=$GITHUB_BASE_REF.$GITHUB_REF_SLUG  PLATFORM_TAG=el8 ./build.sh"
+      - run: podman run -v `pwd`:/home/jboss/cpp-client quay.io/rigazilla/ci-build-centos-8:latest /bin/bash -c "cd cpp-client && INFINISPAN_VERSION=14.0.6.Final ISPN_CLIENT_VERSION=$GITHUB_REF_NAME-latest  PLATFORM_TAG=el8 ./build.sh"
       - if: ${{ github.event_name == 'push' }}
         uses: ncipollo/release-action@v1
         with:
@@ -38,7 +38,7 @@ jobs:
       - run: echo $GITHUB_REF_NAME
       - run: mkdir build && chmod a+rwx . documentation build
       - run: podman build -t quay.io/rigazilla/ci-build-centos-9:latest -f ci-build/centos-stream9.Dockerfile .
-      - run: podman run -v `pwd`:/home/jboss/cpp-client quay.io/rigazilla/ci-build-centos-9:latest /bin/bash -c "cd cpp-client && INFINISPAN_VERSION=14.0.4.Final CLIENT_VERSION=$GITHUB_BASE_REF.$GITHUB_REF_SLUG PLATFORM_TAG=el9 ./build.sh"
+      - run: podman run -v `pwd`:/home/jboss/cpp-client quay.io/rigazilla/ci-build-centos-9:latest /bin/bash -c "cd cpp-client && INFINISPAN_VERSION=14.0.6.Final CLIENT_VERSION=$GITHUB_REF_NAME-latest PLATFORM_TAG=el9 ./build.sh"
       - if: ${{ github.event_name == 'push' }}
         uses: ncipollo/release-action@v1
         with:
