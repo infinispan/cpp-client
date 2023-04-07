@@ -101,4 +101,4 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           allowUpdates: true
           tag: ${{ env.GITHUB_REF_NAME }}-latest
-          draft: true
+          prerelease: true
