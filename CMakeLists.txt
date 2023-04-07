@@ -499,7 +499,7 @@ if(ENABLE_VALGRIND)
   endif(VALGRIND MATCHES .*-NOTFOUND)
 
   set(MEMORYCHECK_COMMAND_OPTIONS
-    "--leak-check=full --num-callers=25 --workaround-gcc296-bugs=yes --demangle=yes"
+    "--leak-check=full --num-callers=25 --ignore-range-below-sp=1024-1 --demangle=yes"
     CACHE STRING "Valgrind options" FORCE)
   configure_file("${PROJECT_SOURCE_DIR}/CTestCustom.cmake" "${PROJECT_BINARY_DIR}/CTestCustom.cmake" COPYONLY)
 endif(ENABLE_VALGRIND)

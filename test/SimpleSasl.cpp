@@ -163,7 +163,7 @@ int main(int argc, char** argv) {
         RemoteCache<std::string, std::string> cache = cacheManager.getCache<std::string, std::string>(km,
                 &Marshaller<std::string>::destroy, vm, &Marshaller<std::string>::destroy, std::string("authCache"));
         cacheManager.start();
-        cache.put("key", "value");
+        delete cache.put("key", "value");
         try {
             std::shared_ptr<std::string> ret(cache.get("key"));
             std::cerr << "FAIL: 'writer' should not read" << std::endl;

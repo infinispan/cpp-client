@@ -83,9 +83,9 @@ TEST_F(TransactionTest, ChangeExistentAndCommit) {
     std::string v0("carbon");
     std::string v1("boron");
     cache.clear();
-    cache.put(k1,v0);
+    delete cache.put(k1,v0);
     txManager.begin();
-    cache.put(k1,v1);
+    delete cache.put(k1,v1);
     // Check the correct value from the tx context
     std::unique_ptr<std::string> rv1(cache.get(k1));
     EXPECT_NE(rv1, nullptr);
@@ -390,7 +390,9 @@ TEST_F(TransactionTest, ConflictsAndFail) {
     } catch (const HotRodClientRollbackException& ex) {
         ASSERT_STREQ("Transaction rolled back. Code: 100", ex.what());
     }
-    EXPECT_EQ(*cache.get(k1), vx);
+    std::unique_ptr<std::string> v(cache.get(k1));
+    EXPECT_EQ(*v, vx);
+    v = std::unique_ptr<std::string>(cache.get(k2));
     EXPECT_EQ(cache.get(k2), nullptr);
 }
 

@@ -126,7 +126,7 @@ protected:
 					auto resultType = r.resulttype();
 					auto i=0;
 					std::tuple<Params...> tp= popTuple<Params...>(r.projection(), i) ;
-					K* k = (K*)this->baseKeyUnmarshall(std::vector<char>(r.key().begin(), r.key().end()));
+					std::unique_ptr<K> k((K*)this->baseKeyUnmarshall(std::vector<char>(r.key().begin(), r.key().end())));
 					switch (resultType) {
 						case ContinuousQueryResult_ResultType_JOINING:
 						cql.getJoiningListener()(*k, tp);
@@ -172,8 +172,8 @@ protected:
 					wm.ParseFromArray(e.getEventData().data(), e.getEventData().size());
 					r.ParseFromString(wm.wrappedmessagebytes());
 					auto resultType = r.resulttype();
-					K* k = (K*)this->baseKeyUnmarshall(std::vector<char>(r.key().begin(), r.key().end()));
-					V* v = (V*)this->baseValueUnmarshall(std::vector<char>(r.value().begin(), r.value().end()));
+					std::unique_ptr<K> k((K*)this->baseKeyUnmarshall(std::vector<char>(r.key().begin(), r.key().end())));
+					std::unique_ptr<V> v((V*)this->baseValueUnmarshall(std::vector<char>(r.value().begin(), r.value().end())));
 					switch (resultType) {
 						case ContinuousQueryResult_ResultType_JOINING:
 						cql.getJoiningListener()(*k, *v);

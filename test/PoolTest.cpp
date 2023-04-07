@@ -35,7 +35,7 @@ void prepareCache(RemoteCache<std::string, std::string> cache0) {
         expected[i] = "v" + std::to_string(i);
         execution.addArg(keyName, k);
         execution.addArg(keyVal, expected[i]);
-        execution.template execute<std::string*>("put.js");
+        delete execution.template execute<std::string*>("put.js");
     }
 }
 
@@ -73,12 +73,12 @@ int main(int argc, char **argv) {
         // Start 50 threads and see if everything works.
         // With the WAIT setup the threads have to wait if the
         // pool is exhausted
-        std::string *res[50];
+        std::unique_ptr<std::string> res[50];
         std::thread t[50];
         std::promise<void> p[50];
         for (int i = 0; i < 50; i++) {
             t[i] = std::thread([&res, &p, &cache, i]() {
-                res[i] = doSlowGet(cache, i);
+                res[i] = std::unique_ptr<std::string>(doSlowGet(cache, i));
                 p[i].set_value();
             });
         }
@@ -130,7 +130,7 @@ int main(int argc, char **argv) {
         // With the EXCEPTION setup the user code must implement
         // a recover policy if pool is exhausted, this test just waits
         // for 1 sec and retry
-        std::string *res[50];
+        std::unique_ptr<std::string> res[50];
         std::thread t[50];
         std::promise<void> p[50];
         int exceptionsCaught = 0;
@@ -139,7 +139,7 @@ int main(int argc, char **argv) {
                 bool done = false;
                 while (!done) {
                     try {
-                        res[i] = doSlowGet(cache, i);
+                        res[i] = std::unique_ptr<std::string>(doSlowGet(cache, i))  ;
                         p[i].set_value();
                         done = true;
                     } catch (NoSuchElementException &ex) {
@@ -161,10 +161,13 @@ int main(int argc, char **argv) {
             }
         }
         std::cout << "Exceptions caught by the user: " << exceptionsCaught << std::endl;
-        if (*res[20] != *doSlowGet(cache, 20)) {
+        auto slowGetRet = doSlowGet(cache, 20);
+        if (*res[20] != *slowGetRet) {
             std::cerr << "FAIL: value doesn't match for last get" << std::endl;
-
+            delete slowGetRet;
+            return 1;
         }
+        delete slowGetRet;
         std::cout << "PASS: test pool with EXCEPTION condition" << std::endl;
         for (int i = 0; i < 50; i++) {
             t[i].join();

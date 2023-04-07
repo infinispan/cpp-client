@@ -106,7 +106,6 @@ template<> std::vector<char> StaticBasicMarshaller::marshall(const int& s) {
     return std::vector<char>(&s, (&s)+1);
 }
 
-
 template<typename K, typename V>
 int basicTest(RemoteCacheManager &cacheManager, RemoteCache<K, V> &cache) {
 
@@ -174,7 +173,7 @@ int basicTest(RemoteCacheManager &cacheManager, RemoteCache<K, V> &cache) {
             return 1;
         }
 
-        cache.putIfAbsent(k3, v4);
+        delete cache.putIfAbsent(k3, v4);
         std::unique_ptr<std::string> rv4(cache.get(k3));
         assert_not_null("get returned null!", __LINE__, rv4);
         if (rv4->compare(v3)) {
@@ -190,7 +189,7 @@ int basicTest(RemoteCacheManager &cacheManager, RemoteCache<K, V> &cache) {
         std::string v4("beatles");
 
         // putIfAbsent
-        cache.putIfAbsent(k3, v3);
+        delete cache.putIfAbsent(k3, v3);
         std::unique_ptr<std::string> rv3(cache.get(k3));
         assert_not_null("get returned null!", __LINE__, rv3);
         if (rv3->compare(v3)) {
@@ -212,7 +211,7 @@ int basicTest(RemoteCacheManager &cacheManager, RemoteCache<K, V> &cache) {
     std::string v3("stones");
     std::string v4("beatles");
 
-    cache.put(k3, v3, 10, SECONDS);
+    delete cache.put(k3, v3, 10, SECONDS);
     // getWithMetadata
     std::pair<std::shared_ptr<std::string>, MetadataValue> rv5 = cache.getWithMetadata(k3);
     if (!rv5.first.get() || rv5.second.lifespan != 10) {
@@ -221,7 +220,7 @@ int basicTest(RemoteCacheManager &cacheManager, RemoteCache<K, V> &cache) {
     }
     std::cout << "PASS: simple getWithMetadata with mortal entry" << std::endl;
 
-    cache.put(k3, v3);
+    delete cache.put(k3, v3);
     // getWithMetadata
     rv5 = cache.getWithMetadata(k3);
     if (!rv5.first.get()
@@ -344,7 +343,7 @@ int basicTest(RemoteCacheManager &cacheManager, RemoteCache<K, V> &cache) {
     std::cout << "PASS: simple getBulk" << std::endl;
 
     // replace
-    cache.replace(k4, v5);
+    delete cache.replace(k4, v5);
     std::unique_ptr<std::string> rv10(cache.get(k4));
     assert_not_null("get returned null!", __LINE__, rv10);
     if (rv10->compare(v5)) {
@@ -431,14 +430,13 @@ int basicTest(RemoteCacheManager &cacheManager, RemoteCache<K, V> &cache) {
             return 1;
         }
     }
-    std::string* arv3 = future_get1.get();
+    std::unique_ptr<std::string> arv3(future_get1.get());
 
     if (!arv3 || arv3->compare(av2))
             {
         std::cerr << "fail: expected " << av2 << " got " << (arv3 ? *arv3 : "null") << std::endl;
         return 1;
     }
-    delete arv3;
     std::cout << "PASS: Async test" << std::endl;
     return 0;
 }
@@ -553,7 +551,7 @@ int main(int argc, char** argv) {
             execution.addArg(argName1, argValue1);
             execution.addArg(argName2, argValue2);
 
-            std::string* ret = execution.template execute<std::string*>(script_name);
+            std::unique_ptr<std::string> ret(execution.template execute<std::string*>(script_name));
             if (*ret != "abc") {
                 std::cerr << "Task execution fails got " << *ret << " expected abc" << std::endl;
                 return 1;
@@ -613,7 +611,7 @@ int main(int argc, char** argv) {
             execution.addArg(argName2, argValue2);
             execution.addArg(argName3, 2);
 
-            int* ret = execution.template execute<int*>(script_name);
+            std::unique_ptr<int> ret(execution.template execute<int*>(script_name));
             std::cout << "result is " << *ret << std::endl;
             if (*ret != 2) {
                 std::cerr << "Task execution fails got " << *ret << " expected 2" << std::endl;
@@ -621,7 +619,7 @@ int main(int argc, char** argv) {
             }
 
             // Checking execute with key
-            int* ret1 = execution.template execute<int*>(script_name, argName1);
+            std::unique_ptr<int> ret1(execution.template execute<int*>(script_name, argName1));
             std::cout << "result is " << *ret1 << std::endl;
             if (*ret1 != 2) {
                 std::cerr << "Task execution fails got " << *ret1 << " expected 2" << std::endl;
@@ -641,7 +639,7 @@ int main(int argc, char** argv) {
             args[std::vector<char>(argName3.begin(), argName3.end())]=argVal3;
             auto ret2 = cache.execute(script_name, args, std::string("aKey"));
             std::vector<char> ret3(ret2.begin(), ret2.end());
-            int* ret4 = jbmInt.unmarshall(ret3);
+            std::unique_ptr<int> ret4(jbmInt.unmarshall(ret3));
             std::cout << "result is " << *ret4 << std::endl;
             if (*ret4 != 2) {
                 std::cerr << "Task execution fails got " << *ret4 << " expected 2" << std::endl;
