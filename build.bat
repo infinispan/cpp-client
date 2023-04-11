@@ -36,7 +36,7 @@ cd %build_dir%
 
 if [%CLIENT_VERSION%] neq [] set V1=%CLIENT_VERSION:*/=%
 
-for /f "tokens=1,2,3,4 delims=." %%a in ("%V1%") do (
+for /f "tokens=1,2,3,4 delims=.-" %%a in ("%V1%") do (
    set version_1major=%%a
    set version_2minor=%%b
    set version_3micro=%%c
@@ -52,7 +52,7 @@ if 1%version_1major% neq +1%version_1major% set version_1major=0
 if 1%version_2minor% neq +1%version_2minor% set version_2minor=1
 if 1%version_3micro% neq +1%version_3micro% set version_3micro=0
 
-set version_patch=%version_3micro%.%version_4qualifier%
+set version_patch=%version_3micro%-%version_4qualifier%
 
 cmake -G "%~1" -DCPACK_PACKAGE_VERSION_MAJOR="%version_1major%" -DCPACK_PACKAGE_VERSION_MINOR="%version_2minor%" -DCPACK_PACKAGE_VERSION_PATCH="%version_patch%" -DSWIG_EXECUTABLE=%SWIG_EXECUTABLE% -DMVN_PROGRAM=%MVN_PROGRAM% -DPROTOBUF_LIBRARY="%PROTOBUF_LIBRARY%" -DPROTOBUF_PROTOC_LIBRARY="%PROTOBUF_PROTOC_LIBRARY%" -DProtobuf_INCLUDE_DIR="%PROTOBUF_INCLUDE_DIR%" -DPROTOBUF_INCLUDE_DIR="%PROTOBUF_INCLUDE_DIR%" -DPROTOBUF_PROTOC_EXECUTABLE="%PROTOBUF_PROTOC_EXECUTABLE%" -DOPENSSL_ROOT_DIR="%OPENSSL_ROOT_DIR%" ..
 if %errorlevel% neq 0 goto fai
