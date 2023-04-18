@@ -1,7 +1,6 @@
 name: infinispan-cpp-client-release-9.3
 env:
   ISPN_VER: "14.0.6.Final"
-  CLIENT_VERSION: ${{ github.event.release.tag_name }}
 on:
   push:
     tags:
@@ -91,3 +90,5 @@ jobs:
           artifacts: "build_win/*.zip"
           token: ${{ secrets.GITHUB_TOKEN }}
           allowUpdates: true
+          if: ! endsWith(${{ env.GITHUB_REF_NAME }}, 'Final')
+          prerelease: true
