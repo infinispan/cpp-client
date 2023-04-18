@@ -21,6 +21,7 @@ jobs:
           artifacts: "build/*.rpm,builddeb/*.deb"
           token: ${{ secrets.GITHUB_TOKEN }}
           allowUpdates: true
+          prerelease: ${{ !endsWith( env.GITHUB_REF_NAME, 'Final') }}
   run-ci-tests-stream-9:
     runs-on: ubuntu-latest
     steps:
@@ -36,6 +37,7 @@ jobs:
           artifacts: "build/*.rpm,builddeb/*.deb"
           token: ${{ secrets.GITHUB_TOKEN }}
           allowUpdates: true
+          prerelease: ${{ !endsWith( env.GITHUB_REF_NAME, 'Final') }}
   run-ci-tests-win:
     runs-on: windows-latest
     steps:
@@ -90,5 +92,4 @@ jobs:
           artifacts: "build_win/*.zip"
           token: ${{ secrets.GITHUB_TOKEN }}
           allowUpdates: true
-          if: ${{ !endsWith( env.GITHUB_REF_NAME, 'Final') }}
-          prerelease: true
+          prerelease: ${{ !endsWith( env.GITHUB_REF_NAME, 'Final') }}
