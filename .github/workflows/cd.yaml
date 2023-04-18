@@ -90,5 +90,5 @@ jobs:
           artifacts: "build_win/*.zip"
           token: ${{ secrets.GITHUB_TOKEN }}
           allowUpdates: true
-          if: ! endsWith(${{ env.GITHUB_REF_NAME }}, 'Final')
+          if: ${{ !endsWith( env.GITHUB_REF_NAME, 'Final') }}
           prerelease: true
