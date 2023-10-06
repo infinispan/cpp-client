@@ -9,7 +9,7 @@ pipeline{
             cppTag = "${GIT_BRANCH}"
             CMAKE_HOME = 'C:\\\\PROGRA~2\\\\CMake\\\\bin'
             generator = '"Visual Studio 14 2015 Win64"'
-            INFINISPAN_VERSION = '14.0.4.Final'
+            INFINISPAN_VERSION = '15.0.0.Dev07'
             JAVA_HOME = 'C:\\\\PROGRA~1\\\\JAVA\\\\JDK-11~1.2'
             M2_HOME = 'C:\\\\APACHE~1.9'
             MVN_PROGRAM = 'C:\\\\APACHE~1.9\\\\BIN\\\\MVN.BAT'
@@ -37,7 +37,7 @@ pipeline{
         }
         environment {
           HOTROD_LOG_LEVEL = 'INFO'
-          INFINISPAN_VERSION = '14.0.4.Final'
+          INFINISPAN_VERSION = '15.0.0.Dev07'
           JBOSS_HOME = '/home/ec2-user/ispn/infinispan-server'
           M2_HOME = '/opt/maven'
           PATH = "${M2_HOME}/bin:${PATH}"
