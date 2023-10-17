@@ -46,7 +46,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.apache.directory.api</groupId>
-			<version>1.0.0-M30</version>
+			<version>1.0.0-M31</version>
 			<artifactId>api-ldap-model</artifactId>
 		</dependency>
 		<dependency>
