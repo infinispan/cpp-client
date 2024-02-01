@@ -54,6 +54,8 @@ if 1%version_3micro% neq +1%version_3micro% set version_3micro=0
 
 set version_patch=%version_3micro%-%version_4qualifier%
 
+call %JBOSS_HOME%\bin\cli.bat install org.openjdk.nashorn:nashorn-core:15.4 org.ow2.asm:asm:7.3.1 org.ow2.asm:asm-util:7.3.1
+
 cmake -G "%~1" -DCPACK_PACKAGE_VERSION_MAJOR="%version_1major%" -DCPACK_PACKAGE_VERSION_MINOR="%version_2minor%" -DCPACK_PACKAGE_VERSION_PATCH="%version_patch%" -DSWIG_EXECUTABLE=%SWIG_EXECUTABLE% -DMVN_PROGRAM=%MVN_PROGRAM% -DPROTOBUF_LIBRARY="%PROTOBUF_LIBRARY%" -DPROTOBUF_PROTOC_LIBRARY="%PROTOBUF_PROTOC_LIBRARY%" -DProtobuf_INCLUDE_DIR="%PROTOBUF_INCLUDE_DIR%" -DPROTOBUF_INCLUDE_DIR="%PROTOBUF_INCLUDE_DIR%" -DPROTOBUF_PROTOC_EXECUTABLE="%PROTOBUF_PROTOC_EXECUTABLE%" -DOPENSSL_ROOT_DIR="%OPENSSL_ROOT_DIR%" -DNOENABLE_VALGRIND=OFF -DENABLE_VALGRIND=OFF ..
 if %errorlevel% neq 0 goto fai
 
