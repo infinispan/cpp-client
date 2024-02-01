@@ -1,6 +1,6 @@
 FROM quay.io/centos/centos:stream8
 
-ENV JAVA_HOME=/usr/lib/jvm/java-11
+ENV JAVA_HOME=/usr/lib/jvm/java-17
 
 RUN yum -y install 'dnf-command(config-manager)'
 RUN yum config-manager --set-enabled powertools
@@ -13,7 +13,7 @@ RUN dnf -y update && \
    cyrus-sasl-gssapi \
    drpm \
    iputils \
-   java-11-openjdk-devel \
+   java-17-openjdk-devel \
    krb5-workstation \
    maven \
    openssl-devel \

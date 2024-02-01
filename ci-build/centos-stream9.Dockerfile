@@ -1,6 +1,6 @@
 FROM quay.io/centos/centos:stream9
 
-ENV JAVA_HOME=/usr/lib/jvm/java-11
+ENV JAVA_HOME=/usr/lib/jvm/java-17
 
 RUN yum -y install 'dnf-command(config-manager)'
 RUN yum config-manager --set-enabled crb
@@ -12,7 +12,7 @@ RUN dnf -y update && \
    cyrus-sasl-md5 \
    cyrus-sasl-gssapi \
    iputils \
-   java-11-openjdk-devel \
+   java-17-openjdk-devel \
    krb5-workstation \
    krb5-devel \
    maven \
