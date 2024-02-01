@@ -13,7 +13,6 @@ RUN dnf -y update && \
    cyrus-sasl-gssapi \
    drpm \
    iputils \
-   java-17-openjdk-devel \
    krb5-workstation \
    maven \
    openssl-devel \
@@ -24,7 +23,8 @@ RUN dnf -y update && \
    rpmdevtools \
    valgrind \
    wget \
-   yum-utils && \
+   yum-utils \
+   java-17-openjdk-devel && \
    dnf -y group install "Development Tools" && \
    dnf clean all && \
    rm -rf /var/cache/yum

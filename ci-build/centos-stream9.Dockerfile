@@ -12,7 +12,6 @@ RUN dnf -y update && \
    cyrus-sasl-md5 \
    cyrus-sasl-gssapi \
    iputils \
-   java-17-openjdk-devel \
    krb5-workstation \
    krb5-devel \
    maven \
@@ -24,7 +23,8 @@ RUN dnf -y update && \
    rpmdevtools \
    valgrind \
    wget \
-   yum-utils && \
+   yum-utils \
+   java-17-openjdk-devel && \
    dnf -y group install "Development Tools" && \
    dnf clean all && \
    rm -rf /var/cache/yum
