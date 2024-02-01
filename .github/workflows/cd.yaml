@@ -15,7 +15,7 @@ jobs:
       - run: echo $GITHUB_REF_NAME
       - run: mkdir build && chmod a+rwx . documentation build
       - run: podman build -t quay.io/rigazilla/ci-build-centos-8:latest -f ci-build/centos-stream8.Dockerfile .
-      - run: podman run -v `pwd`:/home/jboss/cpp-client quay.io/rigazilla/ci-build-centos-8:latest /bin/bash -c "cd cpp-client && INFINISPAN_VERSION=15.0.0.Dev07 CLIENT_VERSION=$GITHUB_REF_NAME PLATFORM_TAG=el8 ./build.sh"
+      - run: podman run -v `pwd`:/home/jboss/cpp-client quay.io/rigazilla/ci-build-centos-8:latest /bin/bash -c "cd cpp-client && PATH=\$JAVA_HOME/bin:$PATH INFINISPAN_VERSION=15.0.0.Dev07 CLIENT_VERSION=$GITHUB_REF_NAME PLATFORM_TAG=el8 ./build.sh"
       - uses: ncipollo/release-action@v1
         with:
           artifacts: "build/*.rpm,builddeb/*.deb"
