@@ -61,7 +61,7 @@ jobs:
         shell: cmd
         run: |
           cd ${{ github.workspace }}
-          git clone -b v3.8.0  https://github.com/protocolbuffers/protobuf.git
+          git clone -b v3.8.0 https://github.com/protocolbuffers/protobuf.git
           mkdir libs
           cd protobuf
           mkdir build && cd build
