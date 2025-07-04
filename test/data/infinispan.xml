@@ -7,7 +7,7 @@
 
    <cache-container name="default" statistics="true" default-cache="default">
       <transport cluster="${infinispan.cluster.name}" stack="${infinispan.cluster.stack:tcp}"/>
-      <local-cache name="default">
+      <local-cache name="default" statistics="true">
          <expiration interval="1000"/>
       </local-cache>
       <local-cache name="namedCache"/>

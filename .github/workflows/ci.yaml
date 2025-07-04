@@ -1,6 +1,6 @@
 name: infinispan-cpp-client-pr
 env:
-  ISPN_VER: "15.0.14.Final"
+  ISPN_VER: "15.2.0.Final"
   CLIENT_VERSION: ${{ github.event.release.tag_name }}
 on:
   push:
@@ -21,7 +21,7 @@ jobs:
       - run: echo $GITHUB_BASE_REF
       - run: mkdir build && chmod a+rwx . documentation build
       - run: podman build -t quay.io/rigazilla/ci-build-centos-10:latest -f ci-build/centos-stream10.Dockerfile .
-      - run: podman run -v `pwd`:/home/jboss/cpp-client quay.io/rigazilla/ci-build-centos-10:latest /bin/bash -c "cd cpp-client && INFINISPAN_VERSION=15.0.14.Final ISPN_CLIENT_VERSION=$GITHUB_REF_NAME-latest  PLATFORM_TAG=el10 ./build.sh"
+      - run: podman run -v `pwd`:/home/jboss/cpp-client quay.io/rigazilla/ci-build-centos-10:latest /bin/bash -c "cd cpp-client && INFINISPAN_VERSION=15.2.0.Final ISPN_CLIENT_VERSION=$GITHUB_REF_NAME-latest  PLATFORM_TAG=el10 ./build.sh"
       - if: ${{ github.event_name == 'push' }}
         uses: ncipollo/release-action@v1
         with:
@@ -38,7 +38,7 @@ jobs:
       - run: echo $GITHUB_REF_NAME
       - run: mkdir build && chmod a+rwx . documentation build
       - run: podman build -t quay.io/rigazilla/ci-build-centos-9:latest -f ci-build/centos-stream9.Dockerfile .
-      - run: podman run -v `pwd`:/home/jboss/cpp-client quay.io/rigazilla/ci-build-centos-9:latest /bin/bash -c "cd cpp-client && INFINISPAN_VERSION=15.0.14.Final CLIENT_VERSION=$GITHUB_REF_NAME-latest PLATFORM_TAG=el9 ./build.sh"
+      - run: podman run -v `pwd`:/home/jboss/cpp-client quay.io/rigazilla/ci-build-centos-9:latest /bin/bash -c "cd cpp-client && INFINISPAN_VERSION=15.2.0.Final CLIENT_VERSION=$GITHUB_REF_NAME-latest PLATFORM_TAG=el9 ./build.sh"
       - if: ${{ github.event_name == 'push' }}
         uses: ncipollo/release-action@v1
         with:
@@ -91,7 +91,7 @@ jobs:
           set PROTOBUF_PROTOC_EXECUTABLE=${{ github.workspace }}\libs\bin\protoc.exe
           set PROTOBUF_PROTOC_LIBRARY=${{ github.workspace }}\libs\lib\libprotoc.lib
           set PROTOBUF_INCLUDE_DIR=${{ github.workspace }}\libs\include
-          set INFINISPAN_VERSION=15.0.14.Final
+          set INFINISPAN_VERSION=15.2.0.Final
           set CLIENT_VERSION=%GITHUB_REF_NAME%-latest
           set ISPN_CLIENT_VERSION=%GITHUB_REF_NAME%-latest
           build.bat

@@ -1,6 +1,6 @@
 name: infinispan-cpp-client-memcheck
 env:
-  ISPN_VER: "15.0.14.Final"
+  ISPN_VER: "15.2.0.Final"
   CLIENT_VERSION: ${{ github.event.release.tag_name }}
 on:
   push:
@@ -23,7 +23,7 @@ jobs:
       - run: podman build -t quay.io/rigazilla/ci-build-centos-10:latest -f ci-build/centos-stream10.Dockerfile .
       - name: Run CI tests
         id: ci-tests
-        run: podman run -v `pwd`:/home/jboss/cpp-client quay.io/rigazilla/ci-build-centos-10:latest /bin/bash -c "cd cpp-client && INFINISPAN_VERSION=15.0.14.Final CLIENT_VERSION=$GITHUB_BASE_REF.$GITHUB_REF_SLUG  PLATFORM_TAG=el10 ./build.sh MEMECHECK"
+        run: podman run -v `pwd`:/home/jboss/cpp-client quay.io/rigazilla/ci-build-centos-10:latest /bin/bash -c "cd cpp-client && INFINISPAN_VERSION=15.2.0.Final CLIENT_VERSION=$GITHUB_BASE_REF.$GITHUB_REF_SLUG  PLATFORM_TAG=el10 ./build.sh MEMECHECK"
       - name: Archive memcheck results
         if: failure() || success()
         uses: actions/upload-artifact@v4.4.3
