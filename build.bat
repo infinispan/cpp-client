@@ -9,7 +9,7 @@ if [%PROTOBUF_INCLUDE_DIR%] == [] call:usage PROTOBUF_INCLUDE_DIR
 
 set JBOSS_HOME=%cd%\infinispan-server-%INFINISPAN_VERSION%
 set JBOSS_ZIP=infinispan-server-%INFINISPAN_VERSION%.zip
-set JBOSS_URL=http://download.jboss.org/infinispan/%INFINISPAN_VERSION%/%JBOSS_ZIP%
+set JBOSS_URL=https://github.com/infinispan/infinispan/releases/download/%INFINISPAN_VERSION%/%JBOSS_ZIP%
 
 if not exist %JBOSS_HOME% (
   if not exist %JBOSS_ZIP% (
