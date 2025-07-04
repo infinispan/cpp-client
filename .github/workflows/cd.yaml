@@ -6,7 +6,7 @@ on:
     tags:
       - 9.3.**
 jobs:
-  run-rel-tests-stream-8:
+  run-rel-tests-stream-10:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -14,8 +14,8 @@ jobs:
         uses: rlespinasse/github-slug-action@v4
       - run: echo $GITHUB_REF_NAME
       - run: mkdir build && chmod a+rwx . documentation build
-      - run: podman build -t quay.io/rigazilla/ci-build-centos-8:latest -f ci-build/centos-stream8.Dockerfile .
-      - run: podman run -v `pwd`:/home/jboss/cpp-client quay.io/rigazilla/ci-build-centos-8:latest /bin/bash -c "cd cpp-client && PATH=\$JAVA_HOME/bin:$PATH INFINISPAN_VERSION=15.0.14.Final CLIENT_VERSION=$GITHUB_REF_NAME PLATFORM_TAG=el8 ./build.sh"
+      - run: podman build -t quay.io/rigazilla/ci-build-centos-10:latest -f ci-build/centos-stream10.Dockerfile .
+      - run: podman run -v `pwd`:/home/jboss/cpp-client quay.io/rigazilla/ci-build-centos-10:latest /bin/bash -c "cd cpp-client && PATH=\$JAVA_HOME/bin:$PATH INFINISPAN_VERSION=15.0.14.Final CLIENT_VERSION=$GITHUB_REF_NAME PLATFORM_TAG=el10 ./build.sh"
       - uses: ncipollo/release-action@v1
         with:
           artifacts: "build/*.rpm,builddeb/*.deb"

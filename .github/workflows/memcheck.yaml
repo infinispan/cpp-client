@@ -1,6 +1,6 @@
 name: infinispan-cpp-client-memcheck
 env:
-  ISPN_VER: "15.0.0.Dev07"
+  ISPN_VER: "15.0.14.Final"
   CLIENT_VERSION: ${{ github.event.release.tag_name }}
 on:
   push:
@@ -12,7 +12,7 @@ on:
       - 'main'
       - '9.3.x'
 jobs:
-  run-memcheck-tests-stream-8:
+  run-memcheck-tests-stream-10:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -20,15 +20,15 @@ jobs:
         uses: rlespinasse/github-slug-action@v4
       - run: echo $GITHUB_BASE_REF
       - run: mkdir build && chmod a+rwx . documentation build
-      - run: podman build -t quay.io/rigazilla/ci-build-centos-8:latest -f ci-build/centos-stream8.Dockerfile .
+      - run: podman build -t quay.io/rigazilla/ci-build-centos-10:latest -f ci-build/centos-stream10.Dockerfile .
       - name: Run CI tests
         id: ci-tests
-        run: podman run -v `pwd`:/home/jboss/cpp-client quay.io/rigazilla/ci-build-centos-8:latest /bin/bash -c "cd cpp-client && INFINISPAN_VERSION=15.0.0.Dev07 CLIENT_VERSION=$GITHUB_BASE_REF.$GITHUB_REF_SLUG  PLATFORM_TAG=el8 ./build.sh MEMECHECK"
+        run: podman run -v `pwd`:/home/jboss/cpp-client quay.io/rigazilla/ci-build-centos-10:latest /bin/bash -c "cd cpp-client && INFINISPAN_VERSION=15.0.14.Final CLIENT_VERSION=$GITHUB_BASE_REF.$GITHUB_REF_SLUG  PLATFORM_TAG=el10 ./build.sh MEMECHECK"
       - name: Archive memcheck results
         if: failure() || success()
         uses: actions/upload-artifact@v4.4.3
         with:
-          name: memcheck-report-centos8
+          name: memcheck-report-centos10
           path: build/Testing/Temporary/*
           retention-days: 10 
       - name: Fail on previous errors
